@@ -1,0 +1,128 @@
+/* 🌍 MAIN */
+.contact-container {
+  min-height: 100vh;
+  background: #5b0000;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  font-family: "Poppins", sans-serif;
+}
+
+/* LOGO */
+.logo {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+/* TITLE */
+.main-title {
+  font-size: 36px;
+  text-align: center;
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+/* SUBTITLE */
+.subtitle {
+  text-align: center;
+  max-width: 500px;
+  margin-bottom: 40px;
+  color: #ddd;
+}
+
+/* FORM CARD */
+.form-card {
+  width: 400px;
+  max-width: 100%;
+}
+
+/* INPUT BOX */
+.input-box {
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.input-box label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 5px;
+  color: #ccc;
+}
+
+.input-box input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  outline: none;
+}
+
+/* PHONE BOX */
+.phone-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.phone-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  outline: none;
+}
+
+.flag {
+  font-size: 18px;
+}
+
+.code {
+  color: #ccc;
+}
+
+/* PRIVACY */
+.privacy {
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+.privacy span {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* BUTTON */
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: #ddd;
+  color: black;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.submit-btn:hover {
+  background: white;
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 600px) {
+  .main-title {
+    font-size: 24px;
+  }
+
+  .form-card {
+    width: 100%;
+  }
+}

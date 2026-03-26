@@ -1,0 +1,150 @@
+/*  FOOTER BASE */
+.footer {
+  background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+}
+
+/*  SINGLE ROW CONTAINER */
+.container {
+  max-width: 1300px;
+  margin: auto;
+  padding: 40px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+  flex-wrap: nowrap; /* keeps single row */
+}
+
+/* EACH SECTION */
+.logoSection,
+.linkSection,
+.contactSection {
+  flex: 1;
+  min-width: 180px;
+}
+
+/*  LOGO */
+.logo h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fbbf24 !important;
+  /* background: linear-gradient(90deg, #fbbf24, #ef4444); */
+  
+  -webkit-text-fill-color: transparent;
+}
+
+.logoSection p {
+  font-size: 14px;
+  color: #cbd5e1;
+  margin-top: 10px;
+}
+
+/* LINKS */
+.linkSection h4,
+.contactSection h4 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.linkSection ul,
+.contactSection ul {
+  list-style: none;
+  padding: 0;
+}
+
+.linkSection li a {
+  display: block;
+  font-size: 14px;
+  color: #cbd5e1;
+  margin: 6px 0;
+  transition: 0.3s;
+}
+
+.linkSection li a:hover {
+  color: #fbbf24;
+}
+
+/*  CONTACT */
+.contactSection li {
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+/*  SOCIAL */
+.socialIcons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+}
+
+.icon:hover {
+  background: #fbbf24;
+}
+
+/*  BOTTOM BAR */
+.bottomBar {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 15px 0;
+}
+
+.bottomContainer {
+  max-width: 1300px;
+  margin: auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* =====================================
+   RESPONSIVE (KEEP SINGLE ROW AS MUCH AS POSSIBLE)
+===================================== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .container {
+    gap: 20px;
+  }
+
+  .logoSection,
+  .linkSection,
+  .contactSection {
+    min-width: 140px;
+  }
+}
+
+/* Small Mobile → Only here allow wrap */
+@media (max-width: 768px) {
+  .container {
+    flex-wrap: wrap; /* fallback for small screens */
+    text-align: center;
+  }
+
+  .logoSection,
+  .linkSection,
+  .contactSection {
+    flex: 100%;
+  }
+
+  .socialIcons {
+    justify-content: center;
+  }
+
+  .bottomContainer {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

@@ -1,0 +1,179 @@
+/* 🔥 RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 🔥 BACKGROUND CONTAINER */
+.container {
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+  gap: 20px;
+
+  background: linear-gradient(135deg, #66eae8, #764ba2);
+  overflow-y: auto;
+}
+
+/* 🔥 TITLE */
+.container h2 {
+  color: white;
+  font-size: 32px;
+  font-weight: 700;
+  animation: fadeInDown 0.6s ease;
+}
+
+/* 🔥 FORM BOX (auto applied since inputs are inside container) */
+.container input,
+.container button,
+.container p {
+  width: 100%;
+  max-width: 380px;
+}
+
+/* 🔥 INPUT */
+.input {
+  padding: 15px 18px;
+
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+
+  color: white;
+  font-size: 15px;
+
+  outline: none;
+  transition: all 0.3s ease;
+
+  animation: fadeInUp 0.5s ease;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.input:focus {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+}
+
+/* 🔥 BUTTON */
+.button {
+  padding: 15px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: linear-gradient(135deg, #ff7eb3, #ff758c);
+  color: white;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  animation: fadeInUp 0.6s ease;
+}
+
+.button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* 🔥 TOGGLE LINK */
+.toggleLink {
+  text-align: center;
+  color: #ffffffcc;
+  font-size: 14px;
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.7s ease;
+}
+
+.toggleLink:hover {
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* ===================================
+   🔥 ANIMATIONS
+=================================== */
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===================================
+   📱 RESPONSIVE DESIGN
+=================================== */
+
+/* Mobile */
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+  }
+
+  .container h2 {
+    font-size: 26px;
+  }
+
+  .input {
+    padding: 14px;
+  }
+
+  .button {
+    padding: 14px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .container h2 {
+    font-size: 34px;
+  }
+
+  .input {
+    font-size: 16px;
+  }
+
+  .button {
+    font-size: 17px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .container {
+    padding: 40px;
+  }
+}

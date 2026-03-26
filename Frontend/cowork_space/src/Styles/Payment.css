@@ -1,0 +1,106 @@
+/* 🌍 MAIN CONTAINER */
+.payment-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  font-family: "Poppins", sans-serif;
+}
+
+/* 📦 CARD */
+.payment-card {
+  width: 400px;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+  animation: fadeUp 0.6s ease;
+}
+
+/* 🧠 TITLE */
+.title {
+  text-align: center;
+  color: #ff3b3b;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 20px;
+}
+
+/* ✏️ INPUTS */
+input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  transition: 0.3s;
+}
+
+input:focus {
+  border-color: #ff3b3b;
+}
+
+/* 🔗 ROW */
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+/* 🔘 BUTTON */
+.pay-btn {
+  width: 100%;
+  padding: 12px;
+  background: #ff3b3b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.pay-btn:hover {
+  background: black;
+}
+
+/* ✅ SUCCESS */
+.success-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f0fff4;
+  font-family: "Poppins", sans-serif;
+}
+
+.success-container h2 {
+  color: green;
+  margin-bottom: 10px;
+}
+
+/* ✨ ANIMATION */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 480px) {
+  .payment-card {
+    width: 90%;
+    padding: 20px;
+  }
+}
