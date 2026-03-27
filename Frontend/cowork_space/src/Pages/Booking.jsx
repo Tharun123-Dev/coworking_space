@@ -1,73 +1,90 @@
 import { useState } from "react";
 import axiosInstance from "../Services/Axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function Booking() {
 
   const location = useLocation();
-  const workspace = location.state;
+  const navigate = useNavigate();
+
+  const data = location.state;
+  const isMultiple=data?.items ? true : false;
+
 
   const [form, setForm] = useState({
     date: "",
     duration: 1
   });
+const handleSubmit = async () => {
 
-  const handleSubmit = () => {
-    axiosInstance.post("cart/create/", {
-      workspace_id: workspace.id,
-      date: form.date,
-      duration: form.duration
-    })
-    .then(() => {
-      alert("Booking Successful 🎉");
-      const handleSubmit = () => {
   if (!form.date || !form.duration) {
-    alert("Please fill all details ❌");
+    alert("Fill all details ");
     return;
   }
 
-  axiosInstance.post("cart/create/", {
-    workspace_id: item.workspace_id || item.id,
-    date: form.date,
-    duration: form.duration
-  })
-  .then(() => {
-    alert("Booking Successful 🎉");
+  try {
+    if (isMultiple) {
+      //  LOOP FOR MULTIPLE ITEMS
+      for (let item of data.items) {
+        await axiosInstance.post("cart/create/", {
+          workspace_id: item.workspace_id,
+          date: form.date,
+          duration: item.duration
+        });
+      }
+      await axiosInstance.delete("cart/clear/");
 
-    // 👉 Redirect to cart or home
-    window.location.href = "/cart";
-  })
-  .catch(() => {
-    alert("Error in booking ❌");
-  });
+
+      alert("All Bookings Successful ");
+
+    } else {
+      // SINGLE BOOKING
+      await axiosInstance.post("cart/create/", {
+        workspace_id: data.workspace_id,
+        date: form.date,
+        duration: form.duration
+      });
+
+      alert("Booking Successful 🎉");
+    }
+
+    //  Redirect
+    window.location.href = "/";
+
+  } catch (err) {
+    console.log(err.response?.data);
+    alert("Error ");
+  }
 };
-    })
-    .catch(() => {
-      alert("Error in booking ❌");
-    });
-  };
 
   return (
     <div style={styles.container}>
       <h2>Book Workspace</h2>
 
-      <h3>{workspace.name}</h3>
-      <p>{workspace.location}</p>
+      {isMultiple ? (
+  <h3>{data.items.length} Items Selected</h3>
+) : (
+  <h3>{data.workspace}</h3>
+)}
+      {!isMultiple && (
+        <p>{data.location}</p>
+      )}
 
-     <input 
-  type="date"
-  style={{ padding: "10px", margin: "10px 0" }}
-  onChange={(e) => setForm({...form, date: e.target.value})}
-/>
+      <input 
+        type="date"
+        style={styles.input}
+        onChange={(e) => setForm({...form, date: e.target.value})}
+      />
 
-<input 
-  type="number"
-  placeholder="Duration (days)"
-  style={{ padding: "10px", margin: "10px 0" }}
-  onChange={(e) => setForm({...form, duration: e.target.value})}
-/>
+      <input 
+        type="number"
+        placeholder="Duration (days)"
+        style={styles.input}
+        value={form.duration}
+        onChange={(e) => setForm({...form, duration: e.target.value})}
+      />
 
-      <button onClick={handleSubmit}>
+      <button onClick={handleSubmit} style={styles.btn}>
         Confirm Booking
       </button>
     </div>
@@ -76,7 +93,23 @@ function Booking() {
 
 const styles = {
   container: {
-    padding: "40px"
+    padding: "40px",
+    textAlign: "center"
+  },
+  input: {
+    padding: "10px",
+    margin: "10px 0",
+    width: "250px",
+    display: "block",
+    marginLeft: "auto",
+    marginRight: "auto"
+  },
+  btn: {
+    padding: "10px 20px",
+    background: "black",
+    color: "white",
+    border: "none",
+    cursor: "pointer"
   }
 };
 

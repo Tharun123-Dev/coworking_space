@@ -8,19 +8,19 @@ function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const navigate = useNavigate();
 
-  // ✅ FETCH CART
+  // FETCH CART
   useEffect(() => {
     axiosInstance.get("cart/view/")
       .then(res => {
         console.log("CART DATA:", res.data);
-        setCartItems(res.data);   // ✅ ARRAY directly
+        setCartItems(res.data);   // ARRAY directly
       })
       .catch(() => {
         alert("Login required");
       });
   }, []);
 
-  // ✅ REMOVE ITEM
+  //  REMOVE ITEM
   const handleRemove = (id) => {
     axiosInstance.delete(`cart/remove/${id}/`)
       .then(() => {
@@ -29,17 +29,17 @@ function Cart() {
       });
   };
 
-  // ✅ CHECKOUT SINGLE
+  // CHECKOUT SINGLE
   const handleCheckout = (item) => {
-    navigate("/booking", { state: item });
+    navigate("/booking", { state: item});
   };
 
-  // ✅ CHECKOUT ALL
+  // CHECKOUT ALL
   const handleCheckoutAll = () => {
     navigate("/booking", { state: { items: cartItems } });
   };
 
-  // ✅ TOTAL CALCULATION
+  // TOTAL CALCULATION
   const totalAmount = cartItems.reduce((acc, item) => {
     return acc + (item.price * item.duration);
   }, 0);
@@ -48,7 +48,7 @@ function Cart() {
     <div className={styles.container}>
       <h2>Your Cart</h2>
 
-      {/* ✅ IMPORTANT FIX HERE */}
+      {/* IMPORTANT FIX HERE */}
       {cartItems.length > 0 ? (
 
         <>
@@ -58,7 +58,7 @@ function Cart() {
               <img src={item.image} alt="Workspace" className={styles.image} />
 
               <div className={styles.details}>
-                <h3>{item.workspace}</h3> {/* ✅ FIXED */}
+                <h3>{item.workspace}</h3> {/*  FIXED */}
                 <p>{item.location}</p>
                 <p className={styles.price}>₹{item.price}</p>
                 <p>Duration: {item.duration}</p>
@@ -81,7 +81,7 @@ function Cart() {
             </div>
           ))}
 
-          {/* ✅ TOTAL SECTION */}
+          {/* TOTAL SECTION */}
           <div className={styles.summary}>
             <h2>Total: ₹{totalAmount}</h2>
 

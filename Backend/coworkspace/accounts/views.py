@@ -39,6 +39,7 @@ def login_view(request):
         return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
+            "username":user.username,
             "is_admin": user.is_superuser   # 🔥 IMPORTANT
         })
 

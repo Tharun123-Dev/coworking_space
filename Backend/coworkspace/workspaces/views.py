@@ -31,7 +31,7 @@ def get_categories(request):
     return Response(serializer.data)
 from rest_framework.permissions import IsAdminUser
 
-# ✅ ADD WORKSPACE
+#  ADD WORKSPACE
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
 def add_workspace(request):
@@ -47,7 +47,7 @@ def add_workspace(request):
     print("ERROR:", serializer.errors)  # 🔥 DEBUG
     return Response(serializer.errors)
 
-# ✅ UPDATE WORKSPACE
+# UPDATE WORKSPACE
 @api_view(['PUT'])
 @permission_classes([IsAdminUser])
 def update_workspace(request, id):
@@ -60,7 +60,7 @@ def update_workspace(request, id):
     return Response(serializer.errors)
 
 
-# ✅ DELETE WORKSPACE
+#  DELETE WORKSPACE
 @api_view(['DELETE'])
 @permission_classes([IsAdminUser])
 def delete_workspace(request, id):

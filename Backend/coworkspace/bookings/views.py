@@ -6,7 +6,39 @@ from workspaces.models import Workspace
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from .models import Booking
+from django.shortcuts import get_object_or_404
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_booking(request):
+
+    workspace_id = request.data.get('workspace_id')
+
+    if not workspace_id:
+        return Response({"error": "No workspace_id"}, status=400)
+
+    workspace = get_object_or_404(Workspace, id=workspace_id)
+
+    user = request.user
+    duration = request.data.get('duration')
+    date = request.data.get('date')
+
+    total_price = workspace.price * int(duration)
+
+    Booking.objects.create(
+        user=user,
+        workspace=workspace,
+        duration=duration,
+        date=date,
+        total_price=total_price
+    )
+    #  CLEAR CART AFTER BOOKING
+    cart = Cart.objects.filter(user=user).first()
+    if cart:
+     CartItem.objects.filter(cart=cart).delete()
+
+    return Response({"message": "Booking successful"})
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_to_cart(request):
@@ -52,31 +84,12 @@ def remove_item(request, id):
     item.delete()
     return Response({"message": "Item removed"})
 
-from .models import CartItem, Cart
-
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def create_booking(request):
+def clear_cart(request):
+    cart = Cart.objects.filter(user=request.user).first()
+    if cart:
+        CartItem.objects.filter(cart=cart).delete()
 
-    workspace_id = request.data.get('workspace_id')
+    return Response({"message": "Cart cleared"})
 
-    try:
-        workspace = Workspace.objects.get(id=workspace_id)
-    except Workspace.DoesNotExist:
-        return Response({"error": "Workspace not found"}, status=404)
-
-    user = request.user
-    duration = request.data.get('duration')
-    date = request.data.get('date')
-
-    total_price = workspace.price * int(duration)
-
-    Booking.objects.create(
-        user=user,
-        workspace=workspace,
-        duration=duration,
-        date=date,
-        total_price=total_price
-    )
-
-    return Response({"message": "Booking successful"})

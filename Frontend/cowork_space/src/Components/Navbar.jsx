@@ -12,6 +12,7 @@ function Navbar() {
   //  Check login
   const token = localStorage.getItem("access");
   const isAdmin = localStorage.getItem("is_admin");
+  const username=localStorage.getItem("username");
 
   //  USER CLICK (ADMIN / NORMAL)
   const handleUserClick = () => {
@@ -31,6 +32,7 @@ function Navbar() {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     localStorage.removeItem("is_admin");
+    localStorage.removeItem("username")
 
     alert("Logged out successfully ");
     navigate("/");
@@ -130,19 +132,28 @@ const handleScroll = (city) => {
           👤
         </span>
 
-        {/* LOGIN / LOGOUT BUTTON */}
-        {token ? (
-          <button className={styles.logoutBtn} onClick={handleLogout}>
-            Logout
-          </button>
-        ) : (
-          <button 
-            className={styles.btn}
-            onClick={() => navigate("/auth")}
-          >
-            Get Started
-          </button>
-        )}
+     {/* LOGIN / LOGOUT */}
+{token ? (
+  <div style={styles.userBox}>
+    <span style={styles.userName}>
+       Hi, {username || "User"}
+    </span>
+
+    <button
+      className={styles.logoutBtn}
+      onClick={handleLogout}
+    >
+      Logout
+    </button>
+  </div>
+) : (
+  <button
+    className={styles.btn}
+    onClick={() => navigate("/auth")}
+  >
+    Get Started
+  </button>
+)}
 
       </div>
 
