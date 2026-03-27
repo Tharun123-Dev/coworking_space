@@ -110,8 +110,8 @@ co-working-platform/
 │ ├── urls/
 │ └── authentication/
 
-📈 Future Enhancements
-Online Payment Integration
-Google Maps Integration
-Admin Analytics Dashboard
-Mobile App Version
+###📈 Future Enhancements
+--Online Payment Integration
+--Google Maps Integration
+--Admin Analytics Dashboard
+--Mobile App Version
