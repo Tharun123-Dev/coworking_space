@@ -31,7 +31,7 @@ function Recommendations() {
 
   const handleSubmit = () => {
     axios
-      .post("http://127.0.0.1:8000/api/recommend/", form)
+      .post(" https://coworking-space-1n7y.onrender.com/api/recommend/", form)
       .then((res) => {
         setResults(res.data);
         // Clear all fields after successful submit

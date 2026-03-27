@@ -1,5 +1,5 @@
 import React from "react";
-import "../Styles/view.css";
+import "../Styles/View.css";
 
 const View = () => {
   const isLoggedIn = localStorage.getItem("user");
