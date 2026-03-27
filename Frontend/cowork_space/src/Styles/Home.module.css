@@ -22,7 +22,7 @@
   /* Orange gradient + background image */
   background-image:
     /* linear-gradient(135deg, rgba(252, 88, 26, 0.85), rgba(247, 183, 51, 0.75)), */
-    url("../Images/main.jpg");
+    url("main.jpg");
   background-size: 200% auto;
   background-position: 0% 50%;
   background-repeat: repeat-x;
