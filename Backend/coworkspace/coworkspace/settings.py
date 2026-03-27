@@ -62,14 +62,14 @@ CSRF_COOKIE_SECURE = False
 
 CORS_ALLOWED_ORIGINS = [
     # "http://localhost:5173",
-   "https://coworkingspace-khaki.vercel.app/",
+   "https://coworkingspace-xi.vercel.app/",
     
     
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     # "http://localhost:5173",
-    "https://coworkingspace-khaki.vercel.app/",
+    "https://coworkingspace-xi.vercel.app/",
     
 ]
 CORS_ALLOW_ALL_ORIGINS = True
