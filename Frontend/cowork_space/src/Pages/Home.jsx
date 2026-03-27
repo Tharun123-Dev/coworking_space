@@ -8,6 +8,7 @@ function Home() {
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
 //email purpose
 const [form, setForm] = useState({
   name: "",
@@ -182,7 +183,59 @@ const handleSubmit = (e) => {
                     </div>
 
                     <div className={styles.cardActions}>
-                      <button className={styles.btnSecondary}>Know More</button>
+                    
+
+
+    <div className={styles.container}>
+      
+      {/* BUTTON */}
+      <button
+        className={styles.btnSecondary}
+        onClick={() => setShowInfo(true)}
+      >
+        Know More
+      </button>
+
+      {/* POPUP */}
+      {showInfo && (
+        <div className={styles.popupOverlay}>
+          <div className={styles.popupBox}>
+            
+            {/* BACK BUTTON */}
+            <button
+              className={styles.backBtn}
+              onClick={() => setShowInfo(false)}
+            >
+              ← Back
+            </button>
+
+            {/* CONTENT */}
+            <h2>Workspace Details</h2>
+            <p>
+              Discover premium coworking spaces designed for productivity,
+              collaboration, and comfort. Enjoy high-speed internet, modern
+              interiors, meeting rooms, and flexible pricing options.
+            </p>
+
+            <ul>
+              <li>✔ High-speed WiFi</li>
+              <li>✔ Meeting Rooms</li>
+              <li>✔ 24/7 Access</li>
+              <li>✔ Comfortable Seating</li>
+              <li>✔ Prime Locations</li>
+            </ul>
+
+          </div>
+        </div>
+      )}
+    </div>
+
+
+
+
+
+
+                    
                       <button 
                         className={styles.btnPrimary}
                         onClick={(e) => {
