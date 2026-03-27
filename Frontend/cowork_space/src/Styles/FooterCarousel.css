@@ -1,58 +1,151 @@
+/* WRAPPER */
 .scroll-wrapper {
-  width: 100vw;
-  height: 320px;
-  position: relative;
+  width: 100%;
   overflow: hidden;
-  background: linear-gradient(90deg, #000 0%, #111 50%, #000 100%);
+  position: relative;
+  padding: 70px 0;
+
+  /* 🔥 Gradient background */
+  background: radial-gradient(circle at top, #0f172a, #020617);
+
+  /* 🎥 Strong perspective */
+  perspective: 1600px;
 }
 
+/* TRACK */
 .scroll-track {
   display: flex;
-  height: 100%;
-  animation: scroll-left-continuous 30s linear infinite;
-  will-change: transform;
+  gap: 40px;
+  width: max-content;
+
+  transform-style: preserve-3d;
+
+  animation: scrollFlow 22s linear infinite;
 }
 
+/* CARD */
 .scroll-card {
-  flex: 0 0 300px;        /* fixed width, full horizontal chain */
-  height: 320px;
-  margin: 0 2px;
-  border-radius: 20px;
+  min-width: 280px;
+  height: 180px;
+  border-radius: 22px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+
+  transform-style: preserve-3d;
+
+  /* 🌊 Wave positioning */
+  transform: rotateY(35deg) translateZ(0) translateY(0);
+
+  transition: all 0.6s ease;
 }
 
-/* Left big → middle small → right big (3D scale effect) */
-.scroll-card:nth-child(3n+1) { /* every 3rd: big left */
-  transform: scale(1.1) translateZ(50px);
-  filter: brightness(1.2);
-}
-.scroll-card:nth-child(3n+2) { /* middle: small */
-  transform: scale(0.85) translateZ(0px);
-  filter: brightness(0.9);
-}
-.scroll-card:nth-child(3n) { /* every 3rd: big right */
-  transform: scale(1.05) translateZ(30px);
-  filter: brightness(1.1);
-}
-
+/* IMAGE */
 .scroll-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  border-radius: 20px;
-  transition: inherit;
+  border-radius: 22px;
+
+  transition: transform 0.7s ease, filter 0.5s ease;
 }
 
-/* Continuous left scroll */
-@keyframes scroll-left-continuous {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); } /* half track length for seamless loop */
+/* 🌟 GLOW EFFECT */
+.scroll-card .glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
-/* Pause on hover */
-.scroll-wrapper:hover .scroll-track {
-  animation-play-state: paused;
+/* HOVER EFFECT */
+.scroll-card:hover {
+  transform: rotateY(0deg) translateZ(140px) scale(1.12);
+  z-index: 20;
+}
+
+.scroll-card:hover img {
+  transform: scale(1.2);
+  filter: brightness(1.2) contrast(1.1);
+}
+
+.scroll-card:hover .glow {
+  opacity: 1;
+}
+
+/* 🌊 WAVE DEPTH EFFECT */
+.scroll-card:nth-child(odd) {
+  transform: rotateY(35deg) translateY(-15px);
+}
+.scroll-card:nth-child(even) {
+  transform: rotateY(35deg) translateY(15px);
+}
+
+/* 🎥 SCROLL ANIMATION */
+@keyframes scrollFlow {
+  0% {
+    transform: translateX(0) rotateY(0deg);
+  }
+  100% {
+    transform: translateX(-50%) rotateY(-12deg);
+  }
+}
+
+/* 🌑 SHADOW DEPTH */
+.scroll-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateZ(-25px);
+  filter: blur(12px);
+}
+
+/* EDGE FADE */
+.scroll-wrapper::before,
+.scroll-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 120px;
+  height: 100%;
+  z-index: 5;
+}
+
+.scroll-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, #020617, transparent);
+}
+
+.scroll-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, #020617, transparent);
+}
+
+/* 📱 MOBILE PERFECT */
+@media (max-width: 768px) {
+  .scroll-wrapper {
+    padding: 40px 0;
+  }
+
+  .scroll-card {
+    min-width: 200px;
+    height: 130px;
+    transform: rotateY(20deg);
+  }
+
+  .scroll-track {
+    gap: 20px;
+    animation-duration: 16s;
+  }
+}
+
+/* 📱 EXTRA SMALL DEVICES */
+@media (max-width: 480px) {
+  .scroll-card {
+    min-width: 160px;
+    height: 110px;
+  }
 }
