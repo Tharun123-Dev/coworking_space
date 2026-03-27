@@ -14,9 +14,14 @@ import Discount from "./Pages/Discount";
 import WorkspaceFeature from "./Pages/WorkspaceFeature";
 import Contact from "./Pages/Contact";
 import Cities from "./Pages/Cities";
-import View from "./Pages/View";
+
 import Amenities from "./Pages/Amenities";
 import WorkspaceGallery from "./Pages/WorkspaceGallery"
+import FooterCarousel from "./Pages/FooterCarousel";
+
+import AISeats from "./Components/AISeats";
+import View from "./Pages/View";
+
 
 function App() {
   return (
@@ -27,7 +32,7 @@ function App() {
         
         <Route path="/" element={<Home />} />
         <Route path="/contact" element={<Contact/>} />
-      <Route path="/view" element={<View />} /> 
+        <Route path="/view" element={<View/>} /> 
         <Route path="/auth" element={<Auth />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/booking" element={<Booking />} />
@@ -36,12 +41,18 @@ function App() {
         <Route path="/payment/:id" element={<Payment/>} />
         <Route path="/amenities" element={<Amenities />} />
         <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
+        <Route path="/recommend" element={<AISeats/>} />
       </Routes>
       <Feature/>
       <WorkspaceTabs/>
       <WorkspaceFeature/>
       <Cities/>
+       <AISeats/>
+       
+
+          <FooterCarousel/>
       <Footer/>
+  
     </BrowserRouter>
   );
 }

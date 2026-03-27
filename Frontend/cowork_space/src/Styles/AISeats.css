@@ -1,0 +1,231 @@
+/* AI‑chatbox container (no body styles) */
+.contain {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: radial-gradient(circle at 50% 70%, rgba(30, 15, 90, 0.4), #030014);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(128, 90, 255, 0.3);
+  box-shadow:
+    0 0 20px rgba(128, 90, 255, 0.2),
+    0 0 40px rgba(128, 90, 255, 0.15);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contain:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 25px rgba(128, 90, 255, 0.3),
+    0 0 60px rgba(128, 90, 255, 0.2);
+}
+
+/* AI‑title with neon gradient */
+.contain h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, #6a11cb, #2575fc, #00c9ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 10px rgba(106, 17, 203, 0.3);
+}
+
+/* Input fields: AI terminal style */
+.contain input {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.8rem 1rem;
+  margin: 0.5rem 0;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(128, 90, 255, 0.4);
+  background: rgba(20, 15, 50, 0.6);
+  color: #e0e0ff;
+  font-size: 0.95rem;
+  outline: none;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.contain input::placeholder {
+  color: rgba(180, 160, 255, 0.5);
+}
+
+.contain input:focus {
+  border-color: #6a11cb;
+  background: rgba(25, 18, 60, 0.8);
+  box-shadow:
+    0 0 10px rgba(106, 17, 203, 0.4),
+    inset 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Amenities checkboxes: smooth toggle */
+.contain label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.contain input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(128, 90, 255, 0.5);
+  background: rgba(20, 15, 50, 0.4);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.contain input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  border-color: #6a11cb;
+}
+
+.contain input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+/* Submit button: glowing AI style */
+.contain button {
+  width: 100%;
+  max-width: 240px;
+  margin: 1.2rem auto;
+  display: block;
+  padding: 0.9rem 1.5rem;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(106, 17, 203, 0.5);
+  transition: all 0.3s ease;
+}
+
+.contain button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(106, 17, 203, 0.7);
+}
+
+.contain button:active {
+  transform: translateY(0);
+}
+
+/* Results grid layout */
+.gridd {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
+/* Individual card: AI “neural node” style */
+.gridd .cardd {
+  background: rgba(25, 18, 60, 0.7);
+  border-radius: 1rem;
+  border: 1px solid rgba(128, 90, 255, 0.3);
+  padding: 1rem;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.25),
+    0 0 20px rgba(128, 90, 255, 0.15);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.gridd .cardd:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 6px 15px rgba(0, 0, 0, 0.35),
+    0 0 30px rgba(128, 90, 255, 0.3);
+  border-color: rgba(128, 90, 255, 0.6);
+}
+
+/* Card inner content */
+.cardd img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 0.8rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(128, 128, 255, 0.2);
+}
+
+.cardd h3 {
+  margin: 0.6rem 0 0.3rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e0e0ff;
+}
+
+.cardd p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+  color: rgba(200, 200, 255, 0.8);
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .contain {
+    margin: 1rem 1rem;
+    padding: 1.2rem;
+    border-radius: 1rem;
+  }
+
+  .contain h2 {
+    font-size: 1.5rem;
+  }
+
+  .contain input {
+    font-size: 0.9rem;
+  }
+
+  .gridd {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .cardd {
+    padding: 0.8rem;
+  }
+
+  .cardd img {
+    height: 140px;
+    border-radius: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .contain h2 {
+    font-size: 1.3rem;
+  }
+
+  .contain button {
+    font-size: 0.9rem;
+    padding: 0.7rem 1.2rem;
+  }
+
+  .cardd h3 {
+    font-size: 1rem;
+  }
+
+  .cardd p {
+    font-size: 0.85rem;
+  }
+}

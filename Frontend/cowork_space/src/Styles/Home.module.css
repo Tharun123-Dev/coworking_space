@@ -72,12 +72,12 @@
   font-weight: 700;
   line-height: 1.15;
   margin: 0;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 2px 6px rgba(221, 236, 239, 0.35);
 }
 
 .heroTitle span {
   color: #ffcc99;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 2px 8px rgba(234, 225, 225, 0.4);
 }
 
 .heroSubtitle {

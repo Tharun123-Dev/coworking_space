@@ -2,12 +2,36 @@ import SearchBar from "../Components/SearchBar";
 import { useState, useEffect } from "react";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/Home.module.css";
+import emailjs from "@emailjs/browser";
 
 function Home() {
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
+//email purpose
+const [form, setForm] = useState({
+  name: "",
+  email: "",
+  phone: "",
+  city: ""
+});
 
+const handleChange = (e) => {
+  setForm({ ...form, [e.target.name]: e.target.value });
+};
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  emailjs.send(
+    import.meta.env.VITE_EMAILJS_SERVICE_ID,
+    import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+    form,
+    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+  )
+  .then(() => alert("Sent"))
+  .catch(() => alert("Error"));
+};
   //  Fetch backend data
   useEffect(() => {
     axiosInstance.get("workspaces/")
@@ -96,20 +120,26 @@ function Home() {
               </div>
             </div>
           </div>
+<form onSubmit={handleSubmit}>
+  <div className={styles.heroForm}>
+    <h3>Get in Touch</h3>
 
-          <div className={styles.heroForm}>
-            <h3>Get in Touch</h3>
-            <input placeholder="Name" />
-            <input placeholder="Email" />
-            <input placeholder="Phone" />
-            <select>
-              <option>Select City</option>
-              <option>Hyderabad</option>
-              <option>Bangalore</option>
-              <option>Delhi</option>
-            </select>
-            <button>Submit</button>
-          </div>
+    <input name="name" placeholder="Name" onChange={handleChange} />
+    <input name="Enter Valid Email" placeholder="Email" onChange={handleChange} />
+    <input name="phone" placeholder="Phone" onChange={handleChange} />
+
+    <select name="city" onChange={handleChange}>
+      <option value="">Select City</option>
+      <option>Hyderabad</option>
+      <option>Bangalore</option>
+      <option>Delhi</option>
+    </select>
+
+    <button type="submit">
+      Request a Callback
+    </button>
+  </div>
+</form>
         </div>
       </section>
 
@@ -174,8 +204,10 @@ function Home() {
             )}
           </div>
         </div>
+
       </section>
     </div>
+    
   );
 }
 

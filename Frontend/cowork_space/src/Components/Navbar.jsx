@@ -160,18 +160,26 @@ const handleScroll = (city) => {
       {isMobileMenuOpen && (
         <div className={styles.mobileMenuOverlay}>
           <div className={styles.mobileMenu}>
+{/* WORKSPACES */}
+<div className={styles.mobileDropdown}>
+  <p>Workspaces</p>
 
-            {/* WORKSPACES */}
-            <div className={styles.mobileDropdown}>
-              <p>Workspaces</p>
-              <div className={styles.mobileSubmenu}>
-                <p onClick={() => {navigate("/"); setIsMobileMenuOpen(false);}}>
-                  Office Spaces
-                </p>
-                <p>Coworking Spaces</p>
-                {/* <p>Meeting Rooms</p> */}
-              </div>
-            </div>
+  <div className={styles.mobileSubmenu}>
+    
+    <p onClick={() => {navigate("/workspaces/office"); setIsMobileMenuOpen(false);}}>
+      Office Spaces
+    </p>
+
+    <p onClick={() => {navigate("/workspaces/coworking"); setIsMobileMenuOpen(false);}}>
+      Coworking Spaces
+    </p>
+
+    <p onClick={() => {navigate("/workspaces/meeting"); setIsMobileMenuOpen(false);}}>
+      Meeting Rooms
+    </p>
+
+  </div>
+</div>
 
  {/* CITIES */}
 <div className={styles.mobileDropdown}>
