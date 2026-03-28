@@ -1,6 +1,6 @@
 // CoworkPage.jsx - Copy & Paste Ready! 
 import { useState } from 'react';
-import styles from '../styles/Reviews.module.css';
+import styles from '../Styles/Reviews.module.css';
 
 const reviews = Array.from({ length: 50 }, (_, i) => ({
   text: `Excellent coworking experience! Great ambiance, reliable WiFi, helpful staff, and perfect location. Highly recommend for freelancers and startups. Rating: 5⭐ Review #${i + 1}`,
