@@ -23,6 +23,7 @@ import AISeats from "./Components/AISeats";
 import View from "./Pages/View";
 import Reviews from "./Pages/Reviews";
 import AddReview from "./Pages/AddReview"
+import ScrollToTop from "./Pages/ScrollToTop";
 
 
 
@@ -51,7 +52,7 @@ function App() {
       <WorkspaceFeature/>
       <Cities/>
        <AISeats/>
-       
+        <ScrollToTop/>
           <Reviews/>
           <AddReview/>
           <FooterCarousel/>
