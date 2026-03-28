@@ -53,11 +53,11 @@ function Recommendations() {
     <div className="contain">
       <h2>Find Your Workspace (🤖 AI Recommended)</h2>
 
-      <input name="city" placeholder="City" onChange={handleChange} value={form.city} />
+      <input name="city" placeholder="City(Must use Hyderabad)" onChange={handleChange} value={form.city} />
       <input name="min_price" placeholder="Min Price" onChange={handleChange} value={form.min_price} />
       <input name="max_price" placeholder="Max Price" onChange={handleChange} value={form.max_price} />
       <input name="rating" placeholder="Rating" onChange={handleChange} value={form.rating} />
-      <input name="workspace_type" placeholder="Type" onChange={handleChange} value={form.workspace_type} />
+      <input name="workspace_type" placeholder="Type(Eg.Fixed deskHotdesk....)" onChange={handleChange} value={form.workspace_type} />
       <input name="capacity" placeholder="Capacity" onChange={handleChange} value={form.capacity} />
 
       <div>
