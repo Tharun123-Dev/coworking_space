@@ -28,19 +28,29 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 @api_view(['POST'])
 def login_view(request):
-    user = authenticate(
-        username=request.data['username'],
-        password=request.data['password']
-    )
+    username = request.data.get('username')
+    password = request.data.get('password')
 
-    if user:
-        refresh = RefreshToken.for_user(user)
-
+    # ✅ Validate input
+    if not username or not password:
         return Response({
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-            "username":user.username,
-            "is_admin": user.is_superuser   # 🔥 IMPORTANT
-        })
+            "error": "Username and password required"
+        }, status=400)
 
-    return Response({"error": "Invalid credentials"})
+    user = authenticate(username=username, password=password)
+
+    # ❌ If invalid user
+    if user is None:
+        return Response({
+            "error": "Invalid credentials ❌"
+        }, status=401)
+
+    # ✅ If valid user
+    refresh = RefreshToken.for_user(user)
+
+    return Response({
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
+        "username": user.username,
+        "is_admin": user.is_superuser
+    })
