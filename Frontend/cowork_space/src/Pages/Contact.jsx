@@ -1,6 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import "../Styles/Contact.css";
+ 
 
 function Contact() {
+  const navigate = useNavigate();
   return (
     <div className="contact-container">
 
@@ -38,10 +41,12 @@ function Contact() {
         </p>
 
         {/* BUTTON */}
-        <button className="submit-btn">
-          Get Started →
-        </button>
-
+         <button
+      className="submit-btn"
+      onClick={() => navigate("/")}
+    >
+      Get Started →
+    </button>
       </div>
 
     </div>

@@ -75,7 +75,7 @@ const handleScroll = (city) => {
           onMouseEnter={() => setShowWorkspace(true)}
           onMouseLeave={() => setShowWorkspace(false)}
         >
-          Workspaces ▼
+          Workspaces(Our Gallery) ▼
           {showWorkspace && (
             <div className={styles.dropdownMenu}>
              <p onClick={() => navigate("/workspaces/office")}>Office Spaces</p>
@@ -91,7 +91,7 @@ const handleScroll = (city) => {
   onMouseEnter={() => setShowCities(true)}
   onMouseLeave={() => setShowCities(false)}
 >
-  Cities ▼
+  Cities(Locations) ▼
 
   {showCities && (
     <div className={styles.dropdownMenu}>

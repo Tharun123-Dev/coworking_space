@@ -61,7 +61,7 @@ function ReviewWidget() {
 
   return (
     <>
-      {/* 💬 FLOATING BUTTON */}
+      {/*  FLOATING BUTTON */}
       <div className="review-btn" onClick={() => setOpen(!open)}>
         💬
       </div>

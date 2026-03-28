@@ -152,7 +152,7 @@ const handleSubmit = (e) => {
       {/* WORKSPACE CARDS */}
       <section className={styles.workspacesSection}>
         <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>Featured Workspaces</h2>
+          <h2 className={styles.sectionTitle}>Discover Workspaces by City</h2>
           <div className={styles.grid}>
             {filteredData.length > 0 ? (
               filteredData.map((item) => (
@@ -251,7 +251,7 @@ const handleSubmit = (e) => {
               ))
             ) : (
               <div className={styles.noData}>
-                <h2>No Workspaces Found</h2>
+                <h2>No Workspaces Found(Wait a Minute..! Its Loading Sometimes....)</h2>
                 <p>Try different search terms</p>
               </div>
             )}

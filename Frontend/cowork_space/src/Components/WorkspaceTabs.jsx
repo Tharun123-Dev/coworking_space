@@ -18,7 +18,7 @@ function WorkspaceTabs() {
 
   return (
     <div className="workspaces-container">
-      <h2 className="main-title">Stylish workspaces </h2>
+      <h2 className="main-title">Choose from premium spaces designed for productivity and comfort </h2>
 
       {/* TABS */}
       <div className="tabs-container">
