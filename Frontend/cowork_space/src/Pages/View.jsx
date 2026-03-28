@@ -21,10 +21,10 @@ const View = () => {
 
       {/*Image Gallery */}
       <div className="gallery">
-        <img src="https://source.unsplash.com/600x400/?office" alt="" />
-        <img src="https://source.unsplash.com/600x400/?coworking" alt="" />
-        <img src="https://source.unsplash.com/600x400/?workspace" alt="" />
-        <img src="https://source.unsplash.com/600x400/?meeting-room" alt="" />
+        <img src="view2.jpg" alt="" />
+        <img src="view1.jpg" alt="" />
+        <img src="view3.avif" alt="" />
+        <img src="view4.avif" alt="" />
       </div>
 
       {/* Map */}
