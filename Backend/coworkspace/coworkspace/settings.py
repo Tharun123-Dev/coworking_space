@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'workspaces',
     'bookings',
     'aibased',
+    'reviews',
 
 ]
 
@@ -61,15 +62,15 @@ CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = False
 
 CORS_ALLOWED_ORIGINS = [
-    # "http://localhost:5173",
-   "https://coworkingspace-xi.vercel.app/",
+    "http://localhost:5173",
+#    "https://coworkingspace-xi.vercel.app/",
     
     
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-    # "http://localhost:5173",
-    "https://coworkingspace-xi.vercel.app/",
+    "http://localhost:5173",
+    # "https://coworkingspace-xi.vercel.app/",
     
 ]
 CORS_ALLOW_ALL_ORIGINS = True

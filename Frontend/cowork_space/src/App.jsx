@@ -21,6 +21,9 @@ import FooterCarousel from "./Pages/FooterCarousel";
 
 import AISeats from "./Components/AISeats";
 import View from "./Pages/View";
+import Reviews from "./Pages/Reviews";
+import AddReview from "./Pages/AddReview"
+
 
 
 function App() {
@@ -49,7 +52,8 @@ function App() {
       <Cities/>
        <AISeats/>
        
-
+          <Reviews/>
+          <AddReview/>
           <FooterCarousel/>
       <Footer/>
   

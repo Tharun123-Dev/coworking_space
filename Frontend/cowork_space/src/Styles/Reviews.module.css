@@ -1,0 +1,206 @@
+/* CoworkPage.module.css - LIGHT CLEAN VERSION 🌤️ */
+
+.page {
+  height: 100vh;
+  width: 90%;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #f5f7fa, #e4ecf7);
+  color: #1a1a1a;
+  border: 2px solid black;
+  margin: auto;
+}
+
+/* Soft Background Effects */
+.gradientBg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.gradientLayer1 {
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle, rgba(0,123,255,0.1), transparent 60%);
+  animation: rotate 30s linear infinite;
+}
+
+.gradientLayer2 {
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  background: linear-gradient(45deg, #a1c4fd, #c2e9fb);
+  filter: blur(80px);
+  opacity: 0.5;
+}
+
+/* Purpose Section */
+.purposeSection {
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.purposeTitle {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  margin-bottom: 0.8rem;
+  color: #2c3e50;
+}
+
+.purposeText {
+  font-size: 1rem;
+  max-width: 500px;
+  margin: auto;
+  opacity: 0.8;
+}
+
+/* Main Layout */
+.mainContainer {
+  display: flex;
+  height: calc(100vh - 120px);
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* Columns (Glass Style) */
+.leftColumn, .rightColumn {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  padding: 1.2rem;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* Titles */
+.columnTitle {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  color: #fff7f7;
+  background-color: #2c3e50;
+}
+
+/* Reviews */
+.reviewsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reviewCard {
+  padding: 1rem;
+  border-radius: 12px;
+  background: #ffffff;
+  transition: 0.3s;
+  border: 1px solid #eee;
+}
+
+.reviewCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.reviewCard p {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.author {
+  font-size: 0.8rem;
+  color: #007bff;
+}
+
+/* FAQ */
+.faqsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.faqItem {
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #eee;
+  overflow: hidden;
+}
+
+.faqQuestion {
+  padding: 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #333;
+  font-weight: 500;
+}
+
+.faqQuestion:hover {
+  background: #f5f7fa;
+}
+
+/* Icon */
+.icon {
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  background: #007bff;
+  color: #fff;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Answer */
+.faqAnswer {
+  max-height: 0;
+  overflow: hidden;
+  transition: 0.3s ease;
+  background: #fafafa;
+}
+
+.faqAnswer.open {
+  max-height: 150px;
+  padding: 0 1rem 1rem;
+}
+
+.faqAnswer p {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Animations */
+@keyframes rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .mainContainer {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .leftColumn, .rightColumn {
+    height: 45vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .leftColumn, .rightColumn {
+    height: 40vh;
+    padding: 1rem;
+  }
+
+  .purposeTitle {
+    font-size: 1.5rem;
+  }
+}

@@ -7,6 +7,7 @@ urlpatterns = [
     path('api/workspaces/', include('workspaces.urls')),
     path('api/cart/', include('bookings.urls')),
     path('api/', include('aibased.urls')),
+    path('api/reviews/', include('reviews.urls')),
 
    
 
