@@ -65,12 +65,20 @@ const handleScroll = (city) => {
       <h2 className={styles.logo} onClick={() => navigate("/")}>
         CoWork
       </h2>
+   
 
       {/* DESKTOP MENU */}
       <div className={styles.menu}>
-
+                  <p
+      className={styles.menuItem}
+      onClick={() => navigate("/")}
+      style={{ cursor: "pointer" }}
+    >
+      Home
+    </p>
         {/* WORKSPACES */}
         <div 
+          
           className={styles.dropdown}
           onMouseEnter={() => setShowWorkspace(true)}
           onMouseLeave={() => setShowWorkspace(false)}
