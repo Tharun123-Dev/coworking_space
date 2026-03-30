@@ -1,12 +1,14 @@
 # 🚀 Smart Co-Working Space Booking Platform
 
-![Project Banner](https://images.unsplash.com/photo-1524758631624-e2822e304c36)
+<img width="1919" height="906" alt="image" src="https://github.com/user-attachments/assets/d4e8a4f3-13d4-4337-b85b-8ad3e2f7be43" />
+
 
 ## 📌 Overview
 A full-stack **Co-Working Space Booking Platform** built with **React.js and Django REST Framework**.  
 This application allows users to explore, filter, and book workspaces seamlessly with a modern UI and smart backend system.
 
 ---
+Live Demo: https://coworkingspace-one.vercel.app/
 
 ## ✨ Features
 
