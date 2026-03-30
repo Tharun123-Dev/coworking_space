@@ -2,36 +2,59 @@ import SearchBar from "../Components/SearchBar";
 import { useState, useEffect } from "react";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/Home.module.css";
-import emailjs from "@emailjs/browser";
+// import emailjs from "@emailjs/browser";
 
 function Home() {
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
+
 //email purpose
 const [form, setForm] = useState({
   name: "",
   email: "",
   phone: "",
-  city: ""
+  city: "",
+  message:""
 });
 
 const handleChange = (e) => {
   setForm({ ...form, [e.target.name]: e.target.value });
 };
+console.log(form);
 
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
 
-  emailjs.send(
-    import.meta.env.VITE_EMAILJS_SERVICE_ID,
-    import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-    form,
-    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-  )
-  .then(() => alert("Sent"))
-  .catch(() => alert("Error"));
+  if (!form.name || !form.email) {
+    alert("Name & Email required ❌");
+    return;
+  }
+
+  try {
+    await axiosInstance.post("leads/add/", form);
+
+    alert("Request submitted 🎉");
+
+    setForm({
+      name: "",
+      email: "",
+      phone: "",
+      city: "",
+      message: ""
+    });
+
+  } catch (err) {
+    if(console.log(err.response?.data)){
+    alert(err.response.data.error)}
+        else if(err.response.data.email) {
+    alert("Email already exists");
+  }
+    else {
+    alert("some thing went wrong");
+  }
+};
 };
   //  Fetch backend data
   useEffect(() => {
@@ -125,21 +148,41 @@ const handleSubmit = (e) => {
   <div className={styles.heroForm}>
     <h3>Get in Touch</h3>
 
-    <input name="name" placeholder="Name" onChange={handleChange} />
-    <input name="Enter Valid Email" placeholder="Email" onChange={handleChange} />
-    <input name="phone" placeholder="Phone" onChange={handleChange} />
+    <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
+    <input name="email" placeholder="Email" value={form.email} onChange={handleChange} />
+    <input name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
 
-    <select name="city" onChange={handleChange}>
+    <select name="city" value={form.city} onChange={handleChange}>
       <option value="">Select City</option>
       <option>Hyderabad</option>
       <option>Bangalore</option>
       <option>Delhi</option>
     </select>
+   <textarea
+  name="message"
+  value={form.message}
+  placeholder="Your message"
+  onChange={handleChange}
+  style={{
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: "10px",
+    border: "1px solid #ccc",
+    outline: "none",
+    fontSize: "12px",
+    fontFamily: "Arial, sans-serif",
+    resize: "none",
+    minHeight: "80px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    transition: "all 0.3s ease"
+  }}
+></textarea>
 
     <button type="submit">
       Request a Callback
     </button>
   </div>
+  
 </form>
         </div>
       </section>

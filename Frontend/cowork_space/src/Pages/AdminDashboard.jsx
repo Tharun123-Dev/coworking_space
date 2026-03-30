@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/AdminDashboard.module.css";
+import { useNavigate } from "react-router-dom";
 
 function AdminDashboard() {
+
+   const navigate = useNavigate();
 
   // ================= OLD WORKSPACE =================
   const [workspaces, setWorkspaces] = useState([]);
@@ -129,9 +132,28 @@ function AdminDashboard() {
     <div className={styles.container}>
 
       <h1>Admin Panel</h1>
+<div className="btnWrapper">
+  
+  <button
+    className="btnBox leftBtn"
+    onClick={() => navigate("/admin-leads")}
+  >
+    View Leads
+  </button>
+
+  <button
+    className="btnBox rightBtn"
+    onClick={() => navigate("/admin-users")}
+  >
+    Manage Users
+  </button>
+
+</div>
 
       {/* ================= WORKSPACE SECTION ================= */}
       <h2>Add Workspace</h2>
+
+
 
       <div className={styles.form}>
         <input placeholder="Name"
@@ -190,6 +212,8 @@ function AdminDashboard() {
           ))}
         </tbody>
       </table>
+
+
 
       {/* ================= CATEGORY SECTION ================= */}
 

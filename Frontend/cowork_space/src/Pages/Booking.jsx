@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 function Booking() {
 
   const location = useLocation();
-  const navigate = useNavigate();
+ 
 
   const data = location.state;
   const isMultiple=data?.items ? true : false;

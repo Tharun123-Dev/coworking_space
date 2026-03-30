@@ -24,6 +24,8 @@ import View from "./Pages/View";
 import Reviews from "./Pages/Reviews";
 import AddReview from "./Pages/AddReview"
 import ScrollToTop from "./Pages/ScrollToTop";
+import AdminLeads from "./Pages/Leads";
+import AdminUsers from "./Pages/AdminUsers";
 
 
 
@@ -46,6 +48,9 @@ function App() {
         <Route path="/amenities" element={<Amenities />} />
         <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
         <Route path="/recommend" element={<AISeats/>} />
+          <Route path="/admin-leads" element={<AdminLeads/>} />
+                    <Route path="/admin-users" element={<AdminUsers/>} />
+
       </Routes>
       <Feature/>
       <WorkspaceTabs/>

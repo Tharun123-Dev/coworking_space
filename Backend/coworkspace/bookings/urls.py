@@ -7,4 +7,5 @@ urlpatterns = [
     path('remove/<int:id>/', remove_item),
     path('create/', create_booking),
     path("clear/", clear_cart),
+
 ]
