@@ -2,19 +2,19 @@
 
 <img width="1919" height="906" alt="image" src="https://github.com/user-attachments/assets/d4e8a4f3-13d4-4337-b85b-8ad3e2f7be43" />
 
-
 ## 📌 Overview
 A full-stack **Co-Working Space Booking Platform** built with **React.js and Django REST Framework**.  
 This application allows users to explore, filter, and book workspaces seamlessly with a modern UI and smart backend system.
 
----
 Live Demo: https://coworkingspace-one.vercel.app/
+
+---
 
 ## ✨ Features
 
 ### 🖥️ Frontend (React)
-- Responsive **Navbar with Hamburger Menu (3-line toggle)**
-- Clean UI using **Bootstrap + Custom CSS**
+- Responsive Navbar with Hamburger Menu
+- Clean UI using Bootstrap + Custom CSS
 - Cities & Locations browsing
 - Workspace gallery view
 - Smooth navigation and animations
@@ -34,6 +34,24 @@ Live Demo: https://coworkingspace-one.vercel.app/
 
 ---
 
+### 👥 User Management (Admin Panel)
+- View all registered users
+- Create / Update / Delete users
+- Assign admin roles (superuser access)
+- Track total user count
+- Manage user permissions securely
+
+---
+
+### 📊 Leads Management System
+- Capture user inquiries (leads)
+- Store contact details and messages
+- Admin dashboard to view all leads
+- Lead tracking for business insights
+- Useful for sales follow-ups and conversions
+
+---
+
 ### 🛒 Booking System
 - Add multiple workspaces to cart
 - Dynamic total price calculation
@@ -48,6 +66,7 @@ Live Demo: https://coworkingspace-one.vercel.app/
 - Secure login & registration
 - Django Authentication system
 - Protected API endpoints
+- Role-based access control
 
 ---
 
@@ -65,6 +84,13 @@ Live Demo: https://coworkingspace-one.vercel.app/
 ### 📩 Notifications
 - Request callback feature
 - Email notification system
+
+---
+
+### ⭐ Reviews
+Implemented a review and rating system allowing authenticated users to provide feedback on workspaces.
+
+<img width="459" height="919" alt="Screenshot" src="https://github.com/user-attachments/assets/5899db36-207e-4a26-8f0e-565cbd62f043" />
 
 ---
 
@@ -91,19 +117,19 @@ Live Demo: https://coworkingspace-one.vercel.app/
 - JWT Authentication
 
 ### Database
-- Mysql
-- Aiven(Cloud)
-- ### Vercel
-- Render(Backend)
-- Vercel(Frontend)
+- MySQL
+- Aiven (Cloud)
 
-### Reviews
-Implemented a review and rating system allowing authenticated users to provide feedback on workspaces.
-<img width="459" height="919" alt="Screenshot 2026-03-30 113611" src="https://github.com/user-attachments/assets/5899db36-207e-4a26-8f0e-565cbd62f043" />
+---
+
+## 🚀 Deployment
+- Frontend: Vercel
+- Backend: Render
 
 ---
 
 ## 📂 Project Structure
+
 co-working-platform/
 │
 ├── frontend/
@@ -119,8 +145,27 @@ co-working-platform/
 │ ├── urls/
 │ └── authentication/
 
-###📈 Future Enhancements
---Online Payment Integration
---Google Maps Integration
---Admin Analytics Dashboard
---Mobile App Version
+---
+
+## 📈 Future Enhancements
+- Online Payment Integration
+- Google Maps Integration
+- Admin Analytics Dashboard
+- Mobile App Version
+- Real-time Notifications
+- Booking Calendar UI
+- Lead Conversion Analytics
+- AI-based Smart Recommendations
+- Multi-language Support
+
+---
+
+## 🧑‍💻 Author
+Developed by Tharun Nani
+
+---
+
+## 📌 Conclusion
+This project demonstrates a complete full-stack application with real-world features including booking systems, admin dashboards, authentication, and lead management.
+
+It is designed to be scalable, user-friendly, and production-ready.
