@@ -93,6 +93,13 @@ Live Demo: https://coworkingspace-one.vercel.app/
 ### Database
 - Mysql
 - Aiven(Cloud)
+- ### Vercel
+- Render(Backend)
+- Vercel(Frontend)
+
+### Reviews
+Implemented a review and rating system allowing authenticated users to provide feedback on workspaces.
+<img width="459" height="919" alt="Screenshot 2026-03-30 113611" src="https://github.com/user-attachments/assets/5899db36-207e-4a26-8f0e-565cbd62f043" />
 
 ---
 
