@@ -18,16 +18,25 @@ function Details() {
       });
   }, []);
 
-  const handleBook = () => {
-    const token = localStorage.getItem("access");
+const handleBook = () => {
+  const token = localStorage.getItem("access");
 
-    if (!token) {
-      alert("Please login first 🔒");
-      navigate("/auth");
-    } else {
-      navigate(`/payment/${id}`);
-    }
-  };
+  //  CHECK AVAILABILITY FIRST
+  if (!data.is_available) {
+    alert("Not Available Now");
+    return;
+  }
+
+  // LOGIN CHECK
+  if (!token) {
+    alert("Please login first");
+    navigate("/auth");
+    return;
+  }
+
+  // ALLOW BOOKING
+  navigate(`/payment/${id}`);
+};
 
   if (!data) return <h2>Loading...</h2>;
 
@@ -69,8 +78,10 @@ Real-time availability ensures convenience.
     <p>Monthly: ₹{data.monthly_price}</p>
   </div>
 
-  <button className="book-btn" onClick={handleBook}>
-    Book&Pay Now
+  <button className="book-btn" onClick={handleBook}
+  disabled={!data?.is_available}
+  >
+    {data?.is_available ? "Book & PayNow" :"Not Available"}
   </button>
 
 </div>
