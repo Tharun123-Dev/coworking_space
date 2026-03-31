@@ -9,6 +9,7 @@ from .serializers import LeadSerializer
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.db import IntegrityError
+from django.contrib.auth.hashers import make_password
 
 @api_view(['POST'])
 def create_lead(request):
@@ -53,7 +54,7 @@ def get_users(request):
 
     return Response(data)
 
-from django.contrib.auth.hashers import make_password
+
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])

@@ -9,7 +9,7 @@ function AdminLeads() {
       const res = await axiosInstance.get("leads/all/");
       setLeads(res.data);
     } catch (err) {
-      alert("Only admin can view leads ❌");
+      alert("Only admin can view leads ");
     }
   };
 

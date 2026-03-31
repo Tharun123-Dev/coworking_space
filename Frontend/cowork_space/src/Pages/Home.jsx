@@ -28,7 +28,7 @@ const handleSubmit = async (e) => {
   e.preventDefault();
 
   if (!form.name || !form.email) {
-    alert("Name & Email required ❌");
+    alert("Name & Email required");
     return;
   }
 
@@ -106,7 +106,7 @@ const handleSubmit = async (e) => {
   const handleBookNow = (item) => {
     const token = localStorage.getItem("access");
     if (!token) {
-      alert("Please login first ❌");
+      alert("Please login first ");
       window.location.href = "/auth";
     } else {
       handleAddToCart(item.id);
