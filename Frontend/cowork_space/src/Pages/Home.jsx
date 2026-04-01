@@ -318,12 +318,15 @@ const handleSubmit = async (e) => {
                 </div>
               ))
             ) : (
-              <div className={styles.noData}>
-                <Reveal>
-                <h2>No Workspaces Found(Wait a Minute..! Its Loading Sometimes....)</h2>
-                </Reveal>
-                <p>Try different search terms</p>
-              </div>
+            <div className={styles.noData}>
+  <Reveal>
+    <h2 className={styles.bufferWord}>
+      Buffering
+      <span className={styles.loadingDots}></span>
+    </h2>
+  </Reveal>
+  <p className={styles.bufferText}>Please wait a moment, results are loading...</p>
+</div>
             )}
           </div>
         </div>

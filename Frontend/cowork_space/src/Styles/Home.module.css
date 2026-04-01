@@ -101,6 +101,30 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+.bufferWord {
+  display: inline-flex;
+  align-items: center;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 800;
+  color: #fff6bf;
+}
+
+.loadingDots::after {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  text-align: left;
+  animation: dotsSteps 1.4s steps(4, end) infinite;
+  color: #b7ff3c;
+}
+
+@keyframes dotsSteps {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75% { content: "..."; }
+  100% { content: ""; }
+}
 
 .stat small {
   font-size: 0.9rem;
