@@ -31,6 +31,8 @@ import BusinessSection from "./Improved/BusinessSection";
 import ContactModal from "./Improved/ContactModal";
 import AdminLeadss from "./Improved/AdminLeadss";
 import RightSpace from "./Improved/RightSpace";
+import Enterprise from "./Improved/Enterprise";
+import AdminEnterprise from "./Improved/AdminEnterprise";
 
 
 function App() {
@@ -51,11 +53,13 @@ function App() {
         <Route path="/details/:id" element={<Details openModal={setSelected} />} />
 
         <Route path="/amenities" element={<Amenities />} />
+        <Route path="/Enterprise" element={<Enterprise/>} />
         <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
         <Route path="/recommend" element={<AISeats/>} />
           <Route path="/admin-leads" element={<AdminLeads/>} />
           
           <Route path="/admin-leadss" element={<AdminLeadss/>} />
+            <Route path="/admin-Enterprise" element={<AdminEnterprise/>} />
                     <Route path="/admin-users" element={<AdminUsers/>} />
 
       </Routes>

@@ -159,6 +159,15 @@ function AdminDashboard() {
             Manage Leads
           </button>
         </R>
+
+             <R>
+          <button
+            className={`${styles.btnBox} ${styles.greenBtn}`}
+            onClick={() => navigate("/admin-Enterprise")}
+          >
+            Manage Enterprise Leads
+          </button>
+        </R>
       </div>
 
       <section className={styles.panelSection}>

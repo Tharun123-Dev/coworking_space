@@ -117,6 +117,14 @@ const handleScroll = (city) => {
     >
       Amenities
     </p>
+
+           <p
+      className={styles.menuItem}
+      onClick={() => navigate("/Enterprise")}
+      style={{ cursor: "pointer" }}
+    >
+      Enterprise
+    </p>
       </div>
 
       {/* RIGHT SIDE */}
@@ -211,7 +219,21 @@ const handleScroll = (city) => {
   </div>
 </div>
 
-            <p className={styles.mobileItem}>Enterprise</p>
+             <p
+      className={styles.menuItem}
+      onClick={() => navigate("/amenities")}
+      style={{ cursor: "pointer" }}
+    >
+      Amenities
+    </p>
+
+           <p
+      className={styles.menuItem}
+      onClick={() => navigate("/Enterprise")}
+      style={{ cursor: "pointer" }}
+    >
+      Enterprise
+    </p>
 
             {/* MOBILE RIGHT */}
             <div className={styles.mobileRight}>
