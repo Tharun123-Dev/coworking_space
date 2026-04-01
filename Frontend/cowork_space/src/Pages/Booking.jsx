@@ -1,8 +1,11 @@
 import { useState } from "react";
 import axiosInstance from "../Services/Axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import Reveal from "../Pages/Reveal"
+
 
 function Booking() {
+ 
 
   const location = useLocation();
  
@@ -58,7 +61,10 @@ const handleSubmit = async () => {
 };
 
   return (
+
+    
     <div style={styles.container}>
+      <Reveal>
       <h2>Book Workspace</h2>
 
       {isMultiple ? (
@@ -69,6 +75,7 @@ const handleSubmit = async () => {
       {!isMultiple && (
         <p>{data.location}</p>
       )}
+      </Reveal>
 
       <input 
         type="date"

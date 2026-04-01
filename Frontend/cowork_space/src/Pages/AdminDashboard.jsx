@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/AdminDashboard.module.css";
 import { useNavigate } from "react-router-dom";
-
+import R from "../Pages/Reveal"
 function AdminDashboard() {
 
    const navigate = useNavigate();
@@ -133,25 +133,36 @@ function AdminDashboard() {
 
       <h1>Admin Panel</h1>
 <div className="btnWrapper">
-  
+  <R>
   <button
     className="btnBox leftBtn"
     onClick={() => navigate("/admin-leads")}
   >
+
     View Leads
   </button>
-
+  </R>
+<R>
   <button
     className="btnBox rightBtn"
     onClick={() => navigate("/admin-users")}
   >
     Manage Users
   </button>
+  </R>
+  <R>
+    <button
+    className="btnBox rightBtn"
+    onClick={() => navigate("/admin-leadss")}
+  >
+    Manage Leads
+  </button>
+  </R>
 
 </div>
 
       {/* ================= WORKSPACE SECTION ================= */}
-      <h2>Add Workspace</h2>
+      <h1>Add Workspace</h1>
 
 
 

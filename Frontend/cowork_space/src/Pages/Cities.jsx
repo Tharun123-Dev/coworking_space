@@ -1,6 +1,7 @@
 import React from "react";
 import "../Styles/Cities.css";
 import { useNavigate } from "react-router-dom";
+import R from "../Pages/Reveal"
 
 const locations = [
   {
@@ -58,24 +59,29 @@ const Cities = () => {
 
   return (
     <div className="container" id="cities">
+      <R>
       <h2>We have Hyderabad in 8 locations of workspace</h2>
+      </R>
 
       <div className="horizontal-scroll">
         {locations.map((loc) => (
           <div key={loc.id} className="card">
 
             {/* Map */}
+            <R>
             <iframe
               src={loc.map}
               title={loc.name}
               loading="lazy"
-            ></iframe>
+            ></iframe></R>
 
             {/* Info */}
-            <h3>{loc.name}</h3>
-            <p>{loc.price}</p>
+            <R>
+            <h3>{loc.name}</h3></R>
+            <R><p>{loc.price}</p></R>
 
             {/* Updated Button */}
+            <R>
           <button
   onClick={() =>
     window.location.href = `/view?id=${loc.id}`
@@ -83,6 +89,7 @@ const Cities = () => {
 >
   View Details
 </button>
+</R>
 
           </div>
         ))}

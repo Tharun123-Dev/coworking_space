@@ -1,0 +1,108 @@
+/* CONTAINER */
+.admin-container {
+  padding: 40px;
+  background: #f5f7fb;
+  min-height: 100vh;
+}
+
+/* TITLE */
+.admin-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #222;
+}
+
+/* TABLE WRAPPER (for scroll on mobile) */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+/* TABLE */
+.leads-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+/* HEADER */
+.leads-table thead {
+  background: #2d7ef7;
+  color: white;
+}
+
+.leads-table th {
+  padding: 14px;
+  text-align: left;
+  font-size: 14px;
+}
+
+/* ROWS */
+.leads-table td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+/* HOVER EFFECT */
+.leads-table tbody tr:hover {
+  background: #f9fbff;
+}
+
+/* STATUS DROPDOWN */
+.status-dropdown {
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  background: white;
+}
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* CALL BUTTON */
+.call-btn {
+  background: #28a745;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+/* EMAIL BUTTON */
+.email-btn {
+  background: #ff9800;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+
+  .admin-container {
+    padding: 20px;
+  }
+
+  .admin-title {
+    font-size: 22px;
+  }
+
+  .leads-table th,
+  .leads-table td {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .status-dropdown {
+    width: 100%;
+  }
+}

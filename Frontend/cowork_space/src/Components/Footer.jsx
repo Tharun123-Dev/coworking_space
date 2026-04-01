@@ -1,8 +1,9 @@
 import styles from "../Styles/Footer.module.css";
-
+import Reveal from "../Pages/Reveal"
 function Footer() {
   return (
     <footer className={styles.footer}>
+      <Reveal>
       {/*  Background Pattern */}
       <div className={styles.bgPattern}></div>
       
@@ -11,14 +12,20 @@ function Footer() {
         {/* Logo & Co-working Description */}
         <div className={styles.logoSection}>
           <div className={styles.logo}>
+            <Reveal>
            <h1 style={{ color: "#f97316" }}>Co Work</h1>
+           </Reveal>
             <div className={styles.logoGlow}></div>
           </div>
+          <Reveal>
           <p>Premium co-working spaces across 50+ cities in India. Flexible daily passes, monthly desks & meeting rooms for freelancers, startups & enterprises.</p>
+          </Reveal>
           <div className={styles.socialIcons}>
+           
             <a href="https://facebook.com" target="_blank" rel="noopener" className={styles.icon} title="Facebook">
               <span>📘</span>
             </a>
+          
             <a href="https://instagram.com" target="_blank" rel="noopener" className={styles.icon} title="Instagram">
               <span>📷</span>
             </a>
@@ -28,6 +35,7 @@ function Footer() {
             <a href="https://linkedin.com" target="_blank" rel="noopener" className={styles.icon} title="LinkedIn">
               <span>💼</span>
             </a>
+             
           </div>
         </div>
 
@@ -35,11 +43,13 @@ function Footer() {
         <div className={styles.linkSection}>
           <h4>Our Cities</h4>
           <ul>
+            <Reveal>
             <li><a href="#">Hyderabad</a></li>
             <li><a href="#">Bangalore</a></li>
             <li><a href="#">Mumbai</a></li>
             <li><a href="#">Delhi NCR</a></li>
             <li><a href="#">Chennai</a></li>
+            </Reveal>
           </ul>
         </div>
 
@@ -47,33 +57,43 @@ function Footer() {
         <div className={styles.linkSection}>
           <h4>Services</h4>
           <ul>
+            <Reveal>
             <li><a href="#">Hot Desk</a></li>
             <li><a href="#">Dedicated Desk</a></li>
             <li><a href="#">Private Office</a></li>
             <li><a href="#">Meeting Rooms</a></li>
             <li><a href="#">Virtual Office</a></li>
+            </Reveal>
           </ul>
         </div>
 
         {/*  Company */}
         <div className={styles.linkSection}>
+          <Reveal>
           <h4>Company</h4>
+          </Reveal>
           <ul>
+           
             <li><a href="#">About Us</a></li>
             <li><a href="#">Careers</a></li>
             <li><a href="#">Blog</a></li>
             <li><a href="#">Press</a></li>
+           
           </ul>
         </div>
 
         {/* Contact */}
         <div className={styles.contactSection}>
+          <Reveal>
           <h4>Get In Touch</h4>
+          </Reveal>
           <ul>
+            <Reveal>
             <li>📍 Hyderabad, Telangana 500001</li>
             <li>📞 +91 98765 43210</li>
             <li>✉️ hello@cowork.co</li>
             <li>🕒 Mon-Sat 9AM-10PM</li>
+            </Reveal>
           </ul>
         </div>
       </div>
@@ -81,14 +101,19 @@ function Footer() {
       {/* Copyright Bottom Bar */}
       <div className={styles.bottomBar}>
         <div className={styles.bottomContainer}>
+          <Reveal>
           <p>&copy; 2026 WorkHub Co-working Spaces Pvt Ltd. All rights reserved. GST: 36ABCDE1234F1Z5</p>
+          </Reveal>
           <div className={styles.privacyLinks}>
+           
             <a href="#">Privacy Policy</a> | 
             <a href="#">Terms of Service</a> | 
             <a href="#">Cookie Policy</a>
+           
           </div>
         </div>
       </div>
+      </Reveal>
     </footer>
   );
 }

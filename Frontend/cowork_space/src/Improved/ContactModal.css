@@ -1,0 +1,108 @@
+/* FULL SCREEN OVERLAY */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+/* BACK BUTTON */
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  cursor: pointer;
+  z-index: 1100;
+}
+
+/* CONTAINER */
+.contact-container {
+  display: flex;
+  padding: 80px;
+  gap: 50px;
+}
+
+/* LEFT */
+.contact-left {
+  flex: 1;
+}
+
+.contact-left h2 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.contact-left p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* RIGHT FORM */
+.contact-right {
+  flex: 1;
+  background: #0f4a45;
+  padding: 40px;
+  border-radius: 10px;
+  color: white;
+}
+
+.contact-right h3 {
+  margin-bottom: 20px;
+}
+
+.selected-text {
+  color: #ffd700;
+  margin-bottom: 10px;
+}
+
+/* FORM */
+.contact-right form {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-right label {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.contact-right input,
+.contact-right textarea {
+  margin-bottom: 15px;
+  padding: 12px;
+  border-radius: 5px;
+  border: none;
+}
+
+/* TEAM SIZE */
+.team-size {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.team-size span {
+  background: white;
+  color: black;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+/* BUTTON */
+.contact-right button {
+  background: #2d7ef7;
+  padding: 10px;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}

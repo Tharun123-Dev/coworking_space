@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "../Styles/SearchBar.module.css";
-
+import Reveal from "../Pages/Reveal"
 function SearchBar({ onSearch }) {
   const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
@@ -31,7 +31,7 @@ function SearchBar({ onSearch }) {
         <option value="Chennai">Chennai</option>
         <option value="Pune">Pune</option>
       </select> */}
-
+   
       <input
         type="text"
         placeholder="Search location (e.g. Madhapur, Hitech City...)"
@@ -39,6 +39,7 @@ function SearchBar({ onSearch }) {
         value={query}
         onChange={handleInputChange}
       />
+     
     </div>
   );
 }

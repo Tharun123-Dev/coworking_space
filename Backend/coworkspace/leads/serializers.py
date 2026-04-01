@@ -5,3 +5,11 @@ class LeadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lead
         fields = '__all__'
+
+from rest_framework import serializers
+from .models import Leadss
+
+class LeadssSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Leadss
+        fields = '__all__'

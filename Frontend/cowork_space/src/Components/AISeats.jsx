@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import "../Styles/AISeats.css";
-
+import Reveal from "../Pages/Reveal"
 function Recommendations() {
   const [form, setForm] = useState({
     city: "",
@@ -31,8 +31,8 @@ function Recommendations() {
 
   const handleSubmit = () => {
     axios
-      .post("https://coworking-space-3.onrender.com/api/recommend/", form)
-      // .post("http://127.0.0.1:8000/api/recommend/", form)
+      // .post("https://coworking-space-3.onrender.com/api/recommend/", form)
+      .post("http://127.0.0.1:8000/api/recommend/", form)
       .then((res) => {
         setResults(res.data);
         // Clear all fields after successful submit
@@ -51,17 +51,20 @@ function Recommendations() {
 
   return (
     <div className="contain">
+      <Reveal>
       <h2>Find Your Workspace (🤖 AI Recommended)</h2>
-
+</Reveal>
+ <Reveal>
       <input name="city" placeholder="City(Must use Hyderabad)" onChange={handleChange} value={form.city} />
       <input name="min_price" placeholder="Min Price" onChange={handleChange} value={form.min_price} />
       <input name="max_price" placeholder="Max Price" onChange={handleChange} value={form.max_price} />
       <input name="rating" placeholder="Rating" onChange={handleChange} value={form.rating} />
       <input name="workspace_type" placeholder="Type(Eg.Fixed deskHotdesk....)" onChange={handleChange} value={form.workspace_type} />
       <input name="capacity" placeholder="Capacity" onChange={handleChange} value={form.capacity} />
-
+</Reveal>
       <div>
         <label>
+           <Reveal>
           <input
             type="checkbox"
             value="wifi"
@@ -69,8 +72,11 @@ function Recommendations() {
             onChange={handleAmenities}
           />{" "}
           WiFi
+          </Reveal>
         </label>
+
         <label>
+          <Reveal>
           <input
             type="checkbox"
             value="ac"
@@ -78,8 +84,10 @@ function Recommendations() {
             onChange={handleAmenities}
           />{" "}
           AC
+          </Reveal>
         </label>
         <label>
+          <Reveal>
           <input
             type="checkbox"
             value="parking"
@@ -87,6 +95,9 @@ function Recommendations() {
             onChange={handleAmenities}
           />{" "}
           Parking
+          </Reveal>
+          
+
         </label>
       </div>
 

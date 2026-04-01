@@ -14,6 +14,7 @@ import Discount from "./Pages/Discount";
 import WorkspaceFeature from "./Pages/WorkspaceFeature";
 import Contact from "./Pages/Contact";
 import Cities from "./Pages/Cities";
+import { useState } from "react";
 
 import Amenities from "./Pages/Amenities";
 import WorkspaceGallery from "./Pages/WorkspaceGallery"
@@ -26,10 +27,13 @@ import AddReview from "./Pages/AddReview"
 import ScrollToTop from "./Pages/ScrollToTop";
 import AdminLeads from "./Pages/Leads";
 import AdminUsers from "./Pages/AdminUsers";
-
+import BusinessSection from "./Improved/BusinessSection";
+import ContactModal from "./Improved/ContactModal";
+import AdminLeadss from "./Improved/AdminLeadss";
 
 
 function App() {
+  const [selected, setSelected] = useState(null);
   return (
     <BrowserRouter>
       <Navbar /> 
@@ -49,11 +53,15 @@ function App() {
         <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
         <Route path="/recommend" element={<AISeats/>} />
           <Route path="/admin-leads" element={<AdminLeads/>} />
+          
+          <Route path="/admin-leadss" element={<AdminLeadss/>} />
                     <Route path="/admin-users" element={<AdminUsers/>} />
 
       </Routes>
       <Feature/>
       <WorkspaceTabs/>
+      <BusinessSection openModal={setSelected} />
+      <ContactModal selected={selected} setSelected={setSelected} />
       <WorkspaceFeature/>
       <Cities/>
        <AISeats/>

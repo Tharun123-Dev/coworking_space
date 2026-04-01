@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../Services/Axios";
 import "../Styles/AddReview.css";
+import R from "../Pages/Reveal"
 
 function ReviewWidget() {
   const [open, setOpen] = useState(false);
@@ -62,17 +63,22 @@ function ReviewWidget() {
   return (
     <>
       {/*  FLOATING BUTTON */}
+      
       <div className="review-btn" onClick={() => setOpen(!open)}>
         💬
       </div>
+   
 
       {/* PANEL */}
       <div className={`review-panel ${open ? "open" : ""}`}>
         
         <div className="review-header">
+          <R>
           <h3>⭐ Reviews</h3>
+          </R>
           <span onClick={() => setOpen(false)}>✖</span>
         </div>
+        
 
         {/* FORM */}
         <div className="review-form">
@@ -104,13 +110,20 @@ function ReviewWidget() {
 
         {/* REVIEWS */}
         <div className="review-list">
+
           {reviews.length === 0 ? (
+            
             <p>No reviews yet</p>
           ) : (
             reviews.map((r) => (
               <div key={r.id} className="review-card">
+                <R>
                 <h4>👤 {r.username}</h4>
+                </R>
+                <R>
                 <p className="stars">{"⭐".repeat(r.rating)}</p>
+                
+</R>
                 <p>{r.comment}</p>
               </div>
             ))

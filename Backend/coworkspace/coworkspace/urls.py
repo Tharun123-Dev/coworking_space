@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/', include('aibased.urls')),
     path('api/reviews/', include('reviews.urls')),
     path('api/leads/', include('leads.urls')),
+   
     
 
    

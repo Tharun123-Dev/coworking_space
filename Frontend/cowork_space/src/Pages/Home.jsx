@@ -2,6 +2,7 @@ import SearchBar from "../Components/SearchBar";
 import { useState, useEffect } from "react";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/Home.module.css";
+import Reveal from "../Pages/Reveal"
 // import emailjs from "@emailjs/browser";
 
 function Home() {
@@ -123,12 +124,15 @@ const handleSubmit = async (e) => {
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div className={styles.heroLeft}>
+            <Reveal>
             <h1 className={styles.heroTitle}>
               Explore India's Finest <span>Coworking Spaces</span>
             </h1>
             <p className={styles.heroSubtitle}>
               Flexible offices for startups, teams & enterprises
             </p>
+            </Reveal>
+
             <div className={styles.heroStats}>
               <div className={styles.stat}>
                 <span>500+</span>
@@ -143,9 +147,14 @@ const handleSubmit = async (e) => {
                 <small>Happy Users</small>
               </div>
             </div>
+ 
           </div>
+           <Reveal>
 <form onSubmit={handleSubmit}>
+
   <div className={styles.heroForm}>
+   
+
     <h3>Get in Touch</h3>
 
     <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
@@ -181,11 +190,14 @@ const handleSubmit = async (e) => {
     <button type="submit">
       Request a Callback
     </button>
+    
   </div>
   
 </form>
+  </Reveal>
         </div>
       </section>
+      
 
       {/* SEARCH BAR */}
       <section className={styles.searchSection}>
@@ -205,20 +217,28 @@ const handleSubmit = async (e) => {
                   onClick={() => console.log('View details', item.id)}
                 >
                   <div className={styles.cardImageContainer}>
+                    <Reveal>
                     <img 
                       src={item.image || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400"} 
                       alt={item.name}
                       className={styles.cardImage}
                     />
+                    </Reveal>
                     <div className={styles.rating}>
                       ★ {item.rating || 4.8} (120)
                     </div>
                   </div>
 
                   <div className={styles.cardContent}>
+                    <Reveal>
                     <h3 className={styles.cardTitle}>{item.name}</h3>
+                    </Reveal>
+                    <Reveal>
                     <p className={styles.cardLocation}>{item.location}</p>
+                    </Reveal>
+                    <Reveal>
                     <p className={styles.cardCity}>{item.city}</p>
+                    </Reveal>
                     
                     <div className={styles.cardPrice}>
                       <span className={styles.price}>₹{item.price}</span>
@@ -232,12 +252,14 @@ const handleSubmit = async (e) => {
     <div className={styles.container}>
       
       {/* BUTTON */}
+      <Reveal>
       <button
         className={styles.btnSecondary}
         onClick={() => setShowInfo(true)}
       >
         Know More
       </button>
+      </Reveal>
 
       {/* POPUP */}
       {showInfo && (
@@ -245,15 +267,19 @@ const handleSubmit = async (e) => {
           <div className={styles.popupBox}>
             
             {/* BACK BUTTON */}
+            <Reveal>
             <button
               className={styles.backBtn}
               onClick={() => setShowInfo(false)}
             >
               ← Back
             </button>
+            </Reveal>
 
             {/* CONTENT */}
+            <Reveal>
             <h2>Workspace Details</h2>
+            </Reveal>
             <p>
               Discover premium coworking spaces designed for productivity,
               collaboration, and comfort. Enjoy high-speed internet, modern
@@ -277,7 +303,7 @@ const handleSubmit = async (e) => {
 
 
 
-
+<Reveal>
                     
                       <button 
                         className={styles.btnPrimary}
@@ -288,13 +314,16 @@ const handleSubmit = async (e) => {
                       >
                         Book Now
                       </button>
+                      </Reveal>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
               <div className={styles.noData}>
+                <Reveal>
                 <h2>No Workspaces Found(Wait a Minute..! Its Loading Sometimes....)</h2>
+                </Reveal>
                 <p>Try different search terms</p>
               </div>
             )}

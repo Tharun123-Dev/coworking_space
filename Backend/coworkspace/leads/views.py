@@ -91,3 +91,19 @@ def update_user(request, id):
     user.save()
 
     return Response({"message": "User updated successfully"})
+from rest_framework import viewsets
+from .models import Leadss
+from .serializers import LeadssSerializer
+
+class LeadViewSet(viewsets.ModelViewSet):
+    queryset = Leadss.objects.all().order_by('-created_at')
+    serializer_class = LeadssSerializer
+
+from django.core.mail import send_mail
+
+send_mail(
+    "New Lead Received",
+    f"New lead from {Leadss.name}",
+    "your_email@gmail.com",
+    ["admin@gmail.com"],
+)

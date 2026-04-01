@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../Styles/WorkspaceFeature.css";
 import { useNavigate } from "react-router-dom";
+import Reveal from "../Pages/Reveal"
 
 const data = [
   {
@@ -41,13 +42,17 @@ function WorkspaceFeature() {
 
   return (
     <div className="wf-container">
-
+  
       {/* LEFT */}
       <div className="wf-left">
+        <Reveal>
         <h1>Customize your office space</h1>
+        
+      
         <p>
           Tailor your workspace to reflect your unique style and workflow.
         </p>
+        </Reveal>
 
         {data.map((item, i) => (
           <div
@@ -56,11 +61,13 @@ function WorkspaceFeature() {
             onClick={() => setIndex(i)}
           >
             <span className="number">0{item.id}</span>
-
+            <Reveal>
             <div className="wf-text">
               <h3>{item.title}</h3>
               <p>{item.desc}</p>
             </div>
+            </Reveal>
+           
           </div>
         ))}
 
@@ -72,11 +79,14 @@ function WorkspaceFeature() {
 >
   Contact Us →
 </button>
+
       </div>
 
       {/* RIGHT */}
       <div className="wf-right">
+        <Reveal>
         <img src={data[index].image} alt="workspace" />
+        </Reveal>
 
         <div className="wf-arrows">
           <button onClick={() => setIndex(index === 0 ? data.length - 1 : index - 1)}>←</button>
