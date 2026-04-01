@@ -302,8 +302,6 @@ const handleSubmit = async (e) => {
 
 
 
-
-<Reveal>
                     
                       <button 
                         className={styles.btnPrimary}
@@ -314,7 +312,7 @@ const handleSubmit = async (e) => {
                       >
                         Book Now
                       </button>
-                      </Reveal>
+                    
                     </div>
                   </div>
                 </div>

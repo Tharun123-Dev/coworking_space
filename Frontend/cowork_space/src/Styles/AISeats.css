@@ -1,231 +1,296 @@
-/* AI‑chatbox container (no body styles) */
 .contain {
-  max-width: 1100px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: radial-gradient(circle at 50% 70%, rgba(30, 15, 90, 0.4), #030014);
-  border-radius: 1.5rem;
-  border: 1px solid rgba(128, 90, 255, 0.3);
-  box-shadow:
-    0 0 20px rgba(128, 90, 255, 0.2),
-    0 0 40px rgba(128, 90, 255, 0.15);
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.contain:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 0 25px rgba(128, 90, 255, 0.3),
-    0 0 60px rgba(128, 90, 255, 0.2);
-}
-
-/* AI‑title with neon gradient */
-.contain h2 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 1.5rem;
-  background: linear-gradient(90deg, #6a11cb, #2575fc, #00c9ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 0 10px rgba(106, 17, 203, 0.3);
-}
-
-/* Input fields: AI terminal style */
-.contain input {
   width: 100%;
-  max-width: 100%;
-  padding: 0.8rem 1rem;
-  margin: 0.5rem 0;
-  border-radius: 0.8rem;
-  border: 1px solid rgba(128, 90, 255, 0.4);
-  background: rgba(20, 15, 50, 0.6);
-  color: #e0e0ff;
-  font-size: 0.95rem;
-  outline: none;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  min-height: 100vh;
+  padding: 80px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background:
+    radial-gradient(circle at top left, rgba(255, 196, 0, 0.10), transparent 22%),
+    radial-gradient(circle at bottom right, rgba(47, 111, 68, 0.10), transparent 22%),
+    linear-gradient(135deg, #f8f8f4 0%, #eef4ec 50%, #f8f5ef 100%);
 }
 
-.contain input::placeholder {
-  color: rgba(180, 160, 255, 0.5);
-}
-
-.contain input:focus {
-  border-color: #6a11cb;
-  background: rgba(25, 18, 60, 0.8);
+/* SMALL BOX */
+.ai-mini-box {
+  width: 100%;
+  max-width: 620px;
+  padding: 34px 30px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(24, 49, 38, 0.08);
   box-shadow:
-    0 0 10px rgba(106, 17, 203, 0.4),
-    inset 0 2px 8px rgba(0, 0, 0, 0.2);
+    0 24px 50px rgba(24, 49, 38, 0.10),
+    0 10px 25px rgba(255, 196, 0, 0.06);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Amenities checkboxes: smooth toggle */
-.contain label {
+.ai-mini-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 196, 0, 0.05), transparent 45%),
+    linear-gradient(315deg, rgba(47, 111, 68, 0.05), transparent 40%);
+  pointer-events: none;
+}
+
+/* HEADING */
+.ai-top-head {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.ai-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 196, 0, 0.16), rgba(47, 111, 68, 0.10));
+  color: #9b7600;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 196, 0, 0.14);
+}
+
+.ai-top-head h2 {
+  font-size: 34px;
+  line-height: 1.2;
+  color: #183126;
+  margin-bottom: 10px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+}
+
+.ai-top-head p {
+  font-size: 15px;
+  color: #65746b;
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* FORM GRID */
+.ai-form-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.ai-form-grid input {
+  width: 100%;
+  padding: 14px 15px;
+  border-radius: 14px;
+  border: 1px solid #d9e2da;
+  background: linear-gradient(180deg, #ffffff, #f9fbf8);
+  color: #183126;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 1px 2px rgba(24, 49, 38, 0.03);
+}
+
+.ai-form-grid input::placeholder {
+  color: #8b978f;
+}
+
+.ai-form-grid input:focus {
+  border-color: #2f6f44;
+  box-shadow:
+    0 0 0 4px rgba(47, 111, 68, 0.08),
+    0 10px 20px rgba(47, 111, 68, 0.06);
+  transform: translateY(-1px);
+}
+
+/* AMENITIES */
+.ai-amenities {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 22px;
+}
+
+.ai-amenities-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #183126;
+}
+
+.ai-check-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ai-check-wrap label {
+  cursor: pointer;
+}
+
+.check-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  margin-right: 1rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.contain input[type="checkbox"] {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  border: 1.5px solid rgba(128, 90, 255, 0.5);
-  background: rgba(20, 15, 50, 0.4);
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.contain input[type="checkbox"]:checked {
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  border-color: #6a11cb;
-}
-
-.contain input[type="checkbox"]:checked::after {
-  content: "✓";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-/* Submit button: glowing AI style */
-.contain button {
-  width: 100%;
-  max-width: 240px;
-  margin: 1.2rem auto;
-  display: block;
-  padding: 0.9rem 1.5rem;
-  border-radius: 50px;
-  border: none;
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  color: #fff;
-  font-size: 0.95rem;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffffff, #f4f8f2);
+  border: 1px solid rgba(24, 49, 38, 0.08);
+  color: #4b5d53;
+  font-size: 14px;
   font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.check-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(24, 49, 38, 0.06);
+  border-color: rgba(47, 111, 68, 0.16);
+}
+
+.check-chip input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #2f6f44;
   cursor: pointer;
-  box-shadow: 0 0 15px rgba(106, 17, 203, 0.5);
-  transition: all 0.3s ease;
 }
 
-.contain button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 25px rgba(106, 17, 203, 0.7);
+/* BUTTON */
+.ai-main-btn {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2f6f44 0%, #245735 55%, #c79a16 140%);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow:
+    0 16px 26px rgba(47, 111, 68, 0.18),
+    0 8px 16px rgba(199, 154, 22, 0.10);
+  transition: all 0.35s ease;
 }
 
-.contain button:active {
-  transform: translateY(0);
+.ai-main-btn:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 22px 34px rgba(47, 111, 68, 0.24),
+    0 10px 18px rgba(199, 154, 22, 0.14);
 }
 
-/* Results grid layout */
+/* RESULTS */
 .gridd {
+  width: 100%;
+  max-width: 1100px;
+  margin-top: 34px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.2rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 22px;
 }
 
-/* Individual card: AI “neural node” style */
-.gridd .cardd {
-  background: rgba(25, 18, 60, 0.7);
-  border-radius: 1rem;
-  border: 1px solid rgba(128, 90, 255, 0.3);
-  padding: 1rem;
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.25),
-    0 0 20px rgba(128, 90, 255, 0.15);
-  backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
+.cardd {
+  border-radius: 22px;
   overflow: hidden;
-}
-
-.gridd .cardd:hover {
-  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(24, 49, 38, 0.08);
   box-shadow:
-    0 6px 15px rgba(0, 0, 0, 0.35),
-    0 0 30px rgba(128, 90, 255, 0.3);
-  border-color: rgba(128, 90, 255, 0.6);
+    0 16px 28px rgba(24, 49, 38, 0.08),
+    0 8px 18px rgba(255, 196, 0, 0.05);
+  transition: all 0.35s ease;
 }
 
-/* Card inner content */
+.cardd:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 24px 38px rgba(24, 49, 38, 0.12),
+    0 12px 20px rgba(255, 196, 0, 0.08);
+}
+
 .cardd img {
   width: 100%;
-  height: 160px;
+  height: 180px;
   object-fit: cover;
-  border-radius: 0.8rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(128, 128, 255, 0.2);
+  display: block;
 }
 
 .cardd h3 {
-  margin: 0.6rem 0 0.3rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #e0e0ff;
+  margin: 16px 16px 10px;
+  color: #183126;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .cardd p {
-  margin: 0.2rem 0;
-  font-size: 0.9rem;
-  color: rgba(200, 200, 255, 0.8);
+  margin: 0 16px 10px;
+  color: #68776e;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-/* Responsive tweaks */
+.cardd p:last-child {
+  margin-bottom: 18px;
+  color: #c79a16;
+  font-weight: 700;
+}
+
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .contain {
-    margin: 1rem 1rem;
-    padding: 1.2rem;
-    border-radius: 1rem;
+    padding: 55px 16px;
   }
 
-  .contain h2 {
-    font-size: 1.5rem;
+  .ai-mini-box {
+    padding: 24px 18px;
+    border-radius: 20px;
   }
 
-  .contain input {
-    font-size: 0.9rem;
+  .ai-top-head h2 {
+    font-size: 28px;
   }
 
-  .gridd {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
+  .ai-top-head p {
+    font-size: 14px;
   }
 
-  .cardd {
-    padding: 0.8rem;
+  .ai-form-grid {
+    grid-template-columns: 1fr;
   }
 
-  .cardd img {
-    height: 140px;
-    border-radius: 0.6rem;
+  .ai-check-wrap {
+    flex-direction: column;
+  }
+
+  .check-chip {
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 
 @media (max-width: 480px) {
-  .contain h2 {
-    font-size: 1.3rem;
+  .ai-top-head h2 {
+    font-size: 24px;
   }
 
-  .contain button {
-    font-size: 0.9rem;
-    padding: 0.7rem 1.2rem;
+  .ai-badge {
+    font-size: 11px;
+    padding: 7px 13px;
   }
 
-  .cardd h3 {
-    font-size: 1rem;
-  }
-
-  .cardd p {
-    font-size: 0.85rem;
+  .cardd img {
+    height: 160px;
   }
 }

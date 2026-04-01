@@ -28,7 +28,7 @@ const BusinessSection = ({ openModal }) => {
         </Reveal>
         <Reveal>
 
-        <img src="/g8.jpg" alt="workspace" />
+        <img src="/cowork.jpg" alt="workspace" />
         </Reveal>
 
       </div>

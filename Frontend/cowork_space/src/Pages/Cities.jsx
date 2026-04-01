@@ -1,7 +1,7 @@
 import React from "react";
 import "../Styles/Cities.css";
 import { useNavigate } from "react-router-dom";
-import R from "../Pages/Reveal"
+import R from "../Pages/Reveal";
 
 const locations = [
   {
@@ -55,46 +55,49 @@ const locations = [
 ];
 
 const Cities = () => {
-  const navigate = useNavigate();   // added
+  const navigate = useNavigate();
 
   return (
-    <div className="container" id="cities">
+    <section className="container" id="cities">
       <R>
-      <h2>We have Hyderabad in 8 locations of workspace</h2>
+        <div className="cities-head">
+          <span className="cities-tag">Workspace Locations</span>
+          <h2>We have Hyderabad in 8 locations of workspace</h2>
+          <p>
+            Choose your ideal workspace across Hyderabad with flexible pricing,
+            prime access, and a comfortable professional atmosphere.
+          </p>
+        </div>
       </R>
 
       <div className="horizontal-scroll">
         {locations.map((loc) => (
           <div key={loc.id} className="card">
-
-            {/* Map */}
             <R>
-            <iframe
-              src={loc.map}
-              title={loc.name}
-              loading="lazy"
-            ></iframe></R>
+              <div className="map-wrap">
+                <iframe
+                  src={loc.map}
+                  title={loc.name}
+                  loading="lazy"
+                ></iframe>
+              </div>
+            </R>
 
-            {/* Info */}
-            <R>
-            <h3>{loc.name}</h3></R>
-            <R><p>{loc.price}</p></R>
+            <div className="card-content">
+              <R><span className="location-id">0{loc.id}</span></R>
+              <R><h3>{loc.name}</h3></R>
+              <R><p>{loc.price}</p></R>
 
-            {/* Updated Button */}
-            <R>
-          <button
-  onClick={() =>
-    window.location.href = `/view?id=${loc.id}`
-  }
->
-  View Details
-</button>
-</R>
-
+              <R>
+                <button onClick={() => navigate(`/view?id=${loc.id}`)}>
+                  View Details
+                </button>
+              </R>
+            </div>
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 

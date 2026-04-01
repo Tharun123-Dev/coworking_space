@@ -142,18 +142,18 @@ const handleScroll = (city) => {
 
      {/* LOGIN / LOGOUT */}
 {token ? (
-  <div style={styles.userBox}>
-    <span style={styles.userName}>
-       Hi, {username || "User"}
-    </span>
+<div className={styles.userBox}>
+  <span className={styles.userName}>
+    Hi, {username || "User"}
+  </span>
 
-    <button
-      className={styles.logoutBtn}
-      onClick={handleLogout}
-    >
-      Logout
-    </button>
-  </div>
+  <button
+    className={styles.logoutBtn}
+    onClick={handleLogout}
+  >
+    Logout
+  </button>
+</div>
 ) : (
   <button
     className={styles.btn}
