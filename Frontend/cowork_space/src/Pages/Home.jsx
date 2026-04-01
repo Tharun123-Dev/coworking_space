@@ -2,62 +2,59 @@ import SearchBar from "../Components/SearchBar";
 import { useState, useEffect } from "react";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/Home.module.css";
-import Reveal from "../Pages/Reveal"
-// import emailjs from "@emailjs/browser";
+import Reveal from "../Pages/Reveal";
 
 function Home() {
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
+  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
 
-//email purpose
-const [form, setForm] = useState({
-  name: "",
-  email: "",
-  phone: "",
-  city: "",
-  message:""
-});
+  // Email form state
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    city: "",
+    message: ""
+  });
 
-const handleChange = (e) => {
-  setForm({ ...form, [e.target.name]: e.target.value });
-};
-console.log(form);
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!form.name || !form.email) {
-    alert("Name & Email required");
-    return;
-  }
+    if (!form.name || !form.email) {
+      alert("Name & Email required");
+      return;
+    }
 
-  try {
-    await axiosInstance.post("leads/add/", form);
+    try {
+      await axiosInstance.post("leads/add/", form);
+      alert("Request submitted 🎉");
 
-    alert("Request submitted 🎉");
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        city: "",
+        message: ""
+      });
+    } catch (err) {
+      if (err.response?.data?.error) {
+        alert(err.response.data.error);
+      } else if (err.response?.data?.email) {
+        alert("Email already exists");
+      } else {
+        alert("Something went wrong");
+      }
+    }
+  };
 
-    setForm({
-      name: "",
-      email: "",
-      phone: "",
-      city: "",
-      message: ""
-    });
-
-  } catch (err) {
-    if(console.log(err.response?.data)){
-    alert(err.response.data.error)}
-        else if(err.response.data.email) {
-    alert("Email already exists");
-  }
-    else {
-    alert("some thing went wrong");
-  }
-};
-};
-  //  Fetch backend data
+  // Fetch backend data
   useEffect(() => {
     axiosInstance.get("workspaces/")
       .then((res) => {
@@ -78,10 +75,10 @@ const handleSubmit = async (e) => {
       duration: 1
     })
     .then(() => {
-      alert("Added to cart ");
+      alert("Added to cart!");
     })
     .catch(() => {
-      alert("Please login first ");
+      alert("Please login first");
     });
   };
 
@@ -107,11 +104,16 @@ const handleSubmit = async (e) => {
   const handleBookNow = (item) => {
     const token = localStorage.getItem("access");
     if (!token) {
-      alert("Please login first ");
+      alert("Please login first");
       window.location.href = "/auth";
     } else {
       handleAddToCart(item.id);
     }
+  };
+
+  const handleKnowMore = (item) => {
+    setSelectedWorkspace(item);
+    setShowInfo(true);
   };
 
   if (loading) {
@@ -120,17 +122,17 @@ const handleSubmit = async (e) => {
 
   return (
     <div className={styles.home}>
-      {/*  HERO SECTION */}
+      {/* HERO SECTION */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div className={styles.heroLeft}>
             <Reveal>
-            <h1 className={styles.heroTitle}>
-              Explore India's Finest <span>Coworking Spaces</span>
-            </h1>
-            <p className={styles.heroSubtitle}>
-              Flexible offices for startups, teams & enterprises
-            </p>
+              <h1 className={styles.heroTitle}>
+                Explore India's Finest <span>Coworking Spaces</span>
+              </h1>
+              <p className={styles.heroSubtitle}>
+                Flexible offices for startups, teams & enterprises
+              </p>
             </Reveal>
 
             <div className={styles.heroStats}>
@@ -147,57 +149,48 @@ const handleSubmit = async (e) => {
                 <small>Happy Users</small>
               </div>
             </div>
- 
           </div>
-           <Reveal>
-<form onSubmit={handleSubmit}>
 
-  <div className={styles.heroForm}>
-   
-
-    <h3>Get in Touch</h3>
-
-    <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
-    <input name="email" placeholder="Email" value={form.email} onChange={handleChange} />
-    <input name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
-
-    <select name="city" value={form.city} onChange={handleChange}>
-      <option value="">Select City</option>
-      <option>Hyderabad</option>
-      <option>Bangalore</option>
-      <option>Delhi</option>
-    </select>
-   <textarea
-  name="message"
-  value={form.message}
-  placeholder="Your message"
-  onChange={handleChange}
-  style={{
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: "10px",
-    border: "1px solid #ccc",
-    outline: "none",
-    fontSize: "12px",
-    fontFamily: "Arial, sans-serif",
-    resize: "none",
-    minHeight: "80px",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-    transition: "all 0.3s ease"
-  }}
-></textarea>
-
-    <button type="submit">
-      Request a Callback
-    </button>
-    
-  </div>
-  
-</form>
-  </Reveal>
+          <Reveal>
+            <form onSubmit={handleSubmit}>
+              <div className={styles.heroForm}>
+                <h3>Get in Touch</h3>
+                <input 
+                  name="name" 
+                  placeholder="Name" 
+                  value={form.name} 
+                  onChange={handleChange} 
+                />
+                <input 
+                  name="email" 
+                  placeholder="Email" 
+                  value={form.email} 
+                  onChange={handleChange} 
+                />
+                <input 
+                  name="phone" 
+                  placeholder="Phone" 
+                  value={form.phone} 
+                  onChange={handleChange} 
+                />
+                <select name="city" value={form.city} onChange={handleChange}>
+                  <option value="">Select City</option>
+                  <option>Hyderabad</option>
+                  <option>Bangalore</option>
+                  <option>Delhi</option>
+                </select>
+                <textarea
+                  name="message"
+                  value={form.message}
+                  placeholder="Your message"
+                  onChange={handleChange}
+                />
+                <button type="submit">Request a Callback</button>
+              </div>
+            </form>
+          </Reveal>
         </div>
       </section>
-      
 
       {/* SEARCH BAR */}
       <section className={styles.searchSection}>
@@ -207,7 +200,7 @@ const handleSubmit = async (e) => {
       {/* WORKSPACE CARDS */}
       <section className={styles.workspacesSection}>
         <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>Woskspaces For every Business In Hyderabad</h2>
+          <h2 className={styles.sectionTitle}>Workspaces For every Business In Hyderabad</h2>
           <div className={styles.grid}>
             {filteredData.length > 0 ? (
               filteredData.map((item) => (
@@ -218,11 +211,11 @@ const handleSubmit = async (e) => {
                 >
                   <div className={styles.cardImageContainer}>
                     <Reveal>
-                    <img 
-                      src={item.image || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400"} 
-                      alt={item.name}
-                      className={styles.cardImage}
-                    />
+                      <img 
+                        src={item.image || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400"} 
+                        alt={item.name}
+                        className={styles.cardImage}
+                      />
                     </Reveal>
                     <div className={styles.rating}>
                       ★ {item.rating || 4.8} (120)
@@ -231,13 +224,13 @@ const handleSubmit = async (e) => {
 
                   <div className={styles.cardContent}>
                     <Reveal>
-                    <h3 className={styles.cardTitle}>{item.name}</h3>
+                      <h3 className={styles.cardTitle}>{item.name}</h3>
                     </Reveal>
                     <Reveal>
-                    <p className={styles.cardLocation}>{item.location}</p>
+                      <p className={styles.cardLocation}>{item.location}</p>
                     </Reveal>
                     <Reveal>
-                    <p className={styles.cardCity}>{item.city}</p>
+                      <p className={styles.cardCity}>{item.city}</p>
                     </Reveal>
                     
                     <div className={styles.cardPrice}>
@@ -246,39 +239,56 @@ const handleSubmit = async (e) => {
                     </div>
 
                     <div className={styles.cardActions}>
-                    
+                      <button
+                        className={styles.btnSecondary}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleKnowMore(item);
+                        }}
+                      >
+                        Know More
+                      </button>
+                      
+                      <button 
+                        className={styles.btnPrimary}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBookNow(item);
+                        }}
+                      >
+                        Book Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.noData}>
+                <Reveal>
+                  <h2>No Workspaces Found (Wait a Minute..! Its Loading Sometimes....)</h2>
+                </Reveal>
+                <p>Try different search terms</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
-
-    <div className={styles.container}>
-      
-      {/* BUTTON */}
-      <Reveal>
-      <button
-        className={styles.btnSecondary}
-        onClick={() => setShowInfo(true)}
-      >
-        Know More
-      </button>
-      </Reveal>
-
-      {/* POPUP */}
-      {showInfo && (
+      {/* POPUP MODAL */}
+      {showInfo && selectedWorkspace && (
         <div className={styles.popupOverlay}>
           <div className={styles.popupBox}>
-            
-            {/* BACK BUTTON */}
             <Reveal>
-            <button
-              className={styles.backBtn}
-              onClick={() => setShowInfo(false)}
-            >
-              ← Back
-            </button>
+              <button
+                className={styles.backBtn}
+                onClick={() => setShowInfo(false)}
+              >
+                ← Back
+              </button>
             </Reveal>
 
-            {/* CONTENT */}
             <Reveal>
-            <h2>Workspace Details</h2>
+              <h2>{selectedWorkspace.name}</h2>
             </Reveal>
             <p>
               Discover premium coworking spaces designed for productivity,
@@ -293,44 +303,10 @@ const handleSubmit = async (e) => {
               <li>✔ Comfortable Seating</li>
               <li>✔ Prime Locations</li>
             </ul>
-
           </div>
         </div>
       )}
     </div>
-
-
-
-
-                    
-                      <button 
-                        className={styles.btnPrimary}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleBookNow(item);
-                        }}
-                      >
-                        Book Now
-                      </button>
-                    
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className={styles.noData}>
-                <Reveal>
-                <h2>No Workspaces Found(Wait a Minute..! Its Loading Sometimes....)</h2>
-                </Reveal>
-                <p>Try different search terms</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-      </section>
-    </div>
-    
   );
 }
 
