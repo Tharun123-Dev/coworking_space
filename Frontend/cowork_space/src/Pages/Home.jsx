@@ -199,15 +199,16 @@ const handleSubmit = async (e) => {
       </section>
       
 
-      {/* SEARCH BAR */}
-      <section className={styles.searchSection}>
-        <SearchBar onSearch={handleSearch} />
-      </section>
+  
+     
 
       {/* WORKSPACE CARDS */}
       <section className={styles.workspacesSection}>
         <div className={styles.container}>
           <h2 className={styles.sectionTitle}>Woskspaces For every Business In Hyderabad</h2>
+           <section className={styles.searchSection}>
+        <SearchBar onSearch={handleSearch} />
+      </section>
           <div className={styles.grid}>
             {filteredData.length > 0 ? (
               filteredData.map((item) => (

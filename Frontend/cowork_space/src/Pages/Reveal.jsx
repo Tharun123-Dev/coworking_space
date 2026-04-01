@@ -1,9 +1,7 @@
 import { motion } from "framer-motion";
 
-/* 🔥 Global Animation Settings */
 const smoothEase = [0.16, 1, 0.3, 1];
 
-/* 🔥 Main Component */
 const Reveal = ({ children }) => {
   return (
     <motion.div
@@ -14,57 +12,75 @@ const Reveal = ({ children }) => {
         hidden: {},
         show: {
           transition: {
-            staggerChildren: 0.25,
+            staggerChildren: 0.2,
           },
         },
       }}
     >
       {Array.isArray(children)
-        ? children.map((child, index) => (
-            <motion.div
-              key={index}
-              variants={{
-                hidden: {
-                  opacity: 0,
-                  y: 120,
-                  scale: 0.96,
-                },
-                show: {
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                  transition: {
-                    duration: 1.4,
-                    ease: smoothEase,
-                  },
-                },
-              }}
-            >
-              {child}
-            </motion.div>
-          ))
-        : (
-          <motion.div
-            variants={{
-              hidden: {
-                opacity: 0,
-                y: 120,
-                scale: 0.96,
-              },
-              show: {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                transition: {
-                  duration: 1.4,
-                  ease: smoothEase,
-                },
-              },
-            }}
-          >
-            {children}
-          </motion.div>
-        )}
+        ? children.map((child, index) => {
+            const isImage =
+              child?.type === "img" ||
+              child?.props?.src;
+
+            return (
+              <motion.div
+                key={index}
+                variants={{
+                  hidden: isImage
+                    ? { opacity: 0, x: -120, scale: 0.95 }
+                    : { opacity: 0, y: 120, scale: 0.96 },
+
+                  show: isImage
+                    ? {
+                        opacity: 1,
+                        x: 0,
+                        scale: 1,
+                        transition: { duration: 1.2, ease: smoothEase },
+                      }
+                    : {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        transition: { duration: 1.2, ease: smoothEase },
+                      },
+                }}
+              >
+                {child}
+              </motion.div>
+            );
+          })
+        : (() => {
+            const isImage =
+              children?.type === "img" ||
+              children?.props?.src;
+
+            return (
+              <motion.div
+                variants={{
+                  hidden: isImage
+                    ? { opacity: 0, x: -120, scale: 0.95 }
+                    : { opacity: 0, y: 120, scale: 0.96 },
+
+                  show: isImage
+                    ? {
+                        opacity: 1,
+                        x: 0,
+                        scale: 1,
+                        transition: { duration: 1.2, ease: smoothEase },
+                      }
+                    : {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        transition: { duration: 1.2, ease: smoothEase },
+                      },
+                }}
+              >
+                {children}
+              </motion.div>
+            );
+          })()}
     </motion.div>
   );
 };
