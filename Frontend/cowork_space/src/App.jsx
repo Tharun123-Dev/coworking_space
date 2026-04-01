@@ -8,7 +8,7 @@ import AdminDashboard from "./Pages/AdminDashboard";
 import Footer from "./Components/Footer";
 import Details from "./Pages/Details"
 import WorkspaceTabs from "./Components/WorkspaceTabs";
-import Payment from "./Pages/Payment";
+
 import Feature from "./Pages/Features";
 import Discount from "./Pages/Discount";
 import WorkspaceFeature from "./Pages/WorkspaceFeature";
@@ -30,6 +30,7 @@ import AdminUsers from "./Pages/AdminUsers";
 import BusinessSection from "./Improved/BusinessSection";
 import ContactModal from "./Improved/ContactModal";
 import AdminLeadss from "./Improved/AdminLeadss";
+import RightSpace from "./Improved/RightSpace";
 
 
 function App() {
@@ -47,8 +48,8 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/details/:id" element={<Details/>}/>
-        <Route path="/payment/:id" element={<Payment/>} />
+        <Route path="/details/:id" element={<Details openModal={setSelected} />} />
+
         <Route path="/amenities" element={<Amenities />} />
         <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
         <Route path="/recommend" element={<AISeats/>} />
@@ -62,6 +63,8 @@ function App() {
       <WorkspaceTabs/>
       <BusinessSection openModal={setSelected} />
       <ContactModal selected={selected} setSelected={setSelected} />
+        <RightSpace openModal={setSelected} />
+
       <WorkspaceFeature/>
       <Cities/>
        <AISeats/>

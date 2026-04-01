@@ -207,7 +207,7 @@ const handleSubmit = async (e) => {
       {/* WORKSPACE CARDS */}
       <section className={styles.workspacesSection}>
         <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>Discover Workspaces by City</h2>
+          <h2 className={styles.sectionTitle}>Woskspaces For every Business In Hyderabad</h2>
           <div className={styles.grid}>
             {filteredData.length > 0 ? (
               filteredData.map((item) => (

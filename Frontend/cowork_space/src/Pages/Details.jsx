@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../Services/Axios";
 import "../Styles/Details.css"
 
-function Details() {
+function Details({openModal}) {
   const { id } = useParams();
   const [data, setData] = useState(null);
 
@@ -21,7 +21,7 @@ function Details() {
 const handleBook = () => {
   const token = localStorage.getItem("access");
 
-  //  CHECK AVAILABILITY FIRST
+  // CHECK AVAILABILITY
   if (!data.is_available) {
     alert("Not Available Now");
     return;
@@ -34,8 +34,8 @@ const handleBook = () => {
     return;
   }
 
-  // ALLOW BOOKING
-  navigate(`/payment/${id}`);
+  // OPEN CONTACT MODAL (NEW)
+  openModal(data.name);
 };
 
   if (!data) return <h2>Loading...</h2>;
@@ -81,7 +81,7 @@ Real-time availability ensures convenience.
   <button className="book-btn" onClick={handleBook}
   disabled={!data?.is_available}
   >
-    {data?.is_available ? "Book & PayNow" :"Not Available"}
+    {data?.is_available ? "Book" :"Not Available"}
   </button>
 
 </div>

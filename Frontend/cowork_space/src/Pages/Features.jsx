@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "../Styles/Features.css";
 import R from "../Pages/Reveal"
 
-// 🔥 ICONS
+// ICONS
 import { FaWifi, FaCoffee, FaBroom, FaCar } from "react-icons/fa";
 import { MdOutlineSupportAgent, MdPrint } from "react-icons/md";
 import { BsBoxSeam } from "react-icons/bs";

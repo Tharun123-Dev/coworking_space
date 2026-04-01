@@ -36,7 +36,7 @@ const images = [
   "/view2.jpg",
 ];
 
-// 🔥 Generate Data
+//  Generate Data
 const generateData = (type) => {
   return images.map((img, i) => ({
     id: i + 1,

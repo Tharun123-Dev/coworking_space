@@ -30,7 +30,7 @@ function AdminUsers() {
       setForm({ username: "", email: "", password: "" });
       fetchUsers();
     } catch {
-      alert("Error creating user ❌");
+      alert("Error creating user ");
     }
   };
 

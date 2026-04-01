@@ -10,7 +10,7 @@ const fetchLeads = async () => {
     try {
         const res = await axiosInstance.get("/leads/leadss/");
         if (res.data.length > leads.length) {
-            alert("🔔 New Lead Received!");
+            alert("New Lead Received!");
         }
         setLeads(res.data);
     } catch (error) {

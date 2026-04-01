@@ -1,4 +1,4 @@
-/* 🌍 MAIN CONTAINER */
+/*  MAIN CONTAINER */
 .details-container {
   max-width: 1000px;
   margin: 60px auto;
@@ -8,7 +8,7 @@
   position: relative;
 }
 
-/* 🖼 IMAGE */
+/*  IMAGE */
 .details-image {
   width: 450px;              /* 🔥 Reduced size */
   max-width: 90%;
@@ -17,7 +17,7 @@
   transition: 0.4s ease;
 }
 
-/* 🔴 RED BACKGROUND EFFECT (smaller & neat) */
+/*  RED BACKGROUND EFFECT (smaller & neat) */
 .details-container::before {
   content: "";
   position: absolute;
@@ -36,14 +36,14 @@
   transform: scale(1.04);
 }
 
-/* 🧠 TITLE */
+/*  TITLE */
 .details-title {
   font-size: 28px;
   color: #ff3b3b;
   margin-bottom: 10px;
 }
 
-/* 📝 DESCRIPTION */
+/*  DESCRIPTION */
 .details-description {
   max-width: 600px;
   margin: auto;
@@ -52,7 +52,7 @@
   margin-bottom: 20px;
 }
 
-/* 💰 PRICING */
+/*  PRICING */
 .pricing {
   display: flex;
   justify-content: center;
@@ -69,13 +69,13 @@
   font-weight: 500;
 }
 
-/* 🔥 HOVER EFFECT */
+/*  HOVER EFFECT */
 .pricing p:hover {
   background: #ff3b3b;
   color: white;
 }
 
-/* 🔘 BUTTON */
+/*  BUTTON */
 .book-btn {
   background: #ff3b3b;
   color: white;
@@ -91,7 +91,7 @@
   transform: translateY(-2px);
 }
 
-/* 📱 RESPONSIVE */
+/*  RESPONSIVE */
 @media (max-width: 768px) {
   .details-image {
     width: 100%;

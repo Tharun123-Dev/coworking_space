@@ -1,4 +1,4 @@
-/* 🌍 BAR */
+/*  BAR */
 .discount-bar {
   width: 100%;
   background: #ff3c00; /* 🔥 orange/red */
@@ -8,14 +8,14 @@
   margin-top: 75px;
 }
 
-/* 🔁 TRACK (ANIMATION) */
+/* TRACK (ANIMATION) */
 .discount-track {
   display: inline-flex;
   gap: 50px;
   animation: scrollText 20s linear infinite;
 }
 
-/* 📝 TEXT */
+/* TEXT */
 .discount-track span {
   color: white;
   font-weight: 600;
@@ -23,7 +23,7 @@
   letter-spacing: 0.5px;
 }
 
-/* ✨ ANIMATION */
+/* ANIMATION */
 @keyframes scrollText {
   0% {
     transform: translateX(0);
@@ -33,12 +33,12 @@
   }
 }
 
-/* ⏸️ HOVER PAUSE */
+/* ⏸HOVER PAUSE */
 .discount-bar:hover .discount-track {
   animation-play-state: paused;
 }
 
-/* 📱 RESPONSIVE */
+/* RESPONSIVE */
 @media (max-width: 600px) {
   .discount-track span {
     font-size: 12px;
