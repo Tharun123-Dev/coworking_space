@@ -1,82 +1,94 @@
-// CoworkPage.jsx - Copy & Paste Ready! 
-import { useState } from 'react';
-import styles from '../Styles/Reviews.module.css';
+import { useState } from "react";
+import "../Styles/FAQ.css";
 
-const reviews = Array.from({ length: 50 }, (_, i) => ({
-  text: `Excellent coworking experience! Great ambiance, reliable WiFi, helpful staff, and perfect location. Highly recommend for freelancers and startups. Rating: 5⭐ Review #${i + 1}`,
-  author: `User ${i + 1}`
-}));
+const faqData = [
+  {
+    question: "What facilities are available in your coworking space?",
+    answer:
+      "We provide high-speed Wi-Fi, ergonomic seating, power backup, meeting rooms, pantry access, printing support, and a professional work atmosphere."
+  },
+  {
+    question: "Do you offer flexible day passes and monthly plans?",
+    answer:
+      "Yes, you can choose from day passes, weekly plans, monthly memberships, dedicated desks, and private office options based on your work style."
+  },
+  {
+    question: "Can startups and teams book private cabins?",
+    answer:
+      "Yes, private cabins and team offices are available for startups, agencies, and growing teams that need privacy and collaboration space."
+  },
+  {
+    question: "Is meeting room booking included?",
+    answer:
+      "Meeting rooms can be booked separately, and some memberships include discounted or priority booking access."
+  },
+  {
+    question: "Do you provide 24/7 access?",
+    answer:
+      "Selected plans include extended and 24/7 access, depending on the location and membership type."
+  },
+  {
+    question: "Is parking available for members?",
+    answer:
+      "Parking depends on the branch, but most locations provide bike parking and limited car parking support."
+  }
+];
 
-const faqs = Array.from({ length: 50 }, (_, i) => ({
-  question: `FAQ Question ${i + 1}: What are the ${['office hours', 'parking facilities', 'WiFi speed', 'meeting room booking process', 'flexible membership plans', 'kitchen amenities', 'printer access', 'guest policy', 'security measures', 'event space availability'][i % 10]} like?`,
-  answer: `Detailed answer for question ${i + 1}: We provide 24/7 access for premium members, high-speed 1Gbps WiFi, complimentary coffee/tea, modern meeting rooms bookable via app, flexible daily/monthly plans starting at ₹500/day, biometric security, ample parking, and more to enhance your productivity.`
-}));
-
-function CoworkPage() {
-  const [openFaqs, setOpenFaqs] = useState({});
+export default function FAQ() {
+  const [openIndex, setOpenIndex] = useState(0);
 
   const toggleFaq = (index) => {
-    setOpenFaqs(prev => ({ ...prev, [index]: !prev[index] }));
+    setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
-    <div className={styles.page}>
-      {/* Animated Gradient Background */}
-      <div className={styles.gradientBg}>
-        <div className={styles.gradientLayer1}></div>
-        <div className={styles.gradientLayer2}></div>
-        <div className={styles.gradientLayer3}></div>
-      </div>
-
-      {/* Purpose Section */}
-      <section className={styles.purposeSection}>
-        <div className={styles.purposeContent}>
-          <h1 className={styles.purposeTitle}>Welcome to WorkHub Coworking</h1>
-          <p className={styles.purposeText}>
-            Your premier destination for collaborative workspaces in Hyderabad. 
-            Join a vibrant community of innovators, enjoy world-class amenities.
+    <section className="faqSection">
+      <div className="faqContainer">
+        <div className="faqHeader">
+          <span className="faqBadge">Frequently Asked Questions</span>
+          <h2 className="faqTitle">Questions before booking your workspace</h2>
+          <p className="faqSubtitle">
+            Clear answers about plans, amenities, cabins, meeting rooms, access,
+            and workspace flexibility.
           </p>
         </div>
-      </section>
 
-      {/* Two Column Layout */}
-      <div className={styles.mainContainer}>
-        {/* Left: Reviews */}
-        <div className={styles.leftColumn}>
-          <h2 className={styles.columnTitle}>Customer Reviews</h2>
-          <div className={styles.reviewsContainer}>
-            {reviews.map((review, index) => (
-              <div key={index} className={styles.reviewCard}>
-                <p>"{review.text}"</p>
-                <span className={styles.author}>- {review.author}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <div className="faqList">
+          {faqData.map((item, index) => {
+            const isOpen = openIndex === index;
 
-        {/* Right: FAQs */}
-        <div className={styles.rightColumn}>
-          <h2 className={styles.columnTitle}>Frequently Asked Questions</h2>
-          <div className={styles.faqsContainer}>
-            {faqs.map((faq, index) => (
-              <div key={index} className={styles.faqItem}>
-                <button 
-                  className={styles.faqQuestion}
+            return (
+              <div
+                className={`faqItem ${isOpen ? "active" : ""}`}
+                key={index}
+              >
+                <button
+                  className="faqQuestion"
                   onClick={() => toggleFaq(index)}
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${index}`}
                 >
-                  <span className={`${styles.icon} ${openFaqs[index] ? styles.minus : styles.plus}`}></span>
-                  {faq.question}
+                  <span className="faqQuestionText">{item.question}</span>
+
+                  <span className={`faqIcon ${isOpen ? "open" : ""}`}>
+                    <span className="line horizontal"></span>
+                    <span className="line vertical"></span>
+                  </span>
                 </button>
-                <div className={`${styles.faqAnswer} ${openFaqs[index] ? styles.open : ''}`}>
-                  <p>{faq.answer}</p>
+
+                <div
+                  id={`faq-answer-${index}`}
+                  className={`faqAnswerWrap ${isOpen ? "show" : ""}`}
+                >
+                  <div className="faqAnswer">
+                    <p>{item.answer}</p>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
-
-export default CoworkPage;
