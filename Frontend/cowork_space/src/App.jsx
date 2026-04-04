@@ -70,6 +70,7 @@ function App() {
         <RightSpace openModal={setSelected} />
 
       <WorkspaceFeature/>
+      
       <Cities/>
        <AISeats/>
         <ScrollToTop/>

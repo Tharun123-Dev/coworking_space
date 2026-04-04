@@ -26,10 +26,13 @@
 
 * {
   box-sizing: border-box;
+ 
 }
 
 .workspaces-section {
   padding: 110px 20px;
+   margin-top: -10px;
+   margin-bottom: -20px;
   background:
     radial-gradient(circle at top left, rgba(212, 175, 55, 0.07), transparent 28%),
     radial-gradient(circle at bottom right, rgba(212, 175, 55, 0.05), transparent 24%),

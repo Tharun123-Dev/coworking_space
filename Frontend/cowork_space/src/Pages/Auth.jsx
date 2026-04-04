@@ -6,6 +6,8 @@ import styles from "../Styles/Auth.module.css";
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -14,7 +16,6 @@ function Auth() {
     password: ""
   });
 
-  // HANDLE INPUT
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -22,10 +23,7 @@ function Auth() {
     });
   };
 
-  // HANDLE SUBMIT
   const handleSubmit = async () => {
-
-    // ✅ BASIC VALIDATION
     if (!formData.username.trim() || !formData.password.trim()) {
       alert("Please fill all required fields ❌");
       return;
@@ -44,40 +42,33 @@ function Auth() {
     try {
       setLoading(true);
 
-      // ================= LOGIN =================
       if (isLogin) {
         const res = await axiosInstance.post("login/", {
           username: formData.username,
           password: formData.password
         });
 
-        // 🔥 IMPORTANT CHECK
         if (!res.data || !res.data.access) {
           alert("Invalid login response ❌");
           return;
         }
 
-        // ✅ STORE DATA
         localStorage.setItem("access", res.data.access);
         localStorage.setItem("refresh", res.data.refresh || "");
         localStorage.setItem("username", res.data.username || "");
         localStorage.setItem("is_admin", res.data.is_admin || false);
+        localStorage.setItem("remember_me", rememberMe);
 
         alert("Login successful ✅");
 
-        // RESET FORM
         setFormData({
           username: "",
           email: "",
           password: ""
         });
 
-        // REDIRECT
         navigate(res.data.is_admin ? "/admin-dashboard" : "/");
-      }
-
-      // ================= REGISTER =================
-      else {
+      } else {
         await axiosInstance.post("register/", {
           username: formData.username,
           email: formData.email,
@@ -86,102 +77,208 @@ function Auth() {
 
         alert("Registered successfully 🎉");
 
-        // RESET FORM
         setFormData({
           username: "",
           email: "",
           password: ""
         });
 
-        // SWITCH TO LOGIN
         setIsLogin(true);
       }
-
     } catch (err) {
       console.log("ERROR:", err);
 
       const data = err.response?.data;
 
-      // 🔥 SMART ERROR HANDLING
       if (data) {
         if (data.username) {
           alert("Username already exists ❌");
-        } 
-        else if (data.email) {
+        } else if (data.email) {
           alert("Email already exists ❌");
-        } 
-        else if (data.password) {
+        } else if (data.password) {
           alert("Password error: " + data.password);
-        } 
-        else if (data.error) {
-          alert(data.error); // backend custom error
-        }
-        else if (data.detail) {
-          alert(data.detail); // JWT / auth errors
-        } 
-        else {
+        } else if (data.error) {
+          alert(data.error);
+        } else if (data.detail) {
+          alert(data.detail);
+        } else {
           alert("Something went wrong ❌");
         }
       } else {
         alert("Server error ❌");
       }
-
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles.container}>
-      <h2>{isLogin ? "Login" : "Signup"}</h2>
+    <section className={styles.authPage}>
+      <div className={styles.authWrapper}>
+        {/* LEFT SIDE */}
+        <div className={styles.authContent}>
+          <p className={styles.badge}>
+            {isLogin ? "Welcome Back" : "Create Your Account"}
+          </p>
 
-      {/* USERNAME */}
-      <input 
-        name="username"
-        placeholder="Username"
-        value={formData.username}
-        onChange={handleChange}
-        className={styles.input}
-      />
+          <h1>
+            {isLogin
+              ? "Access your workspace with a smooth and secure login"
+              : "Join us and start managing your workspace smarter"}
+          </h1>
 
-      {/* EMAIL (ONLY SIGNUP) */}
-      {!isLogin && (
-        <input 
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          className={styles.input}
-        />
-      )}
+          <p className={styles.subText}>
+            {isLogin
+              ? "Login to manage your bookings, check workspace details, and continue your journey with a secure and modern experience."
+              : "Create your account to explore flexible workspaces, manage bookings, and access a better work environment with ease."}
+          </p>
 
-      {/* PASSWORD */}
-      <input 
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={formData.password}
-        onChange={handleChange}
-        className={styles.input}
-      />
+          <div className={styles.featureGrid}>
+            <div className={styles.featureCard}>
+              <span>01</span>
+              <h3>Secure Access</h3>
+              <p>Protected authentication flow with reliable account access.</p>
+            </div>
 
-      {/* BUTTON */}
-      <button 
-        onClick={handleSubmit} 
-        className={styles.button}
-        disabled={loading}
-      >
-        {loading ? "Please wait..." : isLogin ? "Login" : "Signup"}
-      </button>
+            <div className={styles.featureCard}>
+              <span>02</span>
+              <h3>Easy Management</h3>
+              <p>Track bookings, account info, and workspace activity in one place.</p>
+            </div>
 
-      {/* TOGGLE */}
-      <p 
-        onClick={() => setIsLogin(!isLogin)} 
-        className={styles.toggleLink}
-      >
-        {isLogin ? "Create account?" : "Already have account?"}
-      </p>
-    </div>
+            <div className={styles.featureCard}>
+              <span>03</span>
+              <h3>Responsive UI</h3>
+              <p>Clean and smooth design that works well on all screen sizes.</p>
+            </div>
+
+            <div className={styles.featureCard}>
+              <span>04</span>
+              <h3>Fast Experience</h3>
+              <p>Minimal and user-friendly layout for quick login and signup.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT SIDE FORM */}
+        <div className={styles.container}>
+          <div className={styles.formTop}>
+            <h2>{isLogin ? "Login" : "Signup"}</h2>
+            <p>
+              {isLogin
+                ? "Enter your credentials to continue"
+                : "Fill the form below to create a new account"}
+            </p>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="Enter your username"
+              value={formData.username}
+              onChange={handleChange}
+              className={styles.input}
+              autoComplete="username"
+            />
+          </div>
+
+          {!isLogin && (
+            <div className={styles.formGroup}>
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                className={styles.input}
+                autoComplete="email"
+              />
+            </div>
+          )}
+
+          <div className={styles.formGroup}>
+            <label htmlFor="password">Password</label>
+            <div className={styles.passwordWrap}>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                className={styles.input}
+                autoComplete={isLogin ? "current-password" : "new-password"}
+              />
+              <button
+                type="button"
+                className={styles.showBtn}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.formOptions}>
+            <label className={styles.checkRow}>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={() => setRememberMe(!rememberMe)}
+              />
+              <span>Remember me</span>
+            </label>
+
+            {isLogin && (
+              <button type="button" className={styles.forgotLink}>
+                Forgot password?
+              </button>
+            )}
+          </div>
+
+          {!isLogin && (
+            <p className={styles.helperText}>
+              Use at least 6 characters for better security.
+            </p>
+          )}
+
+          <button
+            onClick={handleSubmit}
+            className={styles.button}
+            disabled={loading}
+          >
+            {loading ? "Please wait..." : isLogin ? "Login" : "Create Account"}
+          </button>
+
+          <div className={styles.divider}>
+            <span>or continue with</span>
+          </div>
+
+          <div className={styles.socialRow}>
+            <button type="button" className={styles.socialBtn}>
+              Google
+            </button>
+            <button type="button" className={styles.socialBtn}>
+              LinkedIn
+            </button>
+          </div>
+
+          <p
+            onClick={() => setIsLogin(!isLogin)}
+            className={styles.toggleLink}
+          >
+            {isLogin
+              ? "Don't have an account? Signup"
+              : "Already have an account? Login"}
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 

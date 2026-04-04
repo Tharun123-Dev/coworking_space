@@ -6,15 +6,38 @@ function Navbar() {
   const [showWorkspace, setShowWorkspace] = useState(false);
   const [showCities, setShowCities] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileWorkspaceOpen, setMobileWorkspaceOpen] = useState(false);
+  const [mobileCitiesOpen, setMobileCitiesOpen] = useState(false);
 
   const navigate = useNavigate();
 
-  //  Check login
   const token = localStorage.getItem("access");
   const isAdmin = localStorage.getItem("is_admin");
-  const username=localStorage.getItem("username");
+  const username = localStorage.getItem("username");
 
-  //  USER CLICK (ADMIN / NORMAL)
+  const workspaceLinks = [
+    { label: "Office Spaces", path: "/workspaces/office" },
+    { label: "Coworking Spaces", path: "/workspaces/coworking" },
+    { label: "Meeting Rooms", path: "/workspaces/meeting" },
+  ];
+
+  const cityLinks = [
+    { label: "Hyderabad", value: "Hyderabad" },
+    { label: "Bangalore", value: "Bangalore" },
+    { label: "Delhi", value: "Delhi" },
+  ];
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+    setMobileWorkspaceOpen(false);
+    setMobileCitiesOpen(false);
+  };
+
+  const handleNavigate = (path) => {
+    navigate(path);
+    closeMobileMenu();
+  };
+
   const handleUserClick = () => {
     if (token) {
       if (isAdmin === "true") {
@@ -25,258 +48,211 @@ function Navbar() {
     } else {
       navigate("/auth");
     }
+    closeMobileMenu();
   };
 
-  //  LOGOUT
   const handleLogout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     localStorage.removeItem("is_admin");
-    localStorage.removeItem("username")
+    localStorage.removeItem("username");
 
-    alert("Logged out successfully ");
+    alert("Logged out successfully");
     navigate("/");
+    closeMobileMenu();
   };
+
   const scrollToCities = (city) => {
-  const section = document.getElementById("cities");
-
-  if (section) {
-    section.scrollIntoView({ behavior: "smooth" });
-    console.log("Selected:", city); // optional
-  }
-};
-
-const handleScroll = (city) => {
-  const section = document.getElementById("cities");
-
-  if (section) {
-    section.scrollIntoView({ behavior: "smooth" });
-  }
-
-  console.log("Clicked:", city); // optional
-
-  setShowCities(false); //  close dropdown after click
-};
+    const section = document.getElementById("cities");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+      console.log("Selected:", city);
+    }
+    setShowCities(false);
+    closeMobileMenu();
+  };
 
   return (
-    <div className={styles.navbar}>
-      
-      {/* LOGO */}
-      <h2 className={styles.logo} onClick={() => navigate("/")}>
-        CoWork
-      </h2>
-   
+    <header className={styles.navbar}>
+      <div className={styles.navInner}>
+        {/* LOGO */}
+        <h2 className={styles.logo} onClick={() => navigate("/")}>
+          CoWork
+        </h2>
 
-      {/* DESKTOP MENU */}
-      <div className={styles.menu}>
-                  <p
-      className={styles.menuItem}
-      onClick={() => navigate("/")}
-      style={{ cursor: "pointer" }}
-    >
-      Home
-    </p>
-             <p
-      className={styles.menuItem}
-      onClick={() => navigate("/Enterprise")}
-      style={{ cursor: "pointer" }}
-    >
-      Enterprise
-    </p>
-        {/* WORKSPACES */}
-        <div 
-          
-          className={styles.dropdown}
-          onMouseEnter={() => setShowWorkspace(true)}
-          onMouseLeave={() => setShowWorkspace(false)}
-        >
-          Workspaces(Our Gallery) ▼
-          {showWorkspace && (
-            <div className={styles.dropdownMenu}>
-             <p onClick={() => navigate("/workspaces/office")}>Office Spaces</p>
-             <p onClick={() => navigate("/workspaces/coworking")}>Coworking Spaces</p>
-             <p onClick={() => navigate("/workspaces/meeting")}>Meeting Rooms</p>
+        {/* DESKTOP MENU */}
+        <nav className={styles.menu}>
+          <p className={styles.menuItem} onClick={() => navigate("/")}>
+            Home
+          </p>
+
+          <p className={styles.menuItem} onClick={() => navigate("/Enterprise")}>
+            Enterprise
+          </p>
+
+          {/* WORKSPACES */}
+          <div
+            className={styles.dropdown}
+            onMouseEnter={() => setShowWorkspace(true)}
+            onMouseLeave={() => setShowWorkspace(false)}
+          >
+            <span className={styles.dropdownLabel}>Workspaces</span>
+            <span className={styles.arrow}>▼</span>
+
+            {showWorkspace && (
+              <div className={styles.dropdownMenu}>
+                {workspaceLinks.map((item, index) => (
+                  <p key={index} onClick={() => navigate(item.path)}>
+                    {item.label}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* CITIES */}
+          <div
+            className={styles.dropdown}
+            onMouseEnter={() => setShowCities(true)}
+            onMouseLeave={() => setShowCities(false)}
+          >
+            <span className={styles.dropdownLabel}>Cities</span>
+            <span className={styles.arrow}>▼</span>
+
+            {showCities && (
+              <div className={styles.dropdownMenu}>
+                {cityLinks.map((city, index) => (
+                  <p key={index} onClick={() => scrollToCities(city.value)}>
+                    {city.label}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <p className={styles.menuItem} onClick={() => navigate("/amenities")}>
+            Amenities
+          </p>
+        </nav>
+
+        {/* RIGHT SIDE */}
+        <div className={styles.right}>
+          <span
+            className={styles.icon}
+            onClick={() => navigate("/cart")}
+            title="Cart"
+          >
+            🛒
+          </span>
+
+          <span
+            className={styles.icon}
+            onClick={handleUserClick}
+            title="User"
+          >
+            👤
+          </span>
+
+          {token ? (
+            <div className={styles.userBox}>
+              <span className={styles.userName}>Hi, {username || "User"}</span>
+              <button className={styles.logoutBtn} onClick={handleLogout}>
+                Logout
+              </button>
             </div>
+          ) : (
+            <button className={styles.btn} onClick={() => navigate("/auth")}>
+              Get Started
+            </button>
           )}
         </div>
 
-    {/* CITIES */}
-<div
-  className={styles.dropdown}
-  onMouseEnter={() => setShowCities(true)}
-  onMouseLeave={() => setShowCities(false)}
->
-  Cities(Locations) ▼
-
-  {showCities && (
-    <div className={styles.dropdownMenu}>
-      <p onClick={() => handleScroll("Hyderabad")}>Hyderabad</p>
-      <p onClick={() => handleScroll("Bangalore")}>Bangalore</p>
-      <p onClick={() => handleScroll("Delhi")}>Delhi</p>
-    </div>
-  )}
-</div>
-
-           <p
-      className={styles.menuItem}
-      onClick={() => navigate("/amenities")}
-      style={{ cursor: "pointer" }}
-    >
-      Amenities
-    </p>
-
-  
-      </div>
-
-      {/* RIGHT SIDE */}
-      <div className={styles.right}>
-
-        {/* CART */}
-        <span 
-          className={styles.icon} 
-          onClick={() => navigate("/cart")}
-          title="Cart"
+        {/* HAMBURGER */}
+        <button
+          className={`${styles.hamburger} ${isMobileMenuOpen ? styles.active : ""}`}
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Toggle menu"
         >
-          🛒
-        </span>
-
-        {/* USER */}
-        <span 
-          className={styles.icon} 
-          onClick={handleUserClick}
-          title="User"
-        >
-          👤
-        </span>
-
-     {/* LOGIN / LOGOUT */}
-{token ? (
-<div className={styles.userBox}>
-  <span className={styles.userName}>
-    Hi, {username || "User"}
-  </span>
-
-  <button
-    className={styles.logoutBtn}
-    onClick={handleLogout}
-  >
-    Logout
-  </button>
-</div>
-) : (
-  <button
-    className={styles.btn}
-    onClick={() => navigate("/auth")}
-  >
-    Get Started
-  </button>
-)}
-
-      </div>
-
-      {/* MOBILE HAMBURGER */}
-      <div 
-        className={`${styles.hamburger} ${isMobileMenuOpen ? styles.active : ''}`}
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <span></span>
-        <span></span>
-        <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
 
       {/* MOBILE MENU */}
       {isMobileMenuOpen && (
         <div className={styles.mobileMenuOverlay}>
           <div className={styles.mobileMenu}>
-{/* WORKSPACES */}
-<div className={styles.mobileDropdown}>
-  <p>Workspaces</p>
+            <p className={styles.mobileItem} onClick={() => handleNavigate("/")}>
+              Home
+            </p>
 
-  <div className={styles.mobileSubmenu}>
-    
-    <p onClick={() => {navigate("/workspaces/office"); setIsMobileMenuOpen(false);}}>
-      Office Spaces
-    </p>
+            <p
+              className={styles.mobileItem}
+              onClick={() => handleNavigate("/Enterprise")}
+            >
+              Enterprise
+            </p>
 
-    <p onClick={() => {navigate("/workspaces/coworking"); setIsMobileMenuOpen(false);}}>
-      Coworking Spaces
-    </p>
-
-    <p onClick={() => {navigate("/workspaces/meeting"); setIsMobileMenuOpen(false);}}>
-      Meeting Rooms
-    </p>
-
-  </div>
-</div>
-
- {/* CITIES */}
-<div className={styles.mobileDropdown}>
-  <p>Cities</p>
-
-  <div className={styles.mobileSubmenu}>
-    <p onClick={() => scrollToCities("Hyderabad")}>Hyderabad</p>
-    <p onClick={() => scrollToCities("Bangalore")}>Bangalore</p>
-    <p onClick={() => scrollToCities("Delhi")}>Delhi</p>
-  </div>
-</div>
-
-             <p
-      className={styles.menuItem}
-      onClick={() => navigate("/amenities")}
-      style={{ cursor: "pointer" }}
-    >
-      Amenities
-    </p>
-
-           <p
-      className={styles.menuItem}
-      onClick={() => navigate("/Enterprise")}
-      style={{ cursor: "pointer" }}
-    >
-      Enterprise
-    </p>
-
-            {/* MOBILE RIGHT */}
-            <div className={styles.mobileRight}>
-              <span onClick={() => {navigate("/cart"); setIsMobileMenuOpen(false);}}>
-                🛒 Cart
-              </span>
-
-              <span 
-                onClick={() => {
-                  handleUserClick();
-                  setIsMobileMenuOpen(false);
-                }}
+            <div className={styles.mobileDropdown}>
+              <button
+                className={styles.mobileDropdownBtn}
+                onClick={() => setMobileWorkspaceOpen(!mobileWorkspaceOpen)}
               >
-                👤 {token ? "Profile" : "Login"}
-              </span>
+                Workspaces <span>{mobileWorkspaceOpen ? "−" : "+"}</span>
+              </button>
 
-              {token ? (
-                <button 
-                  onClick={() => {
-                    handleLogout();
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  Logout
-                </button>
-              ) : (
-                <button 
-                  onClick={() => {
-                    navigate("/auth");
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  Get Started
-                </button>
+              {mobileWorkspaceOpen && (
+                <div className={styles.mobileSubmenu}>
+                  {workspaceLinks.map((item, index) => (
+                    <p key={index} onClick={() => handleNavigate(item.path)}>
+                      {item.label}
+                    </p>
+                  ))}
+                </div>
               )}
             </div>
 
+            <div className={styles.mobileDropdown}>
+              <button
+                className={styles.mobileDropdownBtn}
+                onClick={() => setMobileCitiesOpen(!mobileCitiesOpen)}
+              >
+                Cities <span>{mobileCitiesOpen ? "−" : "+"}</span>
+              </button>
+
+              {mobileCitiesOpen && (
+                <div className={styles.mobileSubmenu}>
+                  {cityLinks.map((city, index) => (
+                    <p key={index} onClick={() => scrollToCities(city.value)}>
+                      {city.label}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <p
+              className={styles.mobileItem}
+              onClick={() => handleNavigate("/amenities")}
+            >
+              Amenities
+            </p>
+
+            <div className={styles.mobileRight}>
+              <span onClick={() => handleNavigate("/cart")}>🛒 Cart</span>
+              <span onClick={handleUserClick}>👤 {token ? "Profile" : "Login"}</span>
+
+              {token ? (
+                <button onClick={handleLogout}>Logout</button>
+              ) : (
+                <button onClick={() => handleNavigate("/auth")}>Get Started</button>
+              )}
+            </div>
           </div>
         </div>
       )}
-
-    </div>
+    </header>
   );
 }
 

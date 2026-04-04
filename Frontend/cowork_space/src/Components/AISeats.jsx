@@ -32,7 +32,6 @@ function Recommendations() {
 
   const handleSubmit = () => {
     axios
-      // .post("https://coworking-space-3.onrender.com/api/recommend/", form)
       .post("http://127.0.0.1:8000/api/recommend/", form)
       .then((res) => {
         setResults(res.data);
@@ -50,151 +49,262 @@ function Recommendations() {
   };
 
   return (
-    <div className="contain">
-      <div className="ai-mini-box">
-        <div className="ai-top-head">
+    <div className="ai-page">
+
+      {/* ========== TOP HERO — LEFT TEXT + RIGHT AI BOX ========== */}
+      <div className="ai-hero">
+
+        {/* ===== LEFT SIDE — Full descriptive text ===== */}
+        <div className="ai-left">
+
           <Reveal>
-            <span className="ai-badge">AI Workspace Finder</span>
+            <span className="ai-section-tag">
+              <span className="ai-tag-dot"></span>
+              AI Powered
+            </span>
           </Reveal>
 
           <Reveal>
-            <h2>Find Your Workspace</h2>
+            <h1 className="ai-left-title">
+              Find Your Perfect
+              <span className="ai-gold-text"> Workspace</span>
+              <br />
+              With AI Precision
+            </h1>
           </Reveal>
 
           <Reveal>
-            <p>
-              Tell us your budget, workspace type, amenities, and seating needs.
-              We will suggest the most suitable workspace options for you.
+            <p className="ai-left-desc">
+              Our intelligent recommendation engine analyzes your budget,
+              preferred location, workspace type, and amenity needs — then
+              surfaces the most compatible coworking spaces tailored exactly
+              to your requirements.
             </p>
           </Reveal>
-        </div>
 
-        <div className="ai-form-grid">
+          {/* Feature points */}
           <Reveal>
-            <input
-              name="city"
-              placeholder="City (Must use Hyderabad)"
-              onChange={handleChange}
-              value={form.city}
-            />
-          </Reveal>
-
-          <Reveal>
-            <input
-              name="min_price"
-              placeholder="Min Price"
-              onChange={handleChange}
-              value={form.min_price}
-            />
-          </Reveal>
-
-          <Reveal>
-            <input
-              name="max_price"
-              placeholder="Max Price"
-              onChange={handleChange}
-              value={form.max_price}
-            />
-          </Reveal>
-
-          <Reveal>
-            <input
-              name="rating"
-              placeholder="Rating"
-              onChange={handleChange}
-              value={form.rating}
-            />
-          </Reveal>
-
-          <Reveal>
-            <input
-              name="workspace_type"
-              placeholder="Type (Eg. Fixed desk, Hotdesk)"
-              onChange={handleChange}
-              value={form.workspace_type}
-            />
-          </Reveal>
-
-          <Reveal>
-            <input
-              name="capacity"
-              placeholder="Capacity"
-              onChange={handleChange}
-              value={form.capacity}
-            />
-          </Reveal>
-        </div>
-
-        <div className="ai-amenities">
-          <Reveal>
-            <span className="ai-amenities-title">Select Amenities</span>
-          </Reveal>
-
-          <div className="ai-check-wrap">
-            <label>
-              <Reveal>
-                <div className="check-chip">
-                  <input
-                    type="checkbox"
-                    value="wifi"
-                    checked={form.amenities.includes("wifi")}
-                    onChange={handleAmenities}
-                  />
-                  <span>WiFi</span>
+            <div className="ai-features">
+              <div className="ai-feature-item">
+                <span className="ai-feature-icon">⚡</span>
+                <div>
+                  <strong>Instant Results</strong>
+                  <p>Get matched workspaces in seconds using smart filters.</p>
                 </div>
-              </Reveal>
-            </label>
-
-            <label>
-              <Reveal>
-                <div className="check-chip">
-                  <input
-                    type="checkbox"
-                    value="ac"
-                    checked={form.amenities.includes("ac")}
-                    onChange={handleAmenities}
-                  />
-                  <span>AC</span>
+              </div>
+              <div className="ai-feature-item">
+                <span className="ai-feature-icon">🎯</span>
+                <div>
+                  <strong>Precision Matching</strong>
+                  <p>AI scores each space based on your exact preferences.</p>
                 </div>
-              </Reveal>
-            </label>
-
-            <label>
-              <Reveal>
-                <div className="check-chip">
-                  <input
-                    type="checkbox"
-                    value="parking"
-                    checked={form.amenities.includes("parking")}
-                    onChange={handleAmenities}
-                  />
-                  <span>Parking</span>
+              </div>
+              <div className="ai-feature-item">
+                <span className="ai-feature-icon">💼</span>
+                <div>
+                  <strong>Every Business Type</strong>
+                  <p>From solo freelancers to enterprise teams, we have it.</p>
                 </div>
-              </Reveal>
-            </label>
-          </div>
-        </div>
-
-        <Reveal>
-          <button className="ai-main-btn" onClick={handleSubmit}>
-            Get Recommendations
-          </button>
-        </Reveal>
-      </div>
-
-      <div className="gridd">
-        {results.map((item) => (
-          <Reveal key={item.id}>
-            <div className="cardd">
-              <img src={item.image} alt={item.name} />
-              <h3>{item.name}</h3>
-              <p>{item.city}</p>
-              <p>₹{item.price}</p>
-              <p>Score: {item.score}</p>
+              </div>
+              <div className="ai-feature-item">
+                <span className="ai-feature-icon">📍</span>
+                <div>
+                  <strong>Location Aware</strong>
+                  <p>Discover top-rated spaces across prime city locations.</p>
+                </div>
+              </div>
             </div>
           </Reveal>
-        ))}
+
+          {/* Trust badges row */}
+          <Reveal>
+            <div className="ai-trust">
+              <div className="ai-trust-item">
+                <span className="ai-trust-num">500+</span>
+                <span className="ai-trust-label">Spaces Listed</span>
+              </div>
+              <div className="ai-trust-div"></div>
+              <div className="ai-trust-item">
+                <span className="ai-trust-num">10+</span>
+                <span className="ai-trust-label">Cities</span>
+              </div>
+              <div className="ai-trust-div"></div>
+              <div className="ai-trust-item">
+                <span className="ai-trust-num">50K+</span>
+                <span className="ai-trust-label">Happy Members</span>
+              </div>
+            </div>
+          </Reveal>
+
+        </div>
+
+        {/* ===== RIGHT SIDE — AI Box ===== */}
+        <div className="ai-right">
+          <Reveal>
+            <div className="ai-mini-box">
+
+              {/* Animated gold top bar */}
+              <div className="ai-box-topbar"></div>
+
+              <div className="ai-top-head">
+                <Reveal>
+                  <span className="ai-badge">✦ AI Workspace Finder</span>
+                </Reveal>
+                <Reveal>
+                  <h2>Tell Us What You Need</h2>
+                </Reveal>
+                <Reveal>
+                  <p>
+                    Fill in your preferences and our AI will suggest the
+                    most suitable workspace options for you.
+                  </p>
+                </Reveal>
+              </div>
+
+              {/* Form inputs grid */}
+              <div className="ai-form-grid">
+                <Reveal>
+                  <div className="ai-input-group">
+                    <label>City</label>
+                    <input
+                      name="city"
+                      placeholder="e.g. Hyderabad"
+                      onChange={handleChange}
+                      value={form.city}
+                    />
+                  </div>
+                </Reveal>
+
+                <Reveal>
+                  <div className="ai-input-group">
+                    <label>Min Price (₹)</label>
+                    <input
+                      name="min_price"
+                      placeholder="e.g. 500"
+                      onChange={handleChange}
+                      value={form.min_price}
+                    />
+                  </div>
+                </Reveal>
+
+                <Reveal>
+                  <div className="ai-input-group">
+                    <label>Max Price (₹)</label>
+                    <input
+                      name="max_price"
+                      placeholder="e.g. 5000"
+                      onChange={handleChange}
+                      value={form.max_price}
+                    />
+                  </div>
+                </Reveal>
+
+                <Reveal>
+                  <div className="ai-input-group">
+                    <label>Min Rating</label>
+                    <input
+                      name="rating"
+                      placeholder="e.g. 4.5"
+                      onChange={handleChange}
+                      value={form.rating}
+                    />
+                  </div>
+                </Reveal>
+
+                <Reveal>
+                  <div className="ai-input-group">
+                    <label>Workspace Type</label>
+                    <input
+                      name="workspace_type"
+                      placeholder="Fixed desk / Hotdesk"
+                      onChange={handleChange}
+                      value={form.workspace_type}
+                    />
+                  </div>
+                </Reveal>
+
+                <Reveal>
+                  <div className="ai-input-group">
+                    <label>Capacity</label>
+                    <input
+                      name="capacity"
+                      placeholder="e.g. 10"
+                      onChange={handleChange}
+                      value={form.capacity}
+                    />
+                  </div>
+                </Reveal>
+              </div>
+
+              {/* Amenities checkboxes */}
+              <div className="ai-amenities">
+                <Reveal>
+                  <span className="ai-amenities-title">Select Amenities</span>
+                </Reveal>
+                <div className="ai-check-wrap">
+                  {["wifi", "ac", "parking", "cafeteria", "meeting room"].map((amenity) => (
+                    <label key={amenity} className="check-label">
+                      <div className={`check-chip ${form.amenities.includes(amenity) ? "checked" : ""}`}>
+                        <input
+                          type="checkbox"
+                          value={amenity}
+                          checked={form.amenities.includes(amenity)}
+                          onChange={handleAmenities}
+                        />
+                        <span>{amenity.charAt(0).toUpperCase() + amenity.slice(1)}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Submit button */}
+              <Reveal>
+                <button className="ai-main-btn" onClick={handleSubmit}>
+                  <span>Get AI Recommendations</span>
+                  <span className="ai-btn-icon">→</span>
+                </button>
+              </Reveal>
+
+            </div>
+          </Reveal>
+        </div>
       </div>
+
+      {/* ========== RESULTS GRID ========== */}
+      {results.length > 0 && (
+        <div className="ai-results-section">
+          <Reveal>
+            <div className="ai-results-head">
+              <span className="ai-section-tag">
+                <span className="ai-tag-dot"></span>
+                AI Results
+              </span>
+              <h2>Top Matched Workspaces</h2>
+              <p>{results.length} spaces found based on your preferences</p>
+            </div>
+          </Reveal>
+
+          <div className="gridd">
+            {results.map((item) => (
+              <Reveal key={item.id}>
+                <div className="cardd">
+                  <div className="cardd-img-wrap">
+                    <img src={item.image} alt={item.name} />
+                    <div className="cardd-score">Score: {item.score}</div>
+                  </div>
+                  <div className="cardd-body">
+                    <h3>{item.name}</h3>
+                    <p className="cardd-city">📍 {item.city}</p>
+                    <p className="cardd-price">₹{item.price} <span>/day</span></p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

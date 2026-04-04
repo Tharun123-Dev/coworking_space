@@ -1,32 +1,32 @@
-/* FLOAT BUTTON */
+/* ================= FLOAT BUTTON (REVIEW 💬) ================= */
 .review-btn {
   position: fixed;
   bottom: 25px;
   right: 25px;
   background: linear-gradient(135deg, #ff6b00, #ff8c42);
   color: white;
-  font-size: 24px;
+  font-size: 22px;
   padding: 16px;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 10px 25px rgba(0,0,0,0.3);
   z-index: 999;
-  transition: 0.3s;
+  transition: all 0.3s ease;
 }
 
 .review-btn:hover {
-  transform: scale(1.15) rotate(10deg);
+  transform: scale(1.15) rotate(8deg);
 }
 
-/* PANEL */
+/* ================= PANEL ================= */
 .review-panel {
   position: fixed;
   bottom: 0;
   right: -400px;
   width: 350px;
   height: 100vh;
-  background: #fff;
-  box-shadow: -5px 0 20px rgba(0,0,0,0.2);
+  background: #ffffff;
+  box-shadow: -5px 0 25px rgba(0,0,0,0.2);
   transition: 0.4s ease;
   display: flex;
   flex-direction: column;
@@ -37,68 +37,119 @@
   right: 0;
 }
 
-/* HEADER */
+/* ================= HEADER ================= */
 .review-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  background: #ff6b00;
+  background: linear-gradient(135deg, #ff6b00, #ff8c42);
   color: white;
+  font-weight: 600;
 }
 
 .review-header span {
   cursor: pointer;
   font-size: 18px;
+  transition: 0.2s;
 }
 
-/* FORM */
+.review-header span:hover {
+  transform: scale(1.2);
+}
+
+/* ================= FORM ================= */
 .review-form {
   padding: 15px;
+  border-bottom: 1px solid #eee;
 }
 
 .review-form textarea {
   width: 100%;
   height: 80px;
-  padding: 8px;
+  padding: 10px;
   margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  resize: none;
+  outline: none;
+}
+
+.review-form textarea:focus {
+  border-color: #ff6b00;
 }
 
 .review-form select {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   margin-bottom: 10px;
+  border-radius: 8px;
 }
 
 .review-form button {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: black;
   color: white;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
+  transition: 0.3s;
 }
 
-/* LIST */
+.review-form button:hover {
+  background: #333;
+}
+
+/* ================= REVIEW LIST ================= */
 .review-list {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 12px;
 }
 
+/* ================= REVIEW CARD ================= */
 .review-card {
   border: 1px solid #eee;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 12px;
   background: #fafafa;
+  transition: 0.3s;
 }
 
+.review-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.review-card h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.review-card p {
+  margin: 5px 0;
+  font-size: 13px;
+}
+
+/* ================= STARS ================= */
 .stars {
   color: orange;
+  font-size: 14px;
 }
 
-/* MOBILE */
+/* ================= SCROLLBAR ================= */
+.review-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.review-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+/* ================= MOBILE ================= */
 @media (max-width: 600px) {
   .review-panel {
     width: 100%;

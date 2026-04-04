@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'reviews',
     'leads',
     'enterprise',
+    'chatbot',
 ]
 
 
@@ -191,3 +192,5 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
