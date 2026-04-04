@@ -10,7 +10,7 @@ import Details from "./Pages/Details"
 import WorkspaceTabs from "./Components/WorkspaceTabs";
 
 import Feature from "./Pages/Features";
-import Discount from "./Pages/Discount";
+// import Discount from "./Pages/Discount";
 import WorkspaceFeature from "./Pages/WorkspaceFeature";
 import Contact from "./Pages/Contact";
 import Cities from "./Pages/Cities";
@@ -40,7 +40,7 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar /> 
-      <Discount/>
+      {/* <Discount/> */}
       <Routes>
         
         <Route path="/" element={<Home />} />
