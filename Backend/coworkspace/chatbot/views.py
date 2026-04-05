@@ -1,9 +1,9 @@
-from  google import genai
+from google import genai
 from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-genai.configure(api_key=settings.GEMINI_API_KEY)
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 @api_view(['POST'])
 def chatbot(request):
@@ -13,10 +13,10 @@ def chatbot(request):
         if not message:
             return Response({"error": "Message required"}, status=400)
 
-        # ✅ FINAL WORKING MODEL
-        model = genai.GenerativeModel("models/gemini-flash-latest") 
-
-        response = model.generate_content(message)
+        response = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=message
+        )
 
         return Response({
             "reply": response.text
