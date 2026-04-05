@@ -105,5 +105,5 @@ send_mail(
     "New Lead Received",
     f"New lead from {Leadss.name}",
     "your_email@gmail.com",
-    ["admin@gmail.com"],
+    ["anjali.tharun9949@gmail.com"],
 )
