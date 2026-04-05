@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../Services/Axios";
-import styles from "../Styles/AdminDashboard.module.css";
+import styles from "../Styles/OwnerDashboard.module.css";
 import { useNavigate } from "react-router-dom";
 import R from "../Pages/Reveal";
 
-function AdminDashboard() {
+function OwnerDashboard() {
   const navigate = useNavigate();
 
   const [workspaces, setWorkspaces] = useState([]);
@@ -37,87 +37,156 @@ function AdminDashboard() {
   }, []);
 
   const fetchWorkspaces = () => {
-    axiosInstance.get("workspaces/").then((res) => setWorkspaces(res.data));
+    axiosInstance
+      .get("workspaces/")
+      .then((res) => setWorkspaces(res.data))
+      .catch((err) => {
+        console.log("Workspace fetch error:", err);
+      });
   };
 
   const fetchCategories = () => {
-    axiosInstance.get("workspaces/categories/").then((res) => setCategories(res.data));
+    axiosInstance
+      .get("workspaces/categories/")
+      .then((res) => setCategories(res.data))
+      .catch((err) => {
+        console.log("Category fetch error:", err);
+      });
+  };
+
+  const resetWorkspaceForm = () => {
+    setForm({
+      name: "",
+      city: "",
+      location: "",
+      price: "",
+      image: "",
+      description: ""
+    });
+    setEditId(null);
+  };
+
+  const resetCategoryForm = () => {
+    setCategoryForm({
+      name: "",
+      category: "",
+      description: "",
+      image: "",
+      hourly_price: "",
+      daily_price: "",
+      monthly_price: "",
+      is_available: true
+    });
   };
 
   const handleSubmit = () => {
     if (!form.name || !form.city || !form.price) {
-      alert("Fill all fields");
+      alert("Fill all required fields");
       return;
     }
 
     if (editId) {
-      axiosInstance.put(`workspaces/update/${editId}/`, form).then(() => {
-        alert("Updated ✅");
-        setEditId(null);
-        setForm({ name: "", city: "", location: "", price: "", image: "", description: "" });
-        fetchWorkspaces();
-      });
+      axiosInstance
+        .put(`workspaces/update/${editId}/`, form)
+        .then(() => {
+          alert("Workspace Updated ✅");
+          resetWorkspaceForm();
+          fetchWorkspaces();
+        })
+        .catch((err) => {
+          console.log("Update error:", err);
+          alert("Failed to update workspace ❌");
+        });
     } else {
-      axiosInstance.post("workspaces/add/", form).then(() => {
-        alert("Added ✅");
-        setForm({ name: "", city: "", location: "", price: "", image: "", description: "" });
-        fetchWorkspaces();
-      });
+      axiosInstance
+        .post("workspaces/add/", form)
+        .then(() => {
+          alert("Workspace Added ✅");
+          resetWorkspaceForm();
+          fetchWorkspaces();
+        })
+        .catch((err) => {
+          console.log("Add error:", err);
+          alert("Failed to add workspace ❌");
+        });
     }
   };
 
   const handleAddCategory = () => {
+    if (!categoryForm.name || !categoryForm.category) {
+      alert("Fill category name and type");
+      return;
+    }
+
     axiosInstance
       .post("workspaces/categories/add/", categoryForm)
       .then(() => {
         alert("Category Added ✅");
-        setCategoryForm({
-          name: "", category: "", description: "", image: "",
-          hourly_price: "", daily_price: "", monthly_price: "", is_available: true
-        });
+        resetCategoryForm();
         fetchCategories();
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log("Category add error:", err);
+        alert("Failed to add category ❌");
+      });
   };
 
   const handleDelete = (id) => {
     if (!window.confirm("Delete this workspace?")) return;
-    axiosInstance.delete(`workspaces/delete/${id}/`).then(() => {
-      alert("Deleted ✅");
-      fetchWorkspaces();
-    });
+
+    axiosInstance
+      .delete(`workspaces/delete/${id}/`)
+      .then(() => {
+        alert("Workspace Deleted ✅");
+        fetchWorkspaces();
+      })
+      .catch((err) => {
+        console.log("Delete workspace error:", err);
+        alert("Failed to delete workspace ❌");
+      });
   };
 
   const handleDeleteCategory = (id) => {
     if (!window.confirm("Delete this category?")) return;
-    axiosInstance.delete(`workspaces/categories/delete/${id}/`).then(() => {
-      alert("Category Deleted ✅");
-      fetchCategories();
-    });
+
+    axiosInstance
+      .delete(`workspaces/categories/delete/${id}/`)
+      .then(() => {
+        alert("Category Deleted ✅");
+        fetchCategories();
+      })
+      .catch((err) => {
+        console.log("Delete category error:", err);
+        alert("Failed to delete category ❌");
+      });
   };
 
   const handleEdit = (item) => {
-    setForm(item);
+    setForm({
+      name: item.name || "",
+      city: item.city || "",
+      location: item.location || "",
+      price: item.price || "",
+      image: item.image || "",
+      description: item.description || ""
+    });
     setEditId(item.id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <div className={styles.container}>
-
-      {/* ===== TOP BAR ===== */}
       <div className={styles.topBar}>
         <div>
-          <p className={styles.eyebrow}>Internal Workspace System</p>
+          <p className={styles.eyebrow}>Workspace Owner System</p>
           <h1 className={styles.pageTitle}>
-            Admin <span>Panel</span>
+            Owner <span>Panel</span>
           </h1>
           <p className={styles.pageText}>
-            Manage workspace records, categories, users, and leads from one central place.
+            Manage your workspace records and categories in one central place.
           </p>
         </div>
 
-        {/* Quick stats */}
         <div className={styles.topStats}>
           <div className={styles.topStat}>
             <strong>{workspaces.length}</strong>
@@ -128,42 +197,39 @@ function AdminDashboard() {
             <span>Categories</span>
           </div>
           <div className={styles.topStat}>
-            <strong>{categories.filter(c => c.is_available).length}</strong>
+            <strong>{categories.filter((c) => c.is_available).length}</strong>
             <span>Available</span>
           </div>
         </div>
       </div>
 
-      {/* ===== NAV BUTTONS ===== */}
       <div className={styles.btnWrapper}>
         <R>
-          <button className={`${styles.btnBox} ${styles.goldBtn}`} onClick={() => navigate("/admin-leads")}>
-            📋 View Leads
+          <button
+            className={`${styles.btnBox} ${styles.goldBtn}`}
+            onClick={() => navigate("/owner-bookings")}
+          >
+            📋 My Bookings
           </button>
         </R>
         <R>
-          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/admin-users")}>
-            👥 Manage Users
+          <button
+            className={`${styles.btnBox} ${styles.greenBtn}`}
+            onClick={() => navigate("/owner-users")}
+          >
+            👥 Customers
           </button>
         </R>
         <R>
-          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/admin-leadss")}>
-            📌 Manage Leads
-          </button>
-        </R>
-        <R>
-          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/admin-Enterprise")}>
-            🏗️ Enterprise Leads
-          </button>
-        </R>
-         <R>
-          <button className={`${styles.btnBox} ${styles.goldBtn}`} onClick={() => navigate("/create-owner")}>
-           Create owner
+          <button
+            className={`${styles.btnBox} ${styles.blueBtn}`}
+            onClick={() => navigate("/owner-leads")}
+          >
+            📌 Owner Leads
           </button>
         </R>
       </div>
 
-      {/* ===== WORKSPACE MANAGEMENT ===== */}
       <section className={styles.panelSection}>
         <div className={styles.sectionHead}>
           <div className={styles.sectionIcon}>🏢</div>
@@ -173,7 +239,6 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* Form */}
         <div className={styles.formCard}>
           <div className={styles.form}>
             <input
@@ -206,13 +271,19 @@ function AdminDashboard() {
               value={form.image}
               onChange={(e) => setForm({ ...form, image: e.target.value })}
             />
-            <button onClick={handleSubmit}>
-              {editId ? "✏️ Update Workspace" : "＋ Add Workspace"}
-            </button>
+            <div className={styles.actionRow}>
+              <button onClick={handleSubmit}>
+                {editId ? "✏️ Update Workspace" : "＋ Add Workspace"}
+              </button>
+              {editId && (
+                <button className={styles.cancelBtn} onClick={resetWorkspaceForm}>
+                  Cancel Edit
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Table */}
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
@@ -220,6 +291,7 @@ function AdminDashboard() {
                 <th>#</th>
                 <th>Name</th>
                 <th>City</th>
+                <th>Location</th>
                 <th>Price</th>
                 <th>Actions</th>
               </tr>
@@ -227,25 +299,33 @@ function AdminDashboard() {
             <tbody>
               {workspaces.map((item, i) => (
                 <tr key={item.id}>
-                  <td style={{ color: "rgba(201,168,76,0.6)", fontWeight: 700 }}>
+                  <td className={styles.serial}>
                     {String(i + 1).padStart(2, "0")}
                   </td>
                   <td>{item.name}</td>
                   <td>{item.city}</td>
-                  <td style={{ color: "#f0c040", fontWeight: 700 }}>₹{item.price}</td>
+                  <td>{item.location || "—"}</td>
+                  <td className={styles.price}>₹{item.price}</td>
                   <td className={styles.actionCell}>
-                    <button className={styles.editBtn} onClick={() => handleEdit(item)}>
+                    <button
+                      className={styles.editBtn}
+                      onClick={() => handleEdit(item)}
+                    >
                       Edit
                     </button>
-                    <button className={styles.deleteBtn} onClick={() => handleDelete(item.id)}>
+                    <button
+                      className={styles.deleteBtn}
+                      onClick={() => handleDelete(item.id)}
+                    >
                       Delete
                     </button>
                   </td>
                 </tr>
               ))}
+
               {workspaces.length === 0 && (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: "center", color: "rgba(245,240,232,0.3)", padding: "32px" }}>
+                  <td colSpan="6" className={styles.emptyState}>
                     No workspaces found
                   </td>
                 </tr>
@@ -255,7 +335,6 @@ function AdminDashboard() {
         </div>
       </section>
 
-      {/* ===== CATEGORIES ===== */}
       <section className={styles.panelSection}>
         <div className={styles.sectionHead}>
           <div className={styles.sectionIcon}>🗂️</div>
@@ -265,18 +344,21 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* Category form */}
         <div className={styles.formCard}>
           <div className={styles.form}>
             <input
               placeholder="Category Name"
               value={categoryForm.name}
-              onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+              onChange={(e) =>
+                setCategoryForm({ ...categoryForm, name: e.target.value })
+              }
             />
 
             <select
               value={categoryForm.category}
-              onChange={(e) => setCategoryForm({ ...categoryForm, category: e.target.value })}
+              onChange={(e) =>
+                setCategoryForm({ ...categoryForm, category: e.target.value })
+              }
             >
               <option value="">Select Category Type</option>
               <option value="day_pass">Day Pass</option>
@@ -288,33 +370,46 @@ function AdminDashboard() {
             <input
               placeholder="Description"
               value={categoryForm.description}
-              onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+              onChange={(e) =>
+                setCategoryForm({ ...categoryForm, description: e.target.value })
+              }
             />
             <input
               placeholder="Image URL"
               value={categoryForm.image}
-              onChange={(e) => setCategoryForm({ ...categoryForm, image: e.target.value })}
+              onChange={(e) =>
+                setCategoryForm({ ...categoryForm, image: e.target.value })
+              }
             />
             <input
               placeholder="Hourly Price (₹)"
               value={categoryForm.hourly_price}
-              onChange={(e) => setCategoryForm({ ...categoryForm, hourly_price: e.target.value })}
+              onChange={(e) =>
+                setCategoryForm({ ...categoryForm, hourly_price: e.target.value })
+              }
             />
             <input
               placeholder="Daily Price (₹)"
               value={categoryForm.daily_price}
-              onChange={(e) => setCategoryForm({ ...categoryForm, daily_price: e.target.value })}
+              onChange={(e) =>
+                setCategoryForm({ ...categoryForm, daily_price: e.target.value })
+              }
             />
             <input
               placeholder="Monthly Price (₹)"
               value={categoryForm.monthly_price}
-              onChange={(e) => setCategoryForm({ ...categoryForm, monthly_price: e.target.value })}
+              onChange={(e) =>
+                setCategoryForm({ ...categoryForm, monthly_price: e.target.value })
+              }
             />
 
             <select
               value={String(categoryForm.is_available)}
               onChange={(e) =>
-                setCategoryForm({ ...categoryForm, is_available: e.target.value === "true" })
+                setCategoryForm({
+                  ...categoryForm,
+                  is_available: e.target.value === "true"
+                })
               }
             >
               <option value="true">✅ Available</option>
@@ -325,7 +420,6 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* Category cards */}
         <div className={styles.categoryList}>
           {categories.map((item) => (
             <div key={item.id} className={styles.categoryCard}>
@@ -343,7 +437,11 @@ function AdminDashboard() {
               </div>
 
               <div className={styles.categoryAction}>
-                <span className={item.is_available ? styles.statusActive : styles.statusMuted}>
+                <span
+                  className={
+                    item.is_available ? styles.statusActive : styles.statusMuted
+                  }
+                >
                   {item.is_available ? "Available" : "Unavailable"}
                 </span>
                 <button onClick={() => handleDeleteCategory(item.id)}>
@@ -354,20 +452,12 @@ function AdminDashboard() {
           ))}
 
           {categories.length === 0 && (
-            <div style={{
-              textAlign: "center",
-              padding: "32px",
-              color: "rgba(245,240,232,0.3)",
-              fontSize: "14px"
-            }}>
-              No categories found
-            </div>
+            <div className={styles.noCategory}>No categories found</div>
           )}
         </div>
       </section>
-
     </div>
   );
 }
 
-export default AdminDashboard;
+export default OwnerDashboard;

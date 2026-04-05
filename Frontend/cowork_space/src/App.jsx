@@ -33,6 +33,8 @@ import AdminLeadss from "./Improved/AdminLeadss";
 import RightSpace from "./Improved/RightSpace";
 import Enterprise from "./Improved/Enterprise";
 import AdminEnterprise from "./Improved/AdminEnterprise";
+import CreateOwner from "./Pages/CreateOwner";
+import OwnerDashboard from "./Pages/OwnerDashboard";
 
 
 function App() {
@@ -61,6 +63,10 @@ function App() {
           <Route path="/admin-leadss" element={<AdminLeadss/>} />
             <Route path="/admin-Enterprise" element={<AdminEnterprise/>} />
                     <Route path="/admin-users" element={<AdminUsers/>} />
+                    <Route path="/create-owner" element={<CreateOwner/>} />
+                     <Route path="/owner-dashboard" element={<OwnerDashboard/>} />
+
+
 
       </Routes>
       <Feature/>

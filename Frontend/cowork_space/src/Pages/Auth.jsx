@@ -53,11 +53,13 @@ function Auth() {
           return;
         }
 
+        // 🔥 STORE DATA
         localStorage.setItem("access", res.data.access);
         localStorage.setItem("refresh", res.data.refresh || "");
         localStorage.setItem("username", res.data.username || "");
-        localStorage.setItem("is_admin", res.data.is_admin || false);
+        localStorage.setItem("role", res.data.role);   // ✅ IMPORTANT
         localStorage.setItem("remember_me", rememberMe);
+        
 
         alert("Login successful ✅");
 
@@ -67,7 +69,17 @@ function Auth() {
           password: ""
         });
 
-        navigate(res.data.is_admin ? "/admin-dashboard" : "/");
+        // 🔥 ROLE-BASED REDIRECTION (UPDATED)
+        const role = res.data.role;
+
+        if (role === "admin") {
+          navigate("/admin-dashboard");
+        } else if (role === "owner") {
+          navigate("/owner-dashboard");
+        } else {
+          navigate("/");
+        }
+
       } else {
         await axiosInstance.post("register/", {
           username: formData.username,
@@ -172,109 +184,49 @@ function Auth() {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="username">Username</label>
+            <label>Username</label>
             <input
-              id="username"
               name="username"
-              type="text"
-              placeholder="Enter your username"
               value={formData.username}
               onChange={handleChange}
               className={styles.input}
-              autoComplete="username"
             />
           </div>
 
           {!isLogin && (
             <div className={styles.formGroup}>
-              <label htmlFor="email">Email</label>
+              <label>Email</label>
               <input
-                id="email"
                 name="email"
-                type="email"
-                placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
                 className={styles.input}
-                autoComplete="email"
               />
             </div>
           )}
 
           <div className={styles.formGroup}>
-            <label htmlFor="password">Password</label>
+            <label>Password</label>
             <div className={styles.passwordWrap}>
               <input
-                id="password"
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 className={styles.input}
-                autoComplete={isLogin ? "current-password" : "new-password"}
               />
-              <button
-                type="button"
-                className={styles.showBtn}
-                onClick={() => setShowPassword(!showPassword)}
-              >
+              <button onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
           </div>
 
-          <div className={styles.formOptions}>
-            <label className={styles.checkRow}>
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-              />
-              <span>Remember me</span>
-            </label>
-
-            {isLogin && (
-              <button type="button" className={styles.forgotLink}>
-                Forgot password?
-              </button>
-            )}
-          </div>
-
-          {!isLogin && (
-            <p className={styles.helperText}>
-              Use at least 6 characters for better security.
-            </p>
-          )}
-
-          <button
-            onClick={handleSubmit}
-            className={styles.button}
-            disabled={loading}
-          >
-            {loading ? "Please wait..." : isLogin ? "Login" : "Create Account"}
+          <button onClick={handleSubmit} className={styles.button}>
+            {loading ? "Please wait..." : isLogin ? "Login" : "Signup"}
           </button>
 
-          <div className={styles.divider}>
-            <span>or continue with</span>
-          </div>
-
-          <div className={styles.socialRow}>
-            <button type="button" className={styles.socialBtn}>
-              Google
-            </button>
-            <button type="button" className={styles.socialBtn}>
-              LinkedIn
-            </button>
-          </div>
-
-          <p
-            onClick={() => setIsLogin(!isLogin)}
-            className={styles.toggleLink}
-          >
-            {isLogin
-              ? "Don't have an account? Signup"
-              : "Already have an account? Login"}
+          <p onClick={() => setIsLogin(!isLogin)}>
+            {isLogin ? "Create account?" : "Already have account?"}
           </p>
         </div>
       </div>

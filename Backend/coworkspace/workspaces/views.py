@@ -1,12 +1,35 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import BasePermission
+
 from .models import Workspace
-from .serializers import WorkspaceSerializer,WorkspaceCategorySerializer,WorkspaceCategory
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import permission_classes
+from .serializers import WorkspaceSerializer, WorkspaceCategorySerializer, WorkspaceCategory
 
+
+# 🔥 CUSTOM PERMISSION (ADMIN + OWNER)
+class IsAdminOrOwner(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+
+        if not user or not user.is_authenticated:
+            return False
+
+        # Admin allowed
+        if user.is_superuser:
+            return True
+
+        # Owner allowed
+        if hasattr(user, "profile") and user.profile.role == "owner":
+            return True
+
+        return False
+
+
+# ===========================
+# GET WORKSPACES
+# ===========================
 @api_view(['GET'])
-
 def get_workspaces(request):
     city = request.GET.get('city')
 
@@ -18,6 +41,10 @@ def get_workspaces(request):
     serializer = WorkspaceSerializer(workspaces, many=True)
     return Response(serializer.data)
 
+
+# ===========================
+# GET CATEGORIES
+# ===========================
 @api_view(['GET'])
 def get_categories(request):
     category = request.GET.get('type')
@@ -29,71 +56,101 @@ def get_categories(request):
 
     serializer = WorkspaceCategorySerializer(data, many=True)
     return Response(serializer.data)
-from rest_framework.permissions import IsAdminUser
 
-#  ADD WORKSPACE
+
+# ===========================
+# ADD WORKSPACE
+# ===========================
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAdminOrOwner])
 def add_workspace(request):
-    print("DATA RECEIVED:", request.data)  # 🔥 DEBUG
+    print("DATA RECEIVED:", request.data)
 
     serializer = WorkspaceSerializer(data=request.data)
 
     if serializer.is_valid():
         serializer.save()
-        print("SAVED SUCCESSFULLY")  # 🔥 DEBUG
+        print("SAVED SUCCESSFULLY")
         return Response(serializer.data)
 
-    print("ERROR:", serializer.errors)  # 🔥 DEBUG
-    return Response(serializer.errors)
+    print("ERROR:", serializer.errors)
+    return Response(serializer.errors, status=400)
 
+
+# ===========================
 # UPDATE WORKSPACE
+# ===========================
 @api_view(['PUT'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAdminOrOwner])
 def update_workspace(request, id):
-    workspace = Workspace.objects.get(id=id)
+    try:
+        workspace = Workspace.objects.get(id=id)
+    except Workspace.DoesNotExist:
+        return Response({"error": "Workspace not found"}, status=404)
+
     serializer = WorkspaceSerializer(workspace, data=request.data)
 
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
-    return Response(serializer.errors)
+
+    return Response(serializer.errors, status=400)
 
 
-#  DELETE WORKSPACE
+# ===========================
+# DELETE WORKSPACE
+# ===========================
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAdminOrOwner])
 def delete_workspace(request, id):
-    workspace = Workspace.objects.get(id=id)
-    workspace.delete()
-    return Response({"message": "Deleted"})
+    try:
+        workspace = Workspace.objects.get(id=id)
+        workspace.delete()
+        return Response({"message": "Deleted"})
+    except Workspace.DoesNotExist:
+        return Response({"error": "Workspace not found"}, status=404)
 
+
+# ===========================
+# ADD CATEGORY
+# ===========================
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAdminOrOwner])
 def add_category(request):
     serializer = WorkspaceCategorySerializer(data=request.data)
+
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
-    return Response(serializer.errors)
+
+    return Response(serializer.errors, status=400)
+
+
+# ===========================
+# UPDATE CATEGORY
+# ===========================
 @api_view(['PUT'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAdminOrOwner])
 def update_category(request, id):
-    obj = WorkspaceCategory.objects.get(id=id)
+    try:
+        obj = WorkspaceCategory.objects.get(id=id)
+    except WorkspaceCategory.DoesNotExist:
+        return Response({"error": "Category not found"}, status=404)
+
     serializer = WorkspaceCategorySerializer(obj, data=request.data)
 
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
 
-    return Response(serializer.errors)
+    return Response(serializer.errors, status=400)
 
 
-from rest_framework import status
-
-
+# ===========================
+# DELETE CATEGORY
+# ===========================
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAdminOrOwner])
 def delete_category(request, id):
     try:
         obj = WorkspaceCategory.objects.filter(id=id).first()
