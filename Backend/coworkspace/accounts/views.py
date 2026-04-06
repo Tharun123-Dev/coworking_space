@@ -102,3 +102,45 @@ def create_owner(request):
     profile.save()
 
     return Response({"message": "Owner created successfully"})
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_owners(request):
+
+    owners = Profile.objects.filter(role="owner")
+
+    data = []
+    for o in owners:
+        data.append({
+            "id": o.user.id,
+            "username": o.user.username,
+            "email": o.user.email
+        })
+
+    return Response(data)
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def update_owner(request, id):
+
+    user = User.objects.get(id=id)
+
+    user.username = request.data.get("username", user.username)
+    user.email = request.data.get("email", user.email)
+
+    password = request.data.get("password")
+    if password:
+        user.set_password(password)
+
+    user.save()
+
+    return Response({"message": "Owner updated"})
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_owner(request, id):
+
+    user = User.objects.get(id=id)
+    user.delete()
+
+    return Response({"message": "Owner deleted"})
+

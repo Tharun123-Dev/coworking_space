@@ -177,7 +177,7 @@ function Home() {
                 </div>
                 <div className={styles.statDivider}></div>
                 <div className={styles.stat}>
-                  <span className={styles.statNum}>{activeCount.users.toLocaleString()}+</span>
+                  <span className={styles.statNum}>{Number(activeCount?.users || 200).toLocaleString()}+</span>
                   <span className={styles.statLabel}>Happy Members</span>
                 </div>
               </div>

@@ -11,6 +11,45 @@
   justify-content: center;
   padding: 110px 20px 40px;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+}
+
+.popup {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  min-width: 280px;
+  max-width: 380px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  animation: slideIn 0.35s ease;
+}
+
+.popupSuccess {
+  background: #1c2b12;
+  color: #b6f089;
+  border: 1px solid #527d2e;
+}
+
+.popupError {
+  background: #2d1212;
+  color: #ffb4b4;
+  border: 1px solid #a94444;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
 }
 
 .authWrapper {
@@ -237,8 +276,14 @@
   transform: scale(0.98);
 }
 
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Bottom toggle text */
-.container > p {
+.switchText {
   margin-top: 18px;
   text-align: center;
   color: #bda726;
@@ -247,12 +292,12 @@
   transition: color 0.3s ease, transform 0.3s ease;
 }
 
-.container > p:hover {
+.switchText:hover {
   color: #fff0a6;
   transform: translateY(-1px);
 }
 
-/* Optional checkbox row if you add remember me later */
+/* Login options */
 .optionsRow {
   display: flex;
   justify-content: space-between;
@@ -267,6 +312,7 @@
   gap: 8px;
   color: #d7d7d7;
   font-size: 0.92rem;
+  cursor: pointer;
 }
 
 .rememberBox input {
@@ -275,9 +321,9 @@
 
 .forgotLink {
   color: #b8a11e;
-  text-decoration: none;
   font-size: 0.92rem;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .forgotLink:hover {
@@ -302,6 +348,14 @@
 @media (max-width: 768px) {
   .authPage {
     padding: 95px 14px 24px;
+  }
+
+  .popup {
+    right: 14px;
+    left: 14px;
+    top: 16px;
+    min-width: auto;
+    max-width: none;
   }
 
   .authContent {
@@ -333,6 +387,11 @@
   .input,
   .button {
     height: 50px;
+  }
+
+  .optionsRow {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 

@@ -158,7 +158,7 @@ function AdminDashboard() {
         </R>
          <R>
           <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/create-owner")}>
-           Create owner
+           Owner Management
           </button>
         </R>
 
