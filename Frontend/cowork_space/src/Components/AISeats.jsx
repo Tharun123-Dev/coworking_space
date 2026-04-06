@@ -33,7 +33,7 @@ function Recommendations() {
   const handleSubmit = () => {
     axios
       // .post("http://127.0.0.1:8000/api/recommend/", form)
-       .post("https://coworking-space-5.onrender.com/api/recommend/", form)
+       .post("https://coworking-space-3.onrender.com/api/recommend/", form)
       .then((res) => {
         setResults(res.data);
         setForm({
