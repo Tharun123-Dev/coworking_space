@@ -23,11 +23,12 @@
    ============================================ */
 .container {
   min-height: 100vh;
-  max-width: 1380px;
+  max-width: 1590px;
   margin: 0 auto;
   padding: 32px 28px 60px;
   background: #080808;
   position: relative;
+  margin-top: 50px;
 }
  
 /* Gold glow top-left */

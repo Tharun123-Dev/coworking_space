@@ -157,8 +157,14 @@ function AdminDashboard() {
           </button>
         </R>
          <R>
-          <button className={`${styles.btnBox} ${styles.goldBtn}`} onClick={() => navigate("/create-owner")}>
+          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/create-owner")}>
            Create owner
+          </button>
+        </R>
+
+          <R>
+          <button className={`${styles.btnBox} ${styles.goldBtn}`} onClick={() => navigate("/admin-bookings")}>
+           Bookings
           </button>
         </R>
       </div>

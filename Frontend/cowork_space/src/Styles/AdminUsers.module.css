@@ -1,0 +1,307 @@
+/* AdminUsers.module.css */
+
+.container {
+  min-height: 100vh;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 215, 0, 0.08), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(255, 215, 0, 0.06), transparent 35%),
+    linear-gradient(135deg, #050505, #101010, #000000);
+  color: #ffffff;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin-top: 60px;
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.header h2 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  color: #ffd700;
+  font-weight: 800;
+}
+
+.header p {
+  margin: 0;
+  color: #c8c8c8;
+  font-size: 0.98rem;
+}
+
+.topGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  margin-bottom: 28px;
+}
+
+.panel {
+  background: rgba(18, 18, 18, 0.96);
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.35),
+    0 0 24px rgba(255, 215, 0, 0.05);
+}
+
+.panelTitle {
+  margin: 0 0 18px;
+  color: #ffd700;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.input {
+  width: 100%;
+  height: 50px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 0.98rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input::placeholder {
+  color: #9d9d9d;
+}
+
+.input:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 215, 0, 0.12);
+  color: #f5f5f5;
+  font-weight: 600;
+}
+
+.checkboxRow input {
+  width: 18px;
+  height: 18px;
+  accent-color: #ffd700;
+  cursor: pointer;
+}
+
+.actionRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primaryBtn,
+.secondaryBtn,
+.editBtn,
+.deleteBtn {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.primaryBtn {
+  background: linear-gradient(135deg, #ffd700, #c99700);
+  color: #000;
+  box-shadow: 0 10px 22px rgba(255, 215, 0, 0.18);
+}
+
+.primaryBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(255, 215, 0, 0.24);
+}
+
+.secondaryBtn {
+  background: transparent;
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+}
+
+.secondaryBtn:hover {
+  background: rgba(255, 215, 0, 0.12);
+  color: #fff3bf;
+}
+
+.statsBar {
+  margin: 10px 0 24px;
+  padding: 18px 22px;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  border-radius: 16px;
+}
+
+.statsBar h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #f4f4f4;
+  font-weight: 700;
+}
+
+.statsBar span {
+  color: #ffd700;
+}
+
+.userGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: rgba(20, 20, 20, 0.96);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.28),
+    0 0 18px rgba(255, 215, 0, 0.04);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 215, 0, 0.35);
+  box-shadow:
+    0 20px 38px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(255, 215, 0, 0.08);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ffd700, #c99700);
+  color: #000;
+  font-weight: 800;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.cardTop h3 {
+  margin: 0 0 4px;
+  color: #ffffff;
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.cardTop p {
+  margin: 0;
+  color: #bfbfbf;
+  font-size: 0.92rem;
+  word-break: break-word;
+}
+
+.roleBadge {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  background: rgba(255, 215, 0, 0.12);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.22);
+}
+
+.cardActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.editBtn {
+  flex: 1;
+  background: rgba(255, 215, 0, 0.12);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.25);
+}
+
+.editBtn:hover {
+  background: rgba(255, 215, 0, 0.22);
+  color: #fff4c7;
+}
+
+.deleteBtn {
+  flex: 1;
+  background: rgba(255, 77, 77, 0.12);
+  color: #ff8a8a;
+  border: 1px solid rgba(255, 77, 77, 0.24);
+}
+
+.deleteBtn:hover {
+  background: rgba(255, 77, 77, 0.22);
+  color: #ffd2d2;
+}
+
+/* Tablet */
+@media (max-width: 1100px) {
+  .topGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .userGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 14px;
+  }
+
+  .header h2 {
+    font-size: 1.6rem;
+  }
+
+  .panel {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .userGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actionRow,
+  .cardActions {
+    flex-direction: column;
+  }
+
+  .primaryBtn,
+  .secondaryBtn,
+  .editBtn,
+  .deleteBtn {
+    width: 100%;
+  }
+}

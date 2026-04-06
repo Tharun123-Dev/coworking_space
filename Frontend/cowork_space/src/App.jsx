@@ -1,90 +1,71 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./Pages/Home";
+
+import MainLayout from "./Components/MainLayout";
+import HomeLayout from "./Components/HomeLayout";
+
 import Auth from "./Pages/Auth";
-import Navbar from "./Components/Navbar";
 import Cart from "./Pages/Cart";
 import Booking from "./Pages/Booking";
 import AdminDashboard from "./Pages/AdminDashboard";
-import Footer from "./Components/Footer";
-import Details from "./Pages/Details"
-import WorkspaceTabs from "./Components/WorkspaceTabs";
-
-import Feature from "./Pages/Features";
-// import Discount from "./Pages/Discount";
-import WorkspaceFeature from "./Pages/WorkspaceFeature";
+import Details from "./Pages/Details";
 import Contact from "./Pages/Contact";
-import Cities from "./Pages/Cities";
-import { useState } from "react";
-
 import Amenities from "./Pages/Amenities";
-import WorkspaceGallery from "./Pages/WorkspaceGallery"
-import FooterCarousel from "./Pages/FooterCarousel";
-
-import AISeats from "./Components/AISeats";
+import WorkspaceGallery from "./Pages/WorkspaceGallery";
 import View from "./Pages/View";
-import Reviews from "./Pages/Reviews";
-import AddReview from "./Pages/AddReview"
-import ScrollToTop from "./Pages/ScrollToTop";
+
 import AdminLeads from "./Pages/Leads";
 import AdminUsers from "./Pages/AdminUsers";
-import BusinessSection from "./Improved/BusinessSection";
-import ContactModal from "./Improved/ContactModal";
 import AdminLeadss from "./Improved/AdminLeadss";
-import RightSpace from "./Improved/RightSpace";
 import Enterprise from "./Improved/Enterprise";
 import AdminEnterprise from "./Improved/AdminEnterprise";
+
 import CreateOwner from "./Pages/CreateOwner";
 import OwnerDashboard from "./Pages/OwnerDashboard";
-
+import OwnerBookings from "./Pages/OwnerBookings";
+import AdminBookings from "./Pages/AdminBookings";
+import MyOrders from "./Pages/MyOrders";
+import ScrollToTop from "./Pages/ScrollToTop";
 
 function App() {
-  const [selected, setSelected] = useState(null);
   return (
     <BrowserRouter>
-      <Navbar /> 
-      {/* <Discount/> */}
+    <ScrollToTop/>
+
       <Routes>
-        
-        <Route path="/" element={<Home />} />
-        <Route path="/contact" element={<Contact/>} />
-        <Route path="/view" element={<View/>} /> 
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/booking" element={<Booking />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/details/:id" element={<Details openModal={setSelected} />} />
 
-        <Route path="/amenities" element={<Amenities />} />
-        <Route path="/Enterprise" element={<Enterprise/>} />
-        <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
-        <Route path="/recommend" element={<AISeats/>} />
-          <Route path="/admin-leads" element={<AdminLeads/>} />
-          
-          <Route path="/admin-leadss" element={<AdminLeadss/>} />
-            <Route path="/admin-Enterprise" element={<AdminEnterprise/>} />
-                    <Route path="/admin-users" element={<AdminUsers/>} />
-                    <Route path="/create-owner" element={<CreateOwner/>} />
-                     <Route path="/owner-dashboard" element={<OwnerDashboard/>} />
+        <Route element={<MainLayout />}>
 
+          <Route path="/" element={<HomeLayout />} />
 
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/view" element={<View />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/booking" element={<Booking />} />
+
+          <Route path="/details/:id" element={<Details />} />
+
+          <Route path="/amenities" element={<Amenities />} />
+          <Route path="/Enterprise" element={<Enterprise />} />
+          <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
+
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin-leads" element={<AdminLeads />} />
+          <Route path="/admin-leadss" element={<AdminLeadss />} />
+          <Route path="/admin-Enterprise" element={<AdminEnterprise />} />
+          <Route path="/admin-users" element={<AdminUsers />} />
+          <Route path="/admin-bookings" element={<AdminBookings />} />
+
+          <Route path="/create-owner" element={<CreateOwner />} />
+          <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+          <Route path="/owner-bookings" element={<OwnerBookings />} />
+
+          <Route path="/my-orders" element={<MyOrders />} />
+           
+        </Route>
 
       </Routes>
-      <Feature/>
-      <WorkspaceTabs/>
-      <BusinessSection openModal={setSelected} />
-      <ContactModal selected={selected} setSelected={setSelected} />
-        <RightSpace openModal={setSelected} />
 
-      <WorkspaceFeature/>
-      
-      <Cities/>
-       <AISeats/>
-        <ScrollToTop/>
-          <Reviews/>
-          <AddReview/>
-          <FooterCarousel/>
-      <Footer/>
-  
     </BrowserRouter>
   );
 }

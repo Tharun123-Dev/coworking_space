@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../Services/Axios";
-
+import styles from "../Styles/AdminUsers.module.css";
 function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [editUser, setEditUser]=useState(null);
@@ -56,100 +56,137 @@ function AdminUsers() {
     await axiosInstance.delete(`leads/users/delete/${id}/`);
     fetchUsers();
   };
-
-  return (
-    <div style={styles.container}>
+return (
+  <div className={styles.container}>
+    <div className={styles.header}>
       <h2>👥 User Management</h2>
+      <p>Manage platform users, roles, and account details.</p>
+    </div>
 
+    <div className={styles.topGrid}>
       {/* CREATE USER */}
-      <div style={styles.form}>
-        <input
-          placeholder="Username"
-          value={form.username}
-          onChange={(e) => setForm({ ...form, username: e.target.value })}
-        />
+      <div className={styles.panel}>
+        <h3 className={styles.panelTitle}>Create User</h3>
+        <div className={styles.form}>
+          <input
+            className={styles.input}
+            placeholder="Username"
+            value={form.username}
+            onChange={(e) => setForm({ ...form, username: e.target.value })}
+          />
 
-        <input
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
+          <input
+            className={styles.input}
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
 
-        <input
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-        />
+          <input
+            className={styles.input}
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
 
-        <button onClick={handleCreate}>Create</button>
+          <button className={styles.primaryBtn} onClick={handleCreate}>
+            Create User
+          </button>
+        </div>
       </div>
-     
-     
-     {editUser && (
-  <div>
-    <input
-      value={editUser?.username || ""}
-      onChange={(e) =>
-        setEditUser({ ...editUser, username: e.target.value })
-      }
-    />
 
-    <input
-      value={editUser?.email || ""}
-      onChange={(e) =>
-        setEditUser({ ...editUser, email: e.target.value })
-      }
-    />
+      {/* EDIT USER */}
+      {editUser && (
+        <div className={styles.panel}>
+          <h3 className={styles.panelTitle}>Edit User</h3>
 
-    <label>
-      Admin:
-      <input
-        type="checkbox"
-        checked={editUser?.is_admin || false}
-        
-        onChange={(e) =>
-          setEditUser({ ...editUser, is_admin: e.target.checked })
-        }
-      />
-    </label>
+          <div className={styles.form}>
+            <input
+              className={styles.input}
+              value={editUser?.username || ""}
+              onChange={(e) =>
+                setEditUser({ ...editUser, username: e.target.value })
+              }
+            />
 
-    <button onClick={handleUpdate}>Save</button>
-    <button onClick={() => setEditUser(null)}>Cancel</button>
-  </div>
-)}
-     
+            <input
+              className={styles.input}
+              value={editUser?.email || ""}
+              onChange={(e) =>
+                setEditUser({ ...editUser, email: e.target.value })
+              }
+            />
 
+            <label className={styles.checkboxRow}>
+              <span>Admin Access</span>
+              <input
+                type="checkbox"
+                checked={editUser?.is_admin || false}
+                onChange={(e) =>
+                  setEditUser({ ...editUser, is_admin: e.target.checked })
+                }
+              />
+            </label>
 
-<h3>Total Users: {users.length}</h3>
-      {/* USERS LIST */}
+            <div className={styles.actionRow}>
+              <button className={styles.primaryBtn} onClick={handleUpdate}>
+                Save Changes
+              </button>
+              <button
+                className={styles.secondaryBtn}
+                onClick={() => setEditUser(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <div className={styles.statsBar}>
+      <h3>Total Users: <span>{users.length}</span></h3>
+    </div>
+
+    <div className={styles.userGrid}>
       {users.map((user) => (
-        <div key={user.id} style={styles.card}>
-          <h3>{user.username}</h3>
-          <p>{user.email}</p>
-          <p>{user.is_admin ? "Admin" : "User"}</p>
+        <div key={user.id} className={styles.card}>
+          <div className={styles.cardTop}>
+            <div className={styles.avatar}>
+              {user.username?.charAt(0).toUpperCase()}
+            </div>
 
+            <div>
+              <h3>{user.username}</h3>
+              <p>{user.email}</p>
+            </div>
+          </div>
 
-          <button onClick={() => setEditUser(user)}>Edit</button>
-          <button onClick={() => handleDelete(user.id)}>Delete</button>
+          <div className={styles.roleBadge}>
+            {user.is_admin ? "Admin" : "User"}
+          </div>
+
+          <div className={styles.cardActions}>
+            <button
+              className={styles.editBtn}
+              onClick={() => setEditUser(user)}
+            >
+              Edit
+            </button>
+
+            <button
+              className={styles.deleteBtn}
+              onClick={() => handleDelete(user.id)}
+            >
+              Delete
+            </button>
+          </div>
         </div>
       ))}
     </div>
-  );
+  </div>
+);
+ 
 }
-
-const styles = {
-  container: {
-    padding: "30px"
-  },
-  form: {
-    marginBottom: "20px"
-  },
-  card: {
-    border: "1px solid #ddd",
-    padding: "10px",
-    margin: "10px 0",
-    borderRadius: "8px"
-  }
-};
-
 export default AdminUsers;

@@ -1,14 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "../Services/Axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import styles from "../Styles/Auth.module.css";
 
 function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const roleType = params.get("type");
+
+  const [isLogin, setIsLogin] = useState(roleType !== "user");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (roleType === "owner" || roleType === "admin") {
+      setIsLogin(true);
+    }
+  }, [roleType]);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -53,13 +64,11 @@ function Auth() {
           return;
         }
 
-        // 🔥 STORE DATA
         localStorage.setItem("access", res.data.access);
         localStorage.setItem("refresh", res.data.refresh || "");
         localStorage.setItem("username", res.data.username || "");
-        localStorage.setItem("role", res.data.role);   // ✅ IMPORTANT
+        localStorage.setItem("role", res.data.role);
         localStorage.setItem("remember_me", rememberMe);
-        
 
         alert("Login successful ✅");
 
@@ -69,7 +78,6 @@ function Auth() {
           password: ""
         });
 
-        // 🔥 ROLE-BASED REDIRECTION (UPDATED)
         const role = res.data.role;
 
         if (role === "admin") {
@@ -81,6 +89,7 @@ function Auth() {
         }
 
       } else {
+
         await axiosInstance.post("register/", {
           username: formData.username,
           email: formData.email,
@@ -97,6 +106,7 @@ function Auth() {
 
         setIsLogin(true);
       }
+
     } catch (err) {
       console.log("ERROR:", err);
 
@@ -127,7 +137,7 @@ function Auth() {
   return (
     <section className={styles.authPage}>
       <div className={styles.authWrapper}>
-        {/* LEFT SIDE */}
+
         <div className={styles.authContent}>
           <p className={styles.badge}>
             {isLogin ? "Welcome Back" : "Create Your Account"}
@@ -172,7 +182,6 @@ function Auth() {
           </div>
         </div>
 
-        {/* RIGHT SIDE FORM */}
         <div className={styles.container}>
           <div className={styles.formTop}>
             <h2>{isLogin ? "Login" : "Signup"}</h2>
@@ -193,7 +202,7 @@ function Auth() {
             />
           </div>
 
-          {!isLogin && (
+          {!isLogin && roleType === "user" && (
             <div className={styles.formGroup}>
               <label>Email</label>
               <input
@@ -225,9 +234,12 @@ function Auth() {
             {loading ? "Please wait..." : isLogin ? "Login" : "Signup"}
           </button>
 
-          <p onClick={() => setIsLogin(!isLogin)}>
-            {isLogin ? "Create account?" : "Already have account?"}
-          </p>
+          {roleType === "user" && (
+            <p onClick={() => setIsLogin(!isLogin)}>
+              {isLogin ? "Create account?" : "Already have account?"}
+            </p>
+          )}
+
         </div>
       </div>
     </section>

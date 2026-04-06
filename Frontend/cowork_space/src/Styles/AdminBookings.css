@@ -1,0 +1,112 @@
+.admin-bookings{
+padding:30px;
+background:#f8fafc;
+min-height:100vh;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.header h2{
+margin:0;
+}
+
+.refresh{
+background:#2563eb;
+color:white;
+border:none;
+padding:8px 16px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.controls{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+flex-wrap:wrap;
+}
+
+.controls input{
+padding:10px;
+border:1px solid #ddd;
+border-radius:6px;
+min-width:250px;
+}
+
+.controls select{
+padding:10px;
+border-radius:6px;
+border:1px solid #ddd;
+}
+
+.table-wrapper{
+overflow:auto;
+background:white;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#111827;
+color:white;
+padding:12px;
+text-align:left;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #eee;
+}
+
+tr:hover{
+background:#f9fafb;
+}
+
+.status{
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+font-weight:600;
+}
+
+.status.Pending{
+background:#fff7ed;
+color:#ea580c;
+}
+
+.status.Confirmed{
+background:#ecfdf5;
+color:#059669;
+}
+
+.status.Cancelled{
+background:#fef2f2;
+color:#dc2626;
+}
+
+.loading{
+text-align:center;
+padding:20px;
+}
+
+@media(max-width:768px){
+
+.controls{
+flex-direction:column;
+}
+
+.controls input{
+width:100%;
+}
+
+}

@@ -41,5 +41,11 @@ class Booking(models.Model):
 
     total_price = models.IntegerField(default=0)
 
+    status=models.CharField(max_length=20,default="Pending", choices=[
+        ("pending","Pending"),
+        ("confirmed","Confirmed"),
+        ("cancelled","Cancelled")
+    ])
+    created_at=models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.workspace.name} - {self.user.username}"
