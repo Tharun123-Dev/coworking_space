@@ -1,9 +1,16 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-# Create your models here.
-from django.db import models
 
 class Workspace(models.Model):
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="owner_workspaces"
+    )
+
     name = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
     location = models.CharField(max_length=200)
@@ -13,7 +20,8 @@ class Workspace(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+
 class WorkspaceCategory(models.Model):
     CATEGORY_CHOICES = [
         ('day_pass', 'Day Pass'),

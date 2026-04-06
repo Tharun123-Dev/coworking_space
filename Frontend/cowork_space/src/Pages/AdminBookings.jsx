@@ -21,13 +21,15 @@ function AdminBookings() {
   }
 
   const filteredBookings = bookings.filter(item => {
+
     const matchesSearch =
       item.user?.toLowerCase().includes(search.toLowerCase()) ||
       item.workspace?.toLowerCase().includes(search.toLowerCase()) ||
       item.location?.toLowerCase().includes(search.toLowerCase())
 
     const matchesFilter =
-      filter === "All" || item.status === filter
+      filter === "All" ||
+      item.status?.toLowerCase() === filter.toLowerCase()
 
     return matchesSearch && matchesFilter
   })
@@ -53,9 +55,9 @@ function AdminBookings() {
 
         <select value={filter} onChange={(e)=>setFilter(e.target.value)}>
           <option>All</option>
-          <option>Pending</option>
-          <option>Confirmed</option>
-          <option>Cancelled</option>
+          <option>pending</option>
+          <option>confirmed</option>
+          <option>cancelled</option>
         </select>
       </div>
 
@@ -77,6 +79,15 @@ function AdminBookings() {
             </thead>
 
             <tbody>
+
+              {filteredBookings.length === 0 && (
+                <tr>
+                  <td colSpan="7" style={{textAlign:"center"}}>
+                    No bookings found
+                  </td>
+                </tr>
+              )}
+
               {filteredBookings.map(item=>(
                 <tr key={item.id}>
                   <td>{item.user}</td>
@@ -84,7 +95,7 @@ function AdminBookings() {
                   <td>{item.location}</td>
                   <td>{item.date}</td>
                   <td>{item.duration} hrs</td>
-                  <td>₹{item.total_price}</td>
+                  <td>₹{item.price || item.total_price}</td>
 
                   <td>
                     <span className={`status ${item.status}`}>

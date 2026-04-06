@@ -9,9 +9,9 @@ from .models import Booking
 from django.shortcuts import get_object_or_404
 
 
-
-
-
+# ===============================
+# CREATE BOOKING (OWNER BASED)
+# ===============================
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_booking(request):
@@ -29,19 +29,29 @@ def create_booking(request):
 
     total_price = workspace.price * int(duration)
 
+    # ✅ OWNER AUTO ASSIGNED
+    owner = workspace.owner
+
     Booking.objects.create(
         user=user,
         workspace=workspace,
+        owner=owner,
         duration=duration,
         date=date,
         total_price=total_price
     )
-    #  CLEAR CART AFTER BOOKING
+
+    # CLEAR CART AFTER BOOKING
     cart = Cart.objects.filter(user=user).first()
     if cart:
-     CartItem.objects.filter(cart=cart).delete()
+        CartItem.objects.filter(cart=cart).delete()
 
     return Response({"message": "Booking successful"})
+
+
+# ===============================
+# ADD TO CART
+# ===============================
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_to_cart(request):
@@ -61,6 +71,10 @@ def add_to_cart(request):
 
     return Response({"message": "Added to cart"})
 
+
+# ===============================
+# GET CART
+# ===============================
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_cart(request):
@@ -71,7 +85,7 @@ def get_cart(request):
     for item in items:
         data.append({
             "id": item.id,
-            "workspace_id":item.workspace.id,
+            "workspace_id": item.workspace.id,
             "workspace": item.workspace.name,
             "price": item.workspace.price,
             "location": item.workspace.location,
@@ -80,6 +94,11 @@ def get_cart(request):
         })
 
     return Response(data)
+
+
+# ===============================
+# REMOVE ITEM
+# ===============================
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def remove_item(request, id):
@@ -87,6 +106,10 @@ def remove_item(request, id):
     item.delete()
     return Response({"message": "Item removed"})
 
+
+# ===============================
+# CLEAR CART
+# ===============================
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def clear_cart(request):
@@ -97,8 +120,9 @@ def clear_cart(request):
     return Response({"message": "Cart cleared"})
 
 
-
-# GET ALL BOOKINGS (ADMIN / OWNER)
+# ===============================
+# ADMIN ALL BOOKINGS
+# ===============================
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_bookings(request):
@@ -116,42 +140,20 @@ def get_all_bookings(request):
             "date": b.date,
             "duration": b.duration,
             "price": b.total_price,
-            "status": getattr(b, "status", "pending")
+            "status": b.status
         })
 
     return Response(data)
 
 
-# OWNER CONFIRM BOOKING
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def confirm_booking(request, id):
-
-    booking = Booking.objects.get(id=id)
-
-    booking.status = "confirmed"
-    booking.save()
-
-    return Response({"message": "Booking confirmed"})
-
-
-# OWNER CANCEL BOOKING
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def cancel_booking(request, id):
-
-    booking = Booking.objects.get(id=id)
-
-    booking.status = "cancelled"
-    booking.save()
-
-    return Response({"message": "Booking cancelled"})
-
+# ===============================
+# OWNER BOOKINGS (ONLY THEIR)
+# ===============================
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def owner_bookings(request):
 
-    bookings = Booking.objects.all().order_by("-id")
+    bookings = Booking.objects.filter(owner=request.user).order_by("-id")
 
     data = []
 
@@ -168,31 +170,53 @@ def owner_bookings(request):
         })
 
     return Response(data)
+
+
+# ===============================
+# CONFIRM BOOKING (OWNER)
+# ===============================
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def confirm_booking(request, id):
 
     booking = Booking.objects.get(id=id)
 
+    # ✅ only workspace owner can confirm
+    if booking.owner != request.user:
+        return Response({"error": "Not allowed"}, status=403)
+
     booking.status = "confirmed"
     booking.save()
 
     return Response({"message": "Booking confirmed"})
 
+
+# ===============================
+# CANCEL BOOKING (OWNER)
+# ===============================
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def cancel_booking(request, id):
 
     booking = Booking.objects.get(id=id)
 
+    # ✅ only workspace owner can cancel
+    if booking.owner != request.user:
+        return Response({"error": "Not allowed"}, status=403)
+
     booking.status = "cancelled"
     booking.save()
 
     return Response({"message": "Booking cancelled"})
 
+
+# ===============================
+# ADMIN TRACK BOOKINGS
+# ===============================
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_bookings(request):
+
     bookings = Booking.objects.all()
 
     data = []
@@ -201,6 +225,7 @@ def admin_bookings(request):
             "id": b.id,
             "user": b.user.username,
             "workspace": b.workspace.name,
+            "owner": b.owner.username if b.owner else "Admin",
             "date": b.date,
             "status": b.status
         })
@@ -208,6 +233,9 @@ def admin_bookings(request):
     return Response(data)
 
 
+# ===============================
+# USER MY ORDERS
+# ===============================
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_orders(request):
@@ -223,7 +251,33 @@ def my_orders(request):
             "date": b.date,
             "duration": b.duration,
             "price": b.total_price,
-            "status": b.status if b.status else "Pending"
+            "status": b.status
         })
 
     return Response(data)
+from django.db.models import Sum
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def owner_revenue(request):
+
+    bookings = Booking.objects.filter(owner=request.user)
+
+    total = bookings.aggregate(total=Sum("total_price"))["total"] or 0
+
+    confirmed = bookings.filter(status="confirmed").aggregate(
+        total=Sum("total_price")
+    )["total"] or 0
+
+    pending = bookings.filter(status="pending").aggregate(
+        total=Sum("total_price")
+    )["total"] or 0
+
+    cancelled = bookings.filter(status="cancelled").count()
+
+    return Response({
+        "total_revenue": total,
+        "confirmed_revenue": confirmed,
+        "pending_revenue": pending,
+        "cancelled_count": cancelled
+    })

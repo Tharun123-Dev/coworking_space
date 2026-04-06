@@ -27,20 +27,31 @@ class IsAdminOrOwner(BasePermission):
 
 
 # ===========================
-# GET WORKSPACES
+# GET WORKSPACES (ALL USERS SEE ALL)
 # ===========================
 @api_view(['GET'])
 def get_workspaces(request):
     city = request.GET.get('city')
 
-    if city:
-        workspaces = Workspace.objects.filter(city__icontains=city)
-    else:
+    user = request.user
+
+    # OWNER → only their workspaces
+    if user.is_authenticated and hasattr(user, "profile") and user.profile.role == "owner":
+        workspaces = Workspace.objects.filter(owner=user)
+
+    # ADMIN → all
+    elif user.is_authenticated and user.is_superuser:
         workspaces = Workspace.objects.all()
+
+    # USERS → all visible
+    else:
+        if city:
+            workspaces = Workspace.objects.filter(city__icontains=city)
+        else:
+            workspaces = Workspace.objects.all()
 
     serializer = WorkspaceSerializer(workspaces, many=True)
     return Response(serializer.data)
-
 
 # ===========================
 # GET CATEGORIES
@@ -59,7 +70,7 @@ def get_categories(request):
 
 
 # ===========================
-# ADD WORKSPACE
+# ADD WORKSPACE (OWNER BASED)
 # ===========================
 @api_view(['POST'])
 @permission_classes([IsAdminOrOwner])
@@ -69,7 +80,7 @@ def add_workspace(request):
     serializer = WorkspaceSerializer(data=request.data)
 
     if serializer.is_valid():
-        serializer.save()
+        serializer.save(owner=request.user)   # ✅ OWNER ATTACHED
         print("SAVED SUCCESSFULLY")
         return Response(serializer.data)
 
@@ -78,7 +89,7 @@ def add_workspace(request):
 
 
 # ===========================
-# UPDATE WORKSPACE
+# UPDATE WORKSPACE (ONLY OWNER)
 # ===========================
 @api_view(['PUT'])
 @permission_classes([IsAdminOrOwner])
@@ -88,25 +99,37 @@ def update_workspace(request, id):
     except Workspace.DoesNotExist:
         return Response({"error": "Workspace not found"}, status=404)
 
+    # ✅ OWNER CAN EDIT ONLY THEIR WORKSPACE
+    if not request.user.is_superuser:
+        if workspace.owner != request.user:
+            return Response({"error": "Not allowed"}, status=403)
+
     serializer = WorkspaceSerializer(workspace, data=request.data)
 
     if serializer.is_valid():
-        serializer.save()
+        serializer.save(owner=workspace.owner)
         return Response(serializer.data)
 
     return Response(serializer.errors, status=400)
 
 
 # ===========================
-# DELETE WORKSPACE
+# DELETE WORKSPACE (ONLY OWNER)
 # ===========================
 @api_view(['DELETE'])
 @permission_classes([IsAdminOrOwner])
 def delete_workspace(request, id):
     try:
         workspace = Workspace.objects.get(id=id)
+
+        # ✅ OWNER CHECK
+        if not request.user.is_superuser:
+            if workspace.owner != request.user:
+                return Response({"error": "Not allowed"}, status=403)
+
         workspace.delete()
         return Response({"message": "Deleted"})
+
     except Workspace.DoesNotExist:
         return Response({"error": "Workspace not found"}, status=404)
 
