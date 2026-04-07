@@ -1,0 +1,363 @@
+/* SpecialContact.module.css */
+
+.specialPage {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  padding: 120px 20px 50px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 215, 0, 0.08), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255, 140, 0, 0.08), transparent 30%),
+    linear-gradient(135deg, #050505, #0d0d0d, #111111);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.bgGlowOne,
+.bgGlowTwo {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  z-index: 0;
+  animation: floatGlow 8s ease-in-out infinite alternate;
+}
+
+.bgGlowOne {
+  width: 260px;
+  height: 260px;
+  top: 8%;
+  left: 6%;
+  background: rgba(255, 215, 0, 0.16);
+}
+
+.bgGlowTwo {
+  width: 300px;
+  height: 300px;
+  bottom: 8%;
+  right: 8%;
+  background: rgba(255, 153, 0, 0.14);
+  animation-delay: 1.5s;
+}
+
+@keyframes floatGlow {
+  from {
+    transform: translateY(0px) translateX(0px) scale(1);
+  }
+  to {
+    transform: translateY(-18px) translateX(12px) scale(1.06);
+  }
+}
+
+.wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1220px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(18, 18, 18, 0.78);
+  border: 1px solid rgba(255, 215, 0, 0.14);
+  border-radius: 28px;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(255, 215, 0, 0.06);
+}
+
+.leftPanel {
+  padding: 60px 50px;
+  background:
+    linear-gradient(180deg, rgba(255, 215, 0, 0.05), rgba(255, 255, 255, 0.02)),
+    #0c0c0c;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tag {
+  display: inline-flex;
+  width: fit-content;
+  padding: 8px 16px;
+  border-radius: 999px;
+  margin-bottom: 22px;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.22);
+  color: #ffd700;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.leftPanel h1 {
+  font-size: 2.7rem;
+  line-height: 1.18;
+  margin-bottom: 18px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #d1d1d1;
+  margin-bottom: 34px;
+  max-width: 560px;
+}
+
+.highlightList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.highlightCard {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 215, 0, 0.12);
+  transform: translateY(0);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.highlightCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 215, 0, 0.35);
+  box-shadow: 0 12px 26px rgba(255, 215, 0, 0.08);
+}
+
+.highlightCard span {
+  min-width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700, #ffb700);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.highlightCard h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+.highlightCard p {
+  margin: 0;
+  color: #cfcfcf;
+  line-height: 1.6;
+  font-size: 0.94rem;
+}
+
+.formCard {
+  padding: 52px 40px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 215, 0, 0.02)),
+    #121212;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.formHeader {
+  margin-bottom: 26px;
+}
+
+.formHeader h2 {
+  margin: 0 0 10px;
+  font-size: 2rem;
+  color: #ffd700;
+  font-weight: 800;
+}
+
+.formHeader p {
+  margin: 0;
+  color: #c9c9c9;
+  line-height: 1.6;
+  font-size: 0.96rem;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.formGroup label {
+  margin-bottom: 8px;
+  color: #f2f2f2;
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 215, 0, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  padding: 14px 16px;
+  outline: none;
+  font-size: 0.98rem;
+  transition: all 0.3s ease;
+}
+
+.input {
+  height: 54px;
+}
+
+.textarea {
+  resize: none;
+  min-height: 130px;
+  padding-top: 14px;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #9d9d9d;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.submitBtn {
+  width: 100%;
+  height: 56px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ffd700, #d89b00);
+  color: #050505;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 28px rgba(255, 215, 0, 0.18);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+
+.submitBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(255, 215, 0, 0.24);
+}
+
+.submitBtn:active {
+  transform: scale(0.985);
+}
+
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .leftPanel {
+    padding: 42px 30px 28px;
+  }
+
+  .formCard {
+    padding: 34px 30px 38px;
+  }
+}
+
+@media (max-width: 768px) {
+  .specialPage {
+    padding: 95px 14px 24px;
+  }
+
+  .leftPanel h1 {
+    font-size: 2rem;
+  }
+
+  .description {
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+  }
+
+  .formHeader h2 {
+    font-size: 1.7rem;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .input {
+    height: 50px;
+  }
+
+  .submitBtn {
+    height: 52px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wrapper {
+    border-radius: 18px;
+  }
+
+  .leftPanel,
+  .formCard {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .leftPanel h1 {
+    font-size: 1.7rem;
+  }
+
+  .tag {
+    font-size: 0.8rem;
+    padding: 7px 12px;
+  }
+
+  .highlightCard {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .highlightCard span {
+    min-width: 38px;
+    height: 38px;
+    font-size: 0.88rem;
+  }
+
+  .formHeader h2 {
+    font-size: 1.45rem;
+  }
+
+  .input,
+  .textarea,
+  .submitBtn {
+    border-radius: 12px;
+    font-size: 0.94rem;
+  }
+}

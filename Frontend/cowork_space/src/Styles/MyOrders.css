@@ -1,82 +1,246 @@
-.myorders{
-padding:30px;
-background:#f8fafc;
-min-height:100vh;
+.myorders-page {
+  min-height: 100vh;
+  padding: 110px 20px 40px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 215, 0, 0.05), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(255, 170, 0, 0.04), transparent 28%),
+    linear-gradient(135deg, #020202, #070707, #0d0d0d);
+  color: #f5f5f5;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.myorders h2{
-margin-bottom:20px;
+.myorders {
+  max-width: 1300px;
+  margin: 0 auto;
 }
 
-.table-wrapper{
-background:white;
-border-radius:10px;
-overflow:auto;
-box-shadow:0 2px 10px rgba(0,0,0,0.05);
+.page-header {
+  margin-bottom: 28px;
 }
 
-table{
-width:100%;
-border-collapse:collapse;
+.page-badge {
+  display: inline-flex;
+  padding: 8px 14px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.16);
+  color: #ffd700;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
 }
 
-th{
-background:#111827;
-color:white;
-padding:12px;
-text-align:left;
+.page-header h2 {
+  margin: 0 0 10px;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #f8f8f8;
 }
 
-td{
-padding:12px;
-border-bottom:1px solid #eee;
+.page-subtext {
+  margin: 0;
+  color: #bdbdbd;
+  max-width: 760px;
+  line-height: 1.7;
 }
 
-tr:hover{
-background:#f9fafb;
+.orders-section {
+  margin-bottom: 28px;
+  padding: 22px;
+  border-radius: 22px;
+  background: rgba(10, 10, 10, 0.92);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
-.status{
-padding:4px 12px;
-border-radius:20px;
-font-size:12px;
-font-weight:600;
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 14px;
 }
 
-.pending{
-background:#fff7ed;
-color:#ea580c;
+.section-title {
+  margin: 0;
+  color: #ffd700;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
-.confirmed{
-background:#ecfdf5;
-color:#059669;
+.count-badge {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
 }
 
-.cancelled{
-background:#fef2f2;
-color:#dc2626;
+.loading {
+  margin: 0;
+  padding: 18px 0;
+  color: #bfbfbf;
+  font-size: 0.98rem;
 }
 
-.loading{
-text-align:center;
-padding:20px;
+.empty-state {
+  padding: 26px 10px 10px;
+  text-align: center;
 }
 
-/* Mobile Responsive */
-
-@media(max-width:768px){
-
-.myorders{
-padding:15px;
+.empty-state h4 {
+  margin: 0 0 8px;
+  color: #ffd700;
+  font-size: 1.1rem;
 }
 
-table{
-font-size:14px;
+.empty-state p {
+  margin: 0;
+  color: #bdbdbd;
+  line-height: 1.7;
 }
 
-th,td{
-padding:8px;
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 215, 0, 0.06);
 }
 
+.table-wrapper table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+.table-wrapper thead {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.table-wrapper th,
+.table-wrapper td {
+  padding: 16px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: top;
+}
+
+.table-wrapper th {
+  color: #ffd700;
+  font-size: 0.93rem;
+  font-weight: 700;
+}
+
+.table-wrapper td {
+  color: #e8e8e8;
+  font-size: 0.94rem;
+}
+
+.table-wrapper tbody tr {
+  transition: background 0.3s ease;
+}
+
+.table-wrapper tbody tr:hover {
+  background: rgba(255, 215, 0, 0.03);
+}
+
+.message-cell {
+  max-width: 260px;
+  color: #cfcfcf;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.pending {
+  background: rgba(255, 193, 7, 0.12);
+  border: 1px solid rgba(255, 193, 7, 0.22);
+  color: #ffd761;
+}
+
+.confirmed {
+  background: rgba(40, 167, 69, 0.12);
+  border: 1px solid rgba(40, 167, 69, 0.22);
+  color: #86f7a7;
+}
+
+.contacted {
+  background: rgba(23, 162, 184, 0.12);
+  border: 1px solid rgba(23, 162, 184, 0.22);
+  color: #76e7ff;
+}
+
+.cancelled {
+  background: rgba(220, 53, 69, 0.12);
+  border: 1px solid rgba(220, 53, 69, 0.22);
+  color: #ff9aa5;
+}
+
+@media (max-width: 768px) {
+  .myorders-page {
+    padding: 95px 14px 24px;
+  }
+
+  .page-header h2 {
+    font-size: 2rem;
+  }
+
+  .page-subtext {
+    font-size: 0.95rem;
+  }
+
+  .orders-section {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .section-title {
+    font-size: 1.08rem;
+  }
+
+  .table-wrapper table {
+    min-width: 680px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header h2 {
+    font-size: 1.7rem;
+  }
+
+  .page-badge {
+    font-size: 0.78rem;
+    padding: 7px 12px;
+  }
+
+  .page-subtext {
+    font-size: 0.92rem;
+  }
+
+  .count-badge {
+    min-width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
 }

@@ -22,7 +22,18 @@ class Workspace(models.Model):
         return self.name
 
 
+from django.contrib.auth.models import User
+
 class WorkspaceCategory(models.Model):
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="category_owner"
+    )
+
     CATEGORY_CHOICES = [
         ('day_pass', 'Day Pass'),
         ('meeting', 'Meeting Rooms'),

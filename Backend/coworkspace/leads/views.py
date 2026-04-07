@@ -6,9 +6,11 @@ from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 from django.core.mail import send_mail
 from django.conf import settings
-
+from rest_framework.permissions import IsAuthenticated
+from .models import SpecialLead
+from workspaces.models import WorkspaceCategory
 from .models import Lead
-from .serializers import LeadSerializer
+from .serializers import LeadSerializer,SpecialLeadSerializer
 
 
 @api_view(['POST'])
@@ -106,3 +108,156 @@ from .serializers import LeadssSerializer
 class LeadViewSet(viewsets.ModelViewSet):
     queryset = Leadss.objects.all().order_by('-created_at')
     serializer_class = LeadssSerializer
+
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+from .models import SpecialLead
+from workspaces.models import WorkspaceCategory
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_special_lead(request):
+    print(request.data)
+    category_id = request.data.get("category")
+
+    if not category_id:
+        return Response({"error": "Category required"}, status=400)
+
+    try:
+        category = WorkspaceCategory.objects.get(id=int(category_id))
+    except WorkspaceCategory.DoesNotExist:
+        return Response({"error": "Invalid category"}, status=404)
+
+    SpecialLead.objects.create(
+        user=request.user,
+        category=category,
+        owner=category.owner,
+        name=request.data.get("name"),
+        email=request.data.get("email"),
+        phone=request.data.get("phone"),
+        company=request.data.get("company"),
+        message=request.data.get("message")
+
+    )
+   
+    return Response({"message": "Lead created successfully"})
+@api_view(['POST'])
+def add_special_lead(request):
+    try:
+        category_id = request.data.get("category")
+
+        category = WorkspaceCategory.objects.get(id=category_id)
+
+        serializer = SpecialLeadSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(
+                category=category,
+                owner=category.owner
+            )
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+    except WorkspaceCategory.DoesNotExist:
+        return Response(
+            {"error": "Category not found"},
+            status=404
+        )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def owner_special_leads(request):
+    leads = SpecialLead.objects.filter(owner=request.user).order_by("-created_at")
+
+    data = []
+
+    for l in leads:
+        data.append({
+            "id": l.id,
+            "name": l.name,
+            "email": l.email,
+            "phone": l.phone,
+            "company": l.company,
+            "message": l.message,
+            "category": l.category.category,
+            "created": l.created_at,
+            "status":l.status
+        })
+
+    return Response(data)
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_special_lead(request, id):
+    try:
+        lead = SpecialLead.objects.get(id=id, owner=request.user)
+
+        status = request.data.get("status")
+
+        lead.status = status
+        lead.save()
+
+        return Response({
+            "id": lead.id,
+            "status": lead.status
+        })
+
+    except SpecialLead.DoesNotExist:
+        return Response({"error":"Not found"},status=404)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_special_leads(request):
+
+    leads = SpecialLead.objects.filter(user=request.user).order_by("-created_at")
+
+    data = []
+
+    for l in leads:
+        data.append({
+            "id": l.id,
+            "category": l.category.category,
+            "name": l.name,
+            "email": l.email,
+            "phone": l.phone,
+            "company": l.company,
+            "message": l.message,
+            "status": l.status,
+            "created": l.created_at
+        })
+
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_special_leads(request):
+
+    if not request.user.is_superuser:
+        return Response({"error":"Admin only"}, status=403)
+
+    leads = SpecialLead.objects.all().order_by("-created_at")
+
+    data = []
+
+    for l in leads:
+        data.append({
+            "id": l.id,
+            "user": l.user.username,
+            "owner": l.owner.username if l.owner else "-",
+            "category": l.category.category,
+            "company": l.company,
+            "phone": l.phone,
+            "email": l.email,
+            "message": l.message,
+            "status": l.status
+        })
+
+    return Response(data)
+
+
+

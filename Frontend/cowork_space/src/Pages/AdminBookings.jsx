@@ -23,13 +23,13 @@ function AdminBookings() {
   const filteredBookings = bookings.filter(item => {
 
     const matchesSearch =
+      item.owner?.toLowerCase().includes(search.toLowerCase()) ||
       item.user?.toLowerCase().includes(search.toLowerCase()) ||
       item.workspace?.toLowerCase().includes(search.toLowerCase()) ||
       item.location?.toLowerCase().includes(search.toLowerCase())
 
     const matchesFilter =
-      filter === "All" ||
-      item.status?.toLowerCase() === filter.toLowerCase()
+      filter === "All" || item.status === filter
 
     return matchesSearch && matchesFilter
   })
@@ -48,7 +48,7 @@ function AdminBookings() {
       <div className="controls">
         <input
           type="text"
-          placeholder="Search user / workspace / location..."
+          placeholder="Search owner / user / workspace..."
           value={search}
           onChange={(e)=>setSearch(e.target.value)}
         />
@@ -68,6 +68,7 @@ function AdminBookings() {
           <table>
             <thead>
               <tr>
+                <th>Owner</th>
                 <th>User</th>
                 <th>Workspace</th>
                 <th>Location</th>
@@ -79,23 +80,15 @@ function AdminBookings() {
             </thead>
 
             <tbody>
-
-              {filteredBookings.length === 0 && (
-                <tr>
-                  <td colSpan="7" style={{textAlign:"center"}}>
-                    No bookings found
-                  </td>
-                </tr>
-              )}
-
               {filteredBookings.map(item=>(
                 <tr key={item.id}>
+                  <td>{item.owner || "-"}</td>
                   <td>{item.user}</td>
                   <td>{item.workspace}</td>
                   <td>{item.location}</td>
                   <td>{item.date}</td>
                   <td>{item.duration} hrs</td>
-                  <td>₹{item.price || item.total_price}</td>
+                  <td>₹{item.price}</td>
 
                   <td>
                     <span className={`status ${item.status}`}>

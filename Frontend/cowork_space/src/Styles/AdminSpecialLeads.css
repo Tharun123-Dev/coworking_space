@@ -1,0 +1,137 @@
+.admin-leads-container {
+padding: 30px;
+background: #0b0f19;
+min-height: 100vh;
+color: white;
+}
+
+/* header */
+
+.header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+}
+
+.refresh-btn {
+background: gold;
+border: none;
+padding: 8px 16px;
+border-radius: 6px;
+cursor: pointer;
+font-weight: 600;
+}
+
+/* filters */
+
+.filters {
+display: flex;
+gap: 10px;
+margin-bottom: 20px;
+flex-wrap: wrap;
+}
+
+.filters input,
+.filters select {
+padding: 10px;
+border-radius: 6px;
+border: 1px solid #333;
+background: #111827;
+color: white;
+min-width: 200px;
+}
+
+/* table */
+
+.table-wrapper {
+overflow-x: auto;
+background: #111827;
+border-radius: 10px;
+}
+
+table {
+width: 100%;
+border-collapse: collapse;
+}
+
+th {
+background: #1f2937;
+padding: 14px;
+text-align: left;
+font-weight: 600;
+}
+
+td {
+padding: 14px;
+border-top: 1px solid #2c2c2c;
+}
+
+tr:hover {
+background: #1a2236;
+}
+
+/* status */
+
+.status {
+padding: 5px 10px;
+border-radius: 20px;
+font-size: 12px;
+font-weight: 600;
+}
+
+.pending {
+background: #ff9800;
+color: black;
+}
+
+.contacted {
+background: #2196f3;
+}
+
+.converted {
+background: #4caf50;
+}
+
+/* contact icons */
+
+.contact-icons a {
+margin-right: 10px;
+font-size: 18px;
+text-decoration: none;
+}
+
+/* loading */
+
+.loading {
+padding: 30px;
+text-align: center;
+}
+
+/* empty */
+
+.empty {
+padding: 30px;
+text-align: center;
+color: #aaa;
+}
+
+/* responsive */
+
+@media (max-width: 768px) {
+
+.admin-leads-container {
+padding: 15px;
+}
+
+.filters input,
+.filters select {
+width: 100%;
+}
+
+th, td {
+padding: 10px;
+font-size: 13px;
+}
+
+}

@@ -6,6 +6,11 @@ import R from "../Pages/Reveal";
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const [owners, setOwners]=useState([])
+   useEffect(()=>{
+   axiosInstance.get("owners/")
+   .then(res=>setOwners(res.data))},[])
+
 
   const [workspaces, setWorkspaces] = useState([]);
   const [form, setForm] = useState({
@@ -163,8 +168,14 @@ function AdminDashboard() {
         </R>
 
           <R>
-          <button className={`${styles.btnBox} ${styles.goldBtn}`} onClick={() => navigate("/admin-bookings")}>
+          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/admin-bookings")}>
            Bookings
+          </button>
+        </R>
+
+           <R>
+          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/owner-special-leads")}>
+           Owners Leads[Categories]
           </button>
         </R>
       </div>
@@ -279,7 +290,23 @@ function AdminDashboard() {
               value={categoryForm.name}
               onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
             />
+            <select
+value={categoryForm.owner}
+onChange={(e)=>
+setCategoryForm({
+...categoryForm,
+owner:e.target.value
+})
+}
+>
 
+<option value="">Assign Owner</option>
+
+{owners.map(o=>(
+<option value={o.id}>{o.username}</option>
+))}
+
+</select>
             <select
               value={categoryForm.category}
               onChange={(e) => setCategoryForm({ ...categoryForm, category: e.target.value })}

@@ -88,12 +88,27 @@ function Details({ openModal }) {
       .catch(() => { setShareMsg("Copy failed"); setTimeout(() => setShareMsg(""), 2500); });
   };
 
-  const handleBook = () => {
-    if (!data.is_available) { alert("Not Available Now"); return; }
-    const token = localStorage.getItem("access");
-    if (!token) { alert("Please login first"); navigate("/auth"); return; }
-    openModal(data.name);
-  };
+const handleBook = () => {
+  if (!data.is_available) {
+    alert("Not Available Now");
+    return;
+  }
+
+  const token = localStorage.getItem("access");
+
+  if (!token) {
+    alert("Please login first");
+    navigate("/auth");
+    return;
+  }
+
+  // navigate to SpecialContact page
+  navigate(`/special-contact/${data.id}`, {
+    state: {
+      workspace: data
+    }
+  });
+};
 
   if (!data) {
     return (

@@ -12,6 +12,6 @@ urlpatterns = [
     path("booking-cancel/<int:id>/", cancel_booking),
     path("admin/bookings/",admin_bookings),
     path("myorders/",my_orders),
-    path("owner/revenue",owner_revenue)
+    path("owner/revenue/",owner_revenue)
 
 ]

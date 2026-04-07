@@ -217,17 +217,26 @@ def cancel_booking(request, id):
 @permission_classes([IsAuthenticated])
 def admin_bookings(request):
 
-    bookings = Booking.objects.all()
+    bookings = Booking.objects.select_related(
+        "workspace",
+        "workspace__owner",
+        "user"
+
+    ).order_by("-id")
 
     data = []
     for b in bookings:
         data.append({
             "id": b.id,
+            "owner":b.workspace.owner.username,
             "user": b.user.username,
             "workspace": b.workspace.name,
-            "owner": b.owner.username if b.owner else "Admin",
+            "location":b.workspace.location,
             "date": b.date,
-            "status": b.status
+            "duration":b.duration,
+            "price":b.total_price,
+            "status": b.status,
+
         })
 
     return Response(data)

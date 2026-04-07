@@ -25,6 +25,9 @@ import OwnerBookings from "./Pages/OwnerBookings";
 import AdminBookings from "./Pages/AdminBookings";
 import MyOrders from "./Pages/MyOrders";
 import ScrollToTop from "./Pages/ScrollToTop";
+import SpecialContact from "./Pages/SpecialContact";
+import OwnerLeads from "./Pages/OwnerLeads";
+import AdminSpecialLeads from "./Pages/AdminSpecialLeads";
 
 function App() {
   return (
@@ -61,6 +64,10 @@ function App() {
           <Route path="/owner-bookings" element={<OwnerBookings />} />
 
           <Route path="/my-orders" element={<MyOrders />} />
+          <Route path="/special-contact/:id" element={<SpecialContact />} />
+          <Route path="/owner-leads" element={<OwnerLeads/>} />
+            <Route path="/owner-special-leads" element={<AdminSpecialLeads/>} />
+
            
         </Route>
 
