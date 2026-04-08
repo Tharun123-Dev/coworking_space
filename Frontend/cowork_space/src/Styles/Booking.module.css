@@ -1,0 +1,256 @@
+.container {
+  width: min(92%, 520px);
+  margin: 130px auto 40px auto;
+  padding: 28px 22px;
+  background: #ffffff;
+  border: 1px solid #e6ecf2;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  font-family: "Inter", sans-serif;
+}
+
+.container h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.7rem, 2.4vw, 2.1rem);
+  color: #0f172a;
+  text-align: center;
+  font-weight: 700;
+}
+
+.container h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  color: #1e293b;
+  text-align: center;
+  font-weight: 600;
+}
+
+.container p {
+  margin: 0 0 18px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.97rem;
+}
+
+.input {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid #cfd8e3;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.98rem;
+  outline: none;
+  transition: 0.25s ease;
+}
+
+.input:focus {
+  border-color: #0f766e;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.input::placeholder {
+  color: #94a3b8;
+}
+
+.priceBox {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ecfeff, #f8fafc);
+  border: 1px solid #c7eeea;
+  text-align: center;
+}
+
+.priceBox h3 {
+  margin-bottom: 8px;
+  color: #334155;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.priceBox h2 {
+  margin: 0;
+  color: #0f766e;
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  font-weight: 800;
+}
+
+.payBtn,
+.bookBtn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.payBtn {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.payBtn:hover {
+  background: #0b5e58;
+  transform: translateY(-1px);
+}
+
+.bookBtn {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.bookBtn:hover {
+  background: #0f172a;
+  transform: translateY(-1px);
+}
+
+.success {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  text-align: center;
+  font-weight: 700;
+}
+
+.paymentBox {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+}
+
+.paymentBox h3 {
+  margin-bottom: 16px;
+  color: #0f172a;
+}
+
+.paymentBtns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.paymentBtns button {
+  padding: 13px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.paymentBtns button:hover {
+  border-color: #0f766e;
+  color: #0f766e;
+  background: #f0fdfa;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.form input {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid #cfd8e3;
+  border-radius: 12px;
+  background: #ffffff;
+  font-size: 0.96rem;
+  outline: none;
+  transition: 0.25s ease;
+}
+
+.form input:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+}
+
+.form button {
+  margin-top: 6px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #0f766e;
+  color: #ffffff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.form button:hover {
+  background: #0b5e58;
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: min(94%, 100%);
+    padding: 22px 16px;
+    border-radius: 16px;
+    margin-top: 20px;
+  }
+
+  .container h2 {
+    font-size: 1.5rem;
+  }
+
+  .container h3 {
+    font-size: 1rem;
+  }
+
+  .priceBox {
+    padding: 16px;
+  }
+
+  .paymentBox {
+    padding: 16px;
+  }
+
+  .payBtn,
+  .bookBtn,
+  .form button {
+    padding: 13px 16px;
+    font-size: 0.96rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: calc(100% - 24px);
+    margin: 20px auto 30px auto;
+    padding: 18px 14px;
+  }
+
+  .input {
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+
+  .paymentBtns {
+    grid-template-columns: 1fr;
+  }
+
+  .priceBox h2 {
+    font-size: 1.8rem;
+  }
+
+  .container p {
+    font-size: 0.92rem;
+  }
+}

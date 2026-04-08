@@ -17,6 +17,7 @@ from django.shortcuts import get_object_or_404
 def create_booking(request):
 
     workspace_id = request.data.get('workspace_id')
+    cart_item_id = request.data.get('cart_item_id')   # ADD THIS
 
     if not workspace_id:
         return Response({"error": "No workspace_id"}, status=400)
@@ -41,10 +42,9 @@ def create_booking(request):
         total_price=total_price
     )
 
-    # CLEAR CART AFTER BOOKING
-    cart = Cart.objects.filter(user=user).first()
-    if cart:
-        CartItem.objects.filter(cart=cart).delete()
+   # REMOVE ONLY THAT ITEM
+    if cart_item_id:
+        CartItem.objects.filter(id=cart_item_id).delete()
 
     return Response({"message": "Booking successful"})
 
@@ -102,9 +102,13 @@ def get_cart(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def remove_item(request, id):
-    item = CartItem.objects.get(id=id)
-    item.delete()
-    return Response({"message": "Item removed"})
+    try:
+     item = CartItem.objects.get(id=id, cart__user=request.user)
+
+     item.delete()
+     return Response({"message": "Item removed"})
+    except CartItem.DoesNotExist:
+        return Response({"error": "Item not found"},status=404)
 
 
 # ===============================
