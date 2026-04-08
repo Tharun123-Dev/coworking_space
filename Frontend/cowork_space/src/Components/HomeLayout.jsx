@@ -12,6 +12,8 @@ import AddReview from "../Pages/AddReview";
 
 import { useState } from "react";
 import Testimonials from "../Pages/Testimonials";
+import HydCards from "../Pages/HyderabadWorkspaces.jsx";
+import Compaines from "../Pages/Companies.jsx"
 
 function HomeLayout() {
   const [selected, setSelected] = useState(null);
@@ -19,6 +21,8 @@ function HomeLayout() {
   return (
     <>
       <Home />
+      <Compaines/>
+      <HydCards/>
       <Feature />
       <WorkspaceTabs />
       <BusinessSection openModal={setSelected} />
