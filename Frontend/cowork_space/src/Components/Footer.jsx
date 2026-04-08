@@ -1,6 +1,6 @@
 import styles from "../Styles/Footer.module.css";
 import Reveal from "../Pages/Reveal";
-
+import { FaFacebookF, FaInstagram, FaWhatsapp, FaLinkedinIn } from "react-icons/fa";
 function Footer() {
   return (
     <footer className={styles.footer}>
@@ -32,50 +32,49 @@ function Footer() {
                 Secure, modern, and designed for productivity.
               </p>
             </Reveal>
+{/* Social icons */}
+<div className={styles.socialIcons}>
+  <a
+    href="https://www.facebook.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`${styles.icon} ${styles.iconHover}`}
+    title="Facebook"
+  >
+    <FaFacebookF className={styles.iconInner} />
+  </a>
 
-            {/* Social icons */}
-            <div className={styles.socialIcons}>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener"
-                className={`${styles.icon} ${styles.iconHover}`}
-                title="Facebook"
-              >
-                <span className={styles.iconInner}>📘</span>
-              </a>
+  <a
+    href="https://www.instagram.com/tharun_naniiii/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`${styles.icon} ${styles.iconHover}`}
+    title="Instagram"
+  >
+    <FaInstagram className={styles.iconInner} />
+  </a>
 
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener"
-                className={`${styles.icon} ${styles.iconHover}`}
-                title="Instagram"
-              >
-                <span className={styles.iconInner}>📷</span>
-              </a>
+  <a
+    href="https://wa.me/916309383826"
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`${styles.icon} ${styles.iconHover}`}
+    title="WhatsApp"
+  >
+    <FaWhatsapp className={styles.iconInner} />
+  </a>
 
-              <a
-                href="https://wa.me/919876543210"
-                target="_blank"
-                rel="noopener"
-                className={`${styles.icon} ${styles.iconHover}`}
-                title="WhatsApp"
-              >
-                <span className={styles.iconInner}>💬</span>
-              </a>
-
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener"
-                className={`${styles.icon} ${styles.iconHover}`}
-                title="LinkedIn"
-              >
-                <span className={styles.iconInner}>💼</span>
-              </a>
-            </div>
-          </div>
+  <a
+    href="https://www.linkedin.com/in/tharun9949/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`${styles.icon} ${styles.iconHover}`}
+    title="LinkedIn"
+  >
+    <FaLinkedinIn className={styles.iconInner} />
+  </a>
+</div>
+</div>
 
           {/* Our Cities */}
           <div className={styles.linkSection}>
