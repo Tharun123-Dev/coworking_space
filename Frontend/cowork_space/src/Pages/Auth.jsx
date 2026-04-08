@@ -224,7 +224,7 @@ function Auth() {
       <div className={styles.authWrapper}>
         <div className={styles.authContent}>
           <p className={styles.badge}>
-            {isLogin ? "Welcome Back" : "Create Your Account"}
+            {isLogin ? "Welcome Back (Login 👇)" : "Create Your Account"}
           </p>
 
           <h1>
