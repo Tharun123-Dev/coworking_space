@@ -122,10 +122,10 @@ function HomePage() {
                 </div>
               </div>
 
-              <a href="/hyderabad-workspaces" className={styles.exploreBtn}>
-                Explore Hyderabad Spaces
-                <span className={styles.btnArrow}>→</span>
-              </a>
+         <a href="#hyd" className={styles.exploreBtn}>
+  Explore Hyderabad Spaces
+  <span className={styles.btnArrow}>→</span>
+</a>
             </Reveal>
           </div>
 

@@ -65,7 +65,7 @@ function HyderabadWorkspaces() {
   return (
     <div className={styles.workspacesPage}>
       {/* ========== WORKSPACE CARDS ========== */}
-      <section className={styles.workspacesSection}>
+      <section className={styles.workspacesSection} id="hyd">
         <div className={styles.container}>
           <Reveal>
             <h2 className={styles.sectionTitle}>

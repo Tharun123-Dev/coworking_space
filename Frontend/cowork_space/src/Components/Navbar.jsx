@@ -67,6 +67,12 @@ function Navbar() {
     closeMobileMenu();
   };
 
+  const scrollToClients = () => {
+  const section = document.getElementById("workspace-clients-section");
+  if (section) {
+    section.scrollIntoView({ behavior: "smooth" });
+  }
+};
   const scrollToCities = (city) => {
     const section = document.getElementById("cities");
     if (section) section.scrollIntoView({ behavior: "smooth" });
@@ -87,6 +93,7 @@ function Navbar() {
         <nav className={styles.menu}>
           <p className={styles.menuItem} onClick={() => navigate("/")}>Home</p>
           <p className={styles.menuItem} onClick={() => navigate("/Enterprise")}>Enterprise</p>
+          <p className={styles.menuItem} onClick={scrollToClients}>Companies</p>
 
           {/* Workspaces */}
           <div
@@ -191,6 +198,8 @@ function Navbar() {
             <p className={styles.mobileItem} onClick={() => handleNavigate("/Enterprise")}>
               Enterprise
             </p>
+              {/* Enterprise */}
+            <p className={styles.mobileItem} onClick={scrollToClients}>Companies</p>
 
             {/* Workspaces accordion */}
             <div className={styles.mobileDropdown}>

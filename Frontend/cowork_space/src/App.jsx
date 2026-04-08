@@ -29,6 +29,7 @@ import SpecialContact from "./Pages/SpecialContact";
 import OwnerLeads from "./Pages/OwnerLeads";
 import AdminSpecialLeads from "./Pages/AdminSpecialLeads";
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -48,8 +49,10 @@ function App() {
 
           <Route path="/details/:id" element={<Details />} />
 
+
           <Route path="/amenities" element={<Amenities />} />
           <Route path="/Enterprise" element={<Enterprise />} />
+          
           <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
 
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
