@@ -24,12 +24,14 @@
   flex: 1;
   min-width: 180px;
 }
-
+.logoText{
+  color: #fbbf24;
+}
 /*  LOGO */
 .logo h3 {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #fbbf24 !important;
+  
   /* background: linear-gradient(90deg, #fbbf24, #ef4444); */
   
   -webkit-text-fill-color: transparent;
@@ -107,6 +109,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.privacyLink{
+  text-decoration:none;
+  color: inherit;
 }
 
 /* =====================================

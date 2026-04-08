@@ -123,18 +123,18 @@ function Home() {
       {/* ========== HERO SECTION ========== */}
       <section className={styles.hero}>
 
-        {/* YouTube Video Background */}
-        <div className={styles.videoBg}>
-          <iframe
-            src="https://www.youtube.com/embed/IxRVa1DbSAg?autoplay=1&mute=1&loop=1&playlist=IxRVa1DbSAg&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1"
-            title="Hyderabad Coworking Background"
-            frameBorder="0"
-            allow="autoplay; encrypted-media"
-            allowFullScreen
-            className={styles.videoIframe}
-          />
-        </div>
-
+  {/* Video Background */}
+<div className={styles.videoBg}>
+  <video
+    autoPlay
+    muted
+    loop
+    playsInline
+    className={styles.videoIframe}
+  >
+    <source src="/videoplayback.mp4" type="video/mp4" />
+  </video>
+</div>
         {/* Dark overlay */}
         <div className={styles.videoOverlay}></div>
 

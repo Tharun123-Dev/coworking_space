@@ -1,7 +1,9 @@
 import styles from "../Styles/Footer.module.css";
 import Reveal from "../Pages/Reveal";
 import { FaFacebookF, FaInstagram, FaWhatsapp, FaLinkedinIn } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 function Footer() {
+  const navigate = useNavigate();
   return (
     <footer className={styles.footer}>
       <Reveal>
@@ -178,7 +180,12 @@ function Footer() {
             </ul>
 
             <Reveal>
-              <button className={styles.ctaButton}>Book a Tour</button>
+              <button 
+  className={styles.ctaButton}
+  onClick={() => navigate("/")}
+>
+  Book a Tour
+</button>
             </Reveal>
           </div>
         </div>
