@@ -3,7 +3,7 @@ import axiosInstance from "../Services/Axios";
 import { useLocation } from "react-router-dom";
 import Reveal from "./Reveal";
 import styles from "../Styles/Booking.module.css";
-import { auth } from "./firebase";
+
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 function Booking() {
