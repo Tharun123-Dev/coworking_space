@@ -14,12 +14,14 @@ def chatbot(request):
             return Response({"error": "Message required"}, status=400)
 
         response = client.models.generate_content(
-            model="gemini-flash-latest",
+            model="gemini-2.0-flash",
             contents=message
         )
 
+        reply = response.text
+
         return Response({
-            "reply": response.text
+            "reply": reply
         })
 
     except Exception as e:
