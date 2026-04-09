@@ -38,15 +38,16 @@ function HyderabadWorkspaces() {
     setFilteredData(data);
   };
 
-  const handleBookNow = (item) => {
-    const token = localStorage.getItem("access");
-    if (!token) {
-      alert("Please login first 🔒");
-      window.location.href = "/auth";
-    } else {
-      handleAddToCart(item.id);
-    }
-  };
+ const handleBookNow = (item) => {
+  const token = localStorage.getItem("access");
+
+  if (!token) {
+    window.location.href = "/auth?type=user";
+    return;
+  }
+
+  handleAddToCart(item.id);
+};
 
   const handleKnowMore = (item) => {
     setSelectedWorkspace(item);
