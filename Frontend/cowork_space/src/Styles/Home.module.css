@@ -379,7 +379,7 @@ body {
   transform: translateX(5px);
 }
 
-/* ===== FORM WRAPPER ===== */
+/* ===== SMALL GET IN TOUCH FORM ===== */
 .formWrapper {
   position: relative;
   width: 100%;
@@ -387,7 +387,6 @@ body {
   justify-content: center;
 }
 
-/* Toggle button hidden on desktop — only used on mobile if you ever re-enable it */
 .formToggle {
   display: none;
 }
@@ -640,7 +639,7 @@ body {
   .heroContent {
     padding: 96px 20px 70px;
     gap: 32px;
-    margin-top: 0; /* removed the -110px that was pushing content up */
+    margin-top: -110px;
   }
 
   .videoIframe {
@@ -693,22 +692,33 @@ body {
     justify-content: center;
   }
 
-  /* ✅ FIX: Hide toggle button entirely — form is always visible on mobile */
   .formToggle {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: #111;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    box-shadow: 0 10px 26px rgba(212, 175, 55, 0.24);
   }
 
-  /* ✅ FIX: Always show form on mobile, no toggle needed */
   .heroForm {
-    display: block;
+    display: none;
     max-width: 100%;
     padding: 20px 16px;
-    margin: 0 auto;
+    margin-left: 0;
   }
 
-  /* formVisible no longer needed but kept for safety */
   .formVisible {
     display: block;
+    animation: fadeIn 0.4s ease;
   }
 
   .scrollIndicator {
