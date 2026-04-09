@@ -43,33 +43,44 @@ function CreateOwner() {
     setEditId(null);
   };
 
-  const handleSubmit = async () => {
-    if (!form.username || !form.email || (!editId && !form.password)) {
-      alert("All required fields must be filled ❌");
-      return;
+const handleSubmit = async () => {
+  if (!form.username || !form.email || (!editId && !form.password)) {
+    alert("All required fields must be filled ❌");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    if (editId) {
+      await axiosInstance.put(`owners/update/${editId}/`, {
+        username: form.username,
+        email: form.email,
+        password: form.password
+      });
+
+      alert("Owner updated ✅");
+    } else {
+
+      await axiosInstance.post("admin/create-owner/", {
+        username: form.username,
+        email: form.email,
+        password: form.password
+      });
+
+      alert("Owner created successfully 🎉");
     }
 
-    try {
-      setLoading(true);
+    resetForm();
+    fetchOwners();
 
-      if (editId) {
-        await axiosInstance.put(`owners/update/${editId}/`, form);
-        alert("Owner updated ✅");
-      } else {
-        await axiosInstance.post("admin/create-owner/", form);
-        alert("Owner created successfully 🎉");
-      }
-
-      resetForm();
-      fetchOwners();
-    } catch (err) {
-      console.log(err);
-      alert("Error occurred ❌");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  } catch (err) {
+    console.log(err.response?.data);
+    alert("Error occurred ❌");
+  } finally {
+    setLoading(false);
+  }
+};
   const handleEdit = (owner) => {
     setEditId(owner.id);
     setForm({

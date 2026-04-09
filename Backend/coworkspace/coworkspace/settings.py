@@ -30,6 +30,10 @@ EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+EMAIL_FROM = os.getenv("EMAIL_FROM")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -73,16 +77,16 @@ CSRF_COOKIE_SECURE = False
 SESSION_ENGINE='django.contrib.sessions.backends.db'
 
 CORS_ALLOWED_ORIGINS = [
-    # "http://localhost:5173",
-   "https://coworkingspace-one.vercel.app/",
+    "http://localhost:5173",
+#    "https://coworkingspace-one.vercel.app/",
     
     
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-    # "http://localhost:5173",
-    # "http://127.0.0.1:8000",
-    "https://coworkingspace-one.vercel.app/",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
+    # "https://coworkingspace-one.vercel.app/",
     
 ]
 CORS_ALLOW_ALL_ORIGINS = True

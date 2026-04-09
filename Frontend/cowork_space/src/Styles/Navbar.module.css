@@ -206,8 +206,8 @@
 /* ── ROLE MENU ── (REPOSITIONED SAFELY) */
 .roleMenu {
   position: fixed; /* Fixed to prevent overflow push */
-  top: 80px;
-  right: 2rem; /* Consistent from edge */
+  top: 70px;
+  right: 9rem; /* Consistent from edge */
   background: #1a1a1a;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
@@ -216,6 +216,7 @@
   min-width: 140px;
   animation: slideDown 0.3s ease-out;
   z-index: 1002;
+  
 }
 
 .roleMenu div {
