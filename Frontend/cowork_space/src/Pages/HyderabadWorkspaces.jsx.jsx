@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/HyderabadWorkspaces.module.css";
 import Reveal from "../Pages/Reveal";
-
+import { useNavigate } from "react-router-dom";
 function HyderabadWorkspaces() {
+  const navigate = useNavigate();
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,11 +39,11 @@ function HyderabadWorkspaces() {
     setFilteredData(data);
   };
 
- const handleBookNow = (item) => {
+const handleBookNow = (item) => {
   const token = localStorage.getItem("access");
 
   if (!token) {
-    window.location.href = "/auth?type=user";
+    navigate("/auth?type=user");
     return;
   }
 
