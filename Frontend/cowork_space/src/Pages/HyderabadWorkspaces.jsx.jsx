@@ -29,7 +29,7 @@ function HyderabadWorkspaces() {
   const handleAddToCart = (workspaceId) => {
     axiosInstance.post("cart/add/", { workspace_id: workspaceId, duration: 1 })
       .then(() => alert("Added to cart ✅"))
-      .catch(() => alert("Please login first 🔒"));
+      .catch(() => navigate("/auth?type=user"));
   };
 
   const handleSearch = (city, query) => {
