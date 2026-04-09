@@ -264,6 +264,8 @@ function Navbar() {
                 /* Not logged in: role chooser */
                 <div className={styles.mobileRoleMenu}>
                   <span className={styles.mobileRoleTitle}>Login as</span>
+
+                  
                   <div
                     className={styles.mobileRoleItem}
                     onClick={() => handleNavigate("/auth?type=user")}
@@ -282,6 +284,8 @@ function Navbar() {
                   >
                     ⚙️ Admin
                   </div>
+                 
+                  
                 </div>
               )}
 

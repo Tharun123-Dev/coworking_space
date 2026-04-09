@@ -15,6 +15,13 @@ function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loadingRole, setLoadingRole] = useState(null);
+
+const handleClick = async (role) => {
+  setLoadingRole(role);
+  await handleGuestLogin(role);   // your existing login
+  setLoadingRole(null);
+};
 
   const [popup, setPopup] = useState({
     show: false,
@@ -130,6 +137,51 @@ function Auth() {
 
     return true;
   };
+   
+
+
+const handleGuestLogin = async (role) => {
+  try {
+    let credentials = {};
+
+    if (role === "admin") {
+      credentials = { username: "Fis", password: "Fis123" };
+    } 
+    else if (role === "owner") {
+      credentials = { username: "nani", password: "nani123" };
+    } 
+    else {
+      credentials = { username: "tharun", password: "tharun123" };
+    }
+
+    const res = await axiosInstance.post("login/", credentials);
+
+    localStorage.setItem("access", res.data.access);
+    localStorage.setItem("refresh", res.data.refresh || "");
+    localStorage.setItem("username", res.data.username);
+    localStorage.setItem("role", res.data.role);
+
+    showPopup("success", "Guest Login Successful");
+
+    setTimeout(() => {
+      if (res.data.role === "admin") {
+        navigate("/admin-dashboard");
+      } else if (res.data.role === "owner") {
+        navigate("/owner-dashboard");
+      } else {
+        navigate("/");
+      }
+    }, 700);
+
+  } catch (err) {
+    showPopup("error", "Guest login failed");
+  }
+};
+
+
+
+
+
 
   const handleSubmit = async () => {
     if (loading) return;
@@ -357,6 +409,81 @@ function Auth() {
           <button onClick={handleSubmit} className={styles.button} disabled={loading}>
             {loading ? "Please wait..." : isLogin ? "Login" : "Signup"}
           </button>
+
+          <div style={{marginTop:"10px",display:"flex",gap:"10px",flexWrap:"wrap"}}>
+  
+
+
+
+<button
+  onClick={() => handleClick("admin")}
+  disabled={loadingRole === "admin"}
+  style={{
+    background: "linear-gradient(135deg, #d4af37, #f5d76e)",
+    color: "#000",
+    border: "2px solid #d4af37",
+    borderRadius: "999px",
+    padding: "12px 24px",
+    fontSize: "15px",
+    fontWeight: "700",
+    cursor: "pointer",
+    margin: "8px",
+    boxShadow: "0 6px 14px rgba(212, 175, 55, 0.35)",
+    transition: "all 0.3s ease",
+    transform: "scale(1)",
+    opacity: loadingRole === "admin" ? 0.7 : 1
+  }}
+>
+  {loadingRole === "admin" ? "Submitting..." : "Admin Guest"}
+</button>
+
+
+<button
+  onClick={() => handleClick("owner")}
+  disabled={loadingRole === "owner"}
+  style={{
+    background: "linear-gradient(135deg, #d4af37, #f5d76e)",
+    color: "#000",
+    border: "2px solid #d4af37",
+    borderRadius: "999px",
+    padding: "12px 24px",
+    fontSize: "15px",
+    fontWeight: "700",
+    cursor: "pointer",
+    margin: "8px",
+    boxShadow: "0 6px 14px rgba(212, 175, 55, 0.35)",
+    transition: "all 0.3s ease",
+    transform: "scale(1)",
+    opacity: loadingRole === "owner" ? 0.7 : 1
+  }}
+>
+  {loadingRole === "owner" ? "Submitting..." : "Owner Guest"}
+</button>
+
+
+<button
+  onClick={() => handleClick("user")}
+  disabled={loadingRole === "user"}
+  style={{
+    background: "linear-gradient(135deg, #d4af37, #f5d76e)",
+    color: "#000",
+    border: "2px solid #d4af37",
+    borderRadius: "999px",
+    padding: "12px 24px",
+    fontSize: "12px",
+    fontWeight: "700",
+    cursor: "pointer",
+    margin: "8px",
+    boxShadow: "0 6px 14px rgba(212, 175, 55, 0.35)",
+    transition: "all 0.3s ease",
+    transform: "scale(1)",
+    opacity: loadingRole === "user" ? 0.7 : 1
+  }}
+>
+  {loadingRole === "user" ? "Submitting..." : "User Guest"}
+</button>
+
+</div>
 
           {roleType === "user" && (
             <p className={styles.switchText} onClick={() => {
