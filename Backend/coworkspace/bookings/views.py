@@ -225,22 +225,21 @@ def admin_bookings(request):
         "workspace",
         "workspace__owner",
         "user"
-
     ).order_by("-id")
 
     data = []
+
     for b in bookings:
         data.append({
             "id": b.id,
-            "owner":b.workspace.owner.username,
-            "user": b.user.username,
-            "workspace": b.workspace.name,
-            "location":b.workspace.location,
+            "owner": b.workspace.owner.username if b.workspace and b.workspace.owner else "",
+            "user": b.user.username if b.user else "",
+            "workspace": b.workspace.name if b.workspace else "",
+            "location": b.workspace.location if b.workspace else "",
             "date": b.date,
-            "duration":b.duration,
-            "price":b.total_price,
+            "duration": b.duration,
+            "price": b.total_price,
             "status": b.status,
-
         })
 
     return Response(data)
