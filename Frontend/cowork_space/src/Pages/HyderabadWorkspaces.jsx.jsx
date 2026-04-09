@@ -26,11 +26,14 @@ function HyderabadWorkspaces() {
       });
   }, []);
 
-  const handleAddToCart = (workspaceId) => {
-    axiosInstance.post("cart/add/", { workspace_id: workspaceId, duration: 1 })
-      .then(() => alert("Added to cart ✅"))
-      .catch(() => navigate("/auth?type=user"));
-  };
+const handleAddToCart = (workspaceId) => {
+  axiosInstance.post("cart/add/", { workspace_id: workspaceId, duration: 1 })
+    .then(() => alert("Added to cart ✅"))
+    .catch(() => {
+      alert("Please login first 🔒");
+      navigate("/auth?type=user");
+    });
+};
 
   const handleSearch = (city, query) => {
     let data = workspaces;
@@ -43,6 +46,7 @@ const handleBookNow = (item) => {
   const token = localStorage.getItem("access");
 
   if (!token) {
+    alert("Please login first to continue 🔒");
     navigate("/auth?type=user");
     return;
   }
