@@ -357,15 +357,40 @@ function Auth() {
           <button onClick={handleSubmit} className={styles.button} disabled={loading}>
             {loading ? "Please wait..." : isLogin ? "Login" : "Signup"}
           </button>
-
-          {roleType === "user" && (
-            <p className={styles.switchText} onClick={() => {
-              setIsLogin(!isLogin);
-              resetForm();
-            }}>
-              {isLogin ? "Create account?" : "Already have account?"}
-            </p>
-          )}
+{roleType === "user" && (
+  <div className={styles.switchWrap}>
+    {isLogin ? (
+      <p className={styles.switchText}>
+        If you don't have an account?{" "}
+        <button
+          type="button"
+          className={styles.linkBtn}
+          onClick={() => {
+            setIsLogin(false);
+            resetForm();
+          }}
+        >
+          Click here to create account
+        </button>
+      </p>
+    ) : (
+      <p className={styles.switchText}>
+        Already have an account?{" "}
+        <button
+          type="button"
+          className={styles.linkBtn}
+          onClick={() => {
+            setIsLogin(true);
+            resetForm();
+          }}
+        >
+          Login here
+        </button>
+      </p>
+    )}
+  </div>
+)}
+        
         </div>
       </div>
     </section>
