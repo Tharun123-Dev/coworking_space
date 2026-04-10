@@ -78,15 +78,15 @@ CSRF_COOKIE_SECURE = False
 SESSION_ENGINE='django.contrib.sessions.backends.db'
 
 CORS_ALLOWED_ORIGINS = [
-    # "http://localhost:5173",
+    "http://localhost:5173",
    "https://coworkingspace-one.vercel.app",
     
     
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    # "http://localhost:5173",
-    # "http://127.0.0.1:8000",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
     "https://coworkingspace-one.vercel.app",
     
 ]
