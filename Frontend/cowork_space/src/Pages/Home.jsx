@@ -35,7 +35,7 @@ function HomePage() {
       if (err.response?.data?.email) {
         alert("Email already exists");
       } else {
-        alert("Something went wrong");
+        alert("Update You shortly!");
       }
     }
   };
