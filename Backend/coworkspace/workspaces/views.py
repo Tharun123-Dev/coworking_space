@@ -30,18 +30,16 @@ class IsAdminOrOwner(BasePermission):
 def get_workspaces(request):
 
     city = request.GET.get("city")
-
-    # 🔥 owner dashboard filter
     owner_only = request.GET.get("owner")
 
     if owner_only and request.user.is_authenticated:
-        workspaces = Workspace.objects.filter(owner=request.user)
+        workspaces = Workspace.objects.filter(owner=request.user)[:10]
 
     else:
         if city:
-            workspaces = Workspace.objects.filter(city__icontains=city)
+            workspaces = Workspace.objects.filter(city__icontains=city)[:10]
         else:
-            workspaces = Workspace.objects.all()
+            workspaces = Workspace.objects.all()[:10]
 
     serializer = WorkspaceSerializer(workspaces, many=True)
     return Response(serializer.data)

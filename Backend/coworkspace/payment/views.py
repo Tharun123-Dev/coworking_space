@@ -7,29 +7,17 @@ from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def create_payment(request):
-    try:
-        print("REQUEST BODY:", request.body)
+    data = json.loads(request.body)
+    amount = int(data["amount"])
 
-        data = json.loads(request.body)
-        amount = int(data.get("amount", 500))
+    client = razorpay.Client(
+        auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET)
+    )
 
-        print("AMOUNT:", amount)
-        print("KEY:", settings.RAZORPAY_KEY_ID)
+    order = client.order.create({
+        "amount": amount * 100,
+        "currency": "INR",
+        "payment_capture": 1
+    })
 
-        client = razorpay.Client(
-            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
-        )
-
-        order = client.order.create({
-            "amount": amount * 100,
-            "currency": "INR",
-            "payment_capture": 1
-        })
-
-        print("ORDER CREATED:", order)
-
-        return JsonResponse(order)
-
-    except Exception as e:
-        print("RAZORPAY ERROR:", str(e))
-        return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse(order)
