@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/leads/', include('leads.urls')),
     path("api/", include("enterprise.urls")),
     path("api/", include("chatbot.urls")),
+    path("api/",include("payment.urls")),
 
    
     
