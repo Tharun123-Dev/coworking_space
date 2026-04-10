@@ -3,18 +3,17 @@ import json
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-@csrf_exempt
 
+@csrf_exempt
 def create_payment(request):
 
-    import json
     data = json.loads(request.body)
     amount = int(data["amount"])
 
-    print("RAZOR KEY BACKEND:", settings.RAZORPAY_KEY)
+    print("RAZOR KEY BACKEND:", settings.RAZORPAY_KEY_ID)
 
     client = razorpay.Client(
-        auth=(settings.RAZORPAY_KEY, settings.RAZORPAY_SECRET)
+        auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
     )
 
     order = client.order.create({
