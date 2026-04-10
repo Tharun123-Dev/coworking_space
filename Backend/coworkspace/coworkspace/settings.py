@@ -36,7 +36,7 @@ RAZORPAY_SECRET = os.getenv("RAZORPAY_SECRET")
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -67,7 +67,7 @@ INSTALLED_APPS = [
 
 # Allow session cookie for frontend (React)
 
-
+CORS_ALLOW_CREDENTIALS = True
 
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = False
@@ -76,23 +76,22 @@ CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = False
 
 SESSION_ENGINE='django.contrib.sessions.backends.db'
-CORS_ALLOW_ALL_ORIGINS = False
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 #    "https://coworkingspace-one.vercel.app/",
     
     
 ]
-
+CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
-  
+    "http://127.0.0.1:8000",
     # "https://coworkingspace-one.vercel.app/",
     
 ]
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
@@ -104,6 +103,8 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+CORS_ALLOW_METHOD=["*"]
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -213,9 +214,3 @@ SIMPLE_JWT = {
 }
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-# REST_FRAMEWORK = {
-#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#     'PAGE_SIZE': 10
-# }
-# DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
-# FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760 
