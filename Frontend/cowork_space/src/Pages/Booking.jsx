@@ -45,10 +45,23 @@ const handlePayment = async () => {
       description: "Workspace Payment",
       order_id: order.id,
 
-      handler: function (response) {
-        console.log("SUCCESS", response);
-        setPaymentDone(true);
-      }
+handler: async function (response) {
+  try {
+    const verify = await axiosInstance.post(
+      "payment/verify/",
+      response
+    );
+
+    if (verify.data.status === "success") {
+      setPaymentDone(true);
+    } else {
+      alert("Payment verification failed");
+    }
+
+  } catch (err) {
+    alert("Payment verification error");
+  }
+}
     };
 
     const rzp = new window.Razorpay(options);
