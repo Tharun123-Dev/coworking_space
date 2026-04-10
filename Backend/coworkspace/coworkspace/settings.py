@@ -78,22 +78,32 @@ CSRF_COOKIE_SECURE = False
 SESSION_ENGINE='django.contrib.sessions.backends.db'
 
 CORS_ALLOWED_ORIGINS = [
-    # "http://localhost:5173",
-   "https://coworkingspace-one.vercel.app",
+    "http://localhost:5173",
+#    "https://coworkingspace-one.vercel.app",
     
     
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    # "http://localhost:5173",
-    # "http://127.0.0.1:8000",
-    "https://coworkingspace-one.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
+    # "https://coworkingspace-one.vercel.app",
     
 ]
 
 
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-CORS_ALLOW_HEADERS = ["*"]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -203,9 +213,9 @@ SIMPLE_JWT = {
 }
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
-}
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760 
+# REST_FRAMEWORK = {
+#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+#     'PAGE_SIZE': 10
+# }
+# DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
+# FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760 
