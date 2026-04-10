@@ -79,7 +79,7 @@ SESSION_ENGINE='django.contrib.sessions.backends.db'
 
 CORS_ALLOWED_ORIGINS = [
     # "http://localhost:5173",
-   "https://coworkingspace-one.vercel.app/",
+   "https://coworkingspace-one.vercel.app",
     
     
 ]
@@ -87,10 +87,10 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     # "http://localhost:5173",
     # "http://127.0.0.1:8000",
-    "https://coworkingspace-one.vercel.app/",
+    "https://coworkingspace-one.vercel.app",
     
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+
 
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -103,7 +103,8 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
-CORS_ALLOW_METHOD=["*"]
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["*"]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
