@@ -139,7 +139,7 @@ handler: async function (response) {
         type="date"
         className={styles.input}
         onChange={(e) => setForm({ ...form, date: e.target.value })}
-      />
+      required/>
 
       {!isMultiple && (
         <input
