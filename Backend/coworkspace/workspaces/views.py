@@ -54,14 +54,15 @@ def get_categories(request):
     category = request.GET.get('type')
 
     if category:
-        data = WorkspaceCategory.objects.filter(category=category)
+        data = WorkspaceCategory.objects.filter(
+            category=category
+        ).order_by("-id")[:10]
+
     else:
-        data = WorkspaceCategory.objects.all()
+        data = WorkspaceCategory.objects.all().order_by("-id")[:10]
 
     serializer = WorkspaceCategorySerializer(data, many=True)
     return Response(serializer.data)
-
-
 # ===========================
 # ADD WORKSPACE (ADMIN + OWNER)
 # ===========================
