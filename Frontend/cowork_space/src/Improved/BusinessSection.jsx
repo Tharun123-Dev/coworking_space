@@ -1,137 +1,376 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./BusinessSection.css";
 import Reveal from "../Pages/Reveal";
 
-const BusinessSection = ({ openModal }) => {
-  const cards = [
-    {
-      id: "Startups",
-      icon: "🚀",
-      title: "Startups",
-      desc: "Flexible and cost-effective spaces designed for fast-growing teams who need agility and collaboration.",
-      tag: "Most Popular",
-    },
-    {
-      id: "SMB's",
-      icon: "🏢",
-      title: "SMB's",
-      desc: "Professional offices designed for smooth daily operations and seamless team productivity.",
-      tag: "Best Value",
-    },
-    {
-      id: "Enterprises",
-      icon: "🏗️",
-      title: "Enterprises",
-      desc: "Custom-built offices with enterprise-grade infrastructure, security and dedicated support.",
-      tag: "Premium",
-    },
-    {
-      id: "Virtual Offices",
-      icon: "💻",
-      title: "Virtual Offices",
-      desc: "Build your professional presence and business address without a physical workspace.",
-      tag: "Remote Ready",
-    },
-  ];
+const offers = [
+  {
+    id: 1,
+    area: "Gachibowli",
+    building: "Skyline One Tower",
+    type: "Private Office Suite",
+    originalPrice: 18000,
+    icon: "🏢",
+    image: "/cowork.jpg",
+    seats: 6,
+    floor: "12th Floor",
+    amenities: ["1Gbps WiFi", "Meeting Room", "24/7 Access", "Parking"],
+    claimedBy: "Rahul S.",
+    claimedAgo: "2 hrs ago",
+    status: "available", // available | claimed
+  },
+  {
+    id: 2,
+    area: "Hitec City",
+    building: "Cyber Pearl Hub",
+    type: "Dedicated Desk",
+    originalPrice: 8500,
+    icon: "💻",
+    image: "/cowork.jpg",
+    seats: 2,
+    floor: "5th Floor",
+    amenities: ["Fiber WiFi", "Cafeteria", "Power Backup", "Locker"],
+    claimedBy: null,
+    claimedAgo: null,
+    status: "available",
+  },
+  {
+    id: 3,
+    area: "Madhapur",
+    building: "Avance Business Park",
+    type: "Team Cabin",
+    originalPrice: 25000,
+    icon: "🏗️",
+    image: "/cowork.jpg",
+    seats: 10,
+    floor: "8th Floor",
+    amenities: ["Dedicated Server", "Board Room", "AC", "Receptionist"],
+    claimedBy: "Priya K.",
+    claimedAgo: "5 hrs ago",
+    status: "claimed",
+  },
+  {
+    id: 4,
+    area: "Banjara Hills",
+    building: "Prestige Nexus",
+    type: "Hot Desk",
+    originalPrice: 5000,
+    icon: "🚀",
+    image: "/cowork.jpg",
+    seats: 1,
+    floor: "3rd Floor",
+    amenities: ["WiFi", "Café Access", "Printer", "24/7"],
+    claimedBy: null,
+    claimedAgo: null,
+    status: "available",
+  },
+  {
+    id: 5,
+    area: "Kukatpally",
+    building: "Fortune Towers",
+    type: "Virtual Office",
+    originalPrice: 3500,
+    icon: "🌐",
+    image: "/cowork.jpg",
+    seats: 1,
+    floor: "Remote",
+    amenities: ["Business Address", "Mail Handle", "Meeting Credits", "GST Ready"],
+    claimedBy: "Anil M.",
+    claimedAgo: "1 day ago",
+    status: "claimed",
+  },
+  {
+    id: 6,
+    area: "Uppal",
+    building: "The Work Loft",
+    type: "Private Cabin",
+    originalPrice: 14000,
+    icon: "🏠",
+    image: "/cowork.jpg",
+    seats: 4,
+    floor: "6th Floor",
+    amenities: ["High-Speed Net", "Pantry", "Security", "Parking"],
+    claimedBy: null,
+    claimedAgo: null,
+    status: "available",
+  },
+];
+
+// Countdown timer hook
+function useCountdown(hours = 11, mins = 47, secs = 33) {
+  const [time, setTime] = useState({ h: hours, m: mins, s: secs });
+  useEffect(() => {
+    const t = setInterval(() => {
+      setTime(prev => {
+        let { h, m, s } = prev;
+        if (s > 0) return { h, m, s: s - 1 };
+        if (m > 0) return { h, m: m - 1, s: 59 };
+        if (h > 0) return { h: h - 1, m: 59, s: 59 };
+        return { h: 0, m: 0, s: 0 };
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
+  return time;
+}
+
+const LimitedOfferSection = ({ openModal }) => {
+  const time = useCountdown(11, 47, 33);
+  const [claimedIds, setClaimedIds] = useState(
+    offers.filter(o => o.status === "claimed").map(o => o.id)
+  );
+
+  const availableCount = offers.filter(o => !claimedIds.includes(o.id)).length;
+
+  const handleClaim = (id) => {
+    if (openModal) {
+      openModal("offer_" + id);
+    } else {
+      // fallback — just mark visually
+      alert("Lead submitted! Our team will contact you within 12 hrs. You are in the queue. 🎉");
+    }
+  };
+
+  const pad = (n) => String(n).padStart(2, "0");
 
   return (
-    <section className="business-section">
+    <section className="offer-section">
 
-      {/* ===== LEFT SIDE ===== */}
-      <div className="business-left">
+      {/* ── Background particles ── */}
+      <div className="offer-particles">
+        {[...Array(18)].map((_, i) => (
+          <span key={i} className="particle" style={{ "--i": i }}></span>
+        ))}
+      </div>
 
+      {/* ══════════ SECTION HEADER ══════════ */}
+      <div className="offer-header">
         <Reveal>
-          <span className="sub-title">
-            <span className="sub-dot"></span>
-            To Whom We Cater
-          </span>
+          <div className="offer-eyebrow">
+            <span className="eyebrow-fire">🔥</span>
+            <span>Limited Time Offer</span>
+            <span className="eyebrow-badge">FIFO</span>
+          </div>
         </Reveal>
 
         <Reveal>
-          <h2>
-            From Startups to{" "}
-            <span className="highlight">Enterprises,</span>
-            <br />
-            in Every Stage of Growth
+          <h2 className="offer-title">
+            <span className="offer-title-top">One Space.</span>
+            <span className="offer-title-mid">
+              50% <em>Off.</em>
+            </span>
+            <span className="offer-title-bot">First Come, First Served.</span>
           </h2>
         </Reveal>
 
         <Reveal>
-          <p className="desc">
-            We understand that every business is unique. Whether you're just
-            starting out or expanding operations, our flexible workspaces are
-            designed to support your growth journey — at every stage.
+          <p className="offer-subtitle">
+            Each building has exactly <strong>1 exclusive offer slot</strong>. The first person to submit
+            their lead gets 50% off for their first month — no negotiations, no exceptions.
+            Miss it and it's gone.
           </p>
         </Reveal>
 
-        {/* Mini stats row */}
+        {/* ── Countdown + Availability bar ── */}
         <Reveal>
-          <div className="left-stats">
-            <div className="left-stat">
-              <span className="left-stat-num">500+</span>
-              <span className="left-stat-label">Spaces</span>
-            </div>
-            <div className="left-stat-div"></div>
-            <div className="left-stat">
-              <span className="left-stat-num">10+</span>
-              <span className="left-stat-label">Cities</span>
-            </div>
-            <div className="left-stat-div"></div>
-            <div className="left-stat">
-              <span className="left-stat-num">50K+</span>
-              <span className="left-stat-label">Members</span>
-            </div>
-          </div>
-        </Reveal>
+          <div className="offer-meta-row">
 
-        {/* Image with floating badge */}
-        <Reveal>
-          <div className="img-wrapper">
-            <img src="/cowork.jpg" alt="workspace" />
-            <div className="img-badge">
-              <span className="img-badge-icon">⭐</span>
-              <div>
-                <strong>4.9 / 5</strong>
-                <small>Rated by members</small>
+            {/* Countdown */}
+            <div className="countdown-box">
+              <span className="countdown-label">Offer Resets In</span>
+              <div className="countdown-digits">
+                <div className="digit-block">
+                  <span className="digit">{pad(time.h)}</span>
+                  <span className="digit-lbl">HRS</span>
+                </div>
+                <span className="digit-sep">:</span>
+                <div className="digit-block">
+                  <span className="digit">{pad(time.m)}</span>
+                  <span className="digit-lbl">MIN</span>
+                </div>
+                <span className="digit-sep">:</span>
+                <div className="digit-block">
+                  <span className="digit digit-urgent">{pad(time.s)}</span>
+                  <span className="digit-lbl">SEC</span>
+                </div>
               </div>
             </div>
+
+            {/* Availability */}
+            <div className="availability-box">
+              <div className="avail-top">
+                <span className="avail-label">Slots Available</span>
+                <span className="avail-count">{availableCount} / {offers.length}</span>
+              </div>
+              <div className="avail-bar">
+                {offers.map(o => (
+                  <div
+                    key={o.id}
+                    className={`avail-seg ${claimedIds.includes(o.id) ? "seg-claimed" : "seg-free"}`}
+                    title={o.area}
+                  ></div>
+                ))}
+              </div>
+              <p className="avail-hint">
+                <span className="avail-dot free"></span> Available &nbsp;
+                <span className="avail-dot claimed"></span> Claimed
+              </p>
+            </div>
+
+            {/* FIFO rule */}
+            <div className="fifo-box">
+              <div className="fifo-icon">⚡</div>
+              <div>
+                <p className="fifo-title">How It Works</p>
+                <p className="fifo-rule">Submit lead → Get verified → First in line gets 50% off Month 1</p>
+              </div>
+            </div>
+
           </div>
         </Reveal>
-
       </div>
 
-      {/* ===== RIGHT SIDE — CARDS ===== */}
-      <div className="business-right">
-        {cards.map((card, index) => (
-          <div
-            className="card"
-            key={card.id}
-            style={{ animationDelay: `${index * 0.12}s` }}
-          >
-            <div className="card-tag">{card.tag}</div>
-            <div className="card-icon">{card.icon}</div>
+      {/* ══════════ OFFER CARDS GRID ══════════ */}
+      <div className="offer-grid">
+        {offers.map((offer, index) => {
+          const isClaimed = claimedIds.includes(offer.id);
+          const discountPrice = Math.round(offer.originalPrice / 2);
 
-            <Reveal>
-              <h3>{card.title}</h3>
-            </Reveal>
+          return (
+            <div
+              key={offer.id}
+              className={`offer-card ${isClaimed ? "offer-card--claimed" : "offer-card--available"}`}
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              {/* Card ribbon */}
+              {!isClaimed && (
+                <div className="card-ribbon">50% OFF</div>
+              )}
+              {isClaimed && (
+                <div className="card-ribbon card-ribbon--claimed">CLAIMED</div>
+              )}
 
-            <Reveal>
-              <p>{card.desc}</p>
-            </Reveal>
+              {/* Card top image strip */}
+              <div className="offer-card-img">
+                <img src={offer.image} alt={offer.building} />
+                <div className="offer-card-img-overlay"></div>
+                <div className="offer-card-area-tag">
+                  <span>{offer.icon}</span>
+                  {offer.area}
+                </div>
+                {isClaimed && (
+                  <div className="claimed-shield">
+                    <span>🔒</span>
+                    <p>Claimed</p>
+                    {offer.claimedBy && (
+                      <small>by {offer.claimedBy} · {offer.claimedAgo}</small>
+                    )}
+                  </div>
+                )}
+              </div>
 
-            <Reveal>
-              <button onClick={() => openModal(card.id)} className="card-btn">
-                <span>Know More</span>
-                <span className="card-btn-arrow">→</span>
-              </button>
-            </Reveal>
+              {/* Card body */}
+              <div className="offer-card-body">
+                <p className="offer-card-type">{offer.type}</p>
+                <h3 className="offer-card-title">{offer.building}</h3>
 
+                <div className="offer-card-meta">
+                  <span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    {offer.floor}
+                  </span>
+                  <span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    {offer.seats} {offer.seats === 1 ? "Seat" : "Seats"}
+                  </span>
+                </div>
+
+                {/* Amenity pills */}
+                <div className="offer-amenities">
+                  {offer.amenities.map(a => (
+                    <span key={a}>{a}</span>
+                  ))}
+                </div>
+
+                {/* Price */}
+                <div className="offer-price-row">
+                  <div className="offer-price">
+                    <span className="price-original">₹{offer.originalPrice.toLocaleString()}</span>
+                    <span className="price-slash">/mo</span>
+                  </div>
+                  {!isClaimed && (
+                    <div className="price-now">
+                      <span className="price-tag">You Pay</span>
+                      <span className="price-discounted">₹{discountPrice.toLocaleString()}<small>/mo</small></span>
+                    </div>
+                  )}
+                  {isClaimed && (
+                    <div className="price-taken">
+                      <span>Offer Taken</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Urgency indicator */}
+                {!isClaimed && (
+                  <div className="offer-urgency">
+                    <span className="urgency-pulse"></span>
+                    <span>Only 1 slot · Be first to claim</span>
+                  </div>
+                )}
+
+                {/* CTA */}
+                {!isClaimed ? (
+                  <button
+                    className="offer-claim-btn"
+                    onClick={() => handleClaim(offer.id)}
+                  >
+                    <span>Claim 50% Off Now</span>
+                    <span className="claim-arrow">→</span>
+                  </button>
+                ) : (
+                  <button className="offer-claim-btn offer-claim-btn--disabled" disabled>
+                    <span>🔒 Slot Claimed</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ══════════ BOTTOM BANNER ══════════ */}
+      <Reveal>
+        <div className="offer-bottom-banner">
+          <div className="bottom-banner-left">
+            <span className="bottom-banner-icon">📋</span>
+            <div>
+              <p className="bottom-banner-title">How FIFO Works</p>
+              <p className="bottom-banner-desc">
+                Leads are time-stamped the moment you submit. First verified lead per building wins the 50% discount for Month 1.
+                No exceptions. No extensions.
+              </p>
+            </div>
           </div>
-        ))}
-      </div>
+          <div className="bottom-banner-steps">
+            {[
+              { step: "01", label: "Submit Lead" },
+              { step: "02", label: "Get Verified" },
+              { step: "03", label: "First = 50% Off" },
+            ].map((s, i) => (
+              <React.Fragment key={s.step}>
+                <div className="step-item">
+                  <span className="step-num">{s.step}</span>
+                  <span className="step-label">{s.label}</span>
+                </div>
+                {i < 2 && <span className="step-arrow">→</span>}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </Reveal>
 
     </section>
   );
 };
 
-export default BusinessSection;
+export default LimitedOfferSection;

@@ -13,11 +13,11 @@ urlpatterns = [
     path('users/create/', create_user),
     path('users/delete/<int:id>/', delete_user),
     path('users/update/<int:id>/',update_user ),
-      path('', include(router.urls)),
-      path("special/add/",create_special_lead),
+    path("special/add/",create_special_lead),
       path("special/owner/",owner_special_leads),
       path("special/update/<int:id>/",update_special_lead),
       path("special/user/",user_special_leads),
       path("special/admin/",admin_special_leads),
+        path('', include(router.urls)),
 
 ]

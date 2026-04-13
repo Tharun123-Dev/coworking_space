@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import "../Styles/View.css";
 
+import axiosInstance from "../Services/Axios";
+
 const locationsData = [
   {
     id: 1,
@@ -241,14 +243,16 @@ const View = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [toast, setToast] = useState("");
 
-  const isLoggedIn = !!localStorage.getItem("user");
+  const isLoggedIn = !!localStorage.getItem("acess");
 
   const selectedLocation = useMemo(() => {
     return locationsData.find((loc) => loc.id === selectedLocationId);
   }, [selectedLocationId]);
 
 const handleBooking = async () => {
-  if (!isLoggedIn) {
+  const token = localStorage.getItem("access");
+
+  if (!token) {
     setToast("Please login first to continue booking");
     setTimeout(() => {
       window.location.href = "/auth";
@@ -257,13 +261,19 @@ const handleBooking = async () => {
   }
 
   try {
-    await axiosInstance.post("cart/add/", {
-      workspace_name: selectedLocation.name,
-      location: selectedLocation.area,
-      duration: 1,
-      price: selectedLocation.price,
-      booking_type: "day_pass"
-    });
+    await axiosInstance.post(
+      "cart/add/",
+      {
+        workspace: selectedLocation.id,
+        duration: 1,
+        booking_type: "day_pass"
+      },
+      {
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      }
+    );
 
     setToast("Booking added successfully ✅");
 
@@ -275,8 +285,6 @@ const handleBooking = async () => {
     console.log(err);
     setToast("Failed to add booking ❌");
   }
-
-  setTimeout(() => setToast(""), 2500);
 };
 
   const handleLocationChange = (e) => {

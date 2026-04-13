@@ -153,7 +153,7 @@ function AdminDashboard() {
         </R>
         <R>
           <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/admin-leadss")}>
-            📌 Manage Leads
+            📌 Manage Leads(Offer)
           </button>
         </R>
         <R>

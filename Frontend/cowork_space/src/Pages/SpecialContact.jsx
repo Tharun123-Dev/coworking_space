@@ -39,8 +39,12 @@ function SpecialContact() {
         email: form.email,
         phone: form.phone,
         company: form.company,
-        message: form.message
-      });
+        message: form.message},
+        {headers:{
+          Authorization:`Bearer ${localStorage.getItem("access")}`
+        }
+      }
+      );
 
       alert("Request Sent Successfully ✅");
 
@@ -169,7 +173,7 @@ function SpecialContact() {
             <textarea
               id="message"
               name="message"
-              placeholder="Describe your workspace requirement..."
+              placeholder="Mention your team size & Describe your workspace requirement..."
               value={form.message}
               onChange={handleChange}
               className={styles.textarea}
