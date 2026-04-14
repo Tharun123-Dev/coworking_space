@@ -74,4 +74,133 @@ class SpecialLead(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    
+from django.db import models
+from django.contrib.auth.models import User
+
+
+TEAM_CHOICES = (
+    ("small", "Small Team"),
+    ("medium", "Medium Team"),
+    ("large", "Large Team"),
+)
+
+STATUS_CHOICES = (
+    ("pending", "Pending"),
+    ("contacted", "Contacted"),
+    ("closed", "Closed"),
+)
+
+
+class CompanyLead(models.Model):
+
+    team_size = models.CharField(
+        max_length=20,
+        choices=TEAM_CHOICES
+    )
+
+    name = models.CharField(max_length=100)
+
+    email = models.EmailField(blank=True, null=True)
+
+    phone = models.CharField(max_length=20)
+
+    company = models.CharField(max_length=150, blank=True)
+
+    message = models.TextField(blank=True)
+
+    # assigned by admin
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="company_leads"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="new"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class BusinessEnterpriseLead(models.Model):
+
+    STATUS = (
+        ("pending","Pending"),
+        ("contacted","Contacted"),
+        ("closed","Closed"),
+    )
+
+    location = models.CharField(max_length=100)
+
+    company_name = models.CharField(max_length=200)
+
+    contact_person = models.CharField(max_length=100)
+
+    email = models.EmailField()
+
+    phone = models.CharField(max_length=20)
+
+    team_size = models.CharField(max_length=50)
+
+    move_in_date = models.CharField(max_length=100, blank=True)
+
+    budget = models.CharField(max_length=100, blank=True)
+
+    requirement = models.TextField(blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS,
+        default="pending"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class SupportTicket(models.Model):
+
+    ISSUE_TYPES = [
+        ("booking","Booking Issue"),
+        ("payment","Payment Issue"),
+        ("account","Account Issue"),
+        ("refund","Refund Issue"),
+        ("availability","Availability"),
+        ("pricing","Pricing Issue"),
+        ("technical","Technical Issue"),
+        ("cancel","Cancel Booking"),
+        ("modify","Modify Booking"),
+        ("other","Other")
+    ]
+
+    STATUS = [
+        ("open","Open"),
+        ("in_progress","In Progress"),
+        ("resolved","Resolved")
+    ]
+
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+
+    booking_id = models.IntegerField(null=True, blank=True)
+    special_id = models.IntegerField(null=True, blank=True)
+
+    issue_type = models.CharField(max_length=50,choices=ISSUE_TYPES)
+
+    message = models.TextField()
+
+    admin_note = models.TextField(blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS,
+        default="open"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.issue_type}"

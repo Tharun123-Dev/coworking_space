@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from .models import Booking
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 
 # ===============================
@@ -75,10 +76,21 @@ def add_to_cart(request):
 # ===============================
 # GET CART
 # ===============================
+
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_cart(request):
+
     cart = Cart.objects.get(user=request.user)
+
+    # ✅ remove expired items automatically
+    CartItem.objects.filter(
+        cart=cart,
+        expires_at__lt=timezone.now()
+    ).delete()
+
     items = CartItem.objects.filter(cart=cart)
 
     data = []

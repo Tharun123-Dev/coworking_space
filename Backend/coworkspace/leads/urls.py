@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import create_lead, get_leads, get_users, create_user, delete_user, update_user, create_special_lead, owner_special_leads,update_special_lead,user_special_leads,admin_special_leads
+from .views import create_ticket,update_ticket,admin_tickets,user_tickets,create_lead, get_leads, get_users, create_user, delete_user, update_user,create_special_lead, owner_special_leads,update_special_lead,user_special_leads,admin_special_leads,create_company_lead,admin_company_leads,assign_owner,owner_company_leads,update_company_status,create_business_enterprise_lead,admin_business_leads,update_business_status
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import LeadViewSet
@@ -14,10 +14,22 @@ urlpatterns = [
     path('users/delete/<int:id>/', delete_user),
     path('users/update/<int:id>/',update_user ),
     path("special/add/",create_special_lead),
-      path("special/owner/",owner_special_leads),
-      path("special/update/<int:id>/",update_special_lead),
-      path("special/user/",user_special_leads),
-      path("special/admin/",admin_special_leads),
-        path('', include(router.urls)),
+    path("special/owner/",owner_special_leads),
+    path("special/update/<int:id>/",update_special_lead),
+    path("special/user/",user_special_leads),
+    path("special/admin/",admin_special_leads),
+    path("company/add/",create_company_lead),
+   path("company/owner/", owner_company_leads),
+   path("company/admin/", admin_company_leads),
+   path("company/status/<int:id>/", update_company_status),
+    path("company/assign/<int:id>/", assign_owner),
+    path("business/add/", create_business_enterprise_lead),
+    path("business/admin/", admin_business_leads),
+    path("business/status/<int:id>/", update_business_status),
+    path("tickets/create/", create_ticket),
+    path("tickets/user/", user_tickets),
+    path("tickets/admin/", admin_tickets),
+    path("tickets/update/<int:id>/", update_ticket),
+    path('', include(router.urls)),
 
 ]

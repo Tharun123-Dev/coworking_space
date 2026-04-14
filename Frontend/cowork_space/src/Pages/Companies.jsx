@@ -89,13 +89,13 @@ const TeamClientsSection = () => {
               <div className="tcs-card-footer">
                 <button
                   className="tcs-btn-primary"
-                  onClick={() => navigate(`/special-contact/${item.id}`)}
+                  onClick={() => navigate(`/speciall-contact/${item.id}`)}
                 >
                   Get a Quote →
                 </button>
                 <button
                   className="tcs-btn-ghost"
-                  onClick={() => navigate(`/special-contact/${item.id}`, { state: { tour: true } })}
+                  onClick={() => navigate(`/speciall-contact/${item.id}`, { state: { tour: true } })}
                 >
                   Book a Tour
                 </button>

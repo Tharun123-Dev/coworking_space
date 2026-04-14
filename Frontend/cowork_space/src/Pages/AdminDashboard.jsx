@@ -6,34 +6,21 @@ import R from "../Pages/Reveal";
 
 function AdminDashboard() {
   const navigate = useNavigate();
-  const [owners, setOwners]=useState([])
-   useEffect(()=>{
-   axiosInstance.get("owners/")
-   .then(res=>setOwners(res.data))},[])
+  const [owners, setOwners] = useState([]);
 
+  useEffect(() => {
+    axiosInstance.get("owners/").then(res => setOwners(res.data));
+  }, []);
 
   const [workspaces, setWorkspaces] = useState([]);
   const [form, setForm] = useState({
-    name: "",
-    city: "",
-    location: "",
-    price: "",
-    image: "",
-    description: ""
+    name: "", city: "", location: "", price: "", image: "", description: ""
   });
-
   const [editId, setEditId] = useState(null);
   const [categories, setCategories] = useState([]);
-
   const [categoryForm, setCategoryForm] = useState({
-    name: "",
-    category: "",
-    description: "",
-    image: "",
-    hourly_price: "",
-    daily_price: "",
-    monthly_price: "",
-    is_available: true
+    name: "", category: "", description: "", image: "",
+    hourly_price: "", daily_price: "", monthly_price: "", is_available: true
   });
 
   useEffect(() => {
@@ -42,19 +29,14 @@ function AdminDashboard() {
   }, []);
 
   const fetchWorkspaces = () => {
-    axiosInstance.get("workspaces/").then((res) => setWorkspaces(res.data));
+    axiosInstance.get("workspaces/").then(res => setWorkspaces(res.data));
   };
-
   const fetchCategories = () => {
-    axiosInstance.get("workspaces/categories/").then((res) => setCategories(res.data));
+    axiosInstance.get("workspaces/categories/").then(res => setCategories(res.data));
   };
 
   const handleSubmit = () => {
-    if (!form.name || !form.city || !form.price) {
-      alert("Fill all fields");
-      return;
-    }
-
+    if (!form.name || !form.city || !form.price) { alert("Fill all fields"); return; }
     if (editId) {
       axiosInstance.put(`workspaces/update/${editId}/`, form).then(() => {
         alert("Updated ✅");
@@ -72,8 +54,7 @@ function AdminDashboard() {
   };
 
   const handleAddCategory = () => {
-    axiosInstance
-      .post("workspaces/categories/add/", categoryForm)
+    axiosInstance.post("workspaces/categories/add/", categoryForm)
       .then(() => {
         alert("Category Added ✅");
         setCategoryForm({
@@ -82,7 +63,7 @@ function AdminDashboard() {
         });
         fetchCategories();
       })
-      .catch((err) => console.log(err));
+      .catch(err => console.log(err));
   };
 
   const handleDelete = (id) => {
@@ -110,19 +91,15 @@ function AdminDashboard() {
   return (
     <div className={styles.container}>
 
-      {/* ===== TOP BAR ===== */}
+      {/* ═══════ TOP BAR ═══════ */}
       <div className={styles.topBar}>
-        <div>
+        <div className={styles.topBarLeft}>
           <p className={styles.eyebrow}>Internal Workspace System</p>
-          <h1 className={styles.pageTitle}>
-            Admin <span>Panel</span>
-          </h1>
+          <h1 className={styles.pageTitle}>Admin <span>Panel</span></h1>
           <p className={styles.pageText}>
             Manage workspace records, categories, users, and leads from one central place.
           </p>
         </div>
-
-        {/* Quick stats */}
         <div className={styles.topStats}>
           <div className={styles.topStat}>
             <strong>{workspaces.length}</strong>
@@ -136,96 +113,275 @@ function AdminDashboard() {
             <strong>{categories.filter(c => c.is_available).length}</strong>
             <span>Available</span>
           </div>
+          <div className={styles.topStat}>
+            <strong>{owners.length}</strong>
+            <span>Owners</span>
+          </div>
         </div>
       </div>
 
-      {/* ===== NAV BUTTONS ===== */}
-      <div className={styles.btnWrapper}>
+      {/* ═══════════════════════════════════════════
+          QUICK NAVIGATION GROUPS
+      ═══════════════════════════════════════════ */}
+      <div className={styles.navPanel}>
+
+        {/* ── GROUP 1: Leads ── */}
         <R>
-          <button className={`${styles.btnBox} ${styles.goldBtn}`} onClick={() => navigate("/admin-leads")}>
-            📋 View Leads
-          </button>
-        </R>
-        <R>
-          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/admin-users")}>
-            👥 Manage Users
-          </button>
-        </R>
-        <R>
-          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/admin-leadss")}>
-            📌 Manage Leads(Offer)
-          </button>
-        </R>
-        <R>
-          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/admin-Enterprise")}>
-            🏗️ Enterprise Leads
-          </button>
-        </R>
-         <R>
-          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/create-owner")}>
-           Owner Management
-          </button>
+          <div className={styles.navGroup}>
+            <div className={styles.navGroupHead}>
+              <span className={styles.navGroupIcon}>📋</span>
+              <div>
+                <p className={styles.navGroupTitle}>Leads</p>
+                <p className={styles.navGroupSub}>General customer enquiries</p>
+              </div>
+            </div>
+            <div className={styles.navGroupBtns}>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnGold}`}
+                onClick={() => navigate("/admin-leads")}
+              >
+                <span className={styles.navBtnIcon}>📋</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>View Leads</span>
+                  <span className={styles.navBtnDesc}>Normal customer leads</span>
+                </span>
+              </button>
+            </div>
+          </div>
         </R>
 
-          <R>
-          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/admin-bookings")}>
-           Bookings
-          </button>
+        {/* ── GROUP 2: Management ── */}
+        <R>
+          <div className={styles.navGroup}>
+            <div className={styles.navGroupHead}>
+              <span className={styles.navGroupIcon}>⚙️</span>
+              <div>
+                <p className={styles.navGroupTitle}>Management</p>
+                <p className={styles.navGroupSub}>Users & owner accounts</p>
+              </div>
+            </div>
+            <div className={styles.navGroupBtns}>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnBlue}`}
+                onClick={() => navigate("/admin-users")}
+              >
+                <span className={styles.navBtnIcon}>👥</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>Manage Users</span>
+                  <span className={styles.navBtnDesc}>User accounts & access</span>
+                </span>
+              </button>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnBlue}`}
+                onClick={() => navigate("/create-owner")}
+              >
+                <span className={styles.navBtnIcon}>🏠</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>Owner Management</span>
+                  <span className={styles.navBtnDesc}>Create & manage owners</span>
+                </span>
+              </button>
+            </div>
+          </div>
         </R>
 
-           <R>
-          <button className={`${styles.btnBox} ${styles.greenBtn}`} onClick={() => navigate("/owner-special-leads")}>
-           Owners Leads[Categories]
-          </button>
+        {/* ── GROUP 3: Enterprise & Company Leads ── */}
+        <R>
+          <div className={styles.navGroup}>
+            <div className={styles.navGroupHead}>
+              <span className={styles.navGroupIcon}>🏗️</span>
+              <div>
+                <p className={styles.navGroupTitle}>Enterprise & Company</p>
+                <p className={styles.navGroupSub}>High-value business leads</p>
+              </div>
+            </div>
+            <div className={styles.navGroupBtns}>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnAmber}`}
+                onClick={() => navigate("/admin-Enterprise")}
+              >
+                <span className={styles.navBtnIcon}>🏗️</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>Enterprise Leads</span>
+                  <span className={styles.navBtnDesc}>Large-scale enquiries</span>
+                </span>
+              </button>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnAmber}`}
+                onClick={() => navigate("/enterprise-business")}
+              >
+                <span className={styles.navBtnIcon}>🏢</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>Enterprise Business</span>
+                  <span className={styles.navBtnDesc}>Business-level deals</span>
+                </span>
+              </button>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnAmber}`}
+                onClick={() => navigate("/company-special-leads")}
+              >
+                <span className={styles.navBtnIcon}>🏦</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>Company Leads</span>
+                  <span className={styles.navBtnDesc}>Company-level requests</span>
+                </span>
+              </button>
+            </div>
+          </div>
         </R>
+
+        {/* ── GROUP 4: Owner Activity ── */}
+        <R>
+          <div className={styles.navGroup}>
+            <div className={styles.navGroupHead}>
+              <span className={styles.navGroupIcon}>🔑</span>
+              <div>
+                <p className={styles.navGroupTitle}>Owner Activity</p>
+                <p className={styles.navGroupSub}>Bookings & category leads</p>
+              </div>
+            </div>
+            <div className={styles.navGroupBtns}>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnGreen}`}
+                onClick={() => navigate("/admin-bookings")}
+              >
+                <span className={styles.navBtnIcon}>📅</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>Bookings</span>
+                  <span className={styles.navBtnDesc}>All space bookings</span>
+                </span>
+              </button>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnGreen}`}
+                onClick={() => navigate("/owner-special-leads")}
+              >
+                <span className={styles.navBtnIcon}>🗂️</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>Owner Leads</span>
+                  <span className={styles.navBtnDesc}>Category-based leads</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </R>
+
+        {/* ── GROUP 5: Special Offer Leads ── */}
+        <R>
+          <div className={styles.navGroup}>
+            <div className={styles.navGroupHead}>
+              <span className={styles.navGroupIcon}>🔥</span>
+              <div>
+                <p className={styles.navGroupTitle}>Special Offers</p>
+                <p className={styles.navGroupSub}>Limited-time offer leads</p>
+              </div>
+            </div>
+            <div className={styles.navGroupBtns}>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnRed}`}
+                onClick={() => navigate("/admin-leadss")}
+              >
+                <span className={styles.navBtnIcon}>🎯</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>Manage Offer Leads</span>
+                  <span className={styles.navBtnDesc}>FIFO special offer requests</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </R>
+
+        {/* ── GROUP 6: Support Tickets ── */}
+        <R>
+          <div className={styles.navGroup}>
+            <div className={styles.navGroupHead}>
+              <span className={styles.navGroupIcon}>🎫</span>
+              <div>
+                <p className={styles.navGroupTitle}>Support</p>
+                <p className={styles.navGroupSub}>User tickets & issues</p>
+              </div>
+            </div>
+            <div className={styles.navGroupBtns}>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnPurple}`}
+                onClick={() => navigate("/admin-tickets")}
+              >
+                <span className={styles.navBtnIcon}>🎫</span>
+                <span className={styles.navBtnText}>
+                  <span className={styles.navBtnLabel}>Tickets</span>
+                  <span className={styles.navBtnDesc}>User support requests</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </R>
+
       </div>
 
-      {/* ===== WORKSPACE MANAGEMENT ===== */}
+      {/* ═══════════════════════════════════════════
+          WORKSPACE MANAGEMENT
+          NOTE: Owners manage their own categories —
+          admin workspace records are the master list.
+      ═══════════════════════════════════════════ */}
       <section className={styles.panelSection}>
         <div className={styles.sectionHead}>
           <div className={styles.sectionIcon}>🏢</div>
           <div>
             <h2>Workspace Management</h2>
-            <p>Add, edit, and delete workspace records.</p>
+            <p>
+              Add, edit &amp; delete master workspace records.
+              <span className={styles.sectionNote}>Owners manage their own space categories independently.</span>
+            </p>
           </div>
         </div>
 
         {/* Form */}
         <div className={styles.formCard}>
+          <p className={styles.formLabel}>{editId ? "✏️ Editing Workspace" : "＋ Add New Workspace"}</p>
           <div className={styles.form}>
             <input
               placeholder="Workspace Name"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={e => setForm({ ...form, name: e.target.value })}
             />
             <input
               placeholder="City"
               value={form.city}
-              onChange={(e) => setForm({ ...form, city: e.target.value })}
+              onChange={e => setForm({ ...form, city: e.target.value })}
             />
             <input
               placeholder="Location"
               value={form.location}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              onChange={e => setForm({ ...form, location: e.target.value })}
             />
             <input
               placeholder="Price (₹)"
               value={form.price}
-              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              onChange={e => setForm({ ...form, price: e.target.value })}
             />
             <input
               placeholder="Description"
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={e => setForm({ ...form, description: e.target.value })}
             />
             <input
               placeholder="Image URL"
               value={form.image}
-              onChange={(e) => setForm({ ...form, image: e.target.value })}
+              onChange={e => setForm({ ...form, image: e.target.value })}
             />
-            <button onClick={handleSubmit}>
+            <button onClick={handleSubmit} className={styles.formSubmitBtn}>
               {editId ? "✏️ Update Workspace" : "＋ Add Workspace"}
             </button>
+            {editId && (
+              <button
+                className={styles.formCancelBtn}
+                onClick={() => {
+                  setEditId(null);
+                  setForm({ name: "", city: "", location: "", price: "", image: "", description: "" });
+                }}
+              >
+                ✕ Cancel Edit
+              </button>
+            )}
           </div>
         </div>
 
@@ -244,27 +400,21 @@ function AdminDashboard() {
             <tbody>
               {workspaces.map((item, i) => (
                 <tr key={item.id}>
-                  <td style={{ color: "rgba(201,168,76,0.6)", fontWeight: 700 }}>
-                    {String(i + 1).padStart(2, "0")}
-                  </td>
+                  <td className={styles.tdSerial}>{String(i + 1).padStart(2, "0")}</td>
                   <td>{item.name}</td>
                   <td>{item.city}</td>
-                  <td style={{ color: "#f0c040", fontWeight: 700 }}>₹{item.price}</td>
-                  <td className={styles.actionCell}>
-                    <button className={styles.editBtn} onClick={() => handleEdit(item)}>
-                      Edit
-                    </button>
-                    <button className={styles.deleteBtn} onClick={() => handleDelete(item.id)}>
-                      Delete
-                    </button>
+                  <td className={styles.tdPrice}>₹{item.price}</td>
+                  <td>
+                    <div className={styles.actionCell}>
+                      <button className={styles.editBtn} onClick={() => handleEdit(item)}>Edit</button>
+                      <button className={styles.deleteBtn} onClick={() => handleDelete(item.id)}>Delete</button>
+                    </div>
                   </td>
                 </tr>
               ))}
               {workspaces.length === 0 && (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: "center", color: "rgba(245,240,232,0.3)", padding: "32px" }}>
-                    No workspaces found
-                  </td>
+                  <td colSpan="5" className={styles.emptyRow}>No workspaces found</td>
                 </tr>
               )}
             </tbody>
@@ -272,44 +422,44 @@ function AdminDashboard() {
         </div>
       </section>
 
-      {/* ===== CATEGORIES ===== */}
+      {/* ═══════════════════════════════════════════
+          WORKSPACE CATEGORIES
+          NOTE: Owners can also manage their own
+          categories. This is the admin master view.
+      ═══════════════════════════════════════════ */}
       <section className={styles.panelSection}>
         <div className={styles.sectionHead}>
           <div className={styles.sectionIcon}>🗂️</div>
           <div>
             <h2>Workspace Categories</h2>
-            <p>Create and manage workspace categories and pricing tiers.</p>
+            <p>
+              Create &amp; manage categories and pricing tiers.
+              <span className={styles.sectionNote}>Owners can also manage their own categories from their panel.</span>
+            </p>
           </div>
         </div>
 
         {/* Category form */}
         <div className={styles.formCard}>
+          <p className={styles.formLabel}>＋ Add New Category</p>
           <div className={styles.form}>
             <input
               placeholder="Category Name"
               value={categoryForm.name}
-              onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+              onChange={e => setCategoryForm({ ...categoryForm, name: e.target.value })}
             />
             <select
-value={categoryForm.owner}
-onChange={(e)=>
-setCategoryForm({
-...categoryForm,
-owner:e.target.value
-})
-}
->
-
-<option value="">Assign Owner</option>
-
-{owners.map(o=>(
-<option value={o.id}>{o.username}</option>
-))}
-
-</select>
+              value={categoryForm.owner}
+              onChange={e => setCategoryForm({ ...categoryForm, owner: e.target.value })}
+            >
+              <option value="">Assign Owner</option>
+              {owners.map(o => (
+                <option key={o.id} value={o.id}>{o.username}</option>
+              ))}
+            </select>
             <select
               value={categoryForm.category}
-              onChange={(e) => setCategoryForm({ ...categoryForm, category: e.target.value })}
+              onChange={e => setCategoryForm({ ...categoryForm, category: e.target.value })}
             >
               <option value="">Select Category Type</option>
               <option value="day_pass">Day Pass</option>
@@ -317,50 +467,47 @@ owner:e.target.value
               <option value="fixed">Fixed Seats</option>
               <option value="cabin">Cabins</option>
             </select>
-
             <input
               placeholder="Description"
               value={categoryForm.description}
-              onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+              onChange={e => setCategoryForm({ ...categoryForm, description: e.target.value })}
             />
             <input
               placeholder="Image URL"
               value={categoryForm.image}
-              onChange={(e) => setCategoryForm({ ...categoryForm, image: e.target.value })}
+              onChange={e => setCategoryForm({ ...categoryForm, image: e.target.value })}
             />
             <input
               placeholder="Hourly Price (₹)"
               value={categoryForm.hourly_price}
-              onChange={(e) => setCategoryForm({ ...categoryForm, hourly_price: e.target.value })}
+              onChange={e => setCategoryForm({ ...categoryForm, hourly_price: e.target.value })}
             />
             <input
               placeholder="Daily Price (₹)"
               value={categoryForm.daily_price}
-              onChange={(e) => setCategoryForm({ ...categoryForm, daily_price: e.target.value })}
+              onChange={e => setCategoryForm({ ...categoryForm, daily_price: e.target.value })}
             />
             <input
               placeholder="Monthly Price (₹)"
               value={categoryForm.monthly_price}
-              onChange={(e) => setCategoryForm({ ...categoryForm, monthly_price: e.target.value })}
+              onChange={e => setCategoryForm({ ...categoryForm, monthly_price: e.target.value })}
             />
-
             <select
               value={String(categoryForm.is_available)}
-              onChange={(e) =>
-                setCategoryForm({ ...categoryForm, is_available: e.target.value === "true" })
-              }
+              onChange={e => setCategoryForm({ ...categoryForm, is_available: e.target.value === "true" })}
             >
               <option value="true">✅ Available</option>
               <option value="false">❌ Not Available</option>
             </select>
-
-            <button onClick={handleAddCategory}>＋ Add Category</button>
+            <button onClick={handleAddCategory} className={styles.formSubmitBtn}>
+              ＋ Add Category
+            </button>
           </div>
         </div>
 
         {/* Category cards */}
         <div className={styles.categoryList}>
-          {categories.map((item) => (
+          {categories.map(item => (
             <div key={item.id} className={styles.categoryCard}>
               <div className={styles.categoryInfo}>
                 <h4>
@@ -374,25 +521,16 @@ owner:e.target.value
                   <span>🗓 Monthly: ₹{item.monthly_price || "—"}</span>
                 </div>
               </div>
-
               <div className={styles.categoryAction}>
                 <span className={item.is_available ? styles.statusActive : styles.statusMuted}>
                   {item.is_available ? "Available" : "Unavailable"}
                 </span>
-                <button onClick={() => handleDeleteCategory(item.id)}>
-                  Delete
-                </button>
+                <button onClick={() => handleDeleteCategory(item.id)}>Delete</button>
               </div>
             </div>
           ))}
-
           {categories.length === 0 && (
-            <div style={{
-              textAlign: "center",
-              padding: "32px",
-              color: "rgba(245,240,232,0.3)",
-              fontSize: "14px"
-            }}>
+            <div className={styles.emptyRow} style={{ padding: "32px", textAlign: "center" }}>
               No categories found
             </div>
           )}

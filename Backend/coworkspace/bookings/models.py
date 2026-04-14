@@ -1,11 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 from workspaces.models import Workspace
+from django.utils import timezone
+from datetime import timedelta
 
 
+def cart_expiry():
+        return timezone.now()+timedelta(days=1)
 # CART (one cart per user)
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+
 
     def __str__(self):
         return self.user.username
@@ -22,6 +28,8 @@ class CartItem(models.Model):
     
     duration = models.IntegerField(default=1)   # days or hours
     quantity = models.IntegerField(default=1)
+    created_at=models.DateTimeField(auto_now_add=True)
+    expires_at=models.DateTimeField(default=cart_expiry)
 
     def __str__(self):
         return self.workspace.name

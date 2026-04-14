@@ -32,6 +32,7 @@ const handleClick = async (role) => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
+    phone:"",
     password: "",
     confirmPassword: "",
   });
@@ -55,6 +56,7 @@ const handleClick = async (role) => {
     setFormData({
       username: "",
       email: "",
+      phone:"",
       password: "",
       confirmPassword: "",
     });
@@ -226,18 +228,21 @@ const handleGuestLogin = async (role) => {
           }
         }, 800);
       } else {
-        await axiosInstance.post("register/", {
+        const res=await axiosInstance.post("register/", {
           username: formData.username,
           email: formData.email,
+          phone:formData.phone,
           password: formData.password,
         });
-
-        showPopup("success", "Registered successfully");
+        
+         showPopup("success", "Registered successfully");
         resetForm();
 
         setTimeout(() => {
           setIsLogin(true);
         }, 700);
+       
+      
       }
     } catch (err) {
       console.log("ERROR:", err);
@@ -352,6 +357,19 @@ const handleGuestLogin = async (role) => {
               />
             </div>
           )}
+
+          {!isLogin && (
+  <div className={styles.formGroup}>
+    <label>Phone Number</label>
+    <input
+      name="phone"
+      placeholder="Enter phone number"
+      value={formData.phone || ""}
+      onChange={handleChange}
+      className={styles.input}
+    />
+  </div>
+)}
 
           <div className={styles.formGroup}>
             <label>Password</label>

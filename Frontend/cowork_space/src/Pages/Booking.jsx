@@ -8,13 +8,12 @@ function Booking() {
   const location = useLocation();
   const data = location.state;
   const isMultiple = data?.items ? true : false;
-
-  const today = useMemo(() => {
-    return new Date().toISOString().split("T")[0];
-  }, []);
+  
+  const today = new Date().toISOString().split("T")[0];
+  
 
   const [form, setForm] = useState({
-    date: "",
+    date:today,
     duration: 1,
   });
 
@@ -268,9 +267,8 @@ function Booking() {
                   name="date"
                   type="date"
                   className={styles.input}
-                  value={form.date}
-                  min={today}
-                  onChange={handleChange}
+                  value={today}
+                  readOnly
                   required
                 />
               </div>

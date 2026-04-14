@@ -10,7 +10,7 @@ function Navbar() {
   const [mobileCitiesOpen,   setMobileCitiesOpen]   = useState(false);
   const [showRoleMenu,       setShowRoleMenu]        = useState(false);
   const [mobileRoleOpen,     setMobileRoleOpen]      = useState(false);
-
+   const [showEnterprise, setShowEnterprise] = useState(false);
   const navigate  = useNavigate();
   const token     = localStorage.getItem("access");
   const isAdmin   = localStorage.getItem("is_admin");
@@ -92,9 +92,29 @@ function Navbar() {
         {/* ── DESKTOP MENU ── */}
         <nav className={styles.menu}>
           <p className={styles.menuItem} onClick={() => navigate("/")}>Home</p>
-          <p className={styles.menuItem} onClick={() => navigate("/Enterprise")}>Enterprise</p>
-          <p className={styles.menuItem} onClick={scrollToClients}>Companies</p>
+            <p className={styles.menuItem} onClick={scrollToClients}>Companies</p>
 
+          {/* Enterprise */}
+<div
+  className={styles.dropdown}
+  onMouseEnter={() => setShowEnterprise(true)}
+  onMouseLeave={() => setShowEnterprise(false)}
+>
+  <span className={styles.dropdownLabel}>Enterprise</span>
+  <span className={styles.arrow}>▼</span>
+
+  {showEnterprise && (
+    <div className={styles.dropdownMenu}>
+      <p onClick={() => navigate("/Enterprise")}>
+        Enterprise Workspaces
+      </p>
+      <p onClick={() => navigate("/RightSpace")}>
+        Business Solutions
+      </p>
+    </div>
+  )}
+</div>
+        
           {/* Workspaces */}
           <div
             className={styles.dropdown}
@@ -195,9 +215,27 @@ function Navbar() {
             </p>
 
             {/* Enterprise */}
-            <p className={styles.mobileItem} onClick={() => handleNavigate("/Enterprise")}>
-              Enterprise
-            </p>
+         {/* Enterprise Mobile */}
+<div className={styles.mobileDropdown}>
+  <button
+    className={styles.mobileDropdownBtn}
+    onClick={() => setMobileRoleOpen(o => !o)}
+  >
+    Enterprise
+    <span>{mobileRoleOpen ? "−" : "+"}</span>
+  </button>
+
+  {mobileRoleOpen && (
+    <div className={styles.mobileSubmenu}>
+      <p onClick={() => handleNavigate("/Enterprise")}>
+        Enterprise Workspaces
+      </p>
+      <p onClick={() => handleNavigate("/RightSpace")}>
+        Business Solutions
+      </p>
+    </div>
+  )}
+</div>
               {/* Enterprise */}
             <p className={styles.mobileItem} onClick={scrollToClients}>Companies</p>
 

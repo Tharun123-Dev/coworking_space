@@ -10,7 +10,12 @@ from rest_framework.permissions import IsAuthenticated
 from .models import SpecialLead
 from workspaces.models import WorkspaceCategory
 from .models import Lead
-from .serializers import LeadSerializer,SpecialLeadSerializer
+from .serializers import LeadSerializer,SpecialLeadSerializer,SupportTicketSerializer
+from accounts.models import Profile
+from .models import BusinessEnterpriseLead,SupportTicket
+from bookings.models import Booking
+from datetime import datetime
+
 
 
 @api_view(['POST'])
@@ -46,17 +51,21 @@ def get_leads(request):
     return Response(serializer.data)
 
 
+from accounts.models import Profile
+
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def get_users(request):
     users = User.objects.all()
 
     data = []
+
     for user in users:
         data.append({
             "id": user.id,
             "username": user.username,
             "email": user.email,
+            "phone": user.profile.phone if hasattr(user, 'profile') else "",
             "is_admin": user.is_superuser
         })
 
@@ -259,5 +268,249 @@ def admin_special_leads(request):
 
     return Response(data)
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import CompanyLead
 
 
+@api_view(['POST'])
+def create_company_lead(request):
+
+    CompanyLead.objects.create(
+        team_size=request.data.get("team_size"),
+        name=request.data.get("name"),
+        email=request.data.get("email"),
+        phone=request.data.get("phone"),
+        company=request.data.get("company"),
+        message=request.data.get("message"),
+    )
+
+    return Response({"message": "Lead created"})
+
+from rest_framework.permissions import IsAdminUser
+from rest_framework.decorators import permission_classes
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_company_leads(request):
+
+    leads = CompanyLead.objects.all().order_by("-created_at")
+
+    data = []
+
+    for l in leads:
+        data.append({
+            "id": l.id,
+            "team_size": l.team_size,
+            "name": l.name,
+            "phone": l.phone,
+            "email": l.email,
+            "company": l.company,
+            "message": l.message,
+            "status": l.status,
+            "owner": l.owner.username if l.owner else None,
+            "owner_name":l.owner.username if l.owner else None,
+        })
+
+    return Response(data)
+
+from django.contrib.auth.models import User
+
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def assign_owner(request, id):
+
+    lead = CompanyLead.objects.get(id=id)
+
+    owner_id = request.data.get("owner")
+
+    owner = User.objects.get(id=owner_id)
+
+    lead.owner = owner
+    lead.status = "contacted"
+    lead.save()
+
+    return Response({"message":"Owner assigned"})
+
+@api_view(['GET'])
+def get_owners(request):
+
+    owners = Profile.objects.filter(role="owner")
+
+    data = []
+
+    for o in owners:
+        data.append({
+            "id":o.user.id,
+            "username":o.user.username
+        })
+
+    return Response(data)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def owner_company_leads(request):
+
+    leads = CompanyLead.objects.filter(owner=request.user)
+
+    data = list(leads.values())
+
+    return Response(data)
+
+@api_view(['PUT'])
+def update_company_status(request,id):
+
+    lead = CompanyLead.objects.get(id=id)
+
+    lead.status = request.data.get("status")
+    lead.save()
+
+    return Response({"message":"updated"})
+
+@api_view(['POST'])
+def create_business_enterprise_lead(request):
+
+    BusinessEnterpriseLead.objects.create(
+        location=request.data.get("location"),
+        company_name=request.data.get("company_name"),
+        contact_person=request.data.get("contact_person"),
+        email=request.data.get("email"),
+        phone=request.data.get("phone"),
+        team_size=request.data.get("team_size"),
+        move_in_date=request.data.get("move_in_date"),
+        budget=request.data.get("budget"),
+        requirement=request.data.get("requirement"),
+    )
+
+    return Response({"message":"Lead created"})
+
+@api_view(['GET'])
+def admin_business_leads(request):
+
+    leads = BusinessEnterpriseLead.objects.all().order_by("-id")
+
+    data = []
+
+    for l in leads:
+        data.append({
+            "id":l.id,
+            "location":l.location,
+            "company":l.company_name,
+            "contact":l.contact_person,
+            "email":l.email,
+            "phone":l.phone,
+            "team":l.team_size,
+            "budget":l.budget,
+            "status":l.status
+        })
+
+    return Response(data)
+
+@api_view(['PUT'])
+def update_business_status(request,id):
+
+    lead = BusinessEnterpriseLead.objects.get(id=id)
+
+    lead.status = request.data.get("status")
+    lead.save()
+
+    return Response({"message":"updated"})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_ticket(request):
+
+    booking_id = request.data.get("booking_id")
+    special_id = request.data.get("special_id")
+
+    ticket = SupportTicket.objects.create(
+        user=request.user,
+        issue_type=request.data.get("issue_type"),
+        message=request.data.get("message")
+    )
+
+    if booking_id:
+        ticket.booking_id = booking_id
+
+    if special_id:
+        ticket.special_id = special_id
+
+    ticket.save()
+
+    return Response({"message": "Ticket created"})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_tickets(request):
+
+    tickets = SupportTicket.objects.filter(
+        user=request.user
+    ).order_by("-created_at")
+
+    data = []
+
+    for t in tickets:
+
+        workspace = "-"
+        location = "-"
+        booking_status = "-"
+        date = "-"
+
+        # booking ticket
+        if t.booking_id:
+            booking = Booking.objects.filter(id=t.booking_id).first()
+
+            if booking:
+                workspace = booking.workspace.name
+                location = booking.workspace.location
+                booking_status = booking.status
+                date = booking.date.strftime("%d %b %Y")
+
+        # special request ticket
+        elif t.special_id:
+            special = SpecialLead.objects.filter(id=t.special_id).first()
+
+            if special:
+                workspace = special.category.category
+                location = special.company or "-"
+                booking_status = special.status
+                date = special.created_at.strftime("%d %b %Y")
+
+        data.append({
+            "id": t.id,
+            "workspace": workspace,
+            "location": location,
+            "booking_status": booking_status,
+            "date": date,
+            "issue_type": t.issue_type,
+            "ticket_status": t.status,
+            "admin_note": t.admin_note,
+        })
+
+    return Response(data)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_tickets(request):
+
+    tickets = SupportTicket.objects.all().order_by("-created_at")
+
+    serializer = SupportTicketSerializer(tickets,many=True)
+
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def update_ticket(request,id):
+
+    ticket = SupportTicket.objects.get(id=id)
+
+    ticket.status = request.data.get("status")
+    ticket.admin_note = request.data.get("admin_note")
+
+    ticket.save()
+
+    return Response({"message":"updated"})

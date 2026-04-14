@@ -17,6 +17,7 @@ import AdminLeads from "./Pages/Leads";
 import AdminUsers from "./Pages/AdminUsers";
 import AdminLeadss from "./Improved/AdminLeadss";
 import Enterprise from "./Improved/Enterprise";
+import RightSpace from "./Improved/RightSpace";
 import AdminEnterprise from "./Improved/AdminEnterprise";
 
 import CreateOwner from "./Pages/CreateOwner";
@@ -28,6 +29,12 @@ import ScrollToTop from "./Pages/ScrollToTop";
 import SpecialContact from "./Pages/SpecialContact";
 import OwnerLeads from "./Pages/OwnerLeads";
 import AdminSpecialLeads from "./Pages/AdminSpecialLeads";
+import CompanyContact from "./Pages/CompanyContact";
+import CompanyAdminleads from "./Pages/CompanyAdminleads";
+import CompanyOwnerleads from "./Pages/CompanyOwnerleads";
+import BusinessEnterpriseContact from "./Improved/BusinessEnterpriseContact";
+import AdminBusinessEnterprise from "./Improved/AdminBusinessEnterprise";
+import AdminTickets from "./Pages/AdminTickets";
 
 
 function App() {
@@ -52,6 +59,7 @@ function App() {
 
           <Route path="/amenities" element={<Amenities />} />
           <Route path="/Enterprise" element={<Enterprise />} />
+          <Route path="/RightSpace" element={<RightSpace/>} />
           
           <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
 
@@ -68,8 +76,14 @@ function App() {
 
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/special-contact/:id" element={<SpecialContact />} />
+          <Route path="/speciall-contact/:id" element={<CompanyContact/>} />
           <Route path="/owner-leads" element={<OwnerLeads/>} />
+          <Route path="/company-leads" element={<CompanyOwnerleads/>} />
             <Route path="/owner-special-leads" element={<AdminSpecialLeads/>} />
+             <Route path="/company-special-leads" element={<CompanyAdminleads/>} />
+             <Route path="/enterprise-business" element={<AdminBusinessEnterprise/>} />
+             <Route path="/admin-tickets" element={<AdminTickets/>} />
+             <Route path="/business-enterprise/:name" element={<BusinessEnterpriseContact/>} />
 
            
         </Route>

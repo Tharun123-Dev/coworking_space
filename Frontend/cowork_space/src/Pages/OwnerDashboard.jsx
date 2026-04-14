@@ -176,6 +176,15 @@ function OwnerDashboard() {
             📌 Owner Leads
           </button>
         </R>
+
+            <R>
+          <button
+            className={`${styles.btnBox} ${styles.blueBtn}`}
+            onClick={() => navigate("/company-leads")}
+          >
+            📌 Company Leads
+          </button>
+        </R>
       </div>
 
       {/* Workspace Section */}

@@ -30,7 +30,7 @@ function HyderabadWorkspaces() {
 
   const handleAddToCart = (workspaceId) => {
     axiosInstance.post("cart/add/", { workspace_id: workspaceId, duration: 1 })
-      .then(() => alert("Added to cart ✅"))
+      .then(() => alert("Added to cart and must be book in one day.."))
       .catch(() => {
         alert("Please login first 🔒");
         navigate("/auth?type=user");

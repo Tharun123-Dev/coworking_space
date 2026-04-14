@@ -63,12 +63,13 @@ const LocationsSection = ({ openModal }) => {
                   <h3 className="rightSpaceCardTitle">{loc.name}</h3>
                 </div>
 
-                <button
-                  className="rightSpaceButton"
-                  onClick={() => openModal(loc.name)}
-                >
-                  Book now <span>→</span>
-                </button>
+                {/* ✅ Book Now → opens enterprise contact modal with location name preselected */}
+                  <button
+                    className="rightSpaceButton"
+                    onClick={() => window.location.href=`/business-enterprise/${loc.name}`}
+                  >
+                    Book now <span>→</span>
+                  </button>
               </div>
             </div>
           </R>

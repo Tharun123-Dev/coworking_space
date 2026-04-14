@@ -7,6 +7,7 @@ function AdminUsers() {
   const [form, setForm] = useState({
     username: "",
     email: "",
+    phone:"",
     password: ""
   });
 
@@ -81,7 +82,12 @@ return (
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
-
+           <input
+  className={styles.input}
+  placeholder="Phone"
+  value={form.phone}
+  onChange={(e)=>setForm({...form,phone:e.target.value})}
+/>
           <input
             className={styles.input}
             type="password"
@@ -160,6 +166,7 @@ return (
             <div>
               <h3>{user.username}</h3>
               <p>{user.email}</p>
+              <p>📞{user.phone || "No Phone"}</p>
             </div>
           </div>
 
