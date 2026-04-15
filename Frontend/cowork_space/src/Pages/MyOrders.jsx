@@ -281,6 +281,8 @@ function MyOrders() {
                     <th>Duration</th>
                     <th>Price</th>
                     <th>Status</th>
+                    <th>PAYMENT STATUS</th> 
+                    <th>REFUND AMOUNT</th>
                   </tr>
                 </thead>
 
@@ -306,11 +308,39 @@ function MyOrders() {
                       <td>{item.date}</td>
                       <td>{item.duration}day</td>
                       <td>₹{item.price}</td>
-                      <td>
-                        <span className={`status ${getStatusClass(item.status)}`}>
-                          {item.status}
-                        </span>
-                      </td>
+   <td>
+        <span className={`status ${getStatusClass(item.status)}`}>
+          {item.status}
+        </span>
+      </td>
+
+      {/* ✅ PAYMENT STATUS */}
+      <td>
+        {item.payment_status === "REFUNDED" ? (
+          <span style={{ color: "#4CAF50", fontWeight: "bold" }}>
+            💰 Refunded
+          </span>
+        ) : item.payment_status === "PAID" && item.status === "confirmed" ? (
+          <span style={{ color: "#00C853", fontWeight: "bold" }}>
+            ✅ Paid
+          </span>
+        ) : (
+          <span style={{ color: "#FFC107", fontWeight: "bold" }}>
+            ⏳ Processing
+          </span>
+        )}
+      </td>
+
+      {/* ✅ REFUND AMOUNT */}
+      <td>
+        {item.payment_status === "REFUNDED" ? (
+          <span style={{ color: "#FF9800", fontWeight: "bold" }}>
+            ₹{item.refund_amount}
+          </span>
+        ) : (
+          "-"
+        )}
+      </td>
                     </tr>
                   ))}
                 </tbody>

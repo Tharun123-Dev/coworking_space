@@ -10,7 +10,7 @@ function Booking() {
   const isMultiple = data?.items ? true : false;
   
   const today = new Date().toISOString().split("T")[0];
-  
+  const [paymentId, setPaymentId] = useState(null);
 
   const [form, setForm] = useState({
     date:today,
@@ -97,19 +97,35 @@ function Booking() {
         theme: {
           color: "#c9a84c",
         },
-        handler: async function (response) {
-          try {
-            const verify = await axiosInstance.post("payment/verify/", response);
-            if (verify.data.status === "success") {
-              setPaymentDone(true);
-              alert("Payment successful");
-            } else {
-              alert("Payment verification failed");
-            }
-          } catch (err) {
-            alert("Payment verification error");
-          }
-        },
+  handler: async function (response) {
+  try {
+    // STEP 1: verify payment
+    const verify = await axiosInstance.post("payment/verify/", response);
+
+    if (verify.data.status === "success") {
+
+      // STEP 2: SAVE PAYMENT
+      await axiosInstance.post("payment/save/", {
+        payment_id: response.razorpay_payment_id,
+        order_id: response.razorpay_order_id,
+        amount: totalPrice
+      });
+
+      // ✅ STEP 3: STORE payment_id in state
+      setPaymentId(response.razorpay_payment_id);
+
+      setPaymentDone(true);
+      alert("Payment successful");
+
+    } else {
+      alert("Payment verification failed");
+    }
+
+  } catch (err) {
+    console.log(err);
+    alert("Payment verification error");
+  }
+},
         modal: {
           ondismiss: function () {
             setLoadingPayment(false);
@@ -156,6 +172,7 @@ function Booking() {
             cart_item_id: item.id,
             date: form.date,
             duration: item.duration,
+             payment_id: paymentId
           });
         }
         alert("All Bookings Successful 🎉");
@@ -165,6 +182,7 @@ function Booking() {
           cart_item_id: data.id,
           date: form.date,
           duration: Number(form.duration),
+            payment_id: paymentId
         });
         alert("Booking Successful 🎉");
       }

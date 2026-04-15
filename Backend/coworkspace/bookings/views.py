@@ -35,14 +35,18 @@ def create_booking(request):
     owner = workspace.owner
 
     Booking.objects.create(
-        user=user,
-        workspace=workspace,
-        owner=owner,
-        duration=duration,
-        date=date,
-        total_price=total_price
-    )
+    user=user,
+    workspace=workspace,
+    owner=owner,
+    duration=duration,
+    date=date,
+    total_price=total_price,
 
+    # ✅ ADD THESE
+    payment_id=request.data.get("payment_id"),
+    payment_status="PAID"
+)
+    print("RECEIVED PAYMENT ID:", request.data.get("payment_id"))
    # REMOVE ONLY THAT ITEM
     if cart_item_id:
         CartItem.objects.filter(id=cart_item_id).delete()
@@ -213,27 +217,66 @@ def confirm_booking(request, id):
 
     return Response({"message": "Booking confirmed"})
 
-
-# ===============================
-# CANCEL BOOKING (OWNER)
-# ===============================
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def cancel_booking(request, id):
 
-    booking = Booking.objects.get(id=id)
+    import razorpay
+    from django.conf import settings
+    from rest_framework.response import Response
 
-    # ✅ only workspace owner can cancel
+    try:
+        booking = Booking.objects.get(id=id)
+    except Booking.DoesNotExist:
+        return Response({"error": "Booking not found"}, status=404)
+
+    # ✅ only owner can cancel
     if booking.owner != request.user:
         return Response({"error": "Not allowed"}, status=403)
 
+    # ✅ already cancelled check
+    if booking.status == "cancelled":
+        return Response({"message": "Already cancelled"})
+
+    # ✅ update status
     booking.status = "cancelled"
+
+    print("PAYMENT ID:", booking.payment_id)
+
+    # 💰 REFUND LOGIC
+    if booking.payment_id:
+        try:
+            client = razorpay.Client(
+                auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET)
+            )
+
+            refund = client.payment.refund(booking.payment_id)
+            print("REFUND RESPONSE:", refund)
+
+            booking.payment_status = "REFUNDED"
+
+        except Exception as e:
+            print("REFUND ERROR:", e)
+            return Response({"error": "Refund failed"}, status=500)
+
+    else:
+        print("NO PAYMENT ID FOUND ❌")
+
+    # ✅ ALWAYS SET REFUND AMOUNT (FIXED)
+    booking.refund_amount = booking.total_price
+
+    # ✅ SAVE
     booking.save()
 
-    return Response({"message": "Booking cancelled"})
+    print("FINAL STATUS:", booking.payment_status)
+    print("REFUND AMOUNT:", booking.refund_amount)
 
-
-# ===============================
+    return Response({
+        "message": "Booking cancelled & refunded",
+        "payment_status": booking.payment_status,
+        "refund_amount": booking.refund_amount
+    })
+# ==============================
 # ADMIN TRACK BOOKINGS
 # ===============================
 @api_view(['GET'])
@@ -291,6 +334,9 @@ def my_orders(request):
     "duration": b.duration,
     "price": b.total_price,
     "status": b.status,
+"payment_status": getattr(b, "payment_status", "PAID"),  # ✅ ADD
+  "refund_amount": getattr(b, "refund_amount", 0),
+
 
     # ✅ SAFE IMAGE FIX
     "image": (

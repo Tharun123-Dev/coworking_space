@@ -454,7 +454,6 @@ def create_ticket(request):
 
     return Response({"message": "Ticket created"})
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_tickets(request):
@@ -468,60 +467,40 @@ def user_tickets(request):
     for t in tickets:
 
         workspace = "-"
-        category = "-"
         location = "-"
         booking_status = "-"
         date = "-"
-        image = None
 
-        # ------------------ BOOKING ------------------
+        # booking ticket
         if t.booking_id:
             booking = Booking.objects.filter(id=t.booking_id).first()
 
-            if booking and booking.workspace:
+            if booking:
                 workspace = booking.workspace.name
                 location = booking.workspace.location
                 booking_status = booking.status
                 date = booking.date.strftime("%d %b %Y")
 
-                # ✅ IMAGE (safe)
-                img = booking.workspace.image
-                if img:
-                    image = img.url if hasattr(img, "url") else img
-
-        # ------------------ SPECIAL ------------------
+        # special request ticket
         elif t.special_id:
             special = SpecialLead.objects.filter(id=t.special_id).first()
 
             if special:
-                category = special.category.category
+                workspace = special.category.category
                 location = special.company or "-"
                 booking_status = special.status
                 date = special.created_at.strftime("%d %b %Y")
 
-                # ✅ IMAGE (if exists)
-                if hasattr(special, "image") and special.image:
-                    img = special.image
-                    image = img.url if hasattr(img, "url") else img
-                else:
-                    # fallback image
-                    image = "https://via.placeholder.com/80"
-
-        # ------------------ FINAL DATA ------------------
         data.append({
             "id": t.id,
-
-            # 🔥 separated fields
+            
             "workspace": workspace,
-            "category": category,
-
             "location": location,
             "booking_status": booking_status,
             "date": date,
             "issue_type": t.issue_type,
             "ticket_status": t.status,
-            "admin_note": t.admin_note or "-",
-            "image": image
+            "admin_note": t.admin_note,
         })
 
     return Response(data)

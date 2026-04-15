@@ -39,3 +39,57 @@ def verify_payment(request):
     except Exception as e:
         print("VERIFY ERROR:", e)
         return Response({"status": "failed"})
+    
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Payment
+from django.contrib.auth.models import User
+
+@api_view(['POST'])
+def save_payment(request):
+    try:
+        payment = Payment.objects.create(
+            user=request.user,
+            payment_id=request.data.get("payment_id"),
+            order_id=request.data.get("order_id"),
+            amount=request.data.get("amount"),
+            status="SUCCESS"
+        )
+
+        return Response({"status": "saved"})
+    except Exception as e:
+        print("SAVE ERROR:", e)
+        return Response({"status": "failed"})
+    
+@api_view(['POST'])
+def refund_payment(request):
+    import razorpay
+    from django.conf import settings
+    from .models import Payment
+
+    payment_id = request.data.get("payment_id")
+
+    try:
+        # Find payment in DB
+        payment = Payment.objects.get(payment_id=payment_id)
+
+        client = razorpay.Client(
+            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET)
+        )
+
+        # Refund full amount
+        refund = client.payment.refund(payment_id)
+
+        # Update status
+        payment.status = "REFUNDED"
+        payment.save()
+
+        return Response({"status": "refund_success"})
+
+    except Payment.DoesNotExist:
+        return Response({"status": "payment_not_found"})
+
+    except Exception as e:
+        print("REFUND ERROR:", e)
+        return Response({"status": "refund_failed"})

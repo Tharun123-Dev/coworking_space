@@ -39,7 +39,6 @@ class CartItem(models.Model):
         return self.workspace.price * self.duration * self.quantity
 
 
-#  BOOKING (after checkout)
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -48,7 +47,6 @@ class Booking(models.Model):
         on_delete=models.CASCADE
     )
 
-    # ✅ OWNER LINKED
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -62,6 +60,20 @@ class Booking(models.Model):
 
     total_price = models.IntegerField(default=0)
 
+    payment_id = models.CharField(max_length=200, null=True, blank=True)
+
+    payment_status = models.CharField(
+        max_length=50,
+        default="PAID",
+        choices=[
+            ("PAID", "Paid"),
+            ("REFUNDED", "Refunded")
+        ]
+    )
+
+    # ✅ ADD THIS FIELD (VERY IMPORTANT)
+    refund_amount = models.IntegerField(default=0)
+
     status = models.CharField(
         max_length=20,
         default="pending",
@@ -73,6 +85,3 @@ class Booking(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.workspace.name} - {self.user.username}"

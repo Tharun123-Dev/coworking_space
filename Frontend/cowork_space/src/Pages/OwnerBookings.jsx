@@ -32,16 +32,31 @@ function OwnerBookings() {
       }
     });
   };
+const cancelBooking = async (item) => {
+  try {
+    // STEP 1: cancel booking
+    await axiosInstance.put(`cart/booking-cancel/${item.id}/`);
 
-  const cancelBooking = (id) => {
-    axiosInstance.put(`cart/booking-cancel/${id}/`).then(() => {
-      alert("Booking Cancelled ❌");
-      fetchBookings();
-      if (selectedBooking?.id === id) {
-        setSelectedBooking((prev) => ({ ...prev, status: "cancelled" }));
-      }
-    });
-  };
+    // STEP 2: REFUND (IMPORTANT)
+    if (item.payment_id) {
+      await axiosInstance.post("payment/refund/", {
+        payment_id: item.payment_id
+      });
+    }
+
+    alert("Booking Cancelled & Refund Initiated 💰");
+
+    fetchBookings();
+
+    if (selectedBooking?.id === item.id) {
+      setSelectedBooking((prev) => ({ ...prev, status: "cancelled" }));
+    }
+
+  } catch (err) {
+    console.log(err);
+    alert("Cancel or Refund Failed");
+  }
+};
 
   const handleImageClick = (item) => {
     setSelectedBooking(item);
@@ -145,12 +160,12 @@ function OwnerBookings() {
                             >
                               Confirm
                             </button>
-                            <button
-                              className="owner-action-btn cancel"
-                              onClick={() => cancelBooking(item.id)}
-                            >
-                              Cancel
-                            </button>
+                         <button
+  className="owner-action-btn cancel"
+  onClick={() => cancelBooking(item)}
+>
+  Cancel
+</button>
                           </div>
                         ) : item.status === "confirmed" ? (
                           <span className="owner-done confirmed">✅ Confirmed</span>
@@ -314,13 +329,12 @@ function OwnerBookings() {
               <div className="landing-footer-actions">
                 {selectedBooking.status === "pending" && (
                   <>
-                    <button
-                      className="landing-footer-btn light"
-                      onClick={() => cancelBooking(selectedBooking.id)}
-                      type="button"
-                    >
-                      Cancel
-                    </button>
+                <button
+  className="landing-footer-btn light"
+  onClick={() => cancelBooking(selectedBooking)}
+>
+  Cancel
+</button>
                     <button
                       className="landing-footer-btn dark"
                       onClick={() => confirmBooking(selectedBooking.id)}
