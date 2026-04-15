@@ -10,8 +10,7 @@ function HyderabadWorkspaces() {
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showInfo, setShowInfo] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -30,7 +29,7 @@ function HyderabadWorkspaces() {
 
   const handleAddToCart = (workspaceId) => {
     axiosInstance.post("cart/add/", { workspace_id: workspaceId, duration: 1 })
-      .then(() => alert("Added to cart and must be book in one day.."))
+      .then(() => alert("Added to cart — book within one day."))
       .catch(() => {
         alert("Please login first 🔒");
         navigate("/auth?type=user");
@@ -56,22 +55,19 @@ function HyderabadWorkspaces() {
 
   const handleKnowMore = (item) => {
     setSelectedWorkspace(item);
-    setShowInfo(true);
+    setActiveTab("overview");
+    setShowModal(true);
   };
 
-  const handleViewDetails = (item) => {
-    setSelectedWorkspace(item);
-    setActiveTab("overview");
-    setShowDetails(true);
-  };
+  const closeModal = () => setShowModal(false);
 
   if (loading) {
     return (
       <div className={styles.loadingScreen}>
         <div className={styles.loadingRing}>
-          <div></div><div></div><div></div><div></div>
+          <div></div><div></div><div></div>
         </div>
-        <h1>Discovering Hyderabad's Premium Spaces...</h1>
+        <h1>Discovering Hyderabad's Premium Spaces</h1>
         <p>Curating the finest coworking experiences</p>
       </div>
     );
@@ -88,9 +84,9 @@ function HyderabadWorkspaces() {
                 <span className={styles.eyebrowDot}></span>
                 Hyderabad Exclusive
               </span>
-              <h2 className={styles.sectionTitle}>
-                Premium <em>Workspaces</em>
-              </h2>
+ <h2 className={styles.sectionTitle}>
+  <span style={{ color: "black" }}>Premium</span> <em>Workspaces</em>
+</h2>
               <p className={styles.sectionDesc}>
                 25+ handpicked coworking spaces across Gachibowli, Hitec City, Banjara Hills &amp; more
               </p>
@@ -101,7 +97,10 @@ function HyderabadWorkspaces() {
             <div className={styles.bookingBanner}>
               <div className={styles.bannerItem}>
                 <div className={`${styles.bannerIconWrap} ${styles.bannerIconDay}`}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
                 </div>
                 <div>
                   <p className={styles.bannerLabel}>Booking Type</p>
@@ -111,7 +110,9 @@ function HyderabadWorkspaces() {
               <div className={styles.bannerSep}></div>
               <div className={styles.bannerItem}>
                 <div className={`${styles.bannerIconWrap} ${styles.bannerIconLoc}`}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  </svg>
                 </div>
                 <div>
                   <p className={styles.bannerLabel}>Coverage</p>
@@ -121,7 +122,10 @@ function HyderabadWorkspaces() {
               <div className={styles.bannerSep}></div>
               <div className={styles.bannerItem}>
                 <div className={`${styles.bannerIconWrap} ${styles.bannerIconCart}`}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                  </svg>
                 </div>
                 <div>
                   <p className={styles.bannerLabel}>Checkout</p>
@@ -141,8 +145,8 @@ function HyderabadWorkspaces() {
                 <div key={item.id} className={styles.card} style={{ animationDelay: `${idx * 60}ms` }}>
 
                   <div className={styles.cardBadges}>
-                    <span className={styles.badge1Day}>📅 1 Day</span>
-                    <span className={styles.badgeHyd}>📍 Hyd</span>
+                    <span className={styles.badge1Day}>1 Day</span>
+                    <span className={styles.badgeHyd}>Hyderabad</span>
                   </div>
 
                   <div className={styles.cardImageContainer}>
@@ -155,25 +159,20 @@ function HyderabadWorkspaces() {
                       ★ {item.rating || 4.8}
                       <span className={styles.ratingCount}>({item.reviews || 120}+)</span>
                     </div>
-                    <div className={styles.imageOverlay} onClick={() => handleViewDetails(item)}>
-                      <div className={styles.overlayContent}>
-                        <div className={styles.overlayEyeIcon}>
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </div>
-                        <span className={styles.overlayText}>View Details</span>
-                        <span className={styles.overlayArrow}>→</span>
-                      </div>
-                    </div>
                   </div>
 
                   <div className={styles.cardContent}>
                     <h3 className={styles.cardTitle}>{item.name}</h3>
                     <p className={styles.cardLocation}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#9ca3af"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                      </svg>
                       {item.location}
                     </p>
                     <p className={styles.cardCity}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                      </svg>
                       {item.city} · {item.area}
                     </p>
 
@@ -188,27 +187,18 @@ function HyderabadWorkspaces() {
                         <span className={styles.price}>₹{item.price}</span>
                         <span className={styles.duration}>/day</span>
                       </div>
-                      <span className={styles.oneDayTag}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        1-Day
-                      </span>
-                    </div>
-
-                    <div className={styles.cartInfoRow}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                      <span>Added to your Hyderabad cart</span>
+                      <span className={styles.oneDayTag}>1-Day</span>
                     </div>
 
                     <div className={styles.cardActions}>
-                      {/* <button className={styles.btnDetails} onClick={() => handleViewDetails(item)}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        View Details
-                      </button> */}
                       <button className={styles.btnKnow} onClick={() => handleKnowMore(item)}>
                         Know More
                       </button>
                       <button className={styles.btnPrimary} onClick={(e) => { e.stopPropagation(); handleBookNow(item); }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                        </svg>
                         Add to Cart
                       </button>
                     </div>
@@ -229,36 +219,45 @@ function HyderabadWorkspaces() {
         </div>
       </section>
 
-      {/* ══════ VIEW DETAILS PANEL ══════ */}
-      {showDetails && selectedWorkspace && (
-        <div className={styles.detailsOverlay} onClick={() => setShowDetails(false)}>
-          <div className={styles.detailsPanel} onClick={(e) => e.stopPropagation()}>
+      {/* ══════ UNIFIED KNOW MORE MODAL ══════ */}
+      {showModal && selectedWorkspace && (
+        <div className={styles.modalOverlay} onClick={closeModal}>
+          <div className={styles.modalPanel} onClick={(e) => e.stopPropagation()}>
 
-            <div className={styles.detailsHero}>
+            {/* Hero Image */}
+            <div className={styles.modalHero}>
               <img
                 src={selectedWorkspace.image || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800"}
                 alt={selectedWorkspace.name}
-                className={styles.detailsHeroImg}
+                className={styles.modalHeroImg}
               />
-              <div className={styles.detailsHeroGrad}></div>
-              <button className={styles.detailsClose} onClick={() => setShowDetails(false)}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <div className={styles.modalHeroGrad}></div>
+
+              <button className={styles.modalClose} onClick={closeModal}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
               </button>
-              <div className={styles.detailsHeroBadges}>
-                <span className={styles.dhBadgeDay}>📅 1-Day Booking</span>
-                <span className={styles.dhBadgeHyd}>📍 Hyderabad</span>
-                <span className={styles.dhBadgeRating}>★ {selectedWorkspace.rating || 4.8}</span>
+
+              <div className={styles.modalHeroBadges}>
+                <span className={styles.heroBadgeDay}>1-Day</span>
+                <span className={styles.heroBadgeHyd}>Hyderabad</span>
+                <span className={styles.heroBadgeRating}>★ {selectedWorkspace.rating || 4.8}</span>
               </div>
-              <div className={styles.detailsHeroInfo}>
-                <h2 className={styles.detailsTitle}>{selectedWorkspace.name}</h2>
-                <p className={styles.detailsSubtitle}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+
+              <div className={styles.modalHeroInfo}>
+                <h2 className={styles.modalTitle}>{selectedWorkspace.name}</h2>
+                <p className={styles.modalSubtitle}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.65)">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  </svg>
                   {selectedWorkspace.location}, {selectedWorkspace.city}
                 </p>
               </div>
             </div>
 
-            <div className={styles.detailsTabs}>
+            {/* Tabs */}
+            <div className={styles.modalTabs}>
               {["overview", "amenities", "pricing", "map"].map(tab => (
                 <button
                   key={tab}
@@ -270,7 +269,10 @@ function HyderabadWorkspaces() {
               ))}
             </div>
 
-            <div className={styles.detailsBody}>
+            {/* Tab Body */}
+            <div className={styles.modalBody}>
+
+              {/* ── OVERVIEW ── */}
               {activeTab === "overview" && (
                 <div className={styles.tabContent}>
                   <div className={styles.statsGrid}>
@@ -287,17 +289,19 @@ function HyderabadWorkspaces() {
                       </div>
                     ))}
                   </div>
-                  <div className={styles.detailsSection}>
-                    <h4 className={styles.detailsSectionTitle}>About This Space</h4>
-                    <p className={styles.detailsDesc}>
+
+                  <div className={styles.section}>
+                    <h4 className={styles.sectionTitle}>About this space</h4>
+                    <p className={styles.sectionDesc}>
                       A premium Hyderabad coworking experience designed for productivity and growth.
                       Located in the heart of {selectedWorkspace.city}, this space offers ergonomic workstations,
                       blazing-fast 1Gbps fiber internet, fully equipped meeting rooms, and a vibrant professional community.
                       Perfect for startups, remote teams, and freelancers seeking an inspiring work environment.
                     </p>
                   </div>
-                  <div className={styles.detailsSection}>
-                    <h4 className={styles.detailsSectionTitle}>Location Details</h4>
+
+                  <div className={styles.section}>
+                    <h4 className={styles.sectionTitle}>Location details</h4>
                     <div className={styles.locationCard}>
                       {[
                         ["Address", selectedWorkspace.location],
@@ -315,6 +319,7 @@ function HyderabadWorkspaces() {
                 </div>
               )}
 
+              {/* ── AMENITIES ── */}
               {activeTab === "amenities" && (
                 <div className={styles.tabContent}>
                   <div className={styles.amenitiesGrid}>
@@ -327,7 +332,7 @@ function HyderabadWorkspaces() {
                       { icon: "🖨️", label: "Printer & Scanner", desc: "High-speed machines" },
                       { icon: "🅿️", label: "Free Parking", desc: "Dedicated 2W & 4W" },
                       { icon: "❄️", label: "AC Workspace", desc: "Temperature controlled" },
-                      { icon: "🔐", label: "Secure Locker", desc: "Personal storage space" },
+                      { icon: "🔐", label: "Secure Locker", desc: "Personal storage" },
                       { icon: "📞", label: "Phone Booths", desc: "Private call pods" },
                       { icon: "🎮", label: "Breakout Zone", desc: "Chill & recharge" },
                       { icon: "🌐", label: "VPN Ready", desc: "Secure network access" },
@@ -344,10 +349,11 @@ function HyderabadWorkspaces() {
                 </div>
               )}
 
+              {/* ── PRICING ── */}
               {activeTab === "pricing" && (
                 <div className={styles.tabContent}>
                   <div className={styles.pricingHero}>
-                    <div className={styles.pricingBadge}>1-Day Plan</div>
+                    <span className={styles.pricingBadge}>1-Day Plan</span>
                     <div className={styles.pricingAmount}>
                       <span className={styles.pricingCurrency}>₹</span>
                       <span className={styles.pricingNum}>{selectedWorkspace.price}</span>
@@ -355,40 +361,37 @@ function HyderabadWorkspaces() {
                     </div>
                     <p className={styles.pricingNote}>All taxes included · No hidden charges</p>
                   </div>
-                  <div className={styles.pricingIncludes}>
-                    <h4 className={styles.detailsSectionTitle}>What's Included</h4>
-                    {[
-                      "Full-day hot desk access (9AM – 9PM)",
-                      "Unlimited high-speed WiFi",
-                      "1 meeting room slot (2 hrs)",
-                      "Unlimited tea & coffee",
-                      "Printing (up to 10 pages)",
-                      "Free secure parking",
-                      "Access to all common areas",
-                      "Power backup & AC throughout",
-                    ].map(item => (
-                      <div key={item} className={styles.includeRow}>
-                        <span className={styles.includeCheck}>✓</span>
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className={styles.pricingCartBox}>
-                    <span className={styles.pricingCartIcon}>🛒</span>
-                    <div>
-                      <p className={styles.pricingCartTitle}>Added to Hyderabad Cart</p>
-                      <p className={styles.pricingCartSub}>Book multiple spaces in one checkout</p>
+
+                  <div className={styles.section}>
+                    <h4 className={styles.sectionTitle}>What's included</h4>
+                    <div className={styles.includeList}>
+                      {[
+                        "Full-day hot desk access (9AM – 9PM)",
+                        "Unlimited high-speed WiFi",
+                        "1 meeting room slot (2 hrs)",
+                        "Unlimited tea & coffee",
+                        "Printing (up to 10 pages)",
+                        "Free secure parking",
+                        "Access to all common areas",
+                        "Power backup & AC throughout",
+                      ].map(item => (
+                        <div key={item} className={styles.includeRow}>
+                          <span className={styles.includeCheck}>✓</span>
+                          <span>{item}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               )}
 
+              {/* ── MAP ── */}
               {activeTab === "map" && (
                 <div className={styles.tabContent}>
-                  <div className={styles.mapPlaceholder}>
+                  <div className={styles.mapCard}>
                     <div className={styles.mapPin}>📍</div>
-                    <h4>{selectedWorkspace.name}</h4>
-                    <p>{selectedWorkspace.location}, {selectedWorkspace.city}</p>
+                    <h4 className={styles.mapName}>{selectedWorkspace.name}</h4>
+                    <p className={styles.mapAddr}>{selectedWorkspace.location}, {selectedWorkspace.city}</p>
                     <a
                       href={`https://maps.google.com/?q=${encodeURIComponent(selectedWorkspace.location + " " + selectedWorkspace.city + " Hyderabad")}`}
                       target="_blank"
@@ -398,8 +401,9 @@ function HyderabadWorkspaces() {
                       Open in Google Maps →
                     </a>
                   </div>
-                  <div className={styles.nearbySection}>
-                    <h4 className={styles.detailsSectionTitle}>Nearby Landmarks</h4>
+
+                  <div className={styles.section}>
+                    <h4 className={styles.sectionTitle}>Nearby landmarks</h4>
                     {[
                       { icon: "🚇", label: "Metro Station", dist: "0.4 km" },
                       { icon: "🍽️", label: "Restaurants", dist: "0.2 km" },
@@ -407,7 +411,7 @@ function HyderabadWorkspaces() {
                       { icon: "🛒", label: "Supermarket", dist: "0.6 km" },
                     ].map(n => (
                       <div key={n.label} className={styles.nearbyRow}>
-                        <span>{n.icon}</span>
+                        <span className={styles.nearbyIcon}>{n.icon}</span>
                         <span className={styles.nearbyLabel}>{n.label}</span>
                         <span className={styles.nearbyDist}>{n.dist}</span>
                       </div>
@@ -417,98 +421,22 @@ function HyderabadWorkspaces() {
               )}
             </div>
 
-            <div className={styles.detailsFooter}>
-              <div className={styles.detailsFooterPrice}>
+            {/* Footer CTA */}
+            <div className={styles.modalFooter}>
+              <div className={styles.footerPrice}>
                 <span className={styles.footerPriceNum}>₹{selectedWorkspace.price}</span>
                 <span className={styles.footerPricePer}>/day</span>
               </div>
               <button
-                className={styles.detailsFooterBtn}
-                onClick={() => { setShowDetails(false); handleBookNow(selectedWorkspace); }}
+                className={styles.footerBtn}
+                onClick={() => { closeModal(); handleBookNow(selectedWorkspace); }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                Add to Hyderabad Cart
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                Add to Cart
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══════ KNOW MORE POPUP ══════ */}
-      {showInfo && selectedWorkspace && (
-        <div className={styles.popupOverlay} onClick={() => setShowInfo(false)}>
-          <div className={styles.popupBox} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.popupImage}>
-              <img
-                src={selectedWorkspace.image || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600"}
-                alt={selectedWorkspace.name}
-              />
-              <div className={styles.popupImageOverlay}></div>
-              <h2 className={styles.popupImageTitle}>{selectedWorkspace.name}</h2>
-              <div className={styles.popupBadges}>
-                <span className={styles.popupBadge1Day}>📅 1 Day</span>
-                <span className={styles.popupBadgeHyd}>📍 Hyderabad</span>
-              </div>
-            </div>
-
-            <div className={styles.popupBody}>
-              <button className={styles.backBtn} onClick={() => setShowInfo(false)}>
-                ← Back to Hyderabad
-              </button>
-              <div className={styles.popupMeta}>
-                <span>📍 {selectedWorkspace.location}</span>
-                <span>🏙️ {selectedWorkspace.city}, {selectedWorkspace.area}</span>
-                <span className={styles.popupPrice}>₹{selectedWorkspace.price}/day</span>
-              </div>
-              <div className={styles.popupBookingStrip}>
-                <div className={styles.stripItem}>
-                  <span className={styles.stripIcon}>🗓️</span>
-                  <div>
-                    <p className={styles.stripLabel}>Booking</p>
-                    <p className={styles.stripValue}>1 Day Only</p>
-                  </div>
-                </div>
-                <div className={styles.stripDivider}></div>
-                <div className={styles.stripItem}>
-                  <span className={styles.stripIcon}>📍</span>
-                  <div>
-                    <p className={styles.stripLabel}>Location</p>
-                    <p className={styles.stripValue}>Hyderabad</p>
-                  </div>
-                </div>
-                <div className={styles.stripDivider}></div>
-                <div className={styles.stripItem}>
-                  <span className={styles.stripIcon}>🛒</span>
-                  <div>
-                    <p className={styles.stripLabel}>Cart</p>
-                    <p className={styles.stripValue}>Hyd Cart</p>
-                  </div>
-                </div>
-              </div>
-              <p className={styles.popupDesc}>
-                Premium Hyderabad coworking space with high-speed WiFi, ergonomic seating,
-                and 24/7 access. Perfect for startups, freelancers &amp; remote teams in {selectedWorkspace.city}.
-              </p>
-              <div className={styles.popupFeatures}>
-                {["1Gbps Fiber WiFi", "Meeting Rooms (Free)", "24/7 Access", "Power Backup", "Cafeteria Access", "Printer/Scanner"].map(f => (
-                  <div key={f} className={styles.feature}>✔ {f}</div>
-                ))}
-              </div>
-              <div className={styles.popupActions}>
-                <button
-                  className={styles.popupDetailsBtn}
-                  onClick={() => { setShowInfo(false); handleViewDetails(selectedWorkspace); }}
-                >
-                  View Full Details
-                </button>
-                <button
-                  className={styles.popupBookBtn}
-                  onClick={() => { setShowInfo(false); handleBookNow(selectedWorkspace); }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                  Add to Cart — ₹{selectedWorkspace.price}
-                </button>
-              </div>
             </div>
           </div>
         </div>
