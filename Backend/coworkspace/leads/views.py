@@ -196,7 +196,12 @@ def owner_special_leads(request):
             "message": l.message,
             "category": l.category.category,
             "created": l.created_at,
-            "status":l.status
+            "status":l.status,
+              "image": (
+        l.category.image.url
+        if hasattr(l.category.image, "url")
+        else l.category.image
+    ),
         })
 
     return Response(data)
@@ -237,7 +242,11 @@ def user_special_leads(request):
             "company": l.company,
             "message": l.message,
             "status": l.status,
-            "created": l.created_at
+            "created": l.created_at,
+            "image":l.category.image if l.category.image else None
+            
+
+            
         })
 
     return Response(data)
@@ -263,7 +272,12 @@ def admin_special_leads(request):
             "phone": l.phone,
             "email": l.email,
             "message": l.message,
-            "status": l.status
+            "status": l.status,
+                      "image": (
+        l.category.image.url
+        if hasattr(l.category.image, "url")
+        else l.category.image
+    ),
         })
 
     return Response(data)
@@ -440,6 +454,7 @@ def create_ticket(request):
 
     return Response({"message": "Ticket created"})
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_tickets(request):
@@ -453,39 +468,60 @@ def user_tickets(request):
     for t in tickets:
 
         workspace = "-"
+        category = "-"
         location = "-"
         booking_status = "-"
         date = "-"
+        image = None
 
-        # booking ticket
+        # ------------------ BOOKING ------------------
         if t.booking_id:
             booking = Booking.objects.filter(id=t.booking_id).first()
 
-            if booking:
+            if booking and booking.workspace:
                 workspace = booking.workspace.name
                 location = booking.workspace.location
                 booking_status = booking.status
                 date = booking.date.strftime("%d %b %Y")
 
-        # special request ticket
+                # ✅ IMAGE (safe)
+                img = booking.workspace.image
+                if img:
+                    image = img.url if hasattr(img, "url") else img
+
+        # ------------------ SPECIAL ------------------
         elif t.special_id:
             special = SpecialLead.objects.filter(id=t.special_id).first()
 
             if special:
-                workspace = special.category.category
+                category = special.category.category
                 location = special.company or "-"
                 booking_status = special.status
                 date = special.created_at.strftime("%d %b %Y")
 
+                # ✅ IMAGE (if exists)
+                if hasattr(special, "image") and special.image:
+                    img = special.image
+                    image = img.url if hasattr(img, "url") else img
+                else:
+                    # fallback image
+                    image = "https://via.placeholder.com/80"
+
+        # ------------------ FINAL DATA ------------------
         data.append({
             "id": t.id,
+
+            # 🔥 separated fields
             "workspace": workspace,
+            "category": category,
+
             "location": location,
             "booking_status": booking_status,
             "date": date,
             "issue_type": t.issue_type,
             "ticket_status": t.status,
-            "admin_note": t.admin_note,
+            "admin_note": t.admin_note or "-",
+            "image": image
         })
 
     return Response(data)

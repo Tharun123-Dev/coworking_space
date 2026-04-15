@@ -7,7 +7,7 @@ function MyOrders() {
   const [ticketSubmitting, setTicketSubmitting] = useState(false);
   const [ticketSuccess, setTicketSuccess] = useState("");
   const [ticketErrors, setTicketErrors] = useState({});
-  const [tickets,setTickets]=useState([]);
+  const [tickets, setTickets] = useState([]);
   const [ticket, setTicket] = useState({
     type: "",
     booking_id: "",
@@ -20,18 +20,26 @@ function MyOrders() {
 
   const [orders, setOrders] = useState([]);
   const [special, setSpecial] = useState([]);
-  const fetchTickets = () => {
-axiosInstance.get("leads/tickets/user/")
-.then(res=>setTickets(res.data))
-};
   const [loading, setLoading] = useState(false);
   const [loadingSpecial, setLoadingSpecial] = useState(false);
-  
+
+  const [showWorkspaceDetails, setShowWorkspaceDetails] = useState(false);
+  const [showSpecialDetails, setShowSpecialDetails] = useState(false);
+  const [showSpecialInfo, setShowSpecialInfo] = useState(false);
+
+  const [selectedWorkspaceCard, setSelectedWorkspaceCard] = useState(null);
+  const [selectedSpecialCard, setSelectedSpecialCard] = useState(null);
+  const [activeTab, setActiveTab] = useState("overview");
+
   useEffect(() => {
     fetchOrders();
     fetchSpecial();
     fetchTickets();
   }, []);
+
+  const fetchTickets = () => {
+    axiosInstance.get("leads/tickets/user/").then((res) => setTickets(res.data || []));
+  };
 
   const fetchOrders = () => {
     setLoading(true);
@@ -59,12 +67,12 @@ axiosInstance.get("leads/tickets/user/")
     return "pending";
   };
 
-  const selectedBooking = useMemo(
+  const selectedTicketBooking = useMemo(
     () => orders.find((o) => String(o.id) === String(ticket.booking_id)),
     [orders, ticket.booking_id]
   );
 
-  const selectedSpecial = useMemo(
+  const selectedTicketSpecial = useMemo(
     () => special.find((s) => String(s.id) === String(ticket.special_id)),
     [special, ticket.special_id]
   );
@@ -118,21 +126,14 @@ axiosInstance.get("leads/tickets/user/")
   const validateTicket = () => {
     const errors = {};
 
-    if (!ticket.type) {
-      errors.type = "Please select ticket type";
-    }
-
+    if (!ticket.type) errors.type = "Please select ticket type";
     if (ticket.type === "booking" && !ticket.booking_id) {
       errors.booking_id = "Please select a booking";
     }
-
     if (ticket.type === "special" && !ticket.special_id) {
       errors.special_id = "Please select a special request";
     }
-
-    if (!ticket.issue_type) {
-      errors.issue_type = "Please select issue category";
-    }
+    if (!ticket.issue_type) errors.issue_type = "Please select issue category";
 
     if (!ticket.subject.trim()) {
       errors.subject = "Please enter ticket subject";
@@ -150,35 +151,87 @@ axiosInstance.get("leads/tickets/user/")
     return Object.keys(errors).length === 0;
   };
 
-const submitTicket = () => {
+  const submitTicket = () => {
+    if (!validateTicket()) return;
 
-const payload = {
-issue_type: ticket.issue_type,
-message: ticket.message
-}
+    setTicketSubmitting(true);
 
-if(ticket.type === "booking"){
-payload.booking_id = ticket.booking_id
-}
+    const payload = {
+      issue_type: ticket.issue_type,
+      message: ticket.message,
+      priority: ticket.priority,
+      subject: ticket.subject,
+    };
 
-if(ticket.type === "special"){
-payload.special_id = ticket.special_id
-}
+    if (ticket.type === "booking") {
+      payload.booking_id = ticket.booking_id;
+    }
 
-axiosInstance.post("leads/tickets/create/", payload)
-.then(()=>{
-alert("Ticket raised successfully")
+    if (ticket.type === "special") {
+      payload.special_id = ticket.special_id;
+    }
 
-setShowTicket(false)
+    axiosInstance
+      .post("leads/tickets/create/", payload)
+      .then(() => {
+        alert("Ticket raised successfully");
+        setShowTicket(false);
+        fetchTickets();
+        resetTicketForm();
+      })
+      .catch(() => {
+        alert("Error creating ticket");
+      })
+      .finally(() => {
+        setTicketSubmitting(false);
+      });
+  };
 
-fetchTickets()
+  const handleWorkspaceImageClick = (item) => {
+    const mappedWorkspace = {
+      id: item.id,
+      name: item.workspace || "Workspace",
+      workspace: item.workspace || "Workspace",
+      location: item.location || "-",
+      city: item.city || "Hyderabad",
+      area: item.area || item.location || "-",
+      image:
+        item.image ||
+        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800",
+      rating: item.rating || 4.8,
+      reviews: item.reviews || 120,
+      price: item.price || 0,
+      date: item.date || "-",
+      duration: item.duration || 1,
+      status: item.status || "pending",
+    };
 
-})
-.catch(()=>{
-alert("Error creating ticket")
-})
+    setSelectedWorkspaceCard(mappedWorkspace);
+    setActiveTab("overview");
+    setShowWorkspaceDetails(true);
+  };
 
-}
+  const handleSpecialImageClick = (item) => {
+    const mappedSpecial = {
+      id: item.id,
+      name: item.category || "Special Request",
+      category: item.category || "Special Request",
+      company: item.company || "",
+      description: item.message || "Special workspace request details",
+      message: item.message || "No message provided",
+      image:
+        item.image ||
+        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600",
+      is_available: item.status?.toLowerCase() !== "cancelled",
+      hourly_price: item.hourly_price || 199,
+      daily_price: item.daily_price || 999,
+      monthly_price: item.monthly_price || 19999,
+      status: item.status || "pending",
+    };
+
+    setSelectedSpecialCard(mappedSpecial);
+    setShowSpecialInfo(true);
+  };
 
   return (
     <section className="myorders-page">
@@ -200,7 +253,6 @@ alert("Error creating ticket")
           </div>
         </div>
 
-        {/* Workspace Bookings */}
         <div className="orders-section">
           <div className="section-header">
             <h3 className="section-title">Workspace Bookings</h3>
@@ -222,6 +274,7 @@ alert("Error creating ticket")
               <table>
                 <thead>
                   <tr>
+                    <th>Image</th>
                     <th>Workspace</th>
                     <th>Location</th>
                     <th>Date</th>
@@ -234,10 +287,24 @@ alert("Error creating ticket")
                 <tbody>
                   {orders.map((item) => (
                     <tr key={item.id}>
+                      <td>
+                        <img
+                          src={item.image}
+                          alt="workspace"
+                          onClick={() => handleWorkspaceImageClick(item)}
+                          style={{
+                            width: "70px",
+                            height: "50px",
+                            objectFit: "cover",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                          }}
+                        />
+                      </td>
                       <td>{item.workspace}</td>
                       <td>{item.location}</td>
                       <td>{item.date}</td>
-                      <td>{item.duration} hrs</td>
+                      <td>{item.duration}day</td>
                       <td>₹{item.price}</td>
                       <td>
                         <span className={`status ${getStatusClass(item.status)}`}>
@@ -252,7 +319,6 @@ alert("Error creating ticket")
           )}
         </div>
 
-        {/* Special Requests */}
         <div className="orders-section">
           <div className="section-header">
             <h3 className="section-title">Special Workspace Requests</h3>
@@ -274,6 +340,7 @@ alert("Error creating ticket")
               <table>
                 <thead>
                   <tr>
+                    <th>Image</th>
                     <th>Category</th>
                     <th>Company</th>
                     <th>Message</th>
@@ -284,6 +351,20 @@ alert("Error creating ticket")
                 <tbody>
                   {special.map((item) => (
                     <tr key={item.id}>
+                      <td>
+                        <img
+                          src={item.image}
+                          alt="workspace"
+                          onClick={() => handleSpecialImageClick(item)}
+                          style={{
+                            width: "70px",
+                            height: "50px",
+                            objectFit: "cover",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                          }}
+                        />
+                      </td>
                       <td>{item.category}</td>
                       <td>{item.company || "-"}</td>
                       <td className="message-cell">{item.message || "-"}</td>
@@ -303,10 +384,7 @@ alert("Error creating ticket")
 
       {showTicket && (
         <div className="ticket-modal-overlay" onClick={closeTicketModal}>
-          <div
-            className="ticket-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="ticket-modal" onClick={(e) => e.stopPropagation()}>
             <div className="ticket-modal-top">
               <div>
                 <p className="ticket-mini-badge">Support Desk</p>
@@ -396,44 +474,44 @@ alert("Error creating ticket")
                 </div>
               )}
 
-              {(selectedBooking || selectedSpecial) && (
+              {(selectedTicketBooking || selectedTicketSpecial) && (
                 <div className="ticket-summary-card full">
                   <div className="ticket-summary-title">Selected Reference</div>
 
-                  {selectedBooking && (
+                  {selectedTicketBooking && (
                     <div className="ticket-summary-grid">
                       <div>
                         <span className="summary-label">Workspace</span>
-                        <strong>{selectedBooking.workspace}</strong>
+                        <strong>{selectedTicketBooking.workspace}</strong>
                       </div>
                       <div>
                         <span className="summary-label">Location</span>
-                        <strong>{selectedBooking.location}</strong>
+                        <strong>{selectedTicketBooking.location}</strong>
                       </div>
                       <div>
                         <span className="summary-label">Date</span>
-                        <strong>{selectedBooking.date}</strong>
+                        <strong>{selectedTicketBooking.date}</strong>
                       </div>
                       <div>
                         <span className="summary-label">Status</span>
-                        <strong>{selectedBooking.status}</strong>
+                        <strong>{selectedTicketBooking.status}</strong>
                       </div>
                     </div>
                   )}
 
-                  {selectedSpecial && (
+                  {selectedTicketSpecial && (
                     <div className="ticket-summary-grid">
                       <div>
                         <span className="summary-label">Category</span>
-                        <strong>{selectedSpecial.category}</strong>
+                        <strong>{selectedTicketSpecial.category}</strong>
                       </div>
                       <div>
                         <span className="summary-label">Company</span>
-                        <strong>{selectedSpecial.company || "-"}</strong>
+                        <strong>{selectedTicketSpecial.company || "-"}</strong>
                       </div>
                       <div className="full">
                         <span className="summary-label">Message</span>
-                        <strong>{selectedSpecial.message || "-"}</strong>
+                        <strong>{selectedTicketSpecial.message || "-"}</strong>
                       </div>
                     </div>
                   )}
@@ -467,11 +545,7 @@ alert("Error creating ticket")
 
               <div className="ticket-field">
                 <label>Priority</label>
-                <select
-                  name="priority"
-                  value={ticket.priority}
-                  onChange={handleTicketChange}
-                >
+                <select name="priority" value={ticket.priority} onChange={handleTicketChange}>
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
@@ -531,75 +605,472 @@ alert("Error creating ticket")
         </div>
       )}
 
+      {showWorkspaceDetails && selectedWorkspaceCard && (
+        <div className="hyd-details-overlay" onClick={() => setShowWorkspaceDetails(false)}>
+          <div className="hyd-details-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="hyd-details-hero">
+              <img
+                src={selectedWorkspaceCard.image}
+                alt={selectedWorkspaceCard.name}
+                className="hyd-details-hero-img"
+              />
+              <div className="hyd-details-hero-grad"></div>
 
+              <button
+                className="hyd-details-close"
+                onClick={() => setShowWorkspaceDetails(false)}
+              >
+                ✕
+              </button>
+
+              <div className="hyd-details-hero-badges">
+                <span className="hyd-badge">📅 1-Day Booking</span>
+                <span className="hyd-badge">📍 Hyderabad</span>
+                <span className="hyd-badge">★ {selectedWorkspaceCard.rating}</span>
+              </div>
+
+              <div className="hyd-details-hero-info">
+                <h2>{selectedWorkspaceCard.name}</h2>
+                <p>
+                  {selectedWorkspaceCard.location}, {selectedWorkspaceCard.city}
+                </p>
+              </div>
+            </div>
+
+            <div className="hyd-details-tabs">
+              {["overview", "amenities", "pricing", "map"].map((tab) => (
+                <button
+                  key={tab}
+                  className={activeTab === tab ? "hyd-tab active" : "hyd-tab"}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            <div className="hyd-details-body">
+              {activeTab === "overview" && (
+                <div className="hyd-tab-content">
+                  <div className="hyd-stats-grid">
+                    {[
+                      { icon: "⚡", val: "1 Gbps", lbl: "WiFi Speed" },
+                      { icon: "🕐", val: "24/7", lbl: "Access" },
+                      { icon: "🪑", val: "50+", lbl: "Seats" },
+                      { icon: "🏆", val: selectedWorkspaceCard.rating, lbl: "Rating" },
+                    ].map((s) => (
+                      <div key={s.lbl} className="hyd-stat-card">
+                        <span className="hyd-stat-icon">{s.icon}</span>
+                        <span className="hyd-stat-val">{s.val}</span>
+                        <span className="hyd-stat-lbl">{s.lbl}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="hyd-details-section">
+                    <h4>About This Space</h4>
+                    <p>
+                      A premium Hyderabad coworking experience designed for productivity and growth.
+                      Located near {selectedWorkspaceCard.location}, this workspace supports focused
+                      work, fast internet, comfortable seating, and flexible day booking.
+                    </p>
+                  </div>
+
+                  <div className="hyd-details-section">
+                    <h4>Location Details</h4>
+                    <div className="hyd-location-card">
+                      <div className="hyd-location-row">
+                        <span>Workspace</span>
+                        <span>{selectedWorkspaceCard.name}</span>
+                      </div>
+                      <div className="hyd-location-row">
+                        <span>Address</span>
+                        <span>{selectedWorkspaceCard.location}</span>
+                      </div>
+                      <div className="hyd-location-row">
+                        <span>City</span>
+                        <span>{selectedWorkspaceCard.city}</span>
+                      </div>
+                      <div className="hyd-location-row">
+                        <span>Date</span>
+                        <span>{selectedWorkspaceCard.date}</span>
+                      </div>
+                      <div className="hyd-location-row">
+                        <span>Status</span>
+                        <span>{selectedWorkspaceCard.status}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "amenities" && (
+                <div className="hyd-tab-content">
+                  <div className="hyd-amenities-grid">
+                    {[
+                      { icon: "⚡", label: "1Gbps Fiber WiFi", desc: "Lightning-fast connectivity" },
+                      { icon: "🤝", label: "Meeting Rooms", desc: "Free for all members" },
+                      { icon: "🕐", label: "24/7 Access", desc: "Round the clock entry" },
+                      { icon: "🔋", label: "Power Backup", desc: "100% uptime guaranteed" },
+                      { icon: "☕", label: "Cafeteria", desc: "Tea, coffee & snacks" },
+                      { icon: "🖨️", label: "Printer & Scanner", desc: "High-speed machines" },
+                      { icon: "🅿️", label: "Free Parking", desc: "Dedicated 2W & 4W" },
+                      { icon: "❄️", label: "AC Workspace", desc: "Temperature controlled" },
+                    ].map((a) => (
+                      <div key={a.label} className="hyd-amenity-card">
+                        <span className="hyd-amenity-emoji">{a.icon}</span>
+                        <div>
+                          <p className="hyd-amenity-label">{a.label}</p>
+                          <p className="hyd-amenity-desc">{a.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "pricing" && (
+                <div className="hyd-tab-content">
+                  <div className="hyd-pricing-hero">
+                    <div className="hyd-pricing-badge">1-Day Plan</div>
+                    <div className="hyd-pricing-amount">
+                      <span>₹</span>
+                      <span>{selectedWorkspaceCard.price}</span>
+                      <span>/day</span>
+                    </div>
+                    <p>Booking date: {selectedWorkspaceCard.date}</p>
+                  </div>
+
+                  <div className="hyd-pricing-includes">
+                    <h4>What's Included</h4>
+                    {[
+                      "Full-day hot desk access",
+                      "Unlimited high-speed WiFi",
+                      "Meeting support access",
+                      "Tea & coffee",
+                      "Common area access",
+                      "Power backup & AC",
+                    ].map((item) => (
+                      <div key={item} className="hyd-include-row">
+                        <span>✓</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "map" && (
+                <div className="hyd-tab-content">
+                  <div className="hyd-map-placeholder">
+                    <div className="hyd-map-pin">📍</div>
+                    <h4>{selectedWorkspaceCard.name}</h4>
+                    <p>
+                      {selectedWorkspaceCard.location}, {selectedWorkspaceCard.city}
+                    </p>
+                    <a
+                      href={`https://maps.google.com/?q=${encodeURIComponent(
+                        selectedWorkspaceCard.location +
+                          " " +
+                          selectedWorkspaceCard.city +
+                          " Hyderabad"
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open in Google Maps →
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="hyd-details-footer">
+              <div className="hyd-footer-price">
+                <span>₹{selectedWorkspaceCard.price}</span>
+                <span>/day</span>
+              </div>
+              <button className="hyd-footer-btn" type="button">
+                Booked Workspace
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSpecialInfo && selectedSpecialCard && (
+        <div className="special-popup-overlay" onClick={() => setShowSpecialInfo(false)}>
+          <div className="special-popup-box" onClick={(e) => e.stopPropagation()}>
+            <div className="special-popup-image">
+              <img src={selectedSpecialCard.image} alt={selectedSpecialCard.name} />
+              <div className="special-popup-image-overlay"></div>
+              <h2 className="special-popup-image-title">{selectedSpecialCard.name}</h2>
+              <div className="special-popup-badges">
+                <span className="special-popup-badge">📌 Special</span>
+                <span className="special-popup-badge">
+                  {selectedSpecialCard.is_available ? "Available" : "Not Available"}
+                </span>
+              </div>
+              <button
+                className="special-popup-close"
+                onClick={() => setShowSpecialInfo(false)}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="special-popup-body">
+              <button className="special-back-btn" onClick={() => setShowSpecialInfo(false)}>
+                ← Back
+              </button>
+
+              <div className="special-popup-meta">
+                <span>🏢 {selectedSpecialCard.company || "No company"}</span>
+                <span>📂 {selectedSpecialCard.category}</span>
+                <span className="special-popup-price">
+                  ₹{selectedSpecialCard.daily_price}/day
+                </span>
+              </div>
+
+              <p className="special-popup-desc">
+                {selectedSpecialCard.description}
+              </p>
+
+              <div className="special-pricing-section">
+                <div className="special-price-item">
+                  <span className="special-price-label">Hourly</span>
+                  <span className="special-price-value">
+                    ₹{selectedSpecialCard.hourly_price}
+                  </span>
+                </div>
+
+                <div className="special-price-item">
+                  <span className="special-price-label">Daily</span>
+                  <span className="special-price-value">
+                    ₹{selectedSpecialCard.daily_price}
+                  </span>
+                </div>
+
+                <div className="special-price-item">
+                  <span className="special-price-label">Monthly</span>
+                  <span className="special-price-value">
+                    ₹{selectedSpecialCard.monthly_price}
+                  </span>
+                </div>
+              </div>
+
+              <div className="special-features">
+                {[
+                  "Flexible custom request",
+                  "Workspace matching support",
+                  "Dedicated response tracking",
+                  "Premium setup options",
+                  "Business-ready environment",
+                  "Support follow-up available",
+                ].map((f) => (
+                  <div key={f} className="special-feature">
+                    ✔ {f}
+                  </div>
+                ))}
+              </div>
+
+              <div className="special-message-box">
+                <h4>Request Message</h4>
+                <p>{selectedSpecialCard.message}</p>
+              </div>
+
+              <div className="special-popup-actions">
+                <button
+                  className="special-popup-details-btn"
+                  onClick={() => {
+                    setShowSpecialInfo(false);
+                    setShowSpecialDetails(true);
+                  }}
+                >
+                  View Full Details
+                </button>
+                <button className="special-popup-book-btn">
+                  Current Status — {selectedSpecialCard.status}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSpecialDetails && selectedSpecialCard && (
+        <div className="hyd-details-overlay" onClick={() => setShowSpecialDetails(false)}>
+          <div className="hyd-details-panel special-details-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="hyd-details-hero">
+              <img
+                src={selectedSpecialCard.image}
+                alt={selectedSpecialCard.name}
+                className="hyd-details-hero-img"
+              />
+              <div className="hyd-details-hero-grad"></div>
+              <button
+                className="hyd-details-close"
+                onClick={() => setShowSpecialDetails(false)}
+              >
+                ✕
+              </button>
+              <div className="hyd-details-hero-info">
+                <h2>{selectedSpecialCard.name}</h2>
+                <p>{selectedSpecialCard.company || "Special workspace request"}</p>
+              </div>
+            </div>
+
+            <div className="hyd-details-body">
+              <div className="hyd-details-section">
+                <h4>Request Overview</h4>
+                <p>{selectedSpecialCard.message}</p>
+              </div>
+
+              <div className="hyd-pricing-includes">
+                <h4>Pricing Details</h4>
+                <div className="hyd-include-row">
+                  <span>•</span>
+                  <span>Hourly Price: ₹{selectedSpecialCard.hourly_price}</span>
+                </div>
+                <div className="hyd-include-row">
+                  <span>•</span>
+                  <span>Daily Price: ₹{selectedSpecialCard.daily_price}</span>
+                </div>
+                <div className="hyd-include-row">
+                  <span>•</span>
+                  <span>Monthly Price: ₹{selectedSpecialCard.monthly_price}</span>
+                </div>
+                <div className="hyd-include-row">
+                  <span>•</span>
+                  <span>Status: {selectedSpecialCard.status}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="hyd-details-footer">
+              <div className="hyd-footer-price">
+                <span>₹{selectedSpecialCard.daily_price}</span>
+                <span>/day</span>
+              </div>
+              <button className="hyd-footer-btn" type="button">
+                Special Request Opened
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="orders-section">
+        <div className="section-header">
+          <h3 className="section-title">Support Tickets</h3>
+          <span className="count-badge">{tickets.length}</span>
+        </div>
 
-<div className="section-header">
-<h3 className="section-title">Support Tickets</h3>
-<span className="count-badge">{tickets.length}</span>
-</div>
+        {tickets.length === 0 ? (
+          <div className="empty-state">
+            <h4>No tickets raised</h4>
+            <p>Your support tickets will appear here</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+          <table>
+  <thead>
+    <tr>
+      <th>Image</th>
+      <th>Workspace / Category</th>
+      <th>Location</th>
+      <th>Booking Status</th>
+      <th>Date</th>
+      <th>Issue</th>
+      <th>Ticket Status</th>
+      <th>Admin Note</th>
+    </tr>
+  </thead>
 
-{tickets.length === 0 ? (
-<div className="empty-state">
-<h4>No tickets raised</h4>
-<p>Your support tickets will appear here</p>
-</div>
-) : (
+  <tbody>
+    {tickets.map((t) => (
+      <tr key={t.id}>
 
-<div className="table-wrapper">
+        {/* ✅ IMAGE */}
+        <td>
+          {t.image ? (
+            <img
+              src={t.image}
+              alt="workspace"
+              style={{
+                width: "60px",
+                height: "45px",
+                objectFit: "cover",
+                borderRadius: "6px"
+              }}
+              onError={(e) => {
+                e.target.src = "https://via.placeholder.com/60";
+              }}
+            />
+          ) : (
+            <span>-</span>
+          )}
+        </td>
 
-<table>
+        {/* ✅ WORKSPACE / CATEGORY */}
+        <td>
+          {t.workspace !== "-" ? (
+            <>
+              <strong>{t.workspace}</strong>
+              <div style={{ fontSize: "12px", color: "#aaa" }}>
+                Workspace
+              </div>
+            </>
+          ) : (
+            <>
+              <strong>{t.category}</strong>
+              <div style={{ fontSize: "12px", color: "#aaa" }}>
+                Category
+              </div>
+            </>
+          )}
+        </td>
 
-<thead>
-<tr>
-<th>Workspace</th>
-<th>Location</th>
-<th>Booking Status</th>
-<th>Date</th>
-<th>Issue</th>
-<th>Ticket Status</th>
-<th>Admin Note</th>
-</tr>
-</thead>
+        {/* ✅ LOCATION */}
+        <td>{t.location || "-"}</td>
 
+        {/* ✅ BOOKING STATUS */}
+        <td>
+          <span className={`status ${getStatusClass(t.booking_status)}`}>
+            {t.booking_status || "-"}
+          </span>
+        </td>
 
-<tbody>
-{tickets.map(t=>(
-<tr key={t.id}>
+        {/* ✅ DATE */}
+        <td>{t.date || "-"}</td>
 
-<td>{t.workspace || "-"}</td>
+        {/* ✅ ISSUE */}
+        <td style={{ textTransform: "capitalize" }}>
+          {t.issue_type || "-"}
+        </td>
 
-<td>{t.location || "-"}</td>
+        {/* ✅ TICKET STATUS */}
+        <td>
+          <span className={`status ${getStatusClass(t.ticket_status)}`}>
+            {t.ticket_status || "-"}
+          </span>
+        </td>
 
-<td>
-<span className={`status ${getStatusClass(t.booking_status)}`}>
-{t.booking_status || "-"}
-</span>
-</td>
+        {/* ✅ ADMIN NOTE */}
+        <td>
+          {t.admin_note && t.admin_note !== "-"
+            ? t.admin_note
+            : <span style={{ color: "#888" }}>Pending</span>}
+        </td>
 
-<td>{t.date || "-"}</td>
-
-<td>{t.issue_type}</td>
-
-<td>
-<span className={`status ${getStatusClass(t.ticket_status)}`}>
-{t.ticket_status}
-</span>
-</td>
-
-<td>{t.admin_note || "pending"}</td>
-
-</tr>
-))}
-</tbody>
+      </tr>
+    ))}
+  </tbody>
 </table>
-
-</div>
-
-)}
-
-</div>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

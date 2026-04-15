@@ -150,6 +150,7 @@ def get_all_bookings(request):
     for b in bookings:
         data.append({
             "id": b.id,
+            
             "user": b.user.username,
             "workspace": b.workspace.name,
             "location": b.workspace.location,
@@ -176,6 +177,12 @@ def owner_bookings(request):
     for b in bookings:
         data.append({
             "id": b.id,
+                # ✅ SAFE IMAGE FIX
+    "image": (
+        b.workspace.image.url
+        if hasattr(b.workspace.image, "url")
+        else b.workspace.image
+    ),
             "user": b.user.username,
             "workspace": b.workspace.name,
             "location": b.workspace.location,
@@ -244,6 +251,7 @@ def admin_bookings(request):
     for b in bookings:
         data.append({
             "id": b.id,
+            
             "owner": b.workspace.owner.username if b.workspace and b.workspace.owner else "",
             "user": b.user.username if b.user else "",
             "workspace": b.workspace.name if b.workspace else "",
@@ -252,6 +260,13 @@ def admin_bookings(request):
             "duration": b.duration,
             "price": b.total_price,
             "status": b.status,
+             "image": (
+                   b.workspace.image.url
+                  if hasattr(b.workspace.image, "url")
+               else b.workspace.image
+                                        ),
+            
+            
         })
 
     return Response(data)
@@ -268,16 +283,22 @@ def my_orders(request):
 
     data = []
     for b in bookings:
-        data.append({
-            "id": b.id,
-            "workspace": b.workspace.name,
-            "location": b.workspace.location,
-            "date": b.date,
-            "duration": b.duration,
-            "price": b.total_price,
-            "status": b.status
-        })
+       data.append({
+    "id": b.id,
+    "workspace": b.workspace.name,
+    "location": b.workspace.location,
+    "date": b.date,
+    "duration": b.duration,
+    "price": b.total_price,
+    "status": b.status,
 
+    # ✅ SAFE IMAGE FIX
+    "image": (
+        b.workspace.image.url
+        if hasattr(b.workspace.image, "url")
+        else b.workspace.image
+    )
+})
     return Response(data)
 from django.db.models import Sum
 
