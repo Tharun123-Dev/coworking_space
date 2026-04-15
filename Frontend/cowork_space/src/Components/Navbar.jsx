@@ -100,7 +100,7 @@ function Navbar() {
   onMouseEnter={() => setShowEnterprise(true)}
   onMouseLeave={() => setShowEnterprise(false)}
 >
-  <span className={styles.dropdownLabel}>Enterprise</span>
+  <span className={styles.dropdownLabel}>Enterprises</span>
   <span className={styles.arrow}>▼</span>
 
   {showEnterprise && (
@@ -121,7 +121,7 @@ function Navbar() {
             onMouseEnter={() => setShowWorkspace(true)}
             onMouseLeave={() => setShowWorkspace(false)}
           >
-            <span className={styles.dropdownLabel}>Workspaces</span>
+            <span className={styles.dropdownLabel}>Our Gallery</span>
             <span className={styles.arrow}>▼</span>
             {showWorkspace && (
               <div className={styles.dropdownMenu}>
@@ -221,7 +221,7 @@ function Navbar() {
     className={styles.mobileDropdownBtn}
     onClick={() => setMobileRoleOpen(o => !o)}
   >
-    Enterprise
+    Enterprises
     <span>{mobileRoleOpen ? "−" : "+"}</span>
   </button>
 
@@ -245,7 +245,7 @@ function Navbar() {
                 className={styles.mobileDropdownBtn}
                 onClick={() => setMobileWorkspaceOpen(o => !o)}
               >
-                Workspaces
+                Our Gallery
                 <span>{mobileWorkspaceOpen ? "−" : "+"}</span>
               </button>
               {mobileWorkspaceOpen && (
