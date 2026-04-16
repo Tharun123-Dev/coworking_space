@@ -24,8 +24,7 @@ function Navbar() {
 
   const cityLinks = [
     { label: "Hyderabad", value: "Hyderabad" },
-    { label: "Bangalore", value: "Bangalore" },
-    { label: "Delhi",     value: "Delhi" },
+   
   ];
 
   /* Close all mobile panels */
