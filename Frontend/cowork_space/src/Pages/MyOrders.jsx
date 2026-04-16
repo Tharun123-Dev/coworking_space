@@ -8,6 +8,13 @@ function MyOrders() {
   const [ticketSuccess, setTicketSuccess] = useState("");
   const [ticketErrors, setTicketErrors] = useState({});
   const [tickets, setTickets] = useState([]);
+
+  const [showCancel, setShowCancel] = useState(false);
+  const [cancelSubmitting, setCancelSubmitting] = useState(false);
+  const [cancelError, setCancelError] = useState("");
+  const [reason, setReason] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
   const [ticket, setTicket] = useState({
     type: "",
     booking_id: "",
@@ -38,7 +45,10 @@ function MyOrders() {
   }, []);
 
   const fetchTickets = () => {
-    axiosInstance.get("leads/tickets/user/").then((res) => setTickets(res.data || []));
+    axiosInstance
+      .get("leads/tickets/user/")
+      .then((res) => setTickets(res.data || []))
+      .catch(() => setTickets([]));
   };
 
   const fetchOrders = () => {
@@ -46,6 +56,7 @@ function MyOrders() {
     axiosInstance
       .get("cart/myorders/")
       .then((res) => setOrders(res.data || []))
+      .catch(() => setOrders([]))
       .finally(() => setLoading(false));
   };
 
@@ -54,18 +65,37 @@ function MyOrders() {
     axiosInstance
       .get("leads/special/user/")
       .then((res) => setSpecial(res.data || []))
+      .catch(() => setSpecial([]))
       .finally(() => setLoadingSpecial(false));
   };
 
   const getStatusClass = (status) => {
     if (!status) return "pending";
-    const s = status.toLowerCase();
+    const s = String(status).toLowerCase();
+
     if (s === "pending") return "pending";
     if (s === "confirmed") return "confirmed";
     if (s === "contacted") return "contacted";
     if (s === "cancelled") return "cancelled";
+    if (s === "approved") return "confirmed";
+    if (s === "refunded") return "confirmed";
     return "pending";
   };
+
+  const pendingOrdersForCancel = useMemo(() => {
+    return orders.filter((item) => {
+      const bookingStatus = String(item.status || "").toLowerCase();
+      const paymentStatus = String(item.payment_status || "").toUpperCase();
+      const cancelStatus = String(item.cancel_status || "").toUpperCase();
+
+      const onlyPending = bookingStatus === "pending";
+      const notRefunded = paymentStatus !== "REFUNDED";
+      const notCancelled = bookingStatus !== "cancelled";
+      const noPendingCancelRequest = cancelStatus !== "PENDING";
+
+      return onlyPending && notRefunded && notCancelled && noPendingCancelRequest;
+    });
+  }, [orders]);
 
   const selectedTicketBooking = useMemo(
     () => orders.find((o) => String(o.id) === String(ticket.booking_id)),
@@ -75,6 +105,14 @@ function MyOrders() {
   const selectedTicketSpecial = useMemo(
     () => special.find((s) => String(s.id) === String(ticket.special_id)),
     [special, ticket.special_id]
+  );
+
+  const selectedCancelOrderData = useMemo(
+    () =>
+      pendingOrdersForCancel.find(
+        (o) => String(o.id) === String(selectedOrder)
+      ),
+    [pendingOrdersForCancel, selectedOrder]
   );
 
   const resetTicketForm = () => {
@@ -102,6 +140,57 @@ function MyOrders() {
     setTimeout(() => {
       resetTicketForm();
     }, 200);
+  };
+
+  const openCancelModal = () => {
+    setShowCancel(true);
+    setSelectedOrder(null);
+    setReason("");
+    setCancelError("");
+  };
+
+  const closeCancelModal = () => {
+    setShowCancel(false);
+    setSelectedOrder(null);
+    setReason("");
+    setCancelError("");
+    setCancelSubmitting(false);
+  };
+
+  const submitCancel = async () => {
+    if (!selectedOrder) {
+      setCancelError("Please select an order to cancel.");
+      return;
+    }
+
+    if (!reason.trim()) {
+      setCancelError("Please enter the cancellation reason.");
+      return;
+    }
+
+    if (reason.trim().length < 8) {
+      setCancelError("Reason should be at least 8 characters.");
+      return;
+    }
+
+    try {
+      setCancelSubmitting(true);
+      setCancelError("");
+
+      await axiosInstance.post("cart/booking/cancel-request/", {
+        booking_id: selectedOrder,
+        reason: reason.trim(),
+      });
+
+      alert("Cancel request sent to owner successfully");
+      closeCancelModal();
+      fetchOrders();
+      fetchTickets();
+    } catch {
+      setCancelError("Failed to send cancel request. Please try again.");
+    } finally {
+      setCancelSubmitting(false);
+    }
   };
 
   const handleTicketChange = (e) => {
@@ -200,10 +289,13 @@ function MyOrders() {
         "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800",
       rating: item.rating || 4.8,
       reviews: item.reviews || 120,
-      price: item.price || 0,
+      price: item.price || item.total_price || 0,
       date: item.date || "-",
       duration: item.duration || 1,
       status: item.status || "pending",
+      payment_status: item.payment_status || "PENDING",
+      refund_amount: item.refund_amount || 0,
+      cancel_status: item.cancel_status || "",
     };
 
     setSelectedWorkspaceCard(mappedWorkspace);
@@ -281,66 +373,219 @@ function MyOrders() {
                     <th>Duration</th>
                     <th>Price</th>
                     <th>Status</th>
-                    <th>PAYMENT STATUS</th> 
-                    <th>REFUND AMOUNT</th>
+                    <th>Payment Status</th>
+                    <th>Refund Amount</th>
+                    <th>Cancel Status</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {orders.map((item) => (
-                    <tr key={item.id}>
+                  {orders.map((item) => {
+                    const bookingStatus = String(item.status || "").toLowerCase();
+                    const paymentStatus = String(item.payment_status || "").toUpperCase();
+
+                    const isConfirmed = bookingStatus === "confirmed";
+                    const isCancelled = bookingStatus === "cancelled";
+                    const isRefunded = paymentStatus === "REFUNDED";
+
+                    return (
+                      <tr key={item.id}>
+                        <td>
+                          <img
+                            src={item.image}
+                            alt="workspace"
+                            onClick={() => handleWorkspaceImageClick(item)}
+                            style={{
+                              width: "70px",
+                              height: "50px",
+                              objectFit: "cover",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                            }}
+                          />
+                        </td>
+                        <td>{item.workspace}</td>
+                        <td>{item.location}</td>
+                        <td>{item.date}</td>
+                        <td>{item.duration} day</td>
+                        <td>₹{item.price || item.total_price}</td>
+
+                        <td>
+                          <span className={`status ${getStatusClass(item.status)}`}>
+                            {item.status}
+                          </span>
+                        </td>
+
+                        <td>
+                          {isRefunded ? (
+                            <span style={{ color: "#4CAF50", fontWeight: "bold" }}>
+                              💰 Refunded
+                            </span>
+                          ) : isConfirmed ? (
+                            <span style={{ color: "#00C853", fontWeight: "bold" }}>
+                              ✅ Paid
+                            </span>
+                          ) : (
+                            <span style={{ color: "#FFC107", fontWeight: "bold" }}>
+                              ⏳ Processing
+                            </span>
+                          )}
+                        </td>
+
+                        <td>
+                          {isRefunded ? (
+                            <span style={{ color: "#FF9800", fontWeight: "bold" }}>
+                              ₹{item.refund_amount || 0}
+                            </span>
+                          ) : isConfirmed ? (
+                            <span style={{ color: "#2196F3", fontWeight: "bold" }}>
+                              No Refund
+                            </span>
+                          ) : isCancelled ? (
+                            <span style={{ color: "#9E9E9E", fontWeight: "bold" }}>
+                              Pending Refund
+                            </span>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+
+                        <td>
+                          {item.cancel_status === "PENDING" ? (
+                            <span style={{ color: "#ff9800", fontWeight: "bold" }}>
+                              ⏳ Cancel Requested
+                            </span>
+                          ) : item.status === "cancelled" && item.payment_status === "REFUNDED" ? (
+                            <span style={{ color: "red", fontWeight: "bold" }}>
+                              ❌ Cancelled & 💰 Refunded ₹{item.refund_amount || 0}
+                            </span>
+                          ) : item.status === "confirmed" ? (
+                            <span style={{ color: "green", fontWeight: "bold" }}>
+                              ✅ Active Booking
+                            </span>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="orders-section">
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
+            <button
+              onClick={openCancelModal}
+              style={{
+                background: "#fff5f5",
+                color: "#ff4d4f",
+                border: "1px solid #ffb3b3",
+                borderRadius: "12px",
+                boxShadow: "0 4px 12px rgba(255, 77, 79, 0.18)",
+                fontWeight: "bold",
+                cursor: "pointer",
+                padding: "12px 18px",
+                transition: "all 0.3s ease",
+              }}
+            >
+              I want to cancel my order
+            </button>
+          </div>
+
+          <div className="section-header">
+            <h3 className="section-title">Support Tickets</h3>
+            <span className="count-badge">{tickets.length}</span>
+          </div>
+
+          {tickets.length === 0 ? (
+            <div className="empty-state">
+              <h4>No tickets raised</h4>
+              <p>Your support tickets will appear here</p>
+            </div>
+          ) : (
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Workspace / Category</th>
+                    <th>Location</th>
+                    <th>Booking Status</th>
+                    <th>Date</th>
+                    <th>Issue</th>
+                    <th>Ticket Status</th>
+                    <th>Admin Note</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {tickets.map((t) => (
+                    <tr key={t.id}>
                       <td>
-                        <img
-                          src={item.image}
-                          alt="workspace"
-                          onClick={() => handleWorkspaceImageClick(item)}
-                          style={{
-                            width: "70px",
-                            height: "50px",
-                            objectFit: "cover",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                          }}
-                        />
+                        {t.image ? (
+                          <img
+                            src={t.image}
+                            alt="workspace"
+                            style={{
+                              width: "60px",
+                              height: "45px",
+                              objectFit: "cover",
+                              borderRadius: "6px",
+                            }}
+                            onError={(e) => {
+                              e.target.src = "https://via.placeholder.com/60";
+                            }}
+                          />
+                        ) : (
+                          <span>-</span>
+                        )}
                       </td>
-                      <td>{item.workspace}</td>
-                      <td>{item.location}</td>
-                      <td>{item.date}</td>
-                      <td>{item.duration}day</td>
-                      <td>₹{item.price}</td>
-   <td>
-        <span className={`status ${getStatusClass(item.status)}`}>
-          {item.status}
-        </span>
-      </td>
 
-      {/* ✅ PAYMENT STATUS */}
-      <td>
-        {item.payment_status === "REFUNDED" ? (
-          <span style={{ color: "#4CAF50", fontWeight: "bold" }}>
-            💰 Refunded
-          </span>
-        ) : item.payment_status === "PAID" && item.status === "confirmed" ? (
-          <span style={{ color: "#00C853", fontWeight: "bold" }}>
-            ✅ Paid
-          </span>
-        ) : (
-          <span style={{ color: "#FFC107", fontWeight: "bold" }}>
-            ⏳ Processing
-          </span>
-        )}
-      </td>
+                      <td>
+                        {t.workspace !== "-" ? (
+                          <>
+                            <strong>{t.workspace}</strong>
+                            <div style={{ fontSize: "12px", color: "#aaa" }}>Workspace</div>
+                          </>
+                        ) : (
+                          <>
+                            <strong>{t.category}</strong>
+                            <div style={{ fontSize: "12px", color: "#aaa" }}>Category</div>
+                          </>
+                        )}
+                      </td>
 
-      {/* ✅ REFUND AMOUNT */}
-      <td>
-        {item.payment_status === "REFUNDED" ? (
-          <span style={{ color: "#FF9800", fontWeight: "bold" }}>
-            ₹{item.refund_amount}
-          </span>
-        ) : (
-          "-"
-        )}
-      </td>
+                      <td>{t.location || "-"}</td>
+
+                      <td>
+                        <span className={`status ${getStatusClass(t.booking_status)}`}>
+                          {t.booking_status || "-"}
+                        </span>
+                      </td>
+
+                      <td>{t.date || "-"}</td>
+
+                      <td style={{ textTransform: "capitalize" }}>
+                        {t.issue_type || "-"}
+                      </td>
+
+                      <td>
+                        <span className={`status ${getStatusClass(t.ticket_status)}`}>
+                          {t.ticket_status || "-"}
+                        </span>
+                      </td>
+
+                      <td>
+                        {t.admin_note && t.admin_note !== "-" ? (
+                          t.admin_note
+                        ) : (
+                          <span style={{ color: "#888" }}>Pending</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -411,6 +656,218 @@ function MyOrders() {
           )}
         </div>
       </div>
+
+      {showCancel && (
+        <div className="ticket-modal-overlay" onClick={closeCancelModal}>
+          <div
+            className="ticket-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "980px" }}
+          >
+            <div className="ticket-modal-top">
+              <div>
+                <p className="ticket-mini-badge">Cancel Booking</p>
+                <h3>Request Order Cancellation</h3>
+                <p className="ticket-subtext">
+                  Only pending bookings are shown here for cancellation.
+                </p>
+              </div>
+
+              <button
+                className="ticket-close-btn"
+                onClick={closeCancelModal}
+                type="button"
+                aria-label="Close cancel modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="ticket-live-strip">
+              <span className="live-dot"></span>
+              <span>Booking cancellation support</span>
+              <span className="ticket-live-sep"></span>
+              <span>Confirmed, refunded, cancelled, and requested bookings are hidden</span>
+            </div>
+
+            {cancelError && <div className="ticket-error-box">{cancelError}</div>}
+
+            <div style={{ marginTop: "18px" }}>
+              <h4 style={{ marginBottom: "14px", color: "#1f2937" }}>Pending Booking List</h4>
+
+              {pendingOrdersForCancel.length === 0 ? (
+                <div className="empty-state">
+                  <h4>No pending orders available</h4>
+                  <p>
+                    Only pending bookings that are not refunded and not already
+                    cancel-requested are shown here.
+                  </p>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: "14px",
+                    maxHeight: "320px",
+                    overflowY: "auto",
+                    paddingRight: "4px",
+                  }}
+                >
+                  {pendingOrdersForCancel.map((item) => {
+                    const isSelected = String(selectedOrder) === String(item.id);
+
+                    return (
+                      <label
+                        key={item.id}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "24px 84px 1fr",
+                          alignItems: "center",
+                          gap: "14px",
+                          padding: "14px",
+                          borderRadius: "16px",
+                          border: isSelected ? "2px solid #0f766e" : "1px solid #e5e7eb",
+                          background: isSelected ? "#f0fdfa" : "#fff",
+                          cursor: "pointer",
+                          boxShadow: isSelected
+                            ? "0 8px 20px rgba(15, 118, 110, 0.12)"
+                            : "0 4px 12px rgba(15, 23, 42, 0.06)",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="cancelOrder"
+                          checked={isSelected}
+                          onChange={() => {
+                            setSelectedOrder(item.id);
+                            setCancelError("");
+                          }}
+                        />
+
+                        <img
+                          src={item.image}
+                          alt={item.workspace}
+                          style={{
+                            width: "84px",
+                            height: "64px",
+                            objectFit: "cover",
+                            borderRadius: "12px",
+                          }}
+                        />
+
+                        <div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: "12px",
+                              flexWrap: "wrap",
+                              marginBottom: "8px",
+                            }}
+                          >
+                            <strong style={{ fontSize: "16px", color: "#111827" }}>
+                              {item.workspace}
+                            </strong>
+                            <strong style={{ color: "#0f766e" }}>
+                              ₹{item.price || item.total_price}
+                            </strong>
+                          </div>
+
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                              gap: "8px 14px",
+                              fontSize: "14px",
+                              color: "#4b5563",
+                            }}
+                          >
+                            <span><strong>Date:</strong> {item.date || "-"}</span>
+                            <span><strong>Location:</strong> {item.location || "-"}</span>
+                            <span><strong>Duration:</strong> {item.duration || 1} day</span>
+                            <span><strong>Status:</strong> {item.status || "-"}</span>
+                            <span><strong>Payment:</strong> {item.payment_status || "PENDING"}</span>
+                            <span><strong>Cancel:</strong> Available to request</span>
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {selectedCancelOrderData && (
+              <div className="ticket-summary-card full" style={{ marginTop: "18px" }}>
+                <div className="ticket-summary-title">Selected Booking Details</div>
+                <div className="ticket-summary-grid">
+                  <div>
+                    <span className="summary-label">Workspace</span>
+                    <strong>{selectedCancelOrderData.workspace || "-"}</strong>
+                  </div>
+                  <div>
+                    <span className="summary-label">Location</span>
+                    <strong>{selectedCancelOrderData.location || "-"}</strong>
+                  </div>
+                  <div>
+                    <span className="summary-label">Date</span>
+                    <strong>{selectedCancelOrderData.date || "-"}</strong>
+                  </div>
+                  <div>
+                    <span className="summary-label">Duration</span>
+                    <strong>{selectedCancelOrderData.duration || 1} day</strong>
+                  </div>
+                  <div>
+                    <span className="summary-label">Amount</span>
+                    <strong>
+                      ₹{selectedCancelOrderData.price || selectedCancelOrderData.total_price || 0}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="summary-label">Booking Status</span>
+                    <strong>{selectedCancelOrderData.status || "-"}</strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="ticket-field full" style={{ marginTop: "18px" }}>
+              <label>Cancellation Reason</label>
+              <textarea
+                value={reason}
+                onChange={(e) => {
+                  setReason(e.target.value);
+                  setCancelError("");
+                }}
+                placeholder="Explain why you want to cancel this booking..."
+                rows="5"
+                className={cancelError ? "field-error" : ""}
+              />
+              <div className="ticket-text-meta">
+                <span className="helper-text">
+                  Add a clear reason so the owner can review the request quickly.
+                </span>
+                <span className="char-count">{reason.length}/500</span>
+              </div>
+            </div>
+
+            <div className="ticket-actions">
+              <button className="ticket-btn ticket-btn-light" onClick={closeCancelModal} type="button">
+                Close
+              </button>
+
+              <button
+                className={`ticket-btn ticket-btn-primary ${cancelSubmitting ? "is-loading" : ""}`}
+                onClick={submitCancel}
+                type="button"
+                disabled={cancelSubmitting}
+              >
+                {cancelSubmitting ? "Submitting..." : "Submit Cancel Request"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showTicket && (
         <div className="ticket-modal-overlay" onClick={closeTicketModal}>
@@ -575,7 +1032,11 @@ function MyOrders() {
 
               <div className="ticket-field">
                 <label>Priority</label>
-                <select name="priority" value={ticket.priority} onChange={handleTicketChange}>
+                <select
+                  name="priority"
+                  value={ticket.priority}
+                  onChange={handleTicketChange}
+                >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
@@ -593,7 +1054,9 @@ function MyOrders() {
                   placeholder="Example: Need to reschedule my booking"
                   className={ticketErrors.subject ? "field-error" : ""}
                 />
-                {ticketErrors.subject && <span className="error-text">{ticketErrors.subject}</span>}
+                {ticketErrors.subject && (
+                  <span className="error-text">{ticketErrors.subject}</span>
+                )}
               </div>
 
               <div className="ticket-field full">
@@ -621,7 +1084,6 @@ function MyOrders() {
               <button className="ticket-btn ticket-btn-light" onClick={closeTicketModal} type="button">
                 Cancel
               </button>
-
               <button
                 className={`ticket-btn ticket-btn-primary ${ticketSubmitting ? "is-loading" : ""}`}
                 onClick={submitTicket}
@@ -645,7 +1107,6 @@ function MyOrders() {
                 className="hyd-details-hero-img"
               />
               <div className="hyd-details-hero-grad"></div>
-
               <button
                 className="hyd-details-close"
                 onClick={() => setShowWorkspaceDetails(false)}
@@ -654,9 +1115,9 @@ function MyOrders() {
               </button>
 
               <div className="hyd-details-hero-badges">
-                <span className="hyd-badge">📅 1-Day Booking</span>
-                <span className="hyd-badge">📍 Hyderabad</span>
-                <span className="hyd-badge">★ {selectedWorkspaceCard.rating}</span>
+                <span className="hyd-badge">1-Day Booking</span>
+                <span className="hyd-badge">Hyderabad</span>
+                <span className="hyd-badge">⭐ {selectedWorkspaceCard.rating}</span>
               </div>
 
               <div className="hyd-details-hero-info">
@@ -684,10 +1145,10 @@ function MyOrders() {
                 <div className="hyd-tab-content">
                   <div className="hyd-stats-grid">
                     {[
-                      { icon: "⚡", val: "1 Gbps", lbl: "WiFi Speed" },
-                      { icon: "🕐", val: "24/7", lbl: "Access" },
-                      { icon: "🪑", val: "50+", lbl: "Seats" },
-                      { icon: "🏆", val: selectedWorkspaceCard.rating, lbl: "Rating" },
+                      { icon: "📶", val: "1 Gbps", lbl: "WiFi Speed" },
+                      { icon: "🕒", val: "24/7", lbl: "Access" },
+                      { icon: "💺", val: "50+", lbl: "Seats" },
+                      { icon: "⭐", val: selectedWorkspaceCard.rating, lbl: "Rating" },
                     ].map((s) => (
                       <div key={s.lbl} className="hyd-stat-card">
                         <span className="hyd-stat-icon">{s.icon}</span>
@@ -729,6 +1190,18 @@ function MyOrders() {
                         <span>Status</span>
                         <span>{selectedWorkspaceCard.status}</span>
                       </div>
+                      <div className="hyd-location-row">
+                        <span>Payment</span>
+                        <span>{selectedWorkspaceCard.payment_status}</span>
+                      </div>
+                      <div className="hyd-location-row">
+                        <span>Refund Amount</span>
+                        <span>₹{selectedWorkspaceCard.refund_amount || 0}</span>
+                      </div>
+                      <div className="hyd-location-row">
+                        <span>Cancel Request</span>
+                        <span>{selectedWorkspaceCard.cancel_status || "Not Requested"}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -738,13 +1211,13 @@ function MyOrders() {
                 <div className="hyd-tab-content">
                   <div className="hyd-amenities-grid">
                     {[
-                      { icon: "⚡", label: "1Gbps Fiber WiFi", desc: "Lightning-fast connectivity" },
-                      { icon: "🤝", label: "Meeting Rooms", desc: "Free for all members" },
-                      { icon: "🕐", label: "24/7 Access", desc: "Round the clock entry" },
+                      { icon: "📶", label: "1Gbps Fiber WiFi", desc: "Lightning-fast connectivity" },
+                      { icon: "🏢", label: "Meeting Rooms", desc: "Free for all members" },
+                      { icon: "🕒", label: "24/7 Access", desc: "Round the clock entry" },
                       { icon: "🔋", label: "Power Backup", desc: "100% uptime guaranteed" },
                       { icon: "☕", label: "Cafeteria", desc: "Tea, coffee & snacks" },
                       { icon: "🖨️", label: "Printer & Scanner", desc: "High-speed machines" },
-                      { icon: "🅿️", label: "Free Parking", desc: "Dedicated 2W & 4W" },
+                      { icon: "🅿️", label: "Free Parking", desc: "Dedicated 2W / 4W" },
                       { icon: "❄️", label: "AC Workspace", desc: "Temperature controlled" },
                     ].map((a) => (
                       <div key={a.label} className="hyd-amenity-card">
@@ -800,15 +1273,12 @@ function MyOrders() {
                     </p>
                     <a
                       href={`https://maps.google.com/?q=${encodeURIComponent(
-                        selectedWorkspaceCard.location +
-                          " " +
-                          selectedWorkspaceCard.city +
-                          " Hyderabad"
+                        `${selectedWorkspaceCard.location}, ${selectedWorkspaceCard.city}, Hyderabad`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Open in Google Maps →
+                      Open in Google Maps
                     </a>
                   </div>
                 </div>
@@ -835,12 +1305,14 @@ function MyOrders() {
               <img src={selectedSpecialCard.image} alt={selectedSpecialCard.name} />
               <div className="special-popup-image-overlay"></div>
               <h2 className="special-popup-image-title">{selectedSpecialCard.name}</h2>
+
               <div className="special-popup-badges">
-                <span className="special-popup-badge">📌 Special</span>
+                <span className="special-popup-badge">Special</span>
                 <span className="special-popup-badge">
                   {selectedSpecialCard.is_available ? "Available" : "Not Available"}
                 </span>
               </div>
+
               <button
                 className="special-popup-close"
                 onClick={() => setShowSpecialInfo(false)}
@@ -852,41 +1324,29 @@ function MyOrders() {
 
             <div className="special-popup-body">
               <button className="special-back-btn" onClick={() => setShowSpecialInfo(false)}>
-                ← Back
+                Back
               </button>
 
               <div className="special-popup-meta">
-                <span>🏢 {selectedSpecialCard.company || "No company"}</span>
-                <span>📂 {selectedSpecialCard.category}</span>
-                <span className="special-popup-price">
-                  ₹{selectedSpecialCard.daily_price}/day
-                </span>
+                <span>{selectedSpecialCard.company || "No company"}</span>
+                <span>{selectedSpecialCard.category}</span>
+                <span className="special-popup-price">₹{selectedSpecialCard.daily_price}/day</span>
               </div>
 
-              <p className="special-popup-desc">
-                {selectedSpecialCard.description}
-              </p>
+              <p className="special-popup-desc">{selectedSpecialCard.description}</p>
 
               <div className="special-pricing-section">
                 <div className="special-price-item">
                   <span className="special-price-label">Hourly</span>
-                  <span className="special-price-value">
-                    ₹{selectedSpecialCard.hourly_price}
-                  </span>
+                  <span className="special-price-value">₹{selectedSpecialCard.hourly_price}</span>
                 </div>
-
                 <div className="special-price-item">
                   <span className="special-price-label">Daily</span>
-                  <span className="special-price-value">
-                    ₹{selectedSpecialCard.daily_price}
-                  </span>
+                  <span className="special-price-value">₹{selectedSpecialCard.daily_price}</span>
                 </div>
-
                 <div className="special-price-item">
                   <span className="special-price-label">Monthly</span>
-                  <span className="special-price-value">
-                    ₹{selectedSpecialCard.monthly_price}
-                  </span>
+                  <span className="special-price-value">₹{selectedSpecialCard.monthly_price}</span>
                 </div>
               </div>
 
@@ -900,7 +1360,7 @@ function MyOrders() {
                   "Support follow-up available",
                 ].map((f) => (
                   <div key={f} className="special-feature">
-                    ✔ {f}
+                    {f}
                   </div>
                 ))}
               </div>
@@ -921,7 +1381,7 @@ function MyOrders() {
                   View Full Details
                 </button>
                 <button className="special-popup-book-btn">
-                  Current Status — {selectedSpecialCard.status}
+                  Current Status: {selectedSpecialCard.status}
                 </button>
               </div>
             </div>
@@ -931,7 +1391,10 @@ function MyOrders() {
 
       {showSpecialDetails && selectedSpecialCard && (
         <div className="hyd-details-overlay" onClick={() => setShowSpecialDetails(false)}>
-          <div className="hyd-details-panel special-details-panel" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="hyd-details-panel special-details-panel"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="hyd-details-hero">
               <img
                 src={selectedSpecialCard.image}
@@ -945,6 +1408,7 @@ function MyOrders() {
               >
                 ✕
               </button>
+
               <div className="hyd-details-hero-info">
                 <h2>{selectedSpecialCard.name}</h2>
                 <p>{selectedSpecialCard.company || "Special workspace request"}</p>
@@ -960,19 +1424,19 @@ function MyOrders() {
               <div className="hyd-pricing-includes">
                 <h4>Pricing Details</h4>
                 <div className="hyd-include-row">
-                  <span>•</span>
+                  <span>✓</span>
                   <span>Hourly Price: ₹{selectedSpecialCard.hourly_price}</span>
                 </div>
                 <div className="hyd-include-row">
-                  <span>•</span>
+                  <span>✓</span>
                   <span>Daily Price: ₹{selectedSpecialCard.daily_price}</span>
                 </div>
                 <div className="hyd-include-row">
-                  <span>•</span>
+                  <span>✓</span>
                   <span>Monthly Price: ₹{selectedSpecialCard.monthly_price}</span>
                 </div>
                 <div className="hyd-include-row">
-                  <span>•</span>
+                  <span>✓</span>
                   <span>Status: {selectedSpecialCard.status}</span>
                 </div>
               </div>
@@ -990,117 +1454,6 @@ function MyOrders() {
           </div>
         </div>
       )}
-
-      <div className="orders-section">
-        <div className="section-header">
-          <h3 className="section-title">Support Tickets</h3>
-          <span className="count-badge">{tickets.length}</span>
-        </div>
-
-        {tickets.length === 0 ? (
-          <div className="empty-state">
-            <h4>No tickets raised</h4>
-            <p>Your support tickets will appear here</p>
-          </div>
-        ) : (
-          <div className="table-wrapper">
-          <table>
-  <thead>
-    <tr>
-      <th>Image</th>
-      <th>Workspace / Category</th>
-      <th>Location</th>
-      <th>Booking Status</th>
-      <th>Date</th>
-      <th>Issue</th>
-      <th>Ticket Status</th>
-      <th>Admin Note</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {tickets.map((t) => (
-      <tr key={t.id}>
-
-        {/* ✅ IMAGE */}
-        <td>
-          {t.image ? (
-            <img
-              src={t.image}
-              alt="workspace"
-              style={{
-                width: "60px",
-                height: "45px",
-                objectFit: "cover",
-                borderRadius: "6px"
-              }}
-              onError={(e) => {
-                e.target.src = "https://via.placeholder.com/60";
-              }}
-            />
-          ) : (
-            <span>-</span>
-          )}
-        </td>
-
-        {/* ✅ WORKSPACE / CATEGORY */}
-        <td>
-          {t.workspace !== "-" ? (
-            <>
-              <strong>{t.workspace}</strong>
-              <div style={{ fontSize: "12px", color: "#aaa" }}>
-                Workspace
-              </div>
-            </>
-          ) : (
-            <>
-              <strong>{t.category}</strong>
-              <div style={{ fontSize: "12px", color: "#aaa" }}>
-                Category
-              </div>
-            </>
-          )}
-        </td>
-
-        {/* ✅ LOCATION */}
-        <td>{t.location || "-"}</td>
-
-        {/* ✅ BOOKING STATUS */}
-        <td>
-          <span className={`status ${getStatusClass(t.booking_status)}`}>
-            {t.booking_status || "-"}
-          </span>
-        </td>
-
-        {/* ✅ DATE */}
-        <td>{t.date || "-"}</td>
-
-        {/* ✅ ISSUE */}
-        <td style={{ textTransform: "capitalize" }}>
-          {t.issue_type || "-"}
-        </td>
-
-        {/* ✅ TICKET STATUS */}
-        <td>
-          <span className={`status ${getStatusClass(t.ticket_status)}`}>
-            {t.ticket_status || "-"}
-          </span>
-        </td>
-
-        {/* ✅ ADMIN NOTE */}
-        <td>
-          {t.admin_note && t.admin_note !== "-"
-            ? t.admin_note
-            : <span style={{ color: "#888" }}>Pending</span>}
-        </td>
-
-      </tr>
-    ))}
-  </tbody>
-</table>
-          </div>
-        )}
-      </div>
     </section>
   );
 }

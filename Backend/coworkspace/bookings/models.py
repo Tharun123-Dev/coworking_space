@@ -61,16 +61,15 @@ class Booking(models.Model):
     total_price = models.IntegerField(default=0)
 
     payment_id = models.CharField(max_length=200, null=True, blank=True)
-
     payment_status = models.CharField(
-        max_length=50,
-        default="PAID",
-        choices=[
-            ("PAID", "Paid"),
-            ("REFUNDED", "Refunded")
-        ]
-    )
-
+    max_length=20,
+    default="PENDING",
+    choices=[
+        ("PENDING", "Pending"),
+        ("VERIFIED", "Verified"),
+        ("REFUNDED", "Refunded")
+    ]
+)
     # ✅ ADD THIS FIELD (VERY IMPORTANT)
     refund_amount = models.IntegerField(default=0)
 
@@ -85,3 +84,17 @@ class Booking(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+class CancelRequest(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    reason = models.TextField()
+    status = models.CharField(
+        max_length=20,
+        default="PENDING",
+        choices=[
+            ("PENDING", "Pending"),
+            ("APPROVED", "Approved"),
+            ("REJECTED", "Rejected")
+        ]
+    )

@@ -5,7 +5,7 @@ from .models import Cart, CartItem
 from workspaces.models import Workspace
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
-from .models import Booking
+from .models import Booking, CancelRequest
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -216,7 +216,6 @@ def confirm_booking(request, id):
     booking.save()
 
     return Response({"message": "Booking confirmed"})
-
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def cancel_booking(request, id):
@@ -234,38 +233,53 @@ def cancel_booking(request, id):
     if booking.owner != request.user:
         return Response({"error": "Not allowed"}, status=403)
 
-    # ✅ already cancelled check
+    # ✅ already cancelled
     if booking.status == "cancelled":
         return Response({"message": "Already cancelled"})
 
-    # ✅ update status
     booking.status = "cancelled"
 
     print("PAYMENT ID:", booking.payment_id)
 
-    # 💰 REFUND LOGIC
-    if booking.payment_id:
-        try:
-            client = razorpay.Client(
-                auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET)
-            )
+    # 💰 FIXED REFUND LOGIC
+    if booking.payment_status != "REFUNDED":
 
-            refund = client.payment.refund(booking.payment_id)
-            print("REFUND RESPONSE:", refund)
+        if booking.payment_id:
 
-            booking.payment_status = "REFUNDED"
+            # ✅ CHECK OTHER BOOKINGS WITH SAME PAYMENT
+            already_refunded = Booking.objects.filter(
+                payment_id=booking.payment_id,
+                payment_status="REFUNDED"
+            ).exclude(id=booking.id).exists()
 
-        except Exception as e:
-            print("REFUND ERROR:", e)
-            return Response({"error": "Refund failed"}, status=500)
+            if already_refunded:
+                print("Refund already done for this payment_id ✅")
+                booking.payment_status = "REFUNDED"
+
+            else:
+                try:
+                    client = razorpay.Client(
+                        auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET)
+                    )
+
+                    refund = client.payment.refund(booking.payment_id)
+                    print("REFUND RESPONSE:", refund)
+
+                    booking.payment_status = "REFUNDED"
+
+                except Exception as e:
+                    print("REFUND ERROR:", e)
+                    return Response({"error": "Refund failed"}, status=500)
+
+        else:
+            print("NO PAYMENT ID FOUND ❌")
 
     else:
-        print("NO PAYMENT ID FOUND ❌")
+        print("Already refunded ✅")
 
-    # ✅ ALWAYS SET REFUND AMOUNT (FIXED)
+    # ✅ ALWAYS SET REFUND AMOUNT
     booking.refund_amount = booking.total_price
 
-    # ✅ SAVE
     booking.save()
 
     print("FINAL STATUS:", booking.payment_status)
@@ -372,3 +386,98 @@ def owner_revenue(request):
         "pending_revenue": pending,
         "cancelled_count": cancelled
     })
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from bookings.models import Booking
+import razorpay
+from django.conf import settings
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def verify_booking(request, id):
+
+    try:
+        booking = Booking.objects.get(id=id)
+    except Booking.DoesNotExist:
+        return Response({"error": "Booking not found"}, status=404)
+
+    # ✅ only owner can verify
+    if booking.owner != request.user:
+        return Response({"error": "Not allowed"}, status=403)
+
+    # ❌ already cancelled
+    if booking.status == "cancelled":
+        return Response({"error": "Cannot verify cancelled booking"})
+
+    booking.status = "confirmed"
+    booking.payment_status = "VERIFIED"
+    booking.save()
+
+    return Response({"message": "Booking verified successfully"})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def cancel_request(request):
+
+    booking_id = request.data.get("booking_id")
+    reason = request.data.get("reason")
+
+    booking = Booking.objects.get(id=booking_id)
+
+    CancelRequest.objects.create(
+        booking=booking,
+        user=request.user,
+        reason=reason
+    )
+
+    return Response({"message": "Request sent"})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def owner_cancel_requests(request):
+
+    requests = CancelRequest.objects.filter(
+        booking__owner=request.user
+    )
+
+    data = [
+        {
+            "id": r.id,
+            "workspace": r.booking.workspace.name,
+            "user": r.user.username,
+            "amount": r.booking.total_price,
+            "reason": r.reason,
+            "status": r.status
+        }
+        for r in requests
+    ]
+
+    return Response(data)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def approve_cancel(request, id):
+
+    req = CancelRequest.objects.get(id=id)
+
+    req.status = "APPROVED"
+    req.save()
+
+    booking = req.booking
+    booking.status = "cancelled"
+
+    # REFUND
+    if booking.payment_id:
+        client = razorpay.Client(
+            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET)
+        )
+
+        client.payment.refund(booking.payment_id)
+        booking.refund_amount = booking.total_price
+        booking.payment_status = "REFUNDED"
+
+    booking.save()
+
+    return Response({"message": "Cancelled & Refunded"})

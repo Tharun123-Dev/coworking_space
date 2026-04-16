@@ -1,176 +1,521 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import "../Styles/OwnerBookings.css";
 
-function OwnerBookings() {
+// ─── Persistent state helpers ───────────────────────────────────────────────
+const LS_KEY = "ownerBookingStates";
+
+const loadStates = () => {
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY)) || {};
+  } catch {
+    return {};
+  }
+};
+
+const saveState = (id, patch) => {
+  const all = loadStates();
+  all[id] = { ...(all[id] || {}), ...patch };
+  localStorage.setItem(LS_KEY, JSON.stringify(all));
+};
+// ────────────────────────────────────────────────────────────────────────────
+
+function StatusPill({ status }) {
+  const map = {
+    pending: { label: "Pending", cls: "pill-pending" },
+    confirmed: { label: "Confirmed", cls: "pill-confirmed" },
+    cancelled: { label: "Cancelled", cls: "pill-cancelled" },
+  };
+
+  const { label, cls } = map[status?.toLowerCase()] || map.pending;
+  return <span className={`ob-pill ${cls}`}>{label}</span>;
+}
+
+function PaymentBadge({ status }) {
+  if (status === "VERIFIED") {
+    return (
+      <span className="ob-badge badge-verified">
+        <span className="ob-badge-dot" />
+        Verified
+      </span>
+    );
+  }
+
+  if (status === "REFUNDED") {
+    return (
+      <span className="ob-badge badge-refunded">
+        <span className="ob-badge-dot" />
+        Refunded
+      </span>
+    );
+  }
+
+  return (
+    <span className="ob-badge badge-pending-pay">
+      <span className="ob-badge-dot" />
+      Unverified
+    </span>
+  );
+}
+
+export default function OwnerBookings() {
+  const navigate = useNavigate();
+
   const [bookings, setBookings] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const [showDetails, setShowDetails] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [localStates, setLocalStates] = useState(loadStates);
+  const [selectedBooking, setSelected] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [toastMsg, setToastMsg] = useState("");
+  const [animatingId, setAnimatingId] = useState(null);
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  // Prevent multiple actions on same row at same time
+  const [busyMap, setBusyMap] = useState({});
 
-  const fetchBookings = () => {
+  const setBusy = (id, value) => {
+    setBusyMap((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const isBusy = (id) => !!busyMap[id];
+
+  const merged = bookings.map((b) => {
+    const ls = localStates[b.id] || {};
+    return { ...b, ...ls };
+  });
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3000);
+  };
+
+  const pulse = (id) => {
+    setAnimatingId(id);
+    setTimeout(() => setAnimatingId(null), 600);
+  };
+
+  const updateBookingState = (id, patch) => {
+    saveState(id, patch);
+
+    setLocalStates((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] || {}), ...patch },
+    }));
+
+    setBookings((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, ...patch } : b))
+    );
+
+    setSelected((prev) =>
+      prev?.id === id ? { ...prev, ...patch } : prev
+    );
+  };
+
+  const fetchBookings = useCallback(() => {
     setLoading(true);
     axiosInstance
       .get("cart/owner/bookings/")
       .then((res) => setBookings(res.data || []))
-      .catch((err) => console.log(err))
+      .catch((err) => console.error(err))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
-  const confirmBooking = (id) => {
-    axiosInstance.put(`cart/booking-confirm/${id}/`).then(() => {
-      alert("Booking Confirmed ✅");
-      fetchBookings();
-      if (selectedBooking?.id === id) {
-        setSelectedBooking((prev) => ({ ...prev, status: "confirmed" }));
-      }
-    });
-  };
-const cancelBooking = async (item) => {
-  try {
-    // STEP 1: cancel booking
-    await axiosInstance.put(`cart/booking-cancel/${item.id}/`);
+  const fetchCancelRequests = useCallback(() => {
+    axiosInstance
+      .get("cart/booking/owner/cancel-requests/")
+      .then((res) => setRequests(res.data || []))
+      .catch((err) =>
+        console.error("Failed to fetch cancel requests:", err)
+      );
+  }, []);
 
-    // STEP 2: REFUND (IMPORTANT)
-    if (item.payment_id) {
-      await axiosInstance.post("payment/refund/", {
-        payment_id: item.payment_id
-      });
-    }
-
-    alert("Booking Cancelled & Refund Initiated 💰");
-
+  useEffect(() => {
     fetchBookings();
+  }, [fetchBookings]);
 
-    if (selectedBooking?.id === item.id) {
-      setSelectedBooking((prev) => ({ ...prev, status: "cancelled" }));
+  useEffect(() => {
+    fetchCancelRequests();
+  }, [fetchCancelRequests]);
+
+  const getLatestBooking = (id) => {
+    const booking = bookings.find((b) => b.id === id);
+    if (!booking) return null;
+    const ls = localStates[id] || {};
+    return { ...booking, ...ls };
+  };
+
+  // ── Actions ───────────────────────────────────────────────────────────────
+
+  const verifyBooking = async (id) => {
+    const current = getLatestBooking(id);
+
+    if (!current) return;
+    if (isBusy(id)) return;
+
+    if (current.status === "cancelled") {
+      showToast("❌ Cancelled booking cannot be verified");
+      return;
     }
 
-  } catch (err) {
-    console.log(err);
-    alert("Cancel or Refund Failed");
-  }
-};
+    if (current.payment_status === "VERIFIED") {
+      showToast("✅ Payment already verified");
+      return;
+    }
 
-  const handleImageClick = (item) => {
-    setSelectedBooking(item);
+    setBusy(id, true);
+    try {
+      await axiosInstance.put(`cart/booking/verify/${id}/`);
+      updateBookingState(id, { payment_status: "VERIFIED" });
+      pulse(id);
+      showToast("✅ Payment verified successfully");
+    } catch (error) {
+      console.error("Verification failed:", error);
+      showToast("❌ Verification failed");
+    } finally {
+      setBusy(id, false);
+    }
+  };
+
+  const confirmBooking = async (id) => {
+    const current = getLatestBooking(id);
+
+    if (!current) return;
+    if (isBusy(id)) return;
+
+    if (current.status !== "pending") {
+      showToast("❌ This booking is no longer pending");
+      return;
+    }
+
+    if (current.payment_status !== "VERIFIED") {
+      showToast("❌ Verify payment before confirming");
+      return;
+    }
+
+    setBusy(id, true);
+    try {
+      await axiosInstance.put(`cart/booking-confirm/${id}/`);
+      updateBookingState(id, { status: "confirmed" });
+      pulse(id);
+      showToast("✅ Booking confirmed!");
+    } catch (error) {
+      console.error("Confirmation failed:", error);
+      showToast("❌ Confirmation failed");
+    } finally {
+      setBusy(id, false);
+    }
+  };
+
+  const cancelBooking = async (id) => {
+    const current = getLatestBooking(id);
+
+    if (!current) return;
+    if (isBusy(id)) return;
+
+    if (current.status !== "pending") {
+      showToast("❌ This booking is no longer pending");
+      return;
+    }
+
+    if (current.payment_status !== "VERIFIED") {
+      showToast("❌ Verify payment before cancelling");
+      return;
+    }
+
+    setBusy(id, true);
+    try {
+      await axiosInstance.put(`cart/booking-cancel/${id}/`);
+
+      if (current.payment_id) {
+        await axiosInstance.post("payment/refund/", {
+          payment_id: current.payment_id,
+        });
+
+        updateBookingState(id, {
+          status: "cancelled",
+          payment_status: "REFUNDED",
+        });
+      } else {
+        updateBookingState(id, {
+          status: "cancelled",
+        });
+      }
+
+      pulse(id);
+      showToast("💰 Booking cancelled & refund initiated");
+    } catch (error) {
+      console.error("Cancel/refund failed:", error);
+      showToast("❌ Cancel or refund failed");
+    } finally {
+      setBusy(id, false);
+    }
+  };
+
+  // ── Cancel Request Actions ───────────────────────────────────────────────
+
+  const approve = async (id) => {
+    try {
+      await axiosInstance.put(`cart/booking/cancel-approve/${id}/`);
+      showToast("✅ Cancel request approved & refunded");
+      fetchBookings();
+      fetchCancelRequests();
+    } catch (error) {
+      console.error("Failed to approve cancel request:", error);
+      showToast("❌ Failed to approve cancel request");
+    }
+  };
+
+  // ── Modal ────────────────────────────────────────────────────────────────
+
+  const openModal = (item) => {
+    const latest = getLatestBooking(item.id);
+    setSelected(latest || item);
     setActiveTab("overview");
-    setShowDetails(true);
   };
 
-  const closeModal = () => {
-    setShowDetails(false);
-    setTimeout(() => {
-      setSelectedBooking(null);
-      setActiveTab("overview");
-    }, 200);
-  };
+  const closeModal = () => setSelected(null);
 
-  const getStatusClass = (status) => {
-    if (!status) return "pending";
-    const s = status.toLowerCase();
-    if (s === "confirmed") return "confirmed";
-    if (s === "cancelled") return "cancelled";
+  const getStatusClass = (s) => {
+    if (!s) return "pending";
+    const l = s.toLowerCase();
+    if (l === "confirmed") return "confirmed";
+    if (l === "cancelled") return "cancelled";
     return "pending";
   };
 
+  // ── Stats ────────────────────────────────────────────────────────────────
+
+  const stats = {
+    total: merged.length,
+    confirmed: merged.filter((b) => b.status === "confirmed").length,
+    pending: merged.filter((b) => b.status === "pending").length,
+    cancelled: merged.filter((b) => b.status === "cancelled").length,
+  };
+
   return (
-    <section className="owner-bookings-page">
-      <div className="owner-bookings">
-        <div className="owner-page-header">
-          <div>
-            <p className="owner-page-badge">Owner Dashboard</p>
-            <h2>Booking Requests</h2>
-            <p className="owner-page-subtext">
+    <section className="ob-page">
+      {toastMsg && <div className="ob-toast">{toastMsg}</div>}
+
+      <div className="ob-wrap">
+        {/* Header */}
+        <div className="ob-header">
+          <div className="ob-header-left">
+            <span className="ob-badge-tag">Owner Dashboard</span>
+            <h1>Booking Requests</h1>
+            <p>
               Manage, review and respond to workspace booking requests from users.
             </p>
           </div>
 
-          <div className="owner-header-stats">
-            <span>{bookings.length}</span>
-            <small>Total Requests</small>
+          <div className="ob-stats-row">
+            <div className="ob-stat-chip total">
+              <strong>{stats.total}</strong>
+              <small>Total</small>
+            </div>
+            <div className="ob-stat-chip conf">
+              <strong>{stats.confirmed}</strong>
+              <small>Confirmed</small>
+            </div>
+            <div className="ob-stat-chip pend">
+              <strong>{stats.pending}</strong>
+              <small>Pending</small>
+            </div>
+            <div className="ob-stat-chip canc">
+              <strong>{stats.cancelled}</strong>
+              <small>Cancelled</small>
+            </div>
           </div>
         </div>
 
-        <div className="owner-booking-section">
+        {/* Main table */}
+        <div className="ob-card">
           {loading ? (
-            <div className="owner-loading-state">
-              <div className="owner-loader-line"></div>
-              <p>Loading bookings...</p>
+            <div className="ob-loading">
+              <div className="ob-shimmer" />
+              <p>Loading bookings…</p>
             </div>
-          ) : bookings.length === 0 ? (
-            <div className="owner-empty-state">
-              <h4>No bookings found</h4>
-              <p>Booking requests will appear here when users book your workspace.</p>
+          ) : merged.length === 0 ? (
+            <div className="ob-empty">
+              <div className="ob-empty-icon">📋</div>
+              <h4>No bookings yet</h4>
+              <p>Requests will appear here when users book your workspace.</p>
             </div>
           ) : (
-            <div className="owner-table-wrapper">
-              <table>
+            <div className="ob-table-scroll">
+              <div className="ob-table-header-actions">
+                <button
+                  className="ob-btn ob-btn-secondary"
+                  onClick={() => navigate("/cancel-requests")}
+                >
+                  Cancel Requests ({requests.length})
+                </button>
+              </div>
+
+              <table className="ob-table">
                 <thead>
                   <tr>
-                    <th>Image</th>
-                    <th>User</th>
                     <th>Workspace</th>
+                    <th>Customer</th>
                     <th>Date</th>
                     <th>Duration</th>
-                    <th>Price</th>
+                    <th>Amount</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th>Payment</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {bookings.map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        <img
-                          src={item.image}
-                          alt={item.workspace || "workspace"}
-                          className="owner-booking-thumb"
-                          onClick={() => handleImageClick(item)}
-                        />
-                      </td>
+                  {merged.map((item) => {
+                    const pendingRow = isBusy(item.id);
+                    const isPending = item.status === "pending";
+                    const isConfirmed = item.status === "confirmed";
+                    const isCancelled = item.status === "cancelled";
+                    const isVerified = item.payment_status === "VERIFIED";
+                    const isRefunded = item.payment_status === "REFUNDED";
+                    const isPulsing = animatingId === item.id;
 
-                      <td>{item.user}</td>
-                      <td>{item.workspace}</td>
-                      <td>{item.date}</td>
-                      <td>{item.duration} day</td>
-                      <td>₹{item.total_price}</td>
-
-                      <td>
-                        <span className={`owner-status ${getStatusClass(item.status)}`}>
-                          {item.status === "pending" && "Pending"}
-                          {item.status === "confirmed" && "Confirmed"}
-                          {item.status === "cancelled" && "Cancelled"}
-                        </span>
-                      </td>
-
-                      <td>
-                        {item.status === "pending" ? (
-                          <div className="owner-action-wrap">
-                            <button
-                              className="owner-action-btn confirm"
-                              onClick={() => confirmBooking(item.id)}
-                            >
-                              Confirm
-                            </button>
-                         <button
-  className="owner-action-btn cancel"
-  onClick={() => cancelBooking(item)}
->
-  Cancel
-</button>
+                    return (
+                      <tr
+                        key={item.id}
+                        className={`ob-row ${isPulsing ? "ob-row-pulse" : ""}`}
+                      >
+                        <td>
+                          <div
+                            className="ob-workspace-cell"
+                            onClick={() => openModal(item)}
+                          >
+                            <img
+                              src={item.image}
+                              alt={item.workspace}
+                              className="ob-thumb"
+                            />
+                            <span className="ob-ws-name">{item.workspace}</span>
                           </div>
-                        ) : item.status === "confirmed" ? (
-                          <span className="owner-done confirmed">✅ Confirmed</span>
-                        ) : (
-                          <span className="owner-done cancelled">❌ Cancelled</span>
+                        </td>
+
+                        <td className="ob-user-cell">{item.user}</td>
+                        <td>{item.date}</td>
+                        <td>
+                          <span className="ob-dur-chip">{item.duration}d</span>
+                        </td>
+                        <td>
+                          <strong className="ob-price">₹{item.total_price}</strong>
+                        </td>
+
+                        <td>
+                          <StatusPill status={item.status} />
+                        </td>
+
+                        <td>
+                          <div className="ob-pay-cell">
+                            <PaymentBadge status={item.payment_status} />
+
+                            {!isVerified && !isRefunded && !isCancelled && (
+                              <button
+                                className="ob-btn ob-btn-verify"
+                                onClick={() => verifyBooking(item.id)}
+                                disabled={pendingRow}
+                              >
+                                {pendingRow ? "Processing..." : "Verify"}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+
+                        <td>
+                          <div className="ob-action-cell">
+                            {isPending && isVerified && !isCancelled && (
+                              <>
+                                <button
+                                  className="ob-btn ob-btn-confirm"
+                                  onClick={() => confirmBooking(item.id)}
+                                  disabled={pendingRow}
+                                >
+                                  {pendingRow ? "Processing..." : "Confirm"}
+                                </button>
+
+                                <button
+                                  className="ob-btn ob-btn-cancel"
+                                  onClick={() => cancelBooking(item.id)}
+                                  disabled={pendingRow}
+                                >
+                                  {pendingRow ? "Processing..." : "Cancel"}
+                                </button>
+                              </>
+                            )}
+
+                            {isPending && !isVerified && !isRefunded && !isCancelled && (
+                              <span className="ob-await-text">
+                                Awaiting verification
+                              </span>
+                            )}
+
+                            {isConfirmed && (
+                              <span className="ob-done-badge done-confirmed">
+                                <span>✓</span> Confirmed
+                              </span>
+                            )}
+
+                            {isCancelled && (
+                              <span className="ob-done-badge done-cancelled">
+                                <span>✕</span> Cancelled
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Cancel requests */}
+        {requests.length > 0 && (
+          <div className="ob-card ob-cancel-requests">
+            <div className="ob-section-header">
+              <h3>Pending Cancel Requests</h3>
+              <span className="ob-badge ob-badge-warning">{requests.length}</span>
+            </div>
+
+            <div className="ob-table-scroll">
+              <table className="ob-table ob-cancel-table">
+                <thead>
+                  <tr>
+                    <th>Workspace</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Reason</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.map((r) => (
+                    <tr key={r.id}>
+                      <td>{r.workspace}</td>
+                      <td>{r.user}</td>
+                      <td>
+                        <strong>₹{r.amount}</strong>
+                      </td>
+                      <td>{r.reason}</td>
+                      <td>
+                        {r.status === "PENDING" && (
+                          <button
+                            className="ob-btn ob-btn-warning"
+                            onClick={() => approve(r.id)}
+                          >
+                            Accept & Refund
+                          </button>
+                        )}
+
+                        {r.status === "APPROVED" && (
+                          <span className="ob-badge badge-approved">
+                            Approved
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -178,140 +523,102 @@ const cancelBooking = async (item) => {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {showDetails && selectedBooking && (
-        <div className="landing-modal-overlay" onClick={closeModal}>
-          <div className="landing-modal-card" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="landing-close-btn"
-              onClick={closeModal}
-              type="button"
-              aria-label="Close details"
-            >
+      {/* Modal */}
+      {selectedBooking && (
+        <div className="ob-overlay" onClick={closeModal}>
+          <div className="ob-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="ob-close" onClick={closeModal} aria-label="Close">
               ✕
             </button>
 
-            <div className="landing-hero-image-wrap">
-              <img
-                src={selectedBooking.image}
-                alt={selectedBooking.workspace}
-                className="landing-hero-image"
-              />
-              <div className="landing-hero-overlay"></div>
-
-              <div className="landing-hero-content">
-                <span className="landing-mini-chip">Premium Workspace</span>
-                <h3>{selectedBooking.workspace}</h3>
+            <div className="ob-modal-hero">
+              <img src={selectedBooking.image} alt={selectedBooking.workspace} />
+              <div className="ob-modal-hero-overlay" />
+              <div className="ob-modal-hero-content">
+                <span className="ob-modal-chip">Premium Workspace</span>
+                <h2>{selectedBooking.workspace}</h2>
                 <p>
-                  Booked by <strong>{selectedBooking.user}</strong> on {selectedBooking.date}
+                  Booked by <strong>{selectedBooking.user}</strong> ·{" "}
+                  {selectedBooking.date}
                 </p>
               </div>
             </div>
 
-            <div className="landing-modal-body">
-              <div className="landing-tabs">
-                <button
-                  className={activeTab === "overview" ? "landing-tab active" : "landing-tab"}
-                  onClick={() => setActiveTab("overview")}
-                  type="button"
-                >
-                  Overview
-                </button>
-
-                <button
-                  className={activeTab === "features" ? "landing-tab active" : "landing-tab"}
-                  onClick={() => setActiveTab("features")}
-                  type="button"
-                >
-                  Features
-                </button>
-
-                <button
-                  className={activeTab === "pricing" ? "landing-tab active" : "landing-tab"}
-                  onClick={() => setActiveTab("pricing")}
-                  type="button"
-                >
-                  Pricing
-                </button>
+            <div className="ob-modal-body">
+              <div className="ob-modal-tabs">
+                {["overview", "features", "pricing"].map((t) => (
+                  <button
+                    key={t}
+                    className={`ob-modal-tab ${activeTab === t ? "active" : ""}`}
+                    onClick={() => setActiveTab(t)}
+                  >
+                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                  </button>
+                ))}
               </div>
 
               {activeTab === "overview" && (
-                <div className="landing-detail-grid">
-                  <div className="landing-detail-card">
-                    <span className="landing-detail-label">Customer</span>
-                    <strong>{selectedBooking.user}</strong>
-                  </div>
+                <div className="ob-detail-grid">
+                  {[
+                    ["Customer", selectedBooking.user],
+                    ["Date", selectedBooking.date],
+                    ["Duration", `${selectedBooking.duration} hrs`],
+                    [
+                      "Status",
+                      <span
+                        className={getStatusClass(selectedBooking.status)}
+                        style={{ textTransform: "capitalize" }}
+                      >
+                        {selectedBooking.status}
+                      </span>,
+                    ],
+                  ].map(([label, val]) => (
+                    <div key={label} className="ob-detail-card">
+                      <span className="ob-detail-label">{label}</span>
+                      <strong>{val}</strong>
+                    </div>
+                  ))}
 
-                  <div className="landing-detail-card">
-                    <span className="landing-detail-label">Date</span>
-                    <strong>{selectedBooking.date}</strong>
-                  </div>
-
-                  <div className="landing-detail-card">
-                    <span className="landing-detail-label">Duration</span>
-                    <strong>{selectedBooking.duration} hrs</strong>
-                  </div>
-
-                  <div className="landing-detail-card">
-                    <span className="landing-detail-label">Status</span>
-                    <strong className={getStatusClass(selectedBooking.status)}>
-                      {selectedBooking.status}
-                    </strong>
-                  </div>
-
-                  <div className="landing-about-card full">
+                  <div className="ob-detail-about">
                     <h4>Booking Summary</h4>
                     <p>
-                      This booking request is for <strong>{selectedBooking.workspace}</strong>. You
-                      can review the customer request, verify the workspace schedule, and confirm
-                      or cancel directly from this popup.
+                      This booking is for <strong>{selectedBooking.workspace}</strong>.
+                      Review the customer request, verify the schedule, and confirm
+                      or cancel directly from this panel.
                     </p>
                   </div>
                 </div>
               )}
 
               {activeTab === "features" && (
-                <div className="landing-feature-grid">
-                  <div className="landing-feature-box">
-                    <span>⚡</span>
-                    <h4>High-Speed WiFi</h4>
-                    <p>Stable internet connection for work and meetings.</p>
-                  </div>
-
-                  <div className="landing-feature-box">
-                    <span>🪑</span>
-                    <h4>Modern Setup</h4>
-                    <p>Comfortable workspace with desk and seating support.</p>
-                  </div>
-
-                  <div className="landing-feature-box">
-                    <span>❄️</span>
-                    <h4>Fully Air Conditioned</h4>
-                    <p>Comfortable environment for daily productivity.</p>
-                  </div>
-
-                  <div className="landing-feature-box">
-                    <span>☕</span>
-                    <h4>Refreshments</h4>
-                    <p>Tea, coffee and basic pantry access may be included.</p>
-                  </div>
+                <div className="ob-feature-grid">
+                  {[
+                    ["⚡", "High-Speed WiFi", "Stable internet for work and meetings."],
+                    ["🪑", "Modern Setup", "Comfortable desk and seating support."],
+                    ["❄️", "Fully Air Conditioned", "Comfortable environment all day."],
+                    ["☕", "Refreshments", "Tea, coffee and basic pantry access."],
+                  ].map(([icon, title, desc]) => (
+                    <div key={title} className="ob-feature-box">
+                      <span>{icon}</span>
+                      <h4>{title}</h4>
+                      <p>{desc}</p>
+                    </div>
+                  ))}
                 </div>
               )}
 
               {activeTab === "pricing" && (
-                <div className="landing-pricing-card">
-                  <div className="landing-price-top">
-                    <span className="landing-price-label">Booking Amount</span>
-                    <h2>₹{selectedBooking.total_price}</h2>
-                    <p>
-                      For {selectedBooking.duration} hrs on {selectedBooking.date}
-                    </p>
-                  </div>
-
-                  <div className="landing-price-points">
+                <div className="ob-pricing-card">
+                  <span className="ob-pricing-label">Booking Amount</span>
+                  <h2>₹{selectedBooking.total_price}</h2>
+                  <p>
+                    For {selectedBooking.duration} hrs on {selectedBooking.date}
+                  </p>
+                  <div className="ob-pricing-points">
                     <div>✓ Workspace reserved for selected slot</div>
                     <div>✓ Owner approval based booking flow</div>
                     <div>✓ Direct management from dashboard</div>
@@ -320,37 +627,53 @@ const cancelBooking = async (item) => {
               )}
             </div>
 
-            <div className="landing-modal-footer">
-              <div className="landing-footer-left">
-                <span className="landing-footer-price">₹{selectedBooking.total_price}</span>
+            <div className="ob-modal-footer">
+              <div className="ob-footer-price">
+                <strong>₹{selectedBooking.total_price}</strong>
                 <small>Total Booking Value</small>
               </div>
 
-              <div className="landing-footer-actions">
-                {selectedBooking.status === "pending" && (
-                  <>
-                <button
-  className="landing-footer-btn light"
-  onClick={() => cancelBooking(selectedBooking)}
->
-  Cancel
-</button>
-                    <button
-                      className="landing-footer-btn dark"
-                      onClick={() => confirmBooking(selectedBooking.id)}
-                      type="button"
-                    >
-                      Confirm Booking
-                    </button>
-                  </>
-                )}
+              <div className="ob-footer-actions">
+                {selectedBooking.status === "pending" &&
+                  selectedBooking.payment_status === "VERIFIED" && (
+                    <>
+                      <button
+                        className="ob-btn ob-btn-cancel"
+                        onClick={() => cancelBooking(selectedBooking.id)}
+                        disabled={isBusy(selectedBooking.id)}
+                      >
+                        {isBusy(selectedBooking.id)
+                          ? "Processing..."
+                          : "Cancel Booking"}
+                      </button>
+
+                      <button
+                        className="ob-btn ob-btn-confirm"
+                        onClick={() => confirmBooking(selectedBooking.id)}
+                        disabled={isBusy(selectedBooking.id)}
+                      >
+                        {isBusy(selectedBooking.id)
+                          ? "Processing..."
+                          : "Confirm Booking"}
+                      </button>
+                    </>
+                  )}
+
+                {selectedBooking.status === "pending" &&
+                  selectedBooking.payment_status !== "VERIFIED" && (
+                    <span className="ob-await-text">Verify payment first</span>
+                  )}
 
                 {selectedBooking.status === "confirmed" && (
-                  <span className="owner-done confirmed">✅ Already Confirmed</span>
+                  <span className="ob-done-badge done-confirmed">
+                    ✓ Already Confirmed
+                  </span>
                 )}
 
                 {selectedBooking.status === "cancelled" && (
-                  <span className="owner-done cancelled">❌ Already Cancelled</span>
+                  <span className="ob-done-badge done-cancelled">
+                    ✕ Already Cancelled
+                  </span>
                 )}
               </div>
             </div>
@@ -360,5 +683,3 @@ const cancelBooking = async (item) => {
     </section>
   );
 }
-
-export default OwnerBookings;

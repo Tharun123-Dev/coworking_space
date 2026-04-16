@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import add_to_cart,get_cart,remove_item,create_booking,clear_cart, owner_bookings, cancel_booking, confirm_booking,admin_bookings, my_orders, owner_revenue
+from .views import add_to_cart,get_cart,remove_item,create_booking,clear_cart, owner_bookings, cancel_booking, confirm_booking,admin_bookings, my_orders, owner_revenue,verify_booking,cancel_request, owner_cancel_requests, approve_cancel
 
 urlpatterns = [
     path('add/', add_to_cart),
@@ -12,6 +12,16 @@ urlpatterns = [
     path("booking-cancel/<int:id>/", cancel_booking),
     path("admin/bookings/",admin_bookings),
     path("myorders/",my_orders),
-    path("owner/revenue/",owner_revenue)
+    path("owner/revenue/",owner_revenue),
+    path("booking/verify/<int:id>/", verify_booking),
+       # USER → SEND REQUEST
+    path("booking/cancel-request/", cancel_request),
+
+    # OWNER → SEE REQUESTS
+    path("booking/owner/cancel-requests/", owner_cancel_requests),
+
+    # OWNER → APPROVE
+    path("booking/cancel-approve/<int:id>/", approve_cancel),
+
 
 ]

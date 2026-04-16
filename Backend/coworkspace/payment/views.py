@@ -3,8 +3,8 @@ import json
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
-
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 @csrf_exempt
 def create_payment(request):
     data = json.loads(request.body)
@@ -21,10 +21,9 @@ def create_payment(request):
     })
 
     return JsonResponse(order)
-import razorpay
-from django.conf import settings
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+
+
+
 
 @api_view(['POST'])
 def verify_payment(request):
@@ -40,6 +39,7 @@ def verify_payment(request):
         print("VERIFY ERROR:", e)
         return Response({"status": "failed"})
     
+   
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
