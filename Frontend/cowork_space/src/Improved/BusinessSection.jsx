@@ -87,94 +87,17 @@ function useCountdown(hours = 11, mins = 47, secs = 33) {
   return time;
 }
 
-function useSectionAudio(audioSrc) {
-  const audioRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hasPlayed, setHasPlayed] = useState(false);
-
-  const playAudio = useCallback(() => {
-    if (!audioRef.current || hasPlayed || isPlaying) return;
-
-    const audio = audioRef.current;
-    audio.volume = 0.35;
-    audio.currentTime = 0;
-
-    audio
-      .play()
-      .then(() => {
-        setIsPlaying(true);
-        setHasPlayed(true);
-      })
-      .catch(() => {
-        // Browser may block autoplay until user interaction
-      });
-  }, [hasPlayed, isPlaying]);
-
-  const stopAudio = useCallback(() => {
-    if (!audioRef.current) return;
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-    setIsPlaying(false);
-  }, []);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleEnded = () => {
-      setIsPlaying(false);
-    };
-
-    audio.addEventListener("ended", handleEnded);
-    return () => {
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    };
-  }, []);
-
-  return { audioRef, playAudio, stopAudio, hasPlayed, isPlaying };
-}
-
 const LimitedOfferSection = ({ openModal }) => {
   const time = useCountdown(11, 47, 33);
   const sectionRef = useRef(null);
+  const audioRef = useRef(null);
 
   const [claimedIds] = useState(
     offers.filter((o) => o.status === "claimed").map((o) => o.id)
   );
 
-  const audioSrc = "/offers-alert.mp3";
-  const { audioRef, playAudio, hasPlayed } = useSectionAudio(audioSrc);
-
-  useEffect(() => {
-    const node = sectionRef.current;
-    if (!node) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasPlayed) {
-          setTimeout(() => {
-            playAudio();
-          }, 250);
-        }
-      },
-      {
-        threshold: 0.3,
-      }
-    );
-
-    observer.observe(node);
-
-    return () => observer.disconnect();
-  }, [playAudio, hasPlayed]);
+  const [audioReady, setAudioReady] = useState(false);
+  const [isInsideSection, setIsInsideSection] = useState(false);
 
   const availableCount = offers.filter((o) => !claimedIds.includes(o.id)).length;
 
@@ -182,17 +105,127 @@ const LimitedOfferSection = ({ openModal }) => {
     if (openModal) {
       openModal("offer_" + id);
     } else {
-      alert(
-        "Lead submitted! Our team will contact you within 12 hrs. You are in the queue. 🎉"
-      );
+      alert("Lead submitted! Our team will contact you within 12 hrs. You are in the queue. 🎉");
     }
   };
 
   const pad = (n) => String(n).padStart(2, "0");
 
+  const stopAudio = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.pause();
+    audio.currentTime = 0;
+  }, []);
+
+  const playAudio = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !audioReady) return;
+
+    audio.pause();
+    audio.currentTime = 0;
+    audio.volume = 0.4;
+
+    const p = audio.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(() => {
+        // autoplay blocked if page is not unlocked yet
+      });
+    }
+  }, [audioReady]);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      audio.volume = 0;
+      const p = audio.play();
+
+      if (p && typeof p.then === "function") {
+        p.then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = 0.4;
+          setAudioReady(true);
+        }).catch(() => {});
+      } else {
+        setAudioReady(true);
+      }
+    };
+
+    window.addEventListener("click", unlockAudio, { once: true });
+    window.addEventListener("touchstart", unlockAudio, { once: true });
+    window.addEventListener("keydown", unlockAudio, { once: true });
+
+    return () => {
+      window.removeEventListener("click", unlockAudio);
+      window.removeEventListener("touchstart", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+    };
+  }, []);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInsideSection(true);
+        } else {
+          setIsInsideSection(false);
+          stopAudio();
+        }
+      },
+      {
+        threshold: 0.55,
+      }
+    );
+
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [stopAudio]);
+
+  useEffect(() => {
+    if (isInsideSection && audioReady) {
+      playAudio();
+    }
+    if (!isInsideSection) {
+      stopAudio();
+    }
+  }, [isInsideSection, audioReady, playAudio, stopAudio]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleEnded = () => {
+      // keep ready for next section re-entry
+    };
+
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.removeEventListener("ended", handleEnded);
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, []);
+
   return (
     <section className="offer-section" ref={sectionRef}>
-      <audio ref={audioRef} src={audioSrc} preload="auto" style={{ display: "none" }} />
+      <audio
+        ref={audioRef}
+        src="/offers-alert.mp3"
+        preload="auto"
+        playsInline
+        style={{ display: "none" }}
+      />
 
       <div className="offer-particles">
         {[...Array(18)].map((_, i) => (
@@ -221,9 +254,9 @@ const LimitedOfferSection = ({ openModal }) => {
 
         <Reveal>
           <p className="offer-subtitle">
-            Each building has exactly <strong>1 exclusive offer slot</strong>. The first person
-            to submit their lead gets 50% off for their first month — no negotiations, no
-            exceptions. Miss it and it's gone.
+            Each building has exactly <strong>1 exclusive offer slot</strong>. The first person to submit
+            their lead gets 50% off for their first month — no negotiations, no exceptions.
+            Miss it and it's gone.
           </p>
         </Reveal>
 
@@ -261,9 +294,7 @@ const LimitedOfferSection = ({ openModal }) => {
                 {offers.map((o) => (
                   <div
                     key={o.id}
-                    className={`avail-seg ${
-                      claimedIds.includes(o.id) ? "seg-claimed" : "seg-free"
-                    }`}
+                    className={`avail-seg ${claimedIds.includes(o.id) ? "seg-claimed" : "seg-free"}`}
                     title={o.area}
                   ></div>
                 ))}
@@ -296,15 +327,11 @@ const LimitedOfferSection = ({ openModal }) => {
           return (
             <div
               key={offer.id}
-              className={`offer-card ${
-                isClaimed ? "offer-card--claimed" : "offer-card--available"
-              }`}
+              className={`offer-card ${isClaimed ? "offer-card--claimed" : "offer-card--available"}`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {!isClaimed && <div className="card-ribbon">50% OFF</div>}
-              {isClaimed && (
-                <div className="card-ribbon card-ribbon--claimed">CLAIMED</div>
-              )}
+              {isClaimed && <div className="card-ribbon card-ribbon--claimed">CLAIMED</div>}
 
               <div className="offer-card-img">
                 <img src={offer.image} alt={offer.building} />
@@ -377,13 +404,11 @@ const LimitedOfferSection = ({ openModal }) => {
 
                 <div className="offer-price-row">
                   <div className="offer-price">
-                    <span className="price-original">
-                      ₹{offer.originalPrice.toLocaleString()}
-                    </span>
+                    <span className="price-original">₹{offer.originalPrice.toLocaleString()}</span>
                     <span className="price-slash">/mo</span>
                   </div>
 
-                  {!isClaimed && (
+                  {!isClaimed ? (
                     <div className="price-now">
                       <span className="price-tag">You Pay</span>
                       <span className="price-discounted">
@@ -391,9 +416,7 @@ const LimitedOfferSection = ({ openModal }) => {
                         <small>/mo</small>
                       </span>
                     </div>
-                  )}
-
-                  {isClaimed && (
+                  ) : (
                     <div className="price-taken">
                       <span>Offer Taken</span>
                     </div>
@@ -408,7 +431,10 @@ const LimitedOfferSection = ({ openModal }) => {
                 )}
 
                 {!isClaimed ? (
-                  <button className="offer-claim-btn" onClick={() => handleClaim(offer.id)}>
+                  <button
+                    className="offer-claim-btn"
+                    onClick={() => handleClaim(offer.id)}
+                  >
                     <span>Claim 50% Off Now</span>
                     <span className="claim-arrow">→</span>
                   </button>
@@ -430,8 +456,8 @@ const LimitedOfferSection = ({ openModal }) => {
             <div>
               <p className="bottom-banner-title">How FIFO Works</p>
               <p className="bottom-banner-desc">
-                Leads are time-stamped the moment you submit. First verified lead per building
-                wins the 50% discount for Month 1. No exceptions. No extensions.
+                Leads are time-stamped the moment you submit. First verified lead per building wins the
+                50% discount for Month 1. No exceptions. No extensions.
               </p>
             </div>
           </div>
