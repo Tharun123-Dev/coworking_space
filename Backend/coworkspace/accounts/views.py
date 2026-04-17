@@ -11,6 +11,7 @@ from .models import Profile
 from .email_service import send_owner_email
 from .serializers import RegisterSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from workspaces.models import ActivityLog
 
 # REGISTER
 @api_view(['POST'])
@@ -18,14 +19,21 @@ def register(request):
     serializer = RegisterSerializer(data=request.data)
 
     if serializer.is_valid():
-        serializer.save()
+        user = serializer.save()
+
+        # ✅ CREATE ACTIVITY
+        ActivityLog.objects.create(
+            user=user,
+            action="CREATE",
+            model_name="User",
+            message=f"{user.username} registered as a new user"
+        )
+
         return Response({
             "message": "User registered successfully"
         }, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -36,7 +44,6 @@ def login_view(request):
     username = request.data.get('username')
     password = request.data.get('password')
 
-    # ✅ Validate input
     if not username or not password:
         return Response({
             "error": "Username and password required"
@@ -47,13 +54,20 @@ def login_view(request):
     if user:
         refresh = RefreshToken.for_user(user)
 
-        # ✅ Get or create profile
         profile, created = Profile.objects.get_or_create(user=user)
 
-        # 🔥 IMPORTANT FIX (ADD THIS)
+        # ✅ ADMIN FIX
         if user.is_superuser:
             profile.role = "admin"
             profile.save()
+
+        # ✅ ADD ACTIVITY LOG
+        ActivityLog.objects.create(
+            user=user,
+            action="LOGIN",
+            model_name="User",
+            message=f"{user.username} logged in"
+        )
 
         return Response({
             "access": str(refresh.access_token),
@@ -85,21 +99,21 @@ def create_owner(request):
     if User.objects.filter(username=username).exists():
         return Response({"error": "Username already exists"}, status=400)
 
-    # CREATE USER
+    # ✅ CREATE USER
     user = User.objects.create_user(
         username=username,
         email=email,
         password=password
     )
 
-    # SET OWNER ROLE
+    # ✅ SET OWNER ROLE
     profile = Profile.objects.get(user=user)
     profile.role = "owner"
     profile.save()
 
     print("USER CREATED")
 
-    # SEND EMAIL
+    # ✅ SEND EMAIL
     try:
         from .email_service import send_owner_email
         send_owner_email(email, username, password)
@@ -107,6 +121,14 @@ def create_owner(request):
 
     except Exception as e:
         print("EMAIL ERROR:", str(e))
+
+    # ✅ ADD ACTIVITY LOG (IMPORTANT)
+    ActivityLog.objects.create(
+        user=request.user,  # admin who created owner
+        action="CREATE",
+        model_name="Owner",
+        message=f"{request.user.username} created new owner {username}"
+    )
 
     return Response({
         "message": "Owner created successfully"

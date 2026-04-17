@@ -35,6 +35,7 @@ import CompanyOwnerleads from "./Pages/CompanyOwnerleads";
 import BusinessEnterpriseContact from "./Improved/BusinessEnterpriseContact";
 import AdminBusinessEnterprise from "./Improved/AdminBusinessEnterprise";
 import AdminTickets from "./Pages/AdminTickets";
+import RecentActivity from "./Pages/RecentActivity";
 
 
 function App() {
@@ -83,6 +84,7 @@ function App() {
              <Route path="/company-special-leads" element={<CompanyAdminleads/>} />
              <Route path="/enterprise-business" element={<AdminBusinessEnterprise/>} />
              <Route path="/admin-tickets" element={<AdminTickets/>} />
+                <Route path="/recent-activity" element={<RecentActivity/>} />
              <Route path="/business-enterprise/:name" element={<BusinessEnterpriseContact/>} />
 
            

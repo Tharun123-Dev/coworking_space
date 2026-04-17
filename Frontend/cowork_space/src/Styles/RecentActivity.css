@@ -1,0 +1,689 @@
+/* ════════════════════════════════════════
+   PAGE CONTAINER
+════════════════════════════════════════ */
+.activity-container {
+  min-height: 100vh;
+  background: #080808;
+  padding: 32px 24px 72px;
+  position: relative;
+  margin-top: 50px;
+}
+
+.activity-container::before {
+  content: "";
+  position: fixed;
+  top: -120px;
+  left: -100px;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 168, 76, 0.06) 0%, transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.activity-shell {
+  max-width: 1380px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ════════════════════════════════════════
+   HEADER
+════════════════════════════════════════ */
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 22px;
+  margin-bottom: 26px;
+  padding: 28px 30px;
+  background: #101010;
+  border: 1px solid rgba(201, 168, 76, 0.16);
+  border-radius: 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.activity-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #c9a84c, #ffd700, #f0c040, #ffd700, #c9a84c);
+  background-size: 200% 100%;
+  animation: headerSlide 4s linear infinite;
+}
+
+@keyframes headerSlide {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.activity-header-left {
+  flex: 1;
+}
+
+.activity-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #c9a84c;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: #ffd700;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+.activity-header h2 {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 700;
+  color: #f5f0e8;
+  margin-bottom: 8px;
+  line-height: 1.08;
+}
+
+.activity-subtitle {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: rgba(245, 240, 232, 0.45);
+  max-width: 620px;
+}
+
+.activity-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.activity-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 18px;
+  min-width: 96px;
+  background: rgba(201, 168, 76, 0.07);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  border-radius: 14px;
+  transition: all 0.28s ease;
+}
+
+.activity-stat-card:hover {
+  background: rgba(201, 168, 76, 0.12);
+  transform: translateY(-2px);
+}
+
+.activity-stat-card strong {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #f0c040;
+  line-height: 1;
+}
+
+.activity-stat-card span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(245, 240, 232, 0.38);
+  margin-top: 5px;
+}
+
+.clear-btn {
+  padding: 11px 18px;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.28s ease;
+}
+
+.clear-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.42);
+  transform: translateY(-2px);
+}
+
+/* ════════════════════════════════════════
+   EMPTY
+════════════════════════════════════════ */
+.activity-empty {
+  min-height: 380px;
+  background: #101010;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.34);
+}
+
+.activity-empty-icon {
+  width: 78px;
+  height: 78px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  font-size: 34px;
+  margin-bottom: 16px;
+}
+
+.activity-empty h4 {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 30px;
+  color: #f5f0e8;
+  margin-bottom: 6px;
+}
+
+.activity-empty p {
+  font-size: 13px;
+  color: rgba(245, 240, 232, 0.42);
+  line-height: 1.7;
+  max-width: 420px;
+}
+
+/* ════════════════════════════════════════
+   LIST
+════════════════════════════════════════ */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.activity-card {
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px 18px 18px 16px;
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  transition: all 0.28s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.activity-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #c9a84c, rgba(139, 92, 246, 0.65), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.activity-card:hover {
+  border-color: rgba(201, 168, 76, 0.18);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+}
+
+.activity-card:hover::before {
+  transform: scaleX(1);
+}
+
+.activity-left {
+  display: flex;
+  justify-content: center;
+}
+
+.activity-timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+.activity-line {
+  width: 2px;
+  flex: 1;
+  min-height: 42px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, rgba(201, 168, 76, 0.34), rgba(255, 255, 255, 0.05));
+}
+
+.activity-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.activity-icon.create {
+  background: rgba(34, 197, 94, 0.10);
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.activity-icon.update {
+  background: rgba(59, 130, 246, 0.10);
+  border-color: rgba(59, 130, 246, 0.22);
+}
+
+.activity-icon.delete {
+  background: rgba(239, 68, 68, 0.10);
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+.activity-icon.info {
+  background: rgba(201, 168, 76, 0.08);
+  border-color: rgba(201, 168, 76, 0.18);
+}
+
+/* ════════════════════════════════════════
+   CONTENT
+════════════════════════════════════════ */
+.activity-content {
+  min-width: 0;
+}
+
+.activity-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.activity-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.activity-model-tag,
+.activity-action-tag,
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.activity-model-tag {
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  color: #f0c040;
+}
+
+.activity-action-tag.create {
+  background: rgba(34, 197, 94, 0.10);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  color: #86efac;
+}
+
+.activity-action-tag.update {
+  background: rgba(59, 130, 246, 0.10);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  color: #93c5fd;
+}
+
+.activity-action-tag.delete {
+  background: rgba(239, 68, 68, 0.10);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: #fca5a5;
+}
+
+.activity-action-tag.info {
+  background: rgba(139, 92, 246, 0.10);
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  color: #c4b5fd;
+}
+
+.role-badge.admin {
+  background: rgba(239, 68, 68, 0.10);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: #fca5a5;
+}
+
+.role-badge.owner {
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+}
+
+.role-badge.user {
+  background: rgba(59, 130, 246, 0.10);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  color: #93c5fd;
+}
+
+.activity-message {
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: rgba(245, 240, 232, 0.86);
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.activity-message strong {
+  color: #f5f0e8;
+  font-weight: 800;
+}
+
+.activity-meta {
+  font-size: 12px;
+  color: rgba(245, 240, 232, 0.38);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-time {
+  color: rgba(245, 240, 232, 0.36);
+  font-weight: 500;
+}
+
+/* ════════════════════════════════════════
+   EDIT AREA
+════════════════════════════════════════ */
+.activity-edit-box {
+  margin-top: 4px;
+}
+
+.activity-edit-box textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(201, 168, 76, 0.16);
+  background: #090909;
+  color: #f5f0e8;
+  font-size: 13.5px;
+  line-height: 1.7;
+  outline: none;
+  transition: all 0.28s ease;
+}
+
+.activity-edit-box textarea:focus {
+  border-color: #c9a84c;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+}
+
+.activity-edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.save-btn,
+.cancel-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.28s ease;
+}
+
+.save-btn {
+  border: 1px solid rgba(201, 168, 76, 0.22);
+  background: linear-gradient(135deg, #c9a84c, #f0c040);
+  color: #080808;
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(201, 168, 76, 0.24);
+}
+
+.cancel-btn {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(245, 240, 232, 0.72);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ════════════════════════════════════════
+   ACTION BUTTONS
+════════════════════════════════════════ */
+.activity-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.edit-btn,
+.delete-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.28s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-btn {
+  background: rgba(59, 130, 246, 0.10);
+  border: 1px solid rgba(59, 130, 246, 0.20);
+  color: #93c5fd;
+}
+
+.edit-btn:hover {
+  background: rgba(59, 130, 246, 0.16);
+  transform: translateY(-2px);
+}
+
+.delete-btn {
+  background: rgba(239, 68, 68, 0.10);
+  border: 1px solid rgba(239, 68, 68, 0.20);
+  color: #fca5a5;
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.16);
+  transform: translateY(-2px);
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .activity-header {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .activity-header-right {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+@media (max-width: 760px) {
+  .activity-card {
+    grid-template-columns: 46px 1fr;
+  }
+
+  .activity-actions {
+    grid-column: 2 / 3;
+    justify-content: flex-start;
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 680px) {
+  .activity-container {
+    padding: 16px 14px 48px;
+  }
+
+  .activity-header {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .activity-empty {
+    border-radius: 16px;
+    padding: 24px 18px;
+  }
+
+  .activity-card {
+    gap: 14px;
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .activity-header h2 {
+    font-size: 28px;
+  }
+
+  .activity-subtitle {
+    font-size: 12.8px;
+  }
+
+  .activity-message {
+    font-size: 13.5px;
+  }
+
+  .activity-top-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .activity-stat-card {
+    min-width: 86px;
+    padding: 10px 14px;
+  }
+
+  .activity-stat-card strong {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 520px) {
+  .activity-header-right {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .clear-btn {
+    width: 100%;
+  }
+
+  .activity-edit-actions {
+    flex-direction: column;
+  }
+
+  .save-btn,
+  .cancel-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .activity-header h2 {
+    font-size: 24px;
+  }
+
+  .activity-empty h4 {
+    font-size: 25px;
+  }
+
+  .activity-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 17px;
+    border-radius: 12px;
+  }
+
+  .role-badge,
+  .activity-model-tag,
+  .activity-action-tag {
+    font-size: 9px;
+    padding: 5px 9px;
+  }
+
+  .activity-meta {
+    font-size: 11px;
+  }
+
+  .edit-btn,
+  .delete-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activity-header::before,
+  .activity-eyebrow::before,
+  .activity-card,
+  .activity-stat-card,
+  .edit-btn,
+  .delete-btn,
+  .clear-btn,
+  .save-btn,
+  .cancel-btn {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -91,7 +91,7 @@ function AdminDashboard() {
   return (
     <div className={styles.container}>
 
-      {/* ═══════ TOP BAR ═══════ */}
+      {/* ═══════ TOP BAR WITH RECENT ACTIVITY BUTTON ═══════ */}
       <div className={styles.topBar}>
         <div className={styles.topBarLeft}>
           <p className={styles.eyebrow}>Internal Workspace System</p>
@@ -100,28 +100,38 @@ function AdminDashboard() {
             Manage workspace records, categories, users, and leads from one central place.
           </p>
         </div>
-        <div className={styles.topStats}>
-          <div className={styles.topStat}>
-            <strong>{workspaces.length}</strong>
-            <span>Workspaces</span>
-          </div>
-          <div className={styles.topStat}>
-            <strong>{categories.length}</strong>
-            <span>Categories</span>
-          </div>
-          <div className={styles.topStat}>
-            <strong>{categories.filter(c => c.is_available).length}</strong>
-            <span>Available</span>
-          </div>
-          <div className={styles.topStat}>
-            <strong>{owners.length}</strong>
-            <span>Owners</span>
+        <div className={styles.topBarRight}>
+          {/* RECENT ACTIVITY BUTTON - TOP RIGHT CORNER */}
+          <button
+            className={`${styles.recentActivityBtn} ${styles.shadowBtn}`}
+            onClick={() => navigate("/recent-activity")}
+          >
+            <span className={styles.navBtnIcon}>📊</span>
+            <span className={styles.recentActivityText}>Recent Activity</span>
+          </button>
+          <div className={styles.topStats}>
+            <div className={styles.topStat}>
+              <strong>{workspaces.length}</strong>
+              <span>Workspaces</span>
+            </div>
+            <div className={styles.topStat}>
+              <strong>{categories.length}</strong>
+              <span>Categories</span>
+            </div>
+            <div className={styles.topStat}>
+              <strong>{categories.filter(c => c.is_available).length}</strong>
+              <span>Available</span>
+            </div>
+            <div className={styles.topStat}>
+              <strong>{owners.length}</strong>
+              <span>Owners</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ═══════════════════════════════════════════
-          QUICK NAVIGATION GROUPS
+        QUICK NAVIGATION GROUPS (REMOVED RECENT ACTIVITY)
       ═══════════════════════════════════════════ */}
       <div className={styles.navPanel}>
 
@@ -290,7 +300,7 @@ function AdminDashboard() {
           </div>
         </R>
 
-        {/* ── GROUP 6: Support Tickets ── */}
+        {/* ── GROUP 6: Support Tickets ── (REMOVED RECENT ACTIVITY BUTTON) */}
         <R>
           <div className={styles.navGroup}>
             <div className={styles.navGroupHead}>
@@ -318,9 +328,7 @@ function AdminDashboard() {
       </div>
 
       {/* ═══════════════════════════════════════════
-          WORKSPACE MANAGEMENT
-          NOTE: Owners manage their own categories —
-          admin workspace records are the master list.
+        WORKSPACE MANAGEMENT (UNCHANGED)
       ═══════════════════════════════════════════ */}
       <section className={styles.panelSection}>
         <div className={styles.sectionHead}>
@@ -423,9 +431,7 @@ function AdminDashboard() {
       </section>
 
       {/* ═══════════════════════════════════════════
-          WORKSPACE CATEGORIES
-          NOTE: Owners can also manage their own
-          categories. This is the admin master view.
+        WORKSPACE CATEGORIES (UNCHANGED)
       ═══════════════════════════════════════════ */}
       <section className={styles.panelSection}>
         <div className={styles.sectionHead}>

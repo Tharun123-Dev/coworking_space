@@ -339,6 +339,50 @@
 }
 .navBtnPurple .navBtnIcon { background: rgba(139,92,246,0.1); }
  
+
+.topBarRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  flex: 1;
+}
+
+.recentActivityBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+  min-width: 160px;
+  justify-content: center;
+}
+
+.recentActivityBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.6);
+}
+
+.recentActivityBtn:active {
+  transform: translateY(0);
+}
+
+.recentActivityText {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.shadowBtn {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
 /* ════════════════════════════════════════
    PANEL SECTIONS
 ════════════════════════════════════════ */

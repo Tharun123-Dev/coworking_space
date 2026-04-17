@@ -2,6 +2,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import BasePermission
+from rest_framework.permissions import IsAdminUser
+from workspaces.models import ActivityLog
 
 from .models import Workspace
 from .serializers import WorkspaceSerializer, WorkspaceCategorySerializer, WorkspaceCategory
@@ -64,9 +66,8 @@ def get_categories(request):
     return Response(serializer.data)
 
 
-# ===========================
-# ADD WORKSPACE (ADMIN + OWNER)
-# ===========================
+from workspaces.models import ActivityLog
+
 @api_view(['POST'])
 @permission_classes([IsAdminOrOwner])
 def add_workspace(request):
@@ -76,14 +77,27 @@ def add_workspace(request):
     serializer = WorkspaceSerializer(data=data)
 
     if serializer.is_valid():
-        serializer.save(owner=request.user)
+        workspace = serializer.save(owner=request.user)   # ✅ store object
+
+        # ===========================
+        # ✅ ADD ACTIVITY LOG HERE
+        # ===========================
+        ActivityLog.objects.create(
+            user=request.user,
+            action="CREATE",
+            model_name="Workspace",
+            message=f"{request.user.username} added workspace {workspace.name}"
+        )
+
         return Response(serializer.data)
 
-    print(serializer.errors)   # 👈 see error in terminal
+    print(serializer.errors)
     return Response(serializer.errors, status=400)
 # ===========================
 # UPDATE WORKSPACE
 # ===========================
+from workspaces.models import ActivityLog
+
 @api_view(['PUT'])
 @permission_classes([IsAdminOrOwner])
 def update_workspace(request, id):
@@ -94,22 +108,26 @@ def update_workspace(request, id):
         return Response({"error": "Workspace not found"}, status=404)
 
     # ADMIN can edit all
-    if request.user.is_superuser:
-        pass
-
-    # OWNER edit only own
-    else:
+    if not request.user.is_superuser:
         if workspace.owner != request.user:
             return Response({"error": "Not allowed"}, status=403)
 
     serializer = WorkspaceSerializer(workspace, data=request.data)
 
     if serializer.is_valid():
-        serializer.save(owner=workspace.owner)
+        updated_workspace = serializer.save(owner=workspace.owner)
+
+        # ✅ ADD LOG HERE (BEFORE RETURN)
+        ActivityLog.objects.create(
+            user=request.user,
+            action="UPDATE",
+            model_name="Workspace",
+            message=f"{request.user.username} updated workspace {updated_workspace.name}"
+        )
+
         return Response(serializer.data)
 
     return Response(serializer.errors, status=400)
-
 
 # ===========================
 # DELETE WORKSPACE
@@ -133,6 +151,12 @@ def delete_workspace(request, id):
             return Response({"error": "Not allowed"}, status=403)
 
     workspace.delete()
+    ActivityLog.objects.create(
+    user=request.user,
+    action="DELETE",
+    model_name="Workspace",
+    message=f"{request.user.username} deleted workspace {workspace.name}"
+)
     return Response({"message": "Deleted"})
 
 
@@ -201,3 +225,70 @@ def delete_category(request, id):
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def recent_activities(request):
+
+    logs = ActivityLog.objects.all().order_by("-created_at")[:30]
+
+    data = []
+
+    for log in logs:
+
+        role = "User"  # default
+
+        if log.user:
+
+            # ✅ ADMIN
+            if log.user.is_superuser:
+                role = "Admin"
+
+            else:
+                try:
+                    profile = log.user.profile
+
+                    # ✅ OWNER FIX (case insensitive)
+                    if profile.role.lower() == "owner":
+                        role = "Owner"
+                    else:
+                        role = "User"
+
+                except:
+                    role = "User"
+
+        data.append({
+            "id": log.id,
+            "user": log.user.username if log.user else "System",
+            "role": role,
+            "action": log.action,
+            "model_name": log.model_name,
+            "message": log.message,
+            "time": log.created_at.strftime("%d %b %Y %I:%M %p")
+        })
+
+    return Response(data)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import ActivityLog
+
+# DELETE SINGLE ACTIVITY
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_activity(request, id):
+    try:
+        activity = ActivityLog.objects.get(id=id)
+        activity.delete()
+        return Response({"message": "Deleted successfully"})
+    except ActivityLog.DoesNotExist:
+        return Response({"error": "Not found"}, status=404)
+
+
+# CLEAR ALL ACTIVITIES
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def clear_all_activities(request):
+    ActivityLog.objects.all().delete()
+    return Response({"message": "All activities cleared"})

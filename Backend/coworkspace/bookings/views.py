@@ -9,16 +9,14 @@ from .models import Booking, CancelRequest
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
+from workspaces.models import ActivityLog   # adjust if path different
 
-# ===============================
-# CREATE BOOKING (OWNER BASED)
-# ===============================
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_booking(request):
 
     workspace_id = request.data.get('workspace_id')
-    cart_item_id = request.data.get('cart_item_id')   # ADD THIS
+    cart_item_id = request.data.get('cart_item_id')
 
     if not workspace_id:
         return Response({"error": "No workspace_id"}, status=400)
@@ -31,28 +29,36 @@ def create_booking(request):
 
     total_price = workspace.price * int(duration)
 
-    # ✅ OWNER AUTO ASSIGNED
     owner = workspace.owner
 
-    Booking.objects.create(
-    user=user,
-    workspace=workspace,
-    owner=owner,
-    duration=duration,
-    date=date,
-    total_price=total_price,
+    booking = Booking.objects.create(   # ✅ store in variable
+        user=user,
+        workspace=workspace,
+        owner=owner,
+        duration=duration,
+        date=date,
+        total_price=total_price,
+        payment_id=request.data.get("payment_id"),
+        payment_status="PAID"
+    )
 
-    # ✅ ADD THESE
-    payment_id=request.data.get("payment_id"),
-    payment_status="PAID"
-)
     print("RECEIVED PAYMENT ID:", request.data.get("payment_id"))
-   # REMOVE ONLY THAT ITEM
+
+    # ✅ DELETE CART ITEM
     if cart_item_id:
         CartItem.objects.filter(id=cart_item_id).delete()
 
-    return Response({"message": "Booking successful"})
+    # ===========================
+    # ✅ ADD ACTIVITY LOG HERE
+    # ===========================
+    ActivityLog.objects.create(
+        user=user,
+        action="CREATE",
+        model_name="Booking",
+        message=f"{user.username} booked {workspace.name} on {date}"
+    )
 
+    return Response({"message": "Booking successful"})
 
 # ===============================
 # ADD TO CART
@@ -202,18 +208,27 @@ def owner_bookings(request):
 # ===============================
 # CONFIRM BOOKING (OWNER)
 # ===============================
+from workspaces.models import ActivityLog
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def confirm_booking(request, id):
 
     booking = Booking.objects.get(id=id)
 
-    # ✅ only workspace owner can confirm
     if booking.owner != request.user:
         return Response({"error": "Not allowed"}, status=403)
 
     booking.status = "confirmed"
     booking.save()
+
+    # ✅ ADD ACTIVITY LOG
+    ActivityLog.objects.create(
+        user=request.user,
+        action="UPDATE",
+        model_name="Booking",
+        message=f"{request.user.username} confirmed booking for {booking.workspace.name}"
+    )
 
     return Response({"message": "Booking confirmed"})
 @api_view(['PUT'])
@@ -281,6 +296,15 @@ def cancel_booking(request, id):
     booking.refund_amount = booking.total_price
 
     booking.save()
+    
+    # ✅ ADD ACTIVITY LOG
+    ActivityLog.objects.create(
+        user=request.user,
+        action="UPDATE",
+        model_name="Booking",
+        message=f"{request.user.username} cancel booking for {booking.workspace.name} and refunded ${booking.total_price}"
+    )
+
 
     print("FINAL STATUS:", booking.payment_status)
     print("REFUND AMOUNT:", booking.refund_amount)
@@ -415,6 +439,14 @@ def verify_booking(request, id):
     booking.payment_status = "VERIFIED"
     booking.save()
 
+    # ✅ ADD ACTIVITY LOG
+    ActivityLog.objects.create(
+        user=request.user,
+        action="UPDATE",
+        model_name="Booking",
+        message=f"{request.user.username} verified booking for {booking.workspace.name}"
+    )
+
     return Response({"message": "Booking verified successfully"})
 
 @api_view(['POST'])
@@ -460,7 +492,10 @@ def owner_cancel_requests(request):
 @permission_classes([IsAuthenticated])
 def approve_cancel(request, id):
 
-    req = CancelRequest.objects.get(id=id)
+    try:
+        req = CancelRequest.objects.get(id=id)
+    except CancelRequest.DoesNotExist:
+        return Response({"error": "Request not found"}, status=404)
 
     req.status = "APPROVED"
     req.save()
@@ -468,16 +503,30 @@ def approve_cancel(request, id):
     booking = req.booking
     booking.status = "cancelled"
 
-    # REFUND
+    # 💰 REFUND
     if booking.payment_id:
-        client = razorpay.Client(
-            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET)
-        )
+        try:
+            client = razorpay.Client(
+                auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET)
+            )
 
-        client.payment.refund(booking.payment_id)
-        booking.refund_amount = booking.total_price
-        booking.payment_status = "REFUNDED"
+            client.payment.refund(booking.payment_id)
+
+            booking.refund_amount = booking.total_price
+            booking.payment_status = "REFUNDED"
+
+        except Exception as e:
+            print("REFUND ERROR:", e)
+            return Response({"error": "Refund failed"}, status=500)
 
     booking.save()
+
+    # ✅ ADD ACTIVITY LOG (IMPORTANT)
+    ActivityLog.objects.create(
+        user=request.user,
+        action="UPDATE",
+        model_name="CancelRequest",
+        message=f"{request.user.username} approved cancellation for {booking.workspace.name} and refunded ₹{booking.total_price}"
+    )
 
     return Response({"message": "Cancelled & Refunded"})

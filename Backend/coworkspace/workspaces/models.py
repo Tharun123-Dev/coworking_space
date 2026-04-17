@@ -55,3 +55,19 @@ class WorkspaceCategory(models.Model):
 
     def __str__(self):
         return self.name
+    
+class ActivityLog(models.Model):
+    ACTIONS = [
+        ("CREATE", "Create"),
+        ("UPDATE", "Update"),
+        ("DELETE", "Delete"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=10, choices=ACTIONS)
+    model_name = models.CharField(max_length=50)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.message

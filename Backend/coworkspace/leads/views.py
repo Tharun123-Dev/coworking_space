@@ -15,6 +15,7 @@ from accounts.models import Profile
 from .models import BusinessEnterpriseLead,SupportTicket
 from bookings.models import Booking
 from datetime import datetime
+from workspaces.models import ActivityLog
 
 
 
@@ -26,13 +27,21 @@ def create_lead(request):
         if serializer.is_valid():
             lead = serializer.save()
 
-            # ✅ SEND EMAIL AFTER SAVE (CORRECT)
+            # ✅ SEND EMAIL
             send_mail(
                 "New Lead Received",
                 f"New lead from {lead.name}\nEmail: {lead.email}",
                 settings.EMAIL_HOST_USER,
                 ["anjali.tharun9949@gmail.com"],
                 fail_silently=True
+            )
+
+            # ✅ ADD ACTIVITY LOG (IMPORTANT)
+            ActivityLog.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                action="CREATE",
+                model_name="Lead",
+                message=f"{lead.name} submitted a new lead request"
             )
 
             return Response({"message": "Lead saved"})
@@ -131,7 +140,9 @@ from workspaces.models import WorkspaceCategory
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_special_lead(request):
+
     print(request.data)
+
     category_id = request.data.get("category")
 
     if not category_id:
@@ -142,7 +153,8 @@ def create_special_lead(request):
     except WorkspaceCategory.DoesNotExist:
         return Response({"error": "Invalid category"}, status=404)
 
-    SpecialLead.objects.create(
+    # ✅ SAVE OBJECT IN VARIABLE
+    lead = SpecialLead.objects.create(
         user=request.user,
         category=category,
         owner=category.owner,
@@ -151,9 +163,18 @@ def create_special_lead(request):
         phone=request.data.get("phone"),
         company=request.data.get("company"),
         message=request.data.get("message")
-
     )
-   
+
+    # ===========================
+    # ✅ ADD ACTIVITY LOG
+    # ===========================
+    ActivityLog.objects.create(
+        user=request.user,
+        action="CREATE",
+        model_name="SpecialLead",
+        message=f"{request.user.username} requested special workspace ({category.category})"
+    )
+
     return Response({"message": "Lead created successfully"})
 @api_view(['POST'])
 def add_special_lead(request):
@@ -290,13 +311,23 @@ from .models import CompanyLead
 @api_view(['POST'])
 def create_company_lead(request):
 
-    CompanyLead.objects.create(
+    lead = CompanyLead.objects.create(
         team_size=request.data.get("team_size"),
         name=request.data.get("name"),
         email=request.data.get("email"),
         phone=request.data.get("phone"),
         company=request.data.get("company"),
         message=request.data.get("message"),
+    )
+
+    # ===========================
+    # ✅ ADD ACTIVITY LOG
+    # ===========================
+    ActivityLog.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        action="CREATE",
+        model_name="CompanyLead",
+        message=f"{lead.name} submitted company lead ({lead.company})"
     )
 
     return Response({"message": "Lead created"})
@@ -385,7 +416,7 @@ def update_company_status(request,id):
 @api_view(['POST'])
 def create_business_enterprise_lead(request):
 
-    BusinessEnterpriseLead.objects.create(
+    lead = BusinessEnterpriseLead.objects.create(
         location=request.data.get("location"),
         company_name=request.data.get("company_name"),
         contact_person=request.data.get("contact_person"),
@@ -397,7 +428,17 @@ def create_business_enterprise_lead(request):
         requirement=request.data.get("requirement"),
     )
 
-    return Response({"message":"Lead created"})
+    # ===========================
+    # ✅ ADD ACTIVITY LOG
+    # ===========================
+    ActivityLog.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        action="CREATE",
+        model_name="BusinessLead",
+        message=f"{lead.company_name} requested enterprise workspace in {lead.location}"
+    )
+
+    return Response({"message": "Lead created"})
 
 @api_view(['GET'])
 def admin_business_leads(request):
@@ -431,6 +472,8 @@ def update_business_status(request,id):
 
     return Response({"message":"updated"})
 
+from workspaces.models import ActivityLog  # adjust import path if needed
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_ticket(request):
@@ -451,6 +494,14 @@ def create_ticket(request):
         ticket.special_id = special_id
 
     ticket.save()
+
+    # ✅ ADD THIS BLOCK (IMPORTANT)
+    ActivityLog.objects.create(
+        user=request.user,
+        action="CREATE",
+        model_name="Ticket",
+        message=f"{request.user.username} raised a ticket ({ticket.issue_type})"
+    )
 
     return Response({"message": "Ticket created"})
 
