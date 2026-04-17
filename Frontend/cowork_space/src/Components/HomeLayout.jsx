@@ -29,8 +29,8 @@ function HomeLayout() {
       <ContactModal selected={selected} setSelected={setSelected} />
       <RightSpace openModal={setSelected} />
       <WorkspaceFeature />
-      <Cities />
-      <AISeats />
+      {/* <Cities /> */}
+      {/* <AISeats /> */}
       <Reviews />
       <Testimonials/>
       <AddReview />

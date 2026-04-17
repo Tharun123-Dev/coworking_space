@@ -132,7 +132,7 @@ function Navbar() {
           </div>
 
           {/* Cities */}
-          <div
+          {/* <div
             className={styles.dropdown}
             onMouseEnter={() => setShowCities(true)}
             onMouseLeave={() => setShowCities(false)}
@@ -146,7 +146,7 @@ function Navbar() {
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
           <p className={styles.menuItem} onClick={() => navigate("/amenities")}>Amenities</p>
         </nav>
@@ -257,7 +257,7 @@ function Navbar() {
             </div>
 
             {/* Cities accordion */}
-            <div className={styles.mobileDropdown}>
+            {/* <div className={styles.mobileDropdown}>
               <button
                 className={styles.mobileDropdownBtn}
                 onClick={() => setMobileCitiesOpen(o => !o)}
@@ -272,7 +272,7 @@ function Navbar() {
                   ))}
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* Amenities */}
             <p className={styles.mobileItem} onClick={() => handleNavigate("/amenities")}>

@@ -1,61 +1,51 @@
 /* ============================================================
-   LimitedOfferSection.css
-   BLACK & GOLD — FIFO Urgency · Limited Availability
+   BusinessSection.css
+   BLACK & GOLD — FIFO Urgency · 5 Cards Per Row
    ============================================================ */
- 
+
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
- 
-/* ── Variables ── */
+
 :root {
-  --gold:           #c9a84c;
-  --gold-light:     #f0c040;
-  --gold-bright:    #ffd700;
-  --gold-dim:       rgba(201, 168, 76, 0.11);
-  --gold-border:    rgba(201, 168, 76, 0.24);
-  --gold-glow:      rgba(201, 168, 76, 0.28);
- 
-  --red:            #e53535;
-  --red-dim:        rgba(229, 53, 53, 0.1);
-  --red-border:     rgba(229, 53, 53, 0.22);
- 
-  --green:          #22c55e;
-  --green-dim:      rgba(34, 197, 94, 0.1);
-  --green-border:   rgba(34, 197, 94, 0.22);
- 
-  --black:          #080808;
-  --card-bg:        #0e0e0e;
-  --card-bg2:       #141414;
-  --surface:        #181818;
- 
-  --white:          #f5f0e8;
-  --gray:           rgba(245, 240, 232, 0.52);
-  --border:         rgba(255, 255, 255, 0.06);
- 
-  --font-display:   'Cormorant Garamond', serif;
-  --font-body:      'Plus Jakarta Sans', sans-serif;
- 
-  --r-sm:  10px;
-  --r-md:  16px;
-  --r-lg:  22px;
-  --r-xl:  28px;
- 
-  --shadow-card:    0 12px 40px rgba(0, 0, 0, 0.5);
-  --shadow-gold:    0 20px 50px rgba(201, 168, 76, 0.14);
-  --transition:     all 0.36s cubic-bezier(0.4, 0, 0.2, 1);
+  --gold: #c9a84c;
+  --gold-light: #f0c040;
+  --gold-bright: #ffd700;
+  --gold-dim: rgba(201, 168, 76, 0.11);
+  --gold-border: rgba(201, 168, 76, 0.24);
+  --gold-glow: rgba(201, 168, 76, 0.28);
+
+  --red: #e53535;
+  --green: #22c55e;
+
+  --black: #080808;
+  --card-bg: #0e0e0e;
+  --card-bg2: #141414;
+  --surface: #181818;
+
+  --white: #f5f0e8;
+  --gray: rgba(245, 240, 232, 0.52);
+  --border: rgba(255, 255, 255, 0.06);
+
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+
+  --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --shadow-gold: 0 20px 50px rgba(201, 168, 76, 0.14);
+  --transition: all 0.36s cubic-bezier(0.4, 0, 0.2, 1);
 }
- 
-/* ════════════════════════════════════════════════════
-   SECTION WRAPPER
-════════════════════════════════════════════════════ */
+
 .offer-section {
   position: relative;
   background: var(--black);
-  padding: 100px 80px 110px;
+  padding: 100px 44px 110px;
   overflow: hidden;
   font-family: var(--font-body);
 }
- 
-/* Top & bottom edge glows */
+
 .offer-section::before {
   content: '';
   position: absolute;
@@ -64,6 +54,7 @@
   background: linear-gradient(90deg, transparent, var(--gold), var(--gold-bright), var(--gold), transparent);
   box-shadow: 0 0 30px rgba(201, 168, 76, 0.35);
 }
+
 .offer-section::after {
   content: '';
   position: absolute;
@@ -71,8 +62,8 @@
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
 }
- 
-/* ── Floating particles ── */
+
+/* particles */
 .offer-particles {
   position: absolute;
   inset: 0;
@@ -80,6 +71,7 @@
   overflow: hidden;
   z-index: 0;
 }
+
 .particle {
   position: absolute;
   width: 2px;
@@ -92,25 +84,23 @@
   top: calc(60% + var(--i) * 2%);
   box-shadow: 0 0 4px var(--gold-glow);
 }
+
 @keyframes particleFloat {
-  0%   { opacity: 0; transform: translateY(0) scale(1); }
-  30%  { opacity: 0.6; }
-  70%  { opacity: 0.3; }
+  0% { opacity: 0; transform: translateY(0) scale(1); }
+  30% { opacity: 0.6; }
+  70% { opacity: 0.3; }
   100% { opacity: 0; transform: translateY(-160px) scale(0.4); }
 }
- 
-/* ════════════════════════════════════════════════════
-   SECTION HEADER
-════════════════════════════════════════════════════ */
+
+/* header */
 .offer-header {
   position: relative;
   z-index: 2;
   text-align: center;
-  max-width: 900px;
-  margin: 0 auto 64px;
+  max-width: 980px;
+  margin: 0 auto 58px;
 }
- 
-/* ── Eyebrow ── */
+
 .offer-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -127,7 +117,9 @@
   margin-bottom: 28px;
   backdrop-filter: blur(8px);
 }
+
 .eyebrow-fire { font-size: 14px; }
+
 .eyebrow-badge {
   padding: 2px 8px;
   background: var(--gold);
@@ -137,8 +129,7 @@
   font-weight: 900;
   letter-spacing: 0.1em;
 }
- 
-/* ── Title ── */
+
 .offer-title {
   display: flex;
   flex-direction: column;
@@ -148,26 +139,29 @@
   font-family: var(--font-display);
   line-height: 1.05;
 }
+
 .offer-title-top {
   font-size: clamp(26px, 3.2vw, 42px);
   font-weight: 400;
   color: var(--gray);
   letter-spacing: 0.08em;
 }
+
 .offer-title-mid {
-  font-size: clamp(54px, 7.5vw, 110px);
+  font-size: clamp(54px, 7vw, 104px);
   font-weight: 700;
   background: linear-gradient(135deg, #fff8d6, var(--gold-bright), var(--gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   line-height: 0.92;
-  text-shadow: none;
   letter-spacing: -0.01em;
 }
+
 .offer-title-mid em {
   font-style: italic;
 }
+
 .offer-title-bot {
   font-size: clamp(18px, 2.2vw, 28px);
   font-weight: 600;
@@ -175,21 +169,21 @@
   letter-spacing: 0.04em;
   font-style: italic;
 }
- 
+
 .offer-subtitle {
   font-size: 15px;
   color: var(--gray);
   line-height: 1.85;
-  max-width: 620px;
+  max-width: 650px;
   margin: 0 auto 40px;
   font-weight: 400;
 }
+
 .offer-subtitle strong {
   color: var(--gold-light);
   font-weight: 700;
 }
- 
-/* ── Meta row (countdown + availability + FIFO) ── */
+
 .offer-meta-row {
   display: flex;
   align-items: stretch;
@@ -197,39 +191,49 @@
   gap: 16px;
   flex-wrap: wrap;
 }
- 
-/* Countdown box */
+
+/* top boxes */
+.countdown-box,
+.availability-box,
+.fifo-box {
+  background: var(--card-bg);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-gold);
+}
+
 .countdown-box {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: var(--card-bg);
-  border: 1px solid var(--gold-border);
-  border-radius: var(--r-lg);
   padding: 20px 28px;
   min-width: 220px;
-  box-shadow: var(--shadow-gold);
 }
-.countdown-label {
+
+.countdown-label,
+.avail-label {
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--gold);
 }
+
 .countdown-digits {
   display: flex;
   align-items: center;
   gap: 6px;
 }
+
 .digit-block {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
 }
+
 .digit {
   font-family: var(--font-display);
   font-size: 34px;
@@ -244,14 +248,17 @@
   padding: 6px 4px;
   letter-spacing: -0.02em;
 }
+
 .digit-urgent {
   color: var(--gold-light);
   animation: urgentPulse 1s ease-in-out infinite;
 }
+
 @keyframes urgentPulse {
   0%, 100% { color: var(--gold-light); }
-  50%       { color: var(--red); }
+  50% { color: var(--red); }
 }
+
 .digit-lbl {
   font-size: 8px;
   font-weight: 800;
@@ -259,6 +266,7 @@
   color: var(--gray);
   text-transform: uppercase;
 }
+
 .digit-sep {
   font-family: var(--font-display);
   font-size: 28px;
@@ -267,62 +275,59 @@
   line-height: 1;
   margin-bottom: 12px;
 }
- 
-/* Availability box */
+
 .availability-box {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 10px;
-  background: var(--card-bg);
-  border: 1px solid var(--gold-border);
-  border-radius: var(--r-lg);
   padding: 20px 26px;
   flex: 1;
   min-width: 240px;
-  max-width: 320px;
+  max-width: 340px;
 }
+
 .avail-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.avail-label {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
+
 .avail-count {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
   color: var(--white);
 }
+
 .avail-bar {
   display: flex;
   gap: 5px;
   height: 12px;
 }
+
 .avail-seg {
   flex: 1;
   border-radius: 4px;
   transition: var(--transition);
 }
+
 .seg-free {
   background: linear-gradient(135deg, var(--gold), var(--gold-bright));
   box-shadow: 0 0 8px rgba(201, 168, 76, 0.3);
   animation: segPulse 2s ease-in-out infinite;
 }
+
 @keyframes segPulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.7; }
+  50% { opacity: 0.7; }
 }
+
 .seg-claimed {
   background: var(--surface);
   border: 1px solid var(--border);
 }
+
 .avail-hint {
   font-size: 10px;
   color: var(--gray);
@@ -330,31 +335,33 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
+
 .avail-dot {
   display: inline-block;
-  width: 8px; height: 8px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
-.avail-dot.free    { background: var(--gold); }
+
+.avail-dot.free { background: var(--gold); }
 .avail-dot.claimed { background: var(--surface); border: 1px solid var(--border); }
- 
-/* FIFO box */
+
 .fifo-box {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: var(--card-bg);
-  border: 1px solid var(--gold-border);
-  border-radius: var(--r-lg);
   padding: 20px 22px;
   text-align: left;
   min-width: 220px;
 }
+
 .fifo-icon {
   font-size: 28px;
-  width: 48px; height: 48px;
+  width: 48px;
+  height: 48px;
   background: var(--gold-dim);
   border: 1px solid var(--gold-border);
   border-radius: 12px;
@@ -363,6 +370,7 @@
   justify-content: center;
   flex-shrink: 0;
 }
+
 .fifo-title {
   font-size: 11px;
   font-weight: 800;
@@ -371,55 +379,55 @@
   text-transform: uppercase;
   margin-bottom: 5px;
 }
+
 .fifo-rule {
   font-size: 12px;
   color: var(--gray);
   line-height: 1.6;
   font-weight: 400;
 }
- 
-/* ════════════════════════════════════════════════════
-   OFFER CARDS GRID
-════════════════════════════════════════════════════ */
+
+/* GRID - 5 CARDS IN ONE ROW */
 .offer-grid {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
   margin-bottom: 48px;
 }
- 
-/* ════════════════════════════════════════════════════
-   OFFER CARD
-════════════════════════════════════════════════════ */
+
+/* card */
 .offer-card {
   position: relative;
   background: var(--card-bg);
-  border-radius: var(--r-xl);
+  border-radius: 22px;
   border: 1px solid var(--border);
   overflow: hidden;
   transition: var(--transition);
   box-shadow: var(--shadow-card);
   animation: cardSlideIn 0.5s ease both;
+  min-width: 0;
 }
+
 @keyframes cardSlideIn {
   from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(0); }
 }
- 
-/* Available state */
+
 .offer-card--available {
   border-color: rgba(201, 168, 76, 0.18);
 }
+
 .offer-card--available:hover {
-  transform: translateY(-10px) scale(1.015);
+  transform: translateY(-8px) scale(1.01);
   border-color: var(--gold-border);
   box-shadow:
-    0 32px 70px rgba(0, 0, 0, 0.55),
+    0 28px 60px rgba(0, 0, 0, 0.55),
     0 0 0 1px var(--gold-border),
     0 0 50px rgba(201, 168, 76, 0.08);
 }
+
 .offer-card--available::before {
   content: '';
   position: absolute;
@@ -430,83 +438,91 @@
   transform-origin: left;
   transition: transform 0.45s ease;
 }
-.offer-card--available:hover::before { transform: scaleX(1); }
- 
-/* Claimed state */
+
+.offer-card--available:hover::before {
+  transform: scaleX(1);
+}
+
 .offer-card--claimed {
-  opacity: 0.6;
+  opacity: 0.62;
   filter: grayscale(0.4);
   border-color: var(--border);
 }
+
 .offer-card--claimed:hover {
   transform: translateY(-4px);
 }
- 
-/* ── Ribbon ── */
+
+/* ribbon */
 .card-ribbon {
   position: absolute;
-  top: 14px; right: -26px;
+  top: 14px;
+  right: -30px;
   z-index: 10;
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));
   color: #080808;
-  font-size: 9.5px;
+  font-size: 8px;
   font-weight: 900;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  padding: 6px 36px;
+  padding: 6px 34px;
   transform: rotate(35deg);
   box-shadow: 0 4px 14px rgba(201, 168, 76, 0.35);
   width: 110px;
   text-align: center;
 }
+
 .card-ribbon--claimed {
   background: var(--surface);
   color: var(--gray);
   box-shadow: none;
 }
- 
-/* ── Card image ── */
+
+/* image */
 .offer-card-img {
   position: relative;
-  height: 170px;
+  height: 132px;
   overflow: hidden;
 }
+
 .offer-card-img img {
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   transition: transform 0.55s ease;
   filter: brightness(0.72) saturate(0.8);
 }
+
 .offer-card--available:hover .offer-card-img img {
   transform: scale(1.08);
   filter: brightness(0.88) saturate(1);
 }
+
 .offer-card-img-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(8,8,8,0.9) 0%, rgba(8,8,8,0.2) 55%, transparent 100%);
 }
- 
-/* Area tag */
+
 .offer-card-area-tag {
   position: absolute;
-  bottom: 12px; left: 14px;
+  bottom: 10px;
+  left: 12px;
   z-index: 2;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   background: rgba(8,8,8,0.8);
   backdrop-filter: blur(8px);
   border: 1px solid var(--gold-border);
   border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 11px;
+  padding: 4px 10px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--gold-light);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
 }
- 
-/* Claimed overlay */
+
 .claimed-shield {
   position: absolute;
   inset: 0;
@@ -521,127 +537,144 @@
   text-align: center;
   padding: 12px;
 }
-.claimed-shield span { font-size: 28px; }
+
+.claimed-shield span { font-size: 24px; }
+
 .claimed-shield p {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--gray);
   margin: 0;
 }
+
 .claimed-shield small {
-  font-size: 10px;
+  font-size: 9px;
   color: rgba(245,240,232,0.38);
   font-weight: 500;
 }
- 
-/* ── Card body ── */
+
+/* body */
 .offer-card-body {
-  padding: 20px 22px 22px;
+  padding: 16px 14px 14px;
 }
+
 .offer-card-type {
-  font-size: 9.5px;
+  font-size: 8.5px;
   font-weight: 800;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--gold);
   margin-bottom: 6px;
 }
+
 .offer-card-title {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--white);
   margin-bottom: 10px;
-  line-height: 1.25;
+  line-height: 1.2;
+  min-height: 40px;
 }
- 
-/* Meta row */
+
 .offer-card-meta {
   display: flex;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
+
 .offer-card-meta span {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--gray);
 }
- 
-/* Amenity pills */
+
 .offer-amenities {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
+
 .offer-amenities span {
-  padding: 4px 9px;
+  padding: 4px 8px;
   border-radius: 999px;
   background: var(--gold-dim);
   border: 1px solid var(--gold-border);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: var(--gold);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
- 
-/* Price row */
+
 .offer-price-row {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
-  margin-bottom: 14px;
-  padding: 14px 16px;
+  margin-bottom: 12px;
+  padding: 12px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
 }
+
 .offer-price {
   display: flex;
   align-items: baseline;
   gap: 4px;
 }
+
 .price-original {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--gray);
   text-decoration: line-through;
   text-decoration-color: var(--red);
 }
-.price-slash { font-size: 11px; color: var(--gray); }
+
+.price-slash {
+  font-size: 10px;
+  color: var(--gray);
+}
+
 .price-now {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 2px;
 }
+
 .price-tag {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   color: var(--green);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+
 .price-discounted {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--gold-light);
   line-height: 1;
 }
+
 .price-discounted small {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 400;
   color: var(--gray);
 }
+
 .price-taken {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--gray);
   padding: 4px 10px;
@@ -649,48 +682,49 @@
   border: 1px solid var(--border);
   border-radius: 8px;
 }
- 
-/* Urgency */
+
 .offer-urgency {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 14px;
-  font-size: 11px;
+  margin-bottom: 12px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--gold-light);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
+
 .urgency-pulse {
-  width: 8px; height: 8px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--gold-bright);
   box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.5);
   animation: urgencyBeat 1.4s ease-in-out infinite;
   flex-shrink: 0;
 }
+
 @keyframes urgencyBeat {
-  0%   { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.5); }
-  70%  { box-shadow: 0 0 0 8px rgba(255, 215, 0, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(255, 215, 0, 0); }
   100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
 }
- 
-/* Claim CTA button */
+
 .offer-claim-btn {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 16px;
+  padding: 13px 12px;
   border: none;
   border-radius: var(--r-md);
   background: linear-gradient(135deg, var(--gold-bright), var(--gold-light), var(--gold));
   color: #080808;
   font-family: var(--font-body);
-  font-size: 12.5px;
+  font-size: 10.5px;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
   position: relative;
@@ -698,26 +732,37 @@
   transition: var(--transition);
   box-shadow: 0 10px 28px rgba(201, 168, 76, 0.22);
 }
+
 .offer-claim-btn::before {
   content: '';
   position: absolute;
-  top: 0; left: -100%;
-  width: 60%; height: 100%;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
   background: linear-gradient(120deg, transparent 20%, rgba(255,255,255,0.3) 50%, transparent 80%);
   transition: left 0.45s ease;
   transform: skewX(-15deg);
 }
-.offer-claim-btn:hover::before { left: 150%; }
+
+.offer-claim-btn:hover::before {
+  left: 150%;
+}
+
 .offer-claim-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 18px 36px rgba(201, 168, 76, 0.3);
 }
+
 .claim-arrow {
-  font-size: 16px;
+  font-size: 15px;
   transition: transform 0.3s ease;
 }
-.offer-claim-btn:hover .claim-arrow { transform: translateX(5px); }
- 
+
+.offer-claim-btn:hover .claim-arrow {
+  transform: translateX(5px);
+}
+
 .offer-claim-btn--disabled {
   background: var(--surface) !important;
   color: var(--gray) !important;
@@ -726,11 +771,12 @@
   transform: none !important;
   border: 1px solid var(--border);
 }
-.offer-claim-btn--disabled::before { display: none; }
- 
-/* ════════════════════════════════════════════════════
-   BOTTOM BANNER
-════════════════════════════════════════════════════ */
+
+.offer-claim-btn--disabled::before {
+  display: none;
+}
+
+/* bottom */
 .offer-bottom-banner {
   position: relative;
   z-index: 2;
@@ -745,15 +791,17 @@
   box-shadow: var(--shadow-gold);
   flex-wrap: wrap;
 }
-/* Top gold line on banner */
+
 .offer-bottom-banner::before {
   content: '';
   position: absolute;
-  top: 0; left: 10%; right: 10%;
+  top: 0;
+  left: 10%;
+  right: 10%;
   height: 1.5px;
   background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
 }
- 
+
 .bottom-banner-left {
   display: flex;
   align-items: flex-start;
@@ -761,7 +809,12 @@
   flex: 1;
   min-width: 260px;
 }
-.bottom-banner-icon { font-size: 32px; flex-shrink: 0; }
+
+.bottom-banner-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
 .bottom-banner-title {
   font-family: var(--font-display);
   font-size: 20px;
@@ -769,13 +822,14 @@
   color: var(--gold-light);
   margin-bottom: 6px;
 }
+
 .bottom-banner-desc {
   font-size: 13px;
   color: var(--gray);
   line-height: 1.75;
   font-weight: 400;
 }
- 
+
 .bottom-banner-steps {
   display: flex;
   align-items: center;
@@ -783,12 +837,14 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+
 .step-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
 }
+
 .step-num {
   font-family: var(--font-display);
   font-size: 28px;
@@ -802,6 +858,7 @@
   min-width: 54px;
   text-align: center;
 }
+
 .step-label {
   font-size: 10px;
   font-weight: 800;
@@ -809,44 +866,79 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+
 .step-arrow {
   font-size: 20px;
   color: var(--gold-border);
   margin-bottom: 14px;
 }
- 
-/* ════════════════════════════════════════════════════
-   RESPONSIVE
-════════════════════════════════════════════════════ */
- 
-/* 1200px */
-@media (max-width: 1200px) {
-  .offer-section { padding: 80px 50px 90px; }
-  .offer-grid { grid-template-columns: repeat(2, 1fr); }
+
+/* RESPONSIVE */
+@media (max-width: 1600px) {
+  .offer-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
- 
-/* 992px */
+
+@media (max-width: 1280px) {
+  .offer-section {
+    padding: 82px 34px 90px;
+  }
+
+  .offer-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+}
+
 @media (max-width: 992px) {
-  .offer-section { padding: 70px 36px 80px; }
-  .offer-meta-row { gap: 12px; }
-  .countdown-box { min-width: 180px; padding: 16px 20px; }
-  .digit { font-size: 28px; min-width: 40px; }
-  .offer-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
-  .offer-bottom-banner { padding: 24px 28px; }
+  .offer-section {
+    padding: 70px 24px 80px;
+  }
+
+  .offer-meta-row {
+    gap: 12px;
+  }
+
+  .countdown-box {
+    min-width: 180px;
+    padding: 16px 20px;
+  }
+
+  .digit {
+    font-size: 28px;
+    min-width: 40px;
+  }
+
+  .offer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .offer-bottom-banner {
+    padding: 24px 28px;
+  }
 }
- 
-/* 768px */
+
 @media (max-width: 768px) {
-  .offer-section { padding: 60px 22px 70px; }
- 
-  .offer-header { margin-bottom: 44px; }
-  .offer-title-mid { font-size: clamp(50px, 14vw, 76px); }
- 
+  .offer-section {
+    padding: 60px 18px 70px;
+  }
+
+  .offer-header {
+    margin-bottom: 42px;
+  }
+
+  .offer-title-mid {
+    font-size: clamp(50px, 14vw, 76px);
+  }
+
   .offer-meta-row {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
+
   .countdown-box,
   .availability-box,
   .fifo-box {
@@ -854,55 +946,124 @@
     width: 100%;
     max-width: 100%;
   }
-  .countdown-digits { justify-content: center; }
-  .digit { font-size: 30px; min-width: 46px; }
- 
+
+  .countdown-digits {
+    justify-content: center;
+  }
+
+  .digit {
+    font-size: 30px;
+    min-width: 46px;
+  }
+
   .offer-grid {
     grid-template-columns: 1fr;
     gap: 18px;
   }
- 
+
+  .offer-card-img {
+    height: 170px;
+  }
+
   .offer-bottom-banner {
     flex-direction: column;
     align-items: flex-start;
-    padding: 22px 22px;
+    padding: 22px;
     gap: 22px;
   }
+
   .bottom-banner-steps {
     width: 100%;
     justify-content: flex-start;
   }
 }
- 
-/* 480px */
+
 @media (max-width: 480px) {
-  .offer-section { padding: 48px 16px 60px; }
- 
-  .offer-eyebrow { font-size: 9px; padding: 8px 14px; }
-  .offer-title-top { font-size: 20px; }
-  .offer-title-mid { font-size: 56px; }
-  .offer-title-bot { font-size: 16px; }
-  .offer-subtitle { font-size: 14px; }
- 
-  .countdown-box { padding: 14px 16px; }
-  .digit { font-size: 26px; min-width: 38px; padding: 4px; }
-  .digit-sep { font-size: 22px; }
- 
-  .offer-card-body { padding: 16px 16px 18px; }
-  .offer-card-title { font-size: 18px; }
-  .price-discounted { font-size: 22px; }
- 
-  .offer-bottom-banner { padding: 18px 16px; }
-  .bottom-banner-title { font-size: 18px; }
-  .step-num { font-size: 22px; padding: 6px 10px; min-width: 44px; }
- 
-  .card-ribbon { font-size: 8.5px; }
+  .offer-section {
+    padding: 48px 14px 60px;
+  }
+
+  .offer-eyebrow {
+    font-size: 9px;
+    padding: 8px 14px;
+  }
+
+  .offer-title-top {
+    font-size: 20px;
+  }
+
+  .offer-title-mid {
+    font-size: 56px;
+  }
+
+  .offer-title-bot {
+    font-size: 16px;
+  }
+
+  .offer-subtitle {
+    font-size: 14px;
+  }
+
+  .countdown-box {
+    padding: 14px 16px;
+  }
+
+  .digit {
+    font-size: 26px;
+    min-width: 38px;
+    padding: 4px;
+  }
+
+  .digit-sep {
+    font-size: 22px;
+  }
+
+  .offer-card-body {
+    padding: 16px 16px 18px;
+  }
+
+  .offer-card-title {
+    font-size: 18px;
+  }
+
+  .price-discounted {
+    font-size: 22px;
+  }
+
+  .offer-bottom-banner {
+    padding: 18px 16px;
+  }
+
+  .bottom-banner-title {
+    font-size: 18px;
+  }
+
+  .step-num {
+    font-size: 22px;
+    padding: 6px 10px;
+    min-width: 44px;
+  }
+
+  .card-ribbon {
+    font-size: 8px;
+  }
 }
- 
-/* 360px */
+
 @media (max-width: 360px) {
-  .offer-section { padding: 40px 12px 50px; }
-  .offer-title-mid { font-size: 48px; }
-  .bottom-banner-steps { flex-wrap: wrap; gap: 8px; }
-  .step-arrow { display: none; }
+  .offer-section {
+    padding: 40px 12px 50px;
+  }
+
+  .offer-title-mid {
+    font-size: 48px;
+  }
+
+  .bottom-banner-steps {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .step-arrow {
+    display: none;
+  }
 }

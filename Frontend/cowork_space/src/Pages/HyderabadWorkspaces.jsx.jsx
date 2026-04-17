@@ -1,21 +1,22 @@
-import SearchBar from "../Components/SearchBar";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/HyderabadWorkspaces.module.css";
-import Reveal from "../Pages/Reveal";
-import { useNavigate } from "react-router-dom";
 
 function HyderabadWorkspaces() {
   const navigate = useNavigate();
+
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    axiosInstance.get("workspaces/")
+    axiosInstance
+      .get("workspaces/")
       .then((res) => {
         setWorkspaces(res.data);
         setFilteredData(res.data);
@@ -27,20 +28,29 @@ function HyderabadWorkspaces() {
       });
   }, []);
 
+  useEffect(() => {
+    const value = search.toLowerCase().trim();
+
+    const filtered = workspaces.filter((item) => {
+      return (
+        item.name?.toLowerCase().includes(value) ||
+        item.location?.toLowerCase().includes(value) ||
+        item.city?.toLowerCase().includes(value) ||
+        item.area?.toLowerCase().includes(value)
+      );
+    });
+
+    setFilteredData(filtered);
+  }, [search, workspaces]);
+
   const handleAddToCart = (workspaceId) => {
-    axiosInstance.post("cart/add/", { workspace_id: workspaceId, duration: 1 })
+    axiosInstance
+      .post("cart/add/", { workspace_id: workspaceId, duration: 1 })
       .then(() => alert("Added to cart — book within one day."))
       .catch(() => {
         alert("Please login first 🔒");
         navigate("/auth?type=user");
       });
-  };
-
-  const handleSearch = (city, query) => {
-    let data = workspaces;
-    if (city) data = data.filter(item => item.city.toLowerCase().includes(city.toLowerCase()));
-    if (query) data = data.filter(item => item.location.toLowerCase().includes(query.toLowerCase()));
-    setFilteredData(data);
   };
 
   const handleBookNow = (item) => {
@@ -59,209 +69,207 @@ function HyderabadWorkspaces() {
     setShowModal(true);
   };
 
-  const closeModal = () => setShowModal(false);
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedWorkspace(null);
+  };
 
   if (loading) {
     return (
-      <div className={styles.loadingScreen}>
-        <div className={styles.loadingRing}>
-          <div></div><div></div><div></div>
+      <div className={styles.loader}>
+        <div className={styles.loaderRing}>
+          <div></div>
+          <div></div>
+          <div></div>
         </div>
-        <h1>Discovering Hyderabad's Premium Spaces</h1>
-        <p>Curating the finest coworking experiences</p>
+        <p>Loading Hyderabad premium workspaces...</p>
       </div>
     );
   }
 
   return (
-    <div className={styles.workspacesPage}>
-      <section className={styles.workspacesSection} id="hyd">
-        <div className={styles.container}>
+    <div className={styles.page}>
+      <div className={styles.container}>
+        <div className={styles.topBar}>
+          <div className={styles.topBarSpacer}></div>
 
-          <Reveal>
-            <div className={styles.heroHead}>
-              <span className={styles.heroEyebrow}>
-                <span className={styles.eyebrowDot}></span>
-                Hyderabad Exclusive
+          <div className={styles.topBarSearch}>
+            <div className={styles.searchWrap}>
+              <span className={styles.searchIcon}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <path d="M21 21l-4.35-4.35"></path>
+                </svg>
               </span>
- <h2 className={styles.sectionTitle}>
-  <span style={{ color: "black" }}>Premium</span> <em>Workspaces</em>
-</h2>
-              <p className={styles.sectionDesc}>
-                25+ handpicked coworking spaces across Gachibowli, Hitec City, Banjara Hills &amp; more
-              </p>
+
+              <input
+                type="text"
+                placeholder="Search workspace, area, location..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={styles.searchInput}
+              />
+
+              {search && (
+                <button className={styles.clearBtn} onClick={() => setSearch("")}>
+                  ×
+                </button>
+              )}
             </div>
-          </Reveal>
-
-          <Reveal>
-            <div className={styles.bookingBanner}>
-              <div className={styles.bannerItem}>
-                <div className={`${styles.bannerIconWrap} ${styles.bannerIconDay}`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                </div>
-                <div>
-                  <p className={styles.bannerLabel}>Booking Type</p>
-                  <p className={styles.bannerVal}>1-Day Only</p>
-                </div>
-              </div>
-              <div className={styles.bannerSep}></div>
-              <div className={styles.bannerItem}>
-                <div className={`${styles.bannerIconWrap} ${styles.bannerIconLoc}`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  </svg>
-                </div>
-                <div>
-                  <p className={styles.bannerLabel}>Coverage</p>
-                  <p className={styles.bannerVal}>Hyderabad Only</p>
-                </div>
-              </div>
-              <div className={styles.bannerSep}></div>
-              <div className={styles.bannerItem}>
-                <div className={`${styles.bannerIconWrap} ${styles.bannerIconCart}`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                  </svg>
-                </div>
-                <div>
-                  <p className={styles.bannerLabel}>Checkout</p>
-                  <p className={styles.bannerVal}>Multi-space Cart</p>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-
-          <div className={styles.searchSection}>
-            <SearchBar onSearch={handleSearch} />
-          </div>
-
-          <div className={styles.grid}>
-            {filteredData.length > 0 ? (
-              filteredData.map((item, idx) => (
-                <div key={item.id} className={styles.card} style={{ animationDelay: `${idx * 60}ms` }}>
-
-                  <div className={styles.cardBadges}>
-                    <span className={styles.badge1Day}>1 Day</span>
-                    <span className={styles.badgeHyd}>Hyderabad</span>
-                  </div>
-
-                  <div className={styles.cardImageContainer}>
-                    <img
-                      src={item.image || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400"}
-                      alt={item.name}
-                      className={styles.cardImage}
-                    />
-                    <div className={styles.rating}>
-                      ★ {item.rating || 4.8}
-                      <span className={styles.ratingCount}>({item.reviews || 120}+)</span>
-                    </div>
-                  </div>
-
-                  <div className={styles.cardContent}>
-                    <h3 className={styles.cardTitle}>{item.name}</h3>
-                    <p className={styles.cardLocation}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                      </svg>
-                      {item.location}
-                    </p>
-                    <p className={styles.cardCity}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                      </svg>
-                      {item.city} · {item.area}
-                    </p>
-
-                    <div className={styles.amenities}>
-                      {["1Gbps WiFi", "24/7", "AC", "Backup", "Parking"].map(a => (
-                        <span key={a}>{a}</span>
-                      ))}
-                    </div>
-
-                    <div className={styles.cardPriceRow}>
-                      <div className={styles.cardPrice}>
-                        <span className={styles.price}>₹{item.price}</span>
-                        <span className={styles.duration}>/day</span>
-                      </div>
-                      <span className={styles.oneDayTag}>1-Day</span>
-                    </div>
-
-                    <div className={styles.cardActions}>
-                      <button className={styles.btnKnow} onClick={() => handleKnowMore(item)}>
-                        Know More
-                      </button>
-                      <button className={styles.btnPrimary} onClick={(e) => { e.stopPropagation(); handleBookNow(item); }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                        </svg>
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className={styles.noData}>
-                <div className={styles.noDataIcon}>🔍</div>
-                <h2 className={styles.bufferWord}>
-                  Searching Hyderabad Spaces
-                  <span className={styles.loadingDots}></span>
-                </h2>
-                <p className={styles.bufferText}>Finding best matches in Gachibowli, Hitec City...</p>
-              </div>
-            )}
           </div>
         </div>
-      </section>
 
-      {/* ══════ UNIFIED KNOW MORE MODAL ══════ */}
+        <div className={styles.headerCenter}>
+          <div className={styles.pill}>
+            <span className={styles.dot}></span>
+            Hyderabad Exclusive
+          </div>
+
+          <h1 className={styles.title}>
+            Premium <em>1-Day Workspaces</em>
+          </h1>
+
+          <p className={styles.sub}>
+            Book elegant coworking spaces across Hyderabad with a premium one-day experience for focused work, meetings and productivity.
+          </p>
+        </div>
+
+        <div className={styles.strip}>
+          <div className={styles.stripItem}>
+            <span className={styles.stripDot} style={{ "--c": "#c9972c" }}></span>
+            Excellent curated spaces
+          </div>
+          <div className={styles.stripDivider}></div>
+          <div className={styles.stripItem}>
+            <span className={styles.stripDot} style={{ "--c": "#0ea572" }}></span>
+            Fast one-day booking
+          </div>
+          <div className={styles.stripDivider}></div>
+          <div className={styles.stripItem}>
+            <span className={styles.stripDot} style={{ "--c": "#2563eb" }}></span>
+            Premium Hyderabad locations
+          </div>
+        </div>
+
+        <div className={styles.grid}>
+          {filteredData.length > 0 ? (
+            filteredData.map((item, idx) => (
+              <div
+                key={item.id}
+                className={styles.card}
+                style={{ "--delay": `${idx * 70}ms` }}
+              >
+                <div className={styles.cardGlow}></div>
+
+                <div className={styles.imgWrap}>
+                  <img
+                    src={
+                      item.image ||
+                      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900"
+                    }
+                    alt={item.name}
+                    className={styles.img}
+                  />
+                  <div className={styles.imgOverlay}></div>
+
+                  <span className={styles.dayBadge}>1 Day</span>
+                  <span className={styles.ratingBadge}>★ {item.rating || 4.8}</span>
+                </div>
+
+                <div className={styles.body}>
+                  <h3 className={styles.cardName}>{item.name}</h3>
+
+                  <p className={styles.cardLoc}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path>
+                    </svg>
+                    {item.location}, {item.area}
+                  </p>
+
+                  <p className={styles.cardMeta}>
+                    {item.city} · Premium workspace · Instant day pass
+                  </p>
+
+                  <div className={styles.pills}>
+                    <span className={styles.amenPill}>WiFi</span>
+                    <span className={styles.amenPill}>AC</span>
+                    <span className={styles.amenPill}>Backup</span>
+                    <span className={styles.amenPill}>Meeting</span>
+                  </div>
+
+                  <div className={styles.footer}>
+                    <div className={styles.price}>
+                      <span className={styles.priceNum}>₹{item.price}</span>
+                      <span className={styles.pricePer}>/day</span>
+                    </div>
+
+                    <div className={styles.actions}>
+                      <button
+                        className={styles.btnGhost}
+                        onClick={() => handleKnowMore(item)}
+                      >
+                        Know More
+                      </button>
+
+                      <button
+                        className={styles.btnCart}
+                        onClick={() => handleBookNow(item)}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className={styles.empty}>
+              <span>🔍</span>
+              <p>No workspaces found for your search.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {showModal && selectedWorkspace && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalPanel} onClick={(e) => e.stopPropagation()}>
-
-            {/* Hero Image */}
-            <div className={styles.modalHero}>
+        <div className={styles.overlay} onClick={closeModal}>
+          <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.mHero}>
               <img
-                src={selectedWorkspace.image || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800"}
+                src={
+                  selectedWorkspace.image ||
+                  "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1200"
+                }
                 alt={selectedWorkspace.name}
-                className={styles.modalHeroImg}
+                className={styles.mHeroImg}
               />
-              <div className={styles.modalHeroGrad}></div>
+              <div className={styles.mHeroGrad}></div>
 
-              <button className={styles.modalClose} onClick={closeModal}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <button className={styles.mClose} onClick={closeModal}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
 
-              <div className={styles.modalHeroBadges}>
-                <span className={styles.heroBadgeDay}>1-Day</span>
-                <span className={styles.heroBadgeHyd}>Hyderabad</span>
-                <span className={styles.heroBadgeRating}>★ {selectedWorkspace.rating || 4.8}</span>
+              <div className={styles.mHeroBadges}>
+                <span className={styles.mBDay}>1 Day</span>
+                <span className={styles.mBRating}>★ {selectedWorkspace.rating || 4.8}</span>
               </div>
 
-              <div className={styles.modalHeroInfo}>
-                <h2 className={styles.modalTitle}>{selectedWorkspace.name}</h2>
-                <p className={styles.modalSubtitle}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.65)">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  </svg>
+              <div className={styles.mHeroInfo}>
+                <h2 className={styles.mTitle}>{selectedWorkspace.name}</h2>
+                <p className={styles.mSub}>
                   {selectedWorkspace.location}, {selectedWorkspace.city}
                 </p>
               </div>
             </div>
 
-            {/* Tabs */}
-            <div className={styles.modalTabs}>
-              {["overview", "amenities", "pricing", "map"].map(tab => (
+            <div className={styles.mTabs}>
+              {["overview", "amenities", "pricing", "map"].map((tab) => (
                 <button
                   key={tab}
-                  className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ""}`}
+                  className={`${styles.mTab} ${activeTab === tab ? styles.mTabActive : ""}`}
                   onClick={() => setActiveTab(tab)}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -269,79 +277,82 @@ function HyderabadWorkspaces() {
               ))}
             </div>
 
-            {/* Tab Body */}
-            <div className={styles.modalBody}>
-
-              {/* ── OVERVIEW ── */}
+            <div className={styles.mBody}>
               {activeTab === "overview" && (
-                <div className={styles.tabContent}>
-                  <div className={styles.statsGrid}>
-                    {[
-                      { icon: "⚡", val: "1 Gbps", lbl: "WiFi Speed" },
-                      { icon: "🕐", val: "24/7", lbl: "Access" },
-                      { icon: "🪑", val: "50+", lbl: "Seats" },
-                      { icon: "🏆", val: selectedWorkspace.rating || 4.8, lbl: "Rating" },
-                    ].map(s => (
-                      <div key={s.lbl} className={styles.statCard}>
-                        <span className={styles.statIcon}>{s.icon}</span>
-                        <span className={styles.statVal}>{s.val}</span>
-                        <span className={styles.statLbl}>{s.lbl}</span>
-                      </div>
-                    ))}
+                <div className={styles.mContent}>
+                  <div className={styles.statsRow}>
+                    <div className={styles.statBox}>
+                      <span className={styles.statEmoji}>⚡</span>
+                      <span className={styles.statVal}>1 Gbps</span>
+                      <span className={styles.statLbl}>WiFi</span>
+                    </div>
+                    <div className={styles.statBox}>
+                      <span className={styles.statEmoji}>🕐</span>
+                      <span className={styles.statVal}>24/7</span>
+                      <span className={styles.statLbl}>Access</span>
+                    </div>
+                    <div className={styles.statBox}>
+                      <span className={styles.statEmoji}>🪑</span>
+                      <span className={styles.statVal}>50+</span>
+                      <span className={styles.statLbl}>Seats</span>
+                    </div>
+                    <div className={styles.statBox}>
+                      <span className={styles.statEmoji}>🏆</span>
+                      <span className={styles.statVal}>{selectedWorkspace.rating || 4.8}</span>
+                      <span className={styles.statLbl}>Rating</span>
+                    </div>
                   </div>
 
-                  <div className={styles.section}>
-                    <h4 className={styles.sectionTitle}>About this space</h4>
-                    <p className={styles.sectionDesc}>
-                      A premium Hyderabad coworking experience designed for productivity and growth.
-                      Located in the heart of {selectedWorkspace.city}, this space offers ergonomic workstations,
-                      blazing-fast 1Gbps fiber internet, fully equipped meeting rooms, and a vibrant professional community.
-                      Perfect for startups, remote teams, and freelancers seeking an inspiring work environment.
+                  <div className={styles.mSection}>
+                    <h4 className={styles.mSectionTitle}>About this space</h4>
+                    <p className={styles.mSectionText}>
+                      A premium Hyderabad coworking space made for one-day productivity,
+                      startup work, remote work, meetings and a clean professional experience.
                     </p>
                   </div>
 
-                  <div className={styles.section}>
-                    <h4 className={styles.sectionTitle}>Location details</h4>
-                    <div className={styles.locationCard}>
-                      {[
-                        ["Address", selectedWorkspace.location],
-                        ["City", selectedWorkspace.city],
-                        ["Area", selectedWorkspace.area],
-                        ["Region", "Hyderabad, Telangana"],
-                      ].map(([lbl, val]) => (
-                        <div key={lbl} className={styles.locationRow}>
-                          <span className={styles.locationLbl}>{lbl}</span>
-                          <span className={styles.locationVal}>{val}</span>
-                        </div>
-                      ))}
+                  <div className={styles.mSection}>
+                    <h4 className={styles.mSectionTitle}>Location details</h4>
+                    <div className={styles.locGrid}>
+                      <div className={styles.locRow}>
+                        <span className={styles.locLbl}>Address</span>
+                        <span className={styles.locVal}>{selectedWorkspace.location}</span>
+                      </div>
+                      <div className={styles.locRow}>
+                        <span className={styles.locLbl}>City</span>
+                        <span className={styles.locVal}>{selectedWorkspace.city}</span>
+                      </div>
+                      <div className={styles.locRow}>
+                        <span className={styles.locLbl}>Area</span>
+                        <span className={styles.locVal}>{selectedWorkspace.area}</span>
+                      </div>
+                      <div className={styles.locRow}>
+                        <span className={styles.locLbl}>Region</span>
+                        <span className={styles.locVal}>Hyderabad, Telangana</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* ── AMENITIES ── */}
               {activeTab === "amenities" && (
-                <div className={styles.tabContent}>
-                  <div className={styles.amenitiesGrid}>
+                <div className={styles.mContent}>
+                  <div className={styles.amenGrid}>
                     {[
-                      { icon: "⚡", label: "1Gbps Fiber WiFi", desc: "Lightning-fast connectivity" },
-                      { icon: "🤝", label: "Meeting Rooms", desc: "Free for all members" },
-                      { icon: "🕐", label: "24/7 Access", desc: "Round the clock entry" },
-                      { icon: "🔋", label: "Power Backup", desc: "100% uptime guaranteed" },
-                      { icon: "☕", label: "Cafeteria", desc: "Tea, coffee & snacks" },
-                      { icon: "🖨️", label: "Printer & Scanner", desc: "High-speed machines" },
-                      { icon: "🅿️", label: "Free Parking", desc: "Dedicated 2W & 4W" },
-                      { icon: "❄️", label: "AC Workspace", desc: "Temperature controlled" },
-                      { icon: "🔐", label: "Secure Locker", desc: "Personal storage" },
-                      { icon: "📞", label: "Phone Booths", desc: "Private call pods" },
-                      { icon: "🎮", label: "Breakout Zone", desc: "Chill & recharge" },
-                      { icon: "🌐", label: "VPN Ready", desc: "Secure network access" },
-                    ].map((a) => (
-                      <div key={a.label} className={styles.amenityCard}>
-                        <span className={styles.amenityEmoji}>{a.icon}</span>
+                      ["⚡", "1Gbps Fiber WiFi", "Fast internet"],
+                      ["🤝", "Meeting Rooms", "Professional discussions"],
+                      ["🕐", "24/7 Access", "Flexible timing"],
+                      ["🔋", "Power Backup", "Continuous work"],
+                      ["☕", "Cafeteria", "Tea & coffee"],
+                      ["🅿️", "Parking", "2W & 4W slots"],
+                      ["🖨️", "Printer", "Fast printing"],
+                      ["❄️", "AC Workspace", "Cool comfort"],
+                    ].map(([emoji, name, desc]) => (
+                      <div className={styles.amenCard} key={name}>
+                        <span className={styles.amenEmoji}>{emoji}</span>
                         <div>
-                          <p className={styles.amenityLabel}>{a.label}</p>
-                          <p className={styles.amenityDesc}>{a.desc}</p>
+                          <p className={styles.amenName}>{name}</p>
+                          <p className={styles.amenDesc}>{desc}</p>
                         </div>
                       </div>
                     ))}
@@ -349,34 +360,31 @@ function HyderabadWorkspaces() {
                 </div>
               )}
 
-              {/* ── PRICING ── */}
               {activeTab === "pricing" && (
-                <div className={styles.tabContent}>
+                <div className={styles.mContent}>
                   <div className={styles.pricingHero}>
-                    <span className={styles.pricingBadge}>1-Day Plan</span>
-                    <div className={styles.pricingAmount}>
-                      <span className={styles.pricingCurrency}>₹</span>
+                    <span className={styles.pricingTag}>1 Day Plan</span>
+                    <div className={styles.pricingAmt}>
+                      <span className={styles.pricingCur}>₹</span>
                       <span className={styles.pricingNum}>{selectedWorkspace.price}</span>
-                      <span className={styles.pricingPer}>/day</span>
+                      <span className={styles.pricingUnit}>/day</span>
                     </div>
                     <p className={styles.pricingNote}>All taxes included · No hidden charges</p>
                   </div>
 
-                  <div className={styles.section}>
-                    <h4 className={styles.sectionTitle}>What's included</h4>
+                  <div className={styles.mSection}>
+                    <h4 className={styles.mSectionTitle}>What's included</h4>
                     <div className={styles.includeList}>
                       {[
-                        "Full-day hot desk access (9AM – 9PM)",
-                        "Unlimited high-speed WiFi",
-                        "1 meeting room slot (2 hrs)",
-                        "Unlimited tea & coffee",
-                        "Printing (up to 10 pages)",
-                        "Free secure parking",
-                        "Access to all common areas",
-                        "Power backup & AC throughout",
-                      ].map(item => (
-                        <div key={item} className={styles.includeRow}>
-                          <span className={styles.includeCheck}>✓</span>
+                        "Full-day hot desk access",
+                        "Unlimited WiFi",
+                        "Meeting room usage",
+                        "Tea & coffee",
+                        "Printing support",
+                        "Power backup & AC",
+                      ].map((item) => (
+                        <div className={styles.includeRow} key={item}>
+                          <span className={styles.check}>✓</span>
                           <span>{item}</span>
                         </div>
                       ))}
@@ -385,35 +393,38 @@ function HyderabadWorkspaces() {
                 </div>
               )}
 
-              {/* ── MAP ── */}
               {activeTab === "map" && (
-                <div className={styles.tabContent}>
+                <div className={styles.mContent}>
                   <div className={styles.mapCard}>
                     <div className={styles.mapPin}>📍</div>
                     <h4 className={styles.mapName}>{selectedWorkspace.name}</h4>
-                    <p className={styles.mapAddr}>{selectedWorkspace.location}, {selectedWorkspace.city}</p>
+                    <p className={styles.mapAddr}>
+                      {selectedWorkspace.location}, {selectedWorkspace.city}
+                    </p>
                     <a
-                      href={`https://maps.google.com/?q=${encodeURIComponent(selectedWorkspace.location + " " + selectedWorkspace.city + " Hyderabad")}`}
+                      href={`https://maps.google.com/?q=${encodeURIComponent(
+                        `${selectedWorkspace.location} ${selectedWorkspace.city} Hyderabad`
+                      )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={styles.mapLink}
+                      className={styles.mapBtn}
                     >
-                      Open in Google Maps →
+                      Open in Google Maps
                     </a>
                   </div>
 
-                  <div className={styles.section}>
-                    <h4 className={styles.sectionTitle}>Nearby landmarks</h4>
+                  <div className={styles.mSection}>
+                    <h4 className={styles.mSectionTitle}>Nearby landmarks</h4>
                     {[
-                      { icon: "🚇", label: "Metro Station", dist: "0.4 km" },
-                      { icon: "🍽️", label: "Restaurants", dist: "0.2 km" },
-                      { icon: "🏦", label: "ATM / Bank", dist: "0.1 km" },
-                      { icon: "🛒", label: "Supermarket", dist: "0.6 km" },
-                    ].map(n => (
-                      <div key={n.label} className={styles.nearbyRow}>
-                        <span className={styles.nearbyIcon}>{n.icon}</span>
-                        <span className={styles.nearbyLabel}>{n.label}</span>
-                        <span className={styles.nearbyDist}>{n.dist}</span>
+                      ["🚇", "Metro Station", "0.4 km"],
+                      ["🍽️", "Restaurants", "0.2 km"],
+                      ["🏦", "ATM / Bank", "0.1 km"],
+                      ["🛒", "Supermarket", "0.6 km"],
+                    ].map(([icon, name, dist]) => (
+                      <div className={styles.nearRow} key={name}>
+                        <span>{icon}</span>
+                        <span className={styles.nearName}>{name}</span>
+                        <span className={styles.nearDist}>{dist}</span>
                       </div>
                     ))}
                   </div>
@@ -421,20 +432,19 @@ function HyderabadWorkspaces() {
               )}
             </div>
 
-            {/* Footer CTA */}
-            <div className={styles.modalFooter}>
-              <div className={styles.footerPrice}>
-                <span className={styles.footerPriceNum}>₹{selectedWorkspace.price}</span>
-                <span className={styles.footerPricePer}>/day</span>
+            <div className={styles.mFooter}>
+              <div className={styles.mFooterPrice}>
+                <span className={styles.mFooterNum}>₹{selectedWorkspace.price}</span>
+                <span className={styles.mFooterUnit}>/day</span>
               </div>
+
               <button
-                className={styles.footerBtn}
-                onClick={() => { closeModal(); handleBookNow(selectedWorkspace); }}
+                className={styles.mFooterBtn}
+                onClick={() => {
+                  closeModal();
+                  handleBookNow(selectedWorkspace);
+                }}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                </svg>
                 Add to Cart
               </button>
             </div>
