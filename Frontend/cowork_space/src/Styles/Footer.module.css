@@ -1,20 +1,20 @@
-/* FOOTER BASE */
+/* FOOTER BASE - HEIGHT REDUCED */
 .footer {
-  background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
+  background: linear-gradient(135deg, #1b1b3d, #1a1a2e, #1b2748);
   color: #e2e8f0;
   font-family: 'Inter', sans-serif;
 }
 
-/* SINGLE ROW CONTAINER */
+/* SINGLE ROW CONTAINER - HEIGHT REDUCED FROM 40px TO 28px */
 .container {
   max-width: 1300px;
   margin: auto;
-  padding: 40px 24px;
+  padding: 28px 24px; /* REDUCED: 40px → 28px */
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 40px;
-  flex-wrap: nowrap; /* keeps single row */
+  gap: 32px; /* REDUCED: 40px → 32px */
+  flex-wrap: nowrap;
 }
 
 /* EACH SECTION */
@@ -22,31 +22,32 @@
 .linkSection,
 .contactSection {
   flex: 1;
-  min-width: 180px;
+  min-width: 160px; /* REDUCED: 180px → 160px */
 }
 
 .logoText {
-  color: #fbbf24;
+  color: #fbbf24 !important;
 }
 
 /* LOGO */
-.logo h3 {
-  font-size: 1.8rem;
+.logo h1 { /* CHANGED: h3 → h1 to match JSX */
+  font-size: 1.6rem; /* REDUCED: 1.8rem → 1.6rem */
   font-weight: 700;
-  -webkit-text-fill-color: transparent;
+  /* -webkit-text-fill-color: transparent; */
+  color: #fbbf24;
 }
 
 .logoSection p {
-  font-size: 14px;
+  font-size: 13px; /* REDUCED: 14px → 13px */
   color: #cbd5e1;
-  margin-top: 10px;
+  margin-top: 8px; /* REDUCED: 10px → 8px */
 }
 
 /* LINKS */
 .linkSection h4,
 .contactSection h4 {
-  font-size: 16px;
-  margin-bottom: 10px;
+  font-size: 15px; /* REDUCED: 16px → 15px */
+  margin-bottom: 8px; /* REDUCED: 10px → 8px */
 }
 
 .linkSection ul,
@@ -57,9 +58,9 @@
 
 .linkSection li a {
   display: block;
-  font-size: 14px;
+  font-size: 13px; /* REDUCED: 14px → 13px */
   color: #cbd5e1;
-  margin: 6px 0;
+  margin: 5px 0; /* REDUCED: 6px → 5px */
   transition: 0.3s;
   text-decoration: none;
 }
@@ -70,73 +71,51 @@
 
 /* CONTACT */
 .contactSection li {
-  font-size: 14px;
-  margin: 6px 0;
+  font-size: 13px; /* REDUCED: 14px → 13px */
+  margin: 5px 0; /* REDUCED: 6px → 5px */
 }
 
-/* BOOK TOUR BUTTON */
-.bookTourBtn {
+/* BOOK TOUR BUTTON - UPDATED STYLE */
+.ctaButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 18px;
-  padding: 12px 22px;
+  margin-top: 14px; /* REDUCED: 18px → 14px */
+  padding: 10px 20px; /* REDUCED: 12px 22px → 10px 20px */
   border-radius: 999px;
   border: 1px solid rgba(251, 191, 36, 0.35);
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
   color: #111827;
-  font-size: 14px;
+  font-size: 13px; /* REDUCED: 14px → 13px */
   font-weight: 700;
   text-decoration: none;
   letter-spacing: 0.02em;
-  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.28);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.28); /* REDUCED shadow */
   transition: all 0.3s ease;
+  cursor: pointer; /* ADDED for button */
+  width: 100%; /* MAKES IT FULL WIDTH IN CONTACT SECTION */
 }
 
-.bookTourBtn:hover {
+.ctaButton:hover {
   transform: translateY(-2px);
   background: linear-gradient(135deg, #fcd34d, #f59e0b);
-  box-shadow: 0 14px 30px rgba(245, 158, 11, 0.36);
+  box-shadow: 0 12px 24px rgba(245, 158, 11, 0.36); /* REDUCED shadow */
 }
 
-.bookTourBtn:active {
+.ctaButton:active {
   transform: translateY(0);
-}
-
-.bookTourBtnOutline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 18px;
-  padding: 12px 22px;
-  border-radius: 999px;
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  background: rgba(251, 191, 36, 0.08);
-  color: #fbbf24;
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-  letter-spacing: 0.02em;
-  transition: all 0.3s ease;
-}
-
-.bookTourBtnOutline:hover {
-  background: #fbbf24;
-  color: #111827;
-  transform: translateY(-2px);
-  box-shadow: 0 12px 26px rgba(251, 191, 36, 0.24);
 }
 
 /* SOCIAL */
 .socialIcons {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px; /* REDUCED: 10px → 8px */
+  margin-top: 8px; /* REDUCED: 10px → 8px */
 }
 
 .icon {
-  width: 40px;
-  height: 40px;
+  width: 36px; /* REDUCED: 40px → 36px */
+  height: 36px; /* REDUCED: 40px → 36px */
   border-radius: 50%;
   background: rgba(255, 255, 255, 0);
   display: flex;
@@ -149,10 +128,10 @@
   background: #fbbf24;
 }
 
-/* BOTTOM BAR */
+/* BOTTOM BAR - HEIGHT REDUCED */
 .bottomBar {
   border-top: 1px solid rgba(255,255,255,0.1);
-  padding: 15px 0;
+  padding: 12px 0; /* REDUCED: 15px → 12px */
 }
 
 .bottomContainer {
@@ -167,36 +146,34 @@
 .privacyLink {
   text-decoration: none;
   color: inherit;
+  font-size: 12px; /* ADDED smaller text */
 }
 
-/* =====================================
-   RESPONSIVE (KEEP SINGLE ROW AS MUCH AS POSSIBLE)
-===================================== */
-
-/* Tablet */
+/* RESPONSIVE */
 @media (max-width: 1024px) {
   .container {
-    gap: 20px;
+    gap: 16px; /* REDUCED */
+    padding: 24px 20px; /* REDUCED */
   }
-
+  
   .logoSection,
   .linkSection,
   .contactSection {
-    min-width: 140px;
+    min-width: 130px; /* REDUCED */
   }
-
-  .bookTourBtn,
-  .bookTourBtnOutline {
-    padding: 11px 18px;
-    font-size: 13px;
+  
+  .ctaButton {
+    padding: 9px 16px; /* REDUCED */
+    font-size: 12px; /* REDUCED */
   }
 }
 
-/* Small Mobile → Only here allow wrap */
 @media (max-width: 768px) {
   .container {
-    flex-wrap: wrap; /* fallback for small screens */
+    flex-wrap: wrap;
     text-align: center;
+    padding: 20px 16px; /* REDUCED */
+    gap: 20px;
   }
 
   .logoSection,
@@ -211,12 +188,12 @@
 
   .bottomContainer {
     flex-direction: column;
-    gap: 10px;
+    gap: 8px; /* REDUCED */
   }
 
-  .bookTourBtn,
-  .bookTourBtnOutline {
+  .ctaButton {
     margin-left: auto;
     margin-right: auto;
+    max-width: 200px; /* ADDED */
   }
 }

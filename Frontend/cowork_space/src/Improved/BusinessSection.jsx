@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./BusinessSection.css";
 import Reveal from "../Pages/Reveal";
 
@@ -16,7 +16,7 @@ const offers = [
     amenities: ["1Gbps WiFi", "Meeting Room", "24/7 Access", "Parking"],
     claimedBy: "Rahul S.",
     claimedAgo: "2 hrs ago",
-    status: "available", // available | claimed
+    status: "available",
   },
   {
     id: 2,
@@ -63,86 +63,143 @@ const offers = [
     claimedAgo: null,
     status: "available",
   },
-  // {
-  //   id: 5,
-  //   area: "Kukatpally",
-  //   building: "Fortune Towers",
-  //   type: "Virtual Office",
-  //   originalPrice: 3500,
-  //   icon: "🌐",
-  //   image: "/cowork.jpg",
-  //   seats: 1,
-  //   floor: "Remote",
-  //   amenities: ["Business Address", "Mail Handle", "Meeting Credits", "GST Ready"],
-  //   claimedBy: "Anil M.",
-  //   claimedAgo: "1 day ago",
-  //   status: "claimed",
-  // },
-  // {
-  //   id: 6,
-  //   area: "Uppal",
-  //   building: "The Work Loft",
-  //   type: "Private Cabin",
-  //   originalPrice: 14000,
-  //   icon: "🏠",
-  //   image: "/cowork.jpg",
-  //   seats: 4,
-  //   floor: "6th Floor",
-  //   amenities: ["High-Speed Net", "Pantry", "Security", "Parking"],
-  //   claimedBy: null,
-  //   claimedAgo: null,
-  //   status: "available",
-  // },
 ];
 
-// Countdown timer hook
 function useCountdown(hours = 11, mins = 47, secs = 33) {
   const [time, setTime] = useState({ h: hours, m: mins, s: secs });
+
   useEffect(() => {
     const t = setInterval(() => {
-      setTime(prev => {
+      setTime((prev) => {
         let { h, m, s } = prev;
+
         if (s > 0) return { h, m, s: s - 1 };
         if (m > 0) return { h, m: m - 1, s: 59 };
         if (h > 0) return { h: h - 1, m: 59, s: 59 };
+
         return { h: 0, m: 0, s: 0 };
       });
     }, 1000);
+
     return () => clearInterval(t);
   }, []);
+
   return time;
+}
+
+function useSectionAudio(audioSrc) {
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hasPlayed, setHasPlayed] = useState(false);
+
+  const playAudio = useCallback(() => {
+    if (!audioRef.current || hasPlayed || isPlaying) return;
+
+    const audio = audioRef.current;
+    audio.volume = 0.35;
+    audio.currentTime = 0;
+
+    audio
+      .play()
+      .then(() => {
+        setIsPlaying(true);
+        setHasPlayed(true);
+      })
+      .catch(() => {
+        // Browser may block autoplay until user interaction
+      });
+  }, [hasPlayed, isPlaying]);
+
+  const stopAudio = useCallback(() => {
+    if (!audioRef.current) return;
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    setIsPlaying(false);
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+    };
+
+    audio.addEventListener("ended", handleEnded);
+    return () => {
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+
+  return { audioRef, playAudio, stopAudio, hasPlayed, isPlaying };
 }
 
 const LimitedOfferSection = ({ openModal }) => {
   const time = useCountdown(11, 47, 33);
-  const [claimedIds, setClaimedIds] = useState(
-    offers.filter(o => o.status === "claimed").map(o => o.id)
+  const sectionRef = useRef(null);
+
+  const [claimedIds] = useState(
+    offers.filter((o) => o.status === "claimed").map((o) => o.id)
   );
 
-  const availableCount = offers.filter(o => !claimedIds.includes(o.id)).length;
+  const audioSrc = "/offers-alert.mp3";
+  const { audioRef, playAudio, hasPlayed } = useSectionAudio(audioSrc);
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasPlayed) {
+          setTimeout(() => {
+            playAudio();
+          }, 250);
+        }
+      },
+      {
+        threshold: 0.3,
+      }
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [playAudio, hasPlayed]);
+
+  const availableCount = offers.filter((o) => !claimedIds.includes(o.id)).length;
 
   const handleClaim = (id) => {
     if (openModal) {
       openModal("offer_" + id);
     } else {
-      // fallback — just mark visually
-      alert("Lead submitted! Our team will contact you within 12 hrs. You are in the queue. 🎉");
+      alert(
+        "Lead submitted! Our team will contact you within 12 hrs. You are in the queue. 🎉"
+      );
     }
   };
 
   const pad = (n) => String(n).padStart(2, "0");
 
   return (
-    <section className="offer-section">
+    <section className="offer-section" ref={sectionRef}>
+      <audio ref={audioRef} src={audioSrc} preload="auto" style={{ display: "none" }} />
 
-      {/* ── Background particles ── */}
       <div className="offer-particles">
         {[...Array(18)].map((_, i) => (
           <span key={i} className="particle" style={{ "--i": i }}></span>
         ))}
       </div>
 
-      {/* ══════════ SECTION HEADER ══════════ */}
       <div className="offer-header">
         <Reveal>
           <div className="offer-eyebrow">
@@ -164,17 +221,14 @@ const LimitedOfferSection = ({ openModal }) => {
 
         <Reveal>
           <p className="offer-subtitle">
-            Each building has exactly <strong>1 exclusive offer slot</strong>. The first person to submit
-            their lead gets 50% off for their first month — no negotiations, no exceptions.
-            Miss it and it's gone.
+            Each building has exactly <strong>1 exclusive offer slot</strong>. The first person
+            to submit their lead gets 50% off for their first month — no negotiations, no
+            exceptions. Miss it and it's gone.
           </p>
         </Reveal>
 
-        {/* ── Countdown + Availability bar ── */}
         <Reveal>
           <div className="offer-meta-row">
-
-            {/* Countdown */}
             <div className="countdown-box">
               <span className="countdown-label">Offer Resets In</span>
               <div className="countdown-digits">
@@ -195,41 +249,45 @@ const LimitedOfferSection = ({ openModal }) => {
               </div>
             </div>
 
-            {/* Availability */}
             <div className="availability-box">
               <div className="avail-top">
                 <span className="avail-label">Slots Available</span>
-                <span className="avail-count">{availableCount} / {offers.length}</span>
+                <span className="avail-count">
+                  {availableCount} / {offers.length}
+                </span>
               </div>
+
               <div className="avail-bar">
-                {offers.map(o => (
+                {offers.map((o) => (
                   <div
                     key={o.id}
-                    className={`avail-seg ${claimedIds.includes(o.id) ? "seg-claimed" : "seg-free"}`}
+                    className={`avail-seg ${
+                      claimedIds.includes(o.id) ? "seg-claimed" : "seg-free"
+                    }`}
                     title={o.area}
                   ></div>
                 ))}
               </div>
+
               <p className="avail-hint">
                 <span className="avail-dot free"></span> Available &nbsp;
                 <span className="avail-dot claimed"></span> Claimed
               </p>
             </div>
 
-            {/* FIFO rule */}
             <div className="fifo-box">
               <div className="fifo-icon">⚡</div>
               <div>
                 <p className="fifo-title">How It Works</p>
-                <p className="fifo-rule">Submit lead → Get verified → First in line gets 50% off Month 1</p>
+                <p className="fifo-rule">
+                  Submit lead → Get verified → First in line gets 50% off Month 1
+                </p>
               </div>
             </div>
-
           </div>
         </Reveal>
       </div>
 
-      {/* ══════════ OFFER CARDS GRID ══════════ */}
       <div className="offer-grid">
         {offers.map((offer, index) => {
           const isClaimed = claimedIds.includes(offer.id);
@@ -238,71 +296,103 @@ const LimitedOfferSection = ({ openModal }) => {
           return (
             <div
               key={offer.id}
-              className={`offer-card ${isClaimed ? "offer-card--claimed" : "offer-card--available"}`}
+              className={`offer-card ${
+                isClaimed ? "offer-card--claimed" : "offer-card--available"
+              }`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              {/* Card ribbon */}
-              {!isClaimed && (
-                <div className="card-ribbon">50% OFF</div>
-              )}
+              {!isClaimed && <div className="card-ribbon">50% OFF</div>}
               {isClaimed && (
                 <div className="card-ribbon card-ribbon--claimed">CLAIMED</div>
               )}
 
-              {/* Card top image strip */}
               <div className="offer-card-img">
                 <img src={offer.image} alt={offer.building} />
                 <div className="offer-card-img-overlay"></div>
+
                 <div className="offer-card-area-tag">
                   <span>{offer.icon}</span>
                   {offer.area}
                 </div>
+
                 {isClaimed && (
                   <div className="claimed-shield">
                     <span>🔒</span>
                     <p>Claimed</p>
                     {offer.claimedBy && (
-                      <small>by {offer.claimedBy} · {offer.claimedAgo}</small>
+                      <small>
+                        by {offer.claimedBy} · {offer.claimedAgo}
+                      </small>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Card body */}
               <div className="offer-card-body">
                 <p className="offer-card-type">{offer.type}</p>
                 <h3 className="offer-card-title">{offer.building}</h3>
 
                 <div className="offer-card-meta">
                   <span>
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    <svg
+                      width="11"
+                      height="11"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    </svg>
                     {offer.floor}
                   </span>
+
                   <span>
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <svg
+                      width="11"
+                      height="11"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
                     {offer.seats} {offer.seats === 1 ? "Seat" : "Seats"}
                   </span>
                 </div>
 
-                {/* Amenity pills */}
                 <div className="offer-amenities">
-                  {offer.amenities.map(a => (
+                  {offer.amenities.map((a) => (
                     <span key={a}>{a}</span>
                   ))}
                 </div>
 
-                {/* Price */}
                 <div className="offer-price-row">
                   <div className="offer-price">
-                    <span className="price-original">₹{offer.originalPrice.toLocaleString()}</span>
+                    <span className="price-original">
+                      ₹{offer.originalPrice.toLocaleString()}
+                    </span>
                     <span className="price-slash">/mo</span>
                   </div>
+
                   {!isClaimed && (
                     <div className="price-now">
                       <span className="price-tag">You Pay</span>
-                      <span className="price-discounted">₹{discountPrice.toLocaleString()}<small>/mo</small></span>
+                      <span className="price-discounted">
+                        ₹{discountPrice.toLocaleString()}
+                        <small>/mo</small>
+                      </span>
                     </div>
                   )}
+
                   {isClaimed && (
                     <div className="price-taken">
                       <span>Offer Taken</span>
@@ -310,7 +400,6 @@ const LimitedOfferSection = ({ openModal }) => {
                   )}
                 </div>
 
-                {/* Urgency indicator */}
                 {!isClaimed && (
                   <div className="offer-urgency">
                     <span className="urgency-pulse"></span>
@@ -318,12 +407,8 @@ const LimitedOfferSection = ({ openModal }) => {
                   </div>
                 )}
 
-                {/* CTA */}
                 {!isClaimed ? (
-                  <button
-                    className="offer-claim-btn"
-                    onClick={() => handleClaim(offer.id)}
-                  >
+                  <button className="offer-claim-btn" onClick={() => handleClaim(offer.id)}>
                     <span>Claim 50% Off Now</span>
                     <span className="claim-arrow">→</span>
                   </button>
@@ -338,7 +423,6 @@ const LimitedOfferSection = ({ openModal }) => {
         })}
       </div>
 
-      {/* ══════════ BOTTOM BANNER ══════════ */}
       <Reveal>
         <div className="offer-bottom-banner">
           <div className="bottom-banner-left">
@@ -346,11 +430,12 @@ const LimitedOfferSection = ({ openModal }) => {
             <div>
               <p className="bottom-banner-title">How FIFO Works</p>
               <p className="bottom-banner-desc">
-                Leads are time-stamped the moment you submit. First verified lead per building wins the 50% discount for Month 1.
-                No exceptions. No extensions.
+                Leads are time-stamped the moment you submit. First verified lead per building
+                wins the 50% discount for Month 1. No exceptions. No extensions.
               </p>
             </div>
           </div>
+
           <div className="bottom-banner-steps">
             {[
               { step: "01", label: "Submit Lead" },
@@ -368,7 +453,6 @@ const LimitedOfferSection = ({ openModal }) => {
           </div>
         </div>
       </Reveal>
-
     </section>
   );
 };

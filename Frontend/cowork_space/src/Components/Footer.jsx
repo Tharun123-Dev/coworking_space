@@ -2,8 +2,10 @@ import styles from "../Styles/Footer.module.css";
 import Reveal from "../Pages/Reveal";
 import { FaFacebookF, FaInstagram, FaWhatsapp, FaLinkedinIn } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+
 function Footer() {
   const navigate = useNavigate();
+  
   return (
     <footer className={styles.footer}>
       <Reveal>
@@ -34,49 +36,50 @@ function Footer() {
                 Secure, modern, and designed for productivity.
               </p>
             </Reveal>
-{/* Social icons */}
-<div className={styles.socialIcons}>
-  <a
-    href="https://www.facebook.com/"
-    target="_blank"
-    rel="noopener noreferrer"
-    className={`${styles.icon} ${styles.iconHover}`}
-    title="Facebook"
-  >
-    <FaFacebookF className={styles.iconInner} />
-  </a>
+            
+            {/* Social icons */}
+            <div className={styles.socialIcons}>
+              <a
+                href="https://www.facebook.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${styles.icon} ${styles.iconHover}`}
+                title="Facebook"
+              >
+                <FaFacebookF className={styles.iconInner} />
+              </a>
 
-  <a
-    href="https://www.instagram.com/tharun_naniiii/"
-    target="_blank"
-    rel="noopener noreferrer"
-    className={`${styles.icon} ${styles.iconHover}`}
-    title="Instagram"
-  >
-    <FaInstagram className={styles.iconInner} />
-  </a>
+              <a
+                href="https://www.instagram.com/tharun_naniiii/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${styles.icon} ${styles.iconHover}`}
+                title="Instagram"
+              >
+                <FaInstagram className={styles.iconInner} />
+              </a>
 
-  <a
-    href="https://wa.me/916309383826"
-    target="_blank"
-    rel="noopener noreferrer"
-    className={`${styles.icon} ${styles.iconHover}`}
-    title="WhatsApp"
-  >
-    <FaWhatsapp className={styles.iconInner} />
-  </a>
+              <a
+                href="https://wa.me/916309383826"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${styles.icon} ${styles.iconHover}`}
+                title="WhatsApp"
+              >
+                <FaWhatsapp className={styles.iconInner} />
+              </a>
 
-  <a
-    href="https://www.linkedin.com/in/tharun9949/"
-    target="_blank"
-    rel="noopener noreferrer"
-    className={`${styles.icon} ${styles.iconHover}`}
-    title="LinkedIn"
-  >
-    <FaLinkedinIn className={styles.iconInner} />
-  </a>
-</div>
-</div>
+              <a
+                href="https://www.linkedin.com/in/tharun9949/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${styles.icon} ${styles.iconHover}`}
+                title="LinkedIn"
+              >
+                <FaLinkedinIn className={styles.iconInner} />
+              </a>
+            </div>
+          </div>
 
           {/* Our Cities */}
           <div className={styles.linkSection}>
@@ -85,24 +88,12 @@ function Footer() {
             </Reveal>
             <ul className={styles.linkList}>
               <Reveal>
-                <li>
-                  <a href="#" className={styles.link}>Hyderabad</a>
-                </li>
-                <li>
-                  <a href="#" className={styles.link}>Bangalore</a>
-                </li>
-                <li>
-                  <a href="#" className={styles.link}>Mumbai</a>
-                </li>
-                <li>
-                  <a href="#" className={styles.link}>Delhi NCR</a>
-                </li>
-                <li>
-                  <a href="#" className={styles.link}>Chennai</a>
-                </li>
-                <li>
-                  <a href="#" className={styles.link}>Pune</a>
-                </li>
+                <li><a href="#" className={styles.link}>Hyderabad</a></li>
+                <li><a href="#" className={styles.link}>Bangalore</a></li>
+                <li><a href="#" className={styles.link}>Mumbai</a></li>
+                <li><a href="#" className={styles.link}>Delhi NCR</a></li>
+                <li><a href="#" className={styles.link}>Chennai</a></li>
+                <li><a href="#" className={styles.link}>Pune</a></li>
               </Reveal>
             </ul>
           </div>
@@ -114,21 +105,11 @@ function Footer() {
             </Reveal>
             <ul className={styles.linkList}>
               <Reveal>
-                <li>
-                  <a href="#" className={styles.link}>Hot Desk</a>
-                </li>
-                <li>
-                  <a href="#" className={styles.link}>Dedicated Desk</a>
-                </li>
-                <li>
-                  <a href="#" className={styles.link}>Private Office</a>
-                </li>
-                <li>
-                  <a href="#" className={styles.link}>Meeting Rooms</a>
-                </li>
-                <li>
-                  <a href="#" className={styles.link}>Virtual Office</a>
-                </li>
+                <li><a href="#" className={styles.link}>Hot Desk</a></li>
+                <li><a href="#" className={styles.link}>Dedicated Desk</a></li>
+                <li><a href="#" className={styles.link}>Private Office</a></li>
+                <li><a href="#" className={styles.link}>Meeting Rooms</a></li>
+                <li><a href="#" className={styles.link}>Virtual Office</a></li>
               </Reveal>
             </ul>
           </div>
@@ -139,21 +120,11 @@ function Footer() {
               <h4 className={styles.secTitle}>Company</h4>
             </Reveal>
             <ul className={styles.linkList}>
-              <li>
-                <a href="#" className={styles.link}>About Us</a>
-              </li>
-              <li>
-                <a href="#" className={styles.link}>Careers</a>
-              </li>
-              <li>
-                <a href="#" className={styles.link}>Blog</a>
-              </li>
-              <li>
-                <a href="#" className={styles.link}>Press</a>
-              </li>
-              <li>
-                <a href="#" className={styles.link}>Partners</a>
-              </li>
+              <li><a href="#" className={styles.link}>About Us</a></li>
+              <li><a href="#" className={styles.link}>Careers</a></li>
+              <li><a href="#" className={styles.link}>Blog</a></li>
+              <li><a href="#" className={styles.link}>Press</a></li>
+              <li><a href="#" className={styles.link}>Partners</a></li>
             </ul>
           </div>
 
@@ -171,21 +142,21 @@ function Footer() {
                   <span className={styles.contactIcon}>📞</span> +91 98765 43210
                 </li>
                 <li>
-                  <span className={styles.contactIcon}>✉️</span> hello@cowork.co
+                  <span className={styles.contactIcon}>✉️</span> <a href="mailto:hello@cowork.co">hello@cowork.co</a>
                 </li>
                 <li>
-                  <span className={styles.contactIcon}>🕒</span> Mon–Sat 9 AM–10 PM
+                  <span className={styles.contactIcon}>🕒</span> Mon–Sat 9 AM–10 PM
                 </li>
               </Reveal>
             </ul>
 
             <Reveal>
               <button 
-  className={styles.ctaButton}
-  onClick={() => navigate("/")}
->
-  Book a Tour
-</button>
+                className={styles.ctaButton}
+                onClick={() => navigate("/")}
+              >
+                Book a Tour
+              </button>
             </Reveal>
           </div>
         </div>
@@ -195,7 +166,7 @@ function Footer() {
           <div className={styles.bottomContainer}>
             <Reveal>
               <p className={styles.copyright}>
-                &copy; 2026 WorkHub Co‑working Spaces Pvt Ltd. All rights reserved. GST: 36ABCDE1234F1Z5
+                © 2026 WorkHub Co‑working Spaces Pvt Ltd. All rights reserved. GST: 36ABCDE1234F1Z5
               </p>
             </Reveal>
 

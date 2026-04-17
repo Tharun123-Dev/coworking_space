@@ -77,9 +77,9 @@ export default function WorkspaceGallery() {
   const [lightbox, setLightbox] = useState(null);
   const [imgErrors, setImgErrors] = useState({});
 
-  // Scroll to section + navigate to companies section
+  // Companies button → home page + companies section
   const scrollToCompanies = () => {
-    navigate("/"); // Go to home page
+    navigate("/");
     setTimeout(() => {
       const companiesSection = document.getElementById("workspace-clients-section");
       if (companiesSection) {
@@ -88,9 +88,12 @@ export default function WorkspaceGallery() {
     }, 500);
   };
 
-  // Navigate to specific workspace tabs
-  const navigateToWorkspace = (path) => {
-    navigate(path);
+  // Second button → direct home page
+  const goToHomePage = () => {
+    navigate("/");
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 200);
   };
 
   // Scroll to the section matching the route param
@@ -110,7 +113,9 @@ export default function WorkspaceGallery() {
       const el = sectionRefs.current[key];
       if (!el) return;
       const obs = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActiveSection(key); },
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveSection(key);
+        },
         { threshold: 0.3 }
       );
       obs.observe(el);
@@ -119,7 +124,8 @@ export default function WorkspaceGallery() {
     return () => observers.forEach((o) => o.disconnect());
   }, []);
 
-  const handleImgError = (key) => setImgErrors((prev) => ({ ...prev, [key]: true }));
+  const handleImgError = (key) =>
+    setImgErrors((prev) => ({ ...prev, [key]: true }));
 
   const scrollTo = (key) => {
     setActiveSection(key);
@@ -130,7 +136,6 @@ export default function WorkspaceGallery() {
 
   return (
     <>
-      {/* ── Global Styles ── */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -144,7 +149,6 @@ export default function WorkspaceGallery() {
           overflow-x: hidden;
         }
 
-        /* ── Sticky nav pills ── */
         .wg-pills {
           position: sticky;
           top: 0;
@@ -182,7 +186,6 @@ export default function WorkspaceGallery() {
         }
         .wg-pill:hover { color: rgba(232,228,220,0.8); }
 
-        /* ── Arrow Navigation Button ── */
         .wg-nav-arrow {
           background: rgba(255,255,255,0.1);
           border: 1px solid rgba(255,255,255,0.15);
@@ -204,13 +207,11 @@ export default function WorkspaceGallery() {
           box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
 
-        /* ── Section wrapper ── */
         .wg-section {
           padding: clamp(4rem,8vw,8rem) clamp(1rem,5vw,5rem);
           border-bottom: 1px solid rgba(255,255,255,0.04);
         }
 
-        /* ── Section header with arrow ── */
         .wg-section-header {
           display: grid;
           grid-template-columns: 1fr auto;
@@ -249,7 +250,6 @@ export default function WorkspaceGallery() {
           margin-top: 1.25rem;
         }
 
-        /* ── Stats row ── */
         .wg-stats {
           display: flex;
           gap: 2.5rem;
@@ -271,7 +271,6 @@ export default function WorkspaceGallery() {
           margin-top: 0.3rem;
         }
 
-        /* ── Hero + side strip layout ── */
         .wg-hero-row {
           display: grid;
           grid-template-columns: 1fr 300px;
@@ -295,9 +294,9 @@ export default function WorkspaceGallery() {
         .wg-side-img {
           height: calc(50% - 6px);
         }
-        .wg-hero-img:hover, .wg-side-img:hover, .wg-mosaic-img:hover { 
-          transform: scale(1.008); 
-          filter: brightness(1); 
+        .wg-hero-img:hover, .wg-side-img:hover, .wg-mosaic-img:hover {
+          transform: scale(1.008);
+          filter: brightness(1);
         }
 
         .wg-side-strip {
@@ -306,20 +305,18 @@ export default function WorkspaceGallery() {
           gap: 12px;
         }
 
-        /* ── Simplified mosaic grid ── */
         .wg-mosaic {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 12px;
         }
-        @media (max-width: 700px) { 
-          .wg-mosaic { grid-template-columns: 1fr; } 
+        @media (max-width: 700px) {
+          .wg-mosaic { grid-template-columns: 1fr; }
         }
         .wg-mosaic-img {
           aspect-ratio: 4/3;
         }
 
-        /* ── Feature badges ── */
         .wg-badges {
           display: flex;
           flex-wrap: wrap;
@@ -337,7 +334,6 @@ export default function WorkspaceGallery() {
           background: rgba(255,255,255,0.03);
         }
 
-        /* ── Lightbox ── */
         .wg-lightbox {
           position: fixed;
           inset: 0;
@@ -367,7 +363,6 @@ export default function WorkspaceGallery() {
         }
         .wg-lightbox-close:hover { color: #fff; }
 
-        /* ── Fallback & Reveal classes ── */
         .wg-img-fallback {
           width: 100%;
           background: rgba(255,255,255,0.04);
@@ -391,7 +386,6 @@ export default function WorkspaceGallery() {
       `}</style>
 
       <div className="wg-root">
-        {/* ── Sticky pill nav ── */}
         <nav className="wg-pills">
           {ALL_SECTIONS.map((key) => {
             const d = CATEGORY_DATA[key];
@@ -408,12 +402,10 @@ export default function WorkspaceGallery() {
           })}
         </nav>
 
-        {/* ── Render each section ── */}
         {ALL_SECTIONS.map((key) => {
           const d = CATEGORY_DATA[key];
           const stats = STATS[key];
           const features = FEATURES[key];
-          const allImages = [d.hero, ...d.grid, ...d.userImages];
 
           return (
             <section
@@ -422,7 +414,6 @@ export default function WorkspaceGallery() {
               className="wg-section"
               style={{ "--sec-accent": d.accent }}
             >
-              {/* Header with ARROW BUTTON */}
               <RevealDiv className="wg-section-header">
                 <div>
                   <p className="wg-eyebrow">WorkNest · {d.label}</p>
@@ -433,55 +424,56 @@ export default function WorkspaceGallery() {
                   </h2>
                   <p className="wg-section-desc">{d.description}</p>
                 </div>
-                
-                {/* 🟢 ARROW NAVIGATION BUTTONS */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <button 
-                    className="wg-nav-arrow" 
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  <button
+                    className="wg-nav-arrow"
                     onClick={scrollToCompanies}
-                    style={{ background: 'linear-gradient(135deg, var(--sec-accent), transparent)' }}
+                    style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
                   >
                     ← Companies
                   </button>
-                  
-                  {/* Specific workspace navigation */}
-                  {key === 'office' && (
-                    <button 
-                      className="wg-nav-arrow" 
-                      onClick={() => navigateToWorkspace("/workspaces/office")}
-                      style={{ background: 'linear-gradient(135deg, var(--sec-accent), transparent)' }}
+
+                  {key === "office" && (
+                    <button
+                      className="wg-nav-arrow"
+                      onClick={goToHomePage}
+                      style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
                     >
                       Book Office →
                     </button>
                   )}
-                  {key === 'coworking' && (
-                    <button 
-                      className="wg-nav-arrow" 
-                      onClick={() => navigateToWorkspace("/workspaces/coworking")}
-                      style={{ background: 'linear-gradient(135deg, var(--sec-accent), transparent)' }}
+
+                  {key === "coworking" && (
+                    <button
+                      className="wg-nav-arrow"
+                      onClick={goToHomePage}
+                      style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
                     >
                       Book Coworking →
                     </button>
                   )}
-                  {key === 'meeting' && (
-                    <button 
-                      className="wg-nav-arrow" 
-                      onClick={() => navigateToWorkspace("/workspaces/meeting")}
-                      style={{ background: 'linear-gradient(135deg, var(--sec-accent), transparent)' }}
+
+                  {key === "meeting" && (
+                    <button
+                      className="wg-nav-arrow"
+                      onClick={goToHomePage}
+                      style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
                     >
                       Book Meeting →
                     </button>
                   )}
-                  {key === 'enterprise' && (
-                    <button 
-                      className="wg-nav-arrow" 
-                      onClick={() => navigateToWorkspace("/Enterprise")}
-                      style={{ background: 'linear-gradient(135deg, var(--sec-accent), transparent)' }}
+
+                  {key === "enterprise" && (
+                    <button
+                      className="wg-nav-arrow"
+                      onClick={goToHomePage}
+                      style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
                     >
                       Enterprise →
                     </button>
                   )}
-                  
+
                   <div className="wg-stats">
                     {stats.map((s) => (
                       <div key={s.l}>
@@ -493,7 +485,6 @@ export default function WorkspaceGallery() {
                 </div>
               </RevealDiv>
 
-              {/* Hero row */}
               <RevealDiv delay={0.1}>
                 <div className="wg-hero-row">
                   <ImgTile
@@ -520,9 +511,8 @@ export default function WorkspaceGallery() {
                 </div>
               </RevealDiv>
 
-              {/* Simplified mosaic */}
               <RevealDiv delay={0.15} className="wg-mosaic">
-                {[...d.grid.slice(2), ...d.userImages].map((src, i) => (
+                {d.userImages.map((src, i) => (
                   <ImgTile
                     key={i}
                     src={src}
@@ -535,7 +525,6 @@ export default function WorkspaceGallery() {
                 ))}
               </RevealDiv>
 
-              {/* Feature badges */}
               <RevealDiv delay={0.2} className="wg-badges">
                 {features.map((f) => (
                   <span key={f} className="wg-badge">{f}</span>
@@ -545,20 +534,20 @@ export default function WorkspaceGallery() {
           );
         })}
 
-        {/* Footer */}
-        <footer className="wg-footer" style={{ padding: '3rem clamp(1rem,5vw,5rem)' }}>
-          <p style={{ 
-            fontFamily: "'Cormorant Garamond', serif", 
-            fontSize: 'clamp(2rem, 4vw, 3rem)', 
-            color: 'rgba(232,228,220,0.4)',
-            textAlign: 'center'
-          }}>
-            Every great day starts with the <span style={{ color: '#C8A96E' }}>right space</span>.
+        <footer className="wg-footer" style={{ padding: "3rem clamp(1rem,5vw,5rem)" }}>
+          <p
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "clamp(2rem, 4vw, 3rem)",
+              color: "rgba(232,228,220,0.4)",
+              textAlign: "center",
+            }}
+          >
+            Every great day starts with the <span style={{ color: "#C8A96E" }}>right space</span>.
           </p>
         </footer>
       </div>
 
-      {/* Lightbox */}
       {lightbox && (
         <div className="wg-lightbox" onClick={() => setLightbox(null)}>
           <button className="wg-lightbox-close" onClick={() => setLightbox(null)}>×</button>
@@ -569,14 +558,9 @@ export default function WorkspaceGallery() {
   );
 }
 
-// ── Helper Components (unchanged) ────────────────────────────────────
 function ImgTile({ src, alt, className, onClick, onError, errored }) {
   if (errored) {
-    return (
-      <div className={`wg-img-fallback ${className}`}>
-        {alt}
-      </div>
-    );
+    return <div className={`wg-img-fallback ${className}`}>{alt}</div>;
   }
   return (
     <img
@@ -598,7 +582,12 @@ function RevealDiv({ children, className, delay = 0, style }) {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
       { threshold: 0.08 }
     );
     obs.observe(el);
