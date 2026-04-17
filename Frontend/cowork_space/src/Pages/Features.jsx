@@ -13,44 +13,67 @@ const images = [
 ];
 
 const features = [
-  { icon: <FaWifi className="feature-icon" />, title: "High Speed WiFi" },
-  { icon: <FaCoffee className="feature-icon" />, title: "Coffee & Tea" },
-  { icon: <FaBroom className="feature-icon" />, title: "Daily Cleaning" },
-  { icon: <MdOutlineSupportAgent className="feature-icon" />, title: "IT Support" },
-  { icon: <MdPrint className="feature-icon" />, title: "Print & Scan" },
-  { icon: <BsBoxSeam className="feature-icon" />, title: "Office Supplies" },
-  { icon: <FaCar className="feature-icon" />, title: "Parking" },
-  { icon: <GiNetworkBars className="feature-icon" />, title: "Pan-India Access" }
+  { icon: <FaWifi className="feature-icon" />, title: "High Speed WiFi", desc: "Blazing connectivity" },
+  { icon: <FaCoffee className="feature-icon" />, title: "Coffee & Tea", desc: "Curated blends daily" },
+  { icon: <FaBroom className="feature-icon" />, title: "Daily Cleaning", desc: "Spotless every morning" },
+  { icon: <MdOutlineSupportAgent className="feature-icon" />, title: "IT Support", desc: "Expert help on-site" },
+  { icon: <MdPrint className="feature-icon" />, title: "Print & Scan", desc: "Full-service hub" },
+  { icon: <BsBoxSeam className="feature-icon" />, title: "Office Supplies", desc: "Always stocked up" },
+  { icon: <FaCar className="feature-icon" />, title: "Parking", desc: "Reserved spots available" },
+  { icon: <GiNetworkBars className="feature-icon" />, title: "Pan-India Access", desc: "100+ locations" }
 ];
 
 function Feature() {
   const [current, setCurrent] = useState(0);
+  const [fading, setFading] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % images.length);
-    }, 3200);
+      setFading(true);
+      setTimeout(() => {
+        setCurrent((prev) => (prev + 1) % images.length);
+        setFading(false);
+      }, 300);
+    }, 1800);
     return () => clearInterval(interval);
   }, []);
+
+  const handleDot = (i) => {
+    setFading(true);
+    setTimeout(() => {
+      setCurrent(i);
+      setFading(false);
+    }, 300);
+  };
 
   return (
     <section className="feature-section">
       <div className="feature-bg-orb orb-1"></div>
       <div className="feature-bg-orb orb-2"></div>
+      <div className="feature-bg-orb orb-3"></div>
       <div className="feature-noise"></div>
 
       <div className="feature-shell">
         <div className="feature-layout">
           <div className="feature-left">
             <R>
-              <p className="feature-eyebrow">Premium Benefits</p>
+              <p className="feature-eyebrow">
+                <span className="eyebrow-dot"></span>
+                Premium Benefits
+              </p>
             </R>
 
             <R>
               <h2 className="feature-title">
                 Built for a
-                <span> richer workday</span>
+                <span className="title-accent"> richer workday</span>
               </h2>
+            </R>
+
+            <R>
+              <p className="feature-subtitle">
+                Every detail crafted for professionals who demand the finest environment to think, create, and grow.
+              </p>
             </R>
 
             <div className="feature-grid">
@@ -59,8 +82,11 @@ function Feature() {
                   <article className="feature-card">
                     <div className="feature-glow"></div>
                     <div className="feature-card-top">
-                      {item.icon}
-                      <h3>{item.title}</h3>
+                      <div className="icon-wrap">{item.icon}</div>
+                      <div className="card-text">
+                        <h3>{item.title}</h3>
+                        <p>{item.desc}</p>
+                      </div>
                     </div>
                   </article>
                 </R>
@@ -75,11 +101,11 @@ function Feature() {
                   <img
                     src={images[current]}
                     alt="Premium workspace"
-                    className="feature-image"
+                    className={`feature-image ${fading ? "fading" : ""}`}
                   />
 
                   <div className="feature-image-overlay">
-                    <div className="feature-badge">Luxury Workspace</div>
+                    <div className="feature-badge">✦ Luxury Workspace</div>
 
                     <div className="feature-floating-note">
                       <strong>Elegant. Focused. Modern.</strong>
@@ -95,7 +121,7 @@ function Feature() {
                     <button
                       key={i}
                       className={`feature-dot ${i === current ? "active" : ""}`}
-                      onClick={() => setCurrent(i)}
+                      onClick={() => handleDot(i)}
                       aria-label={`Show image ${i + 1}`}
                     />
                   ))}

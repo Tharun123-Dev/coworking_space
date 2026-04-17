@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import styles from "../Styles/Testimonials.module.css";
 
 function Testimonials() {
@@ -65,51 +64,7 @@ function Testimonials() {
     },
   ];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [cardsPerView, setCardsPerView] = useState(3);
-  const [isPaused, setIsPaused] = useState(false);
-
-  useEffect(() => {
-    const updateCardsPerView = () => {
-      if (window.innerWidth <= 768) {
-        setCardsPerView(1);
-      } else if (window.innerWidth <= 1100) {
-        setCardsPerView(2);
-      } else {
-        setCardsPerView(3);
-      }
-    };
-
-    updateCardsPerView();
-    window.addEventListener("resize", updateCardsPerView);
-    return () => window.removeEventListener("resize", updateCardsPerView);
-  }, []);
-
-  useEffect(() => {
-    if (isPaused) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) =>
-        prev >= testimonials.length - cardsPerView ? 0 : prev + 1
-      );
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isPaused, cardsPerView, testimonials.length]);
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) =>
-      prev >= testimonials.length - cardsPerView ? 0 : prev + 1
-    );
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) =>
-      prev <= 0 ? testimonials.length - cardsPerView : prev - 1
-    );
-  };
-
-  const visibleDots = testimonials.length - cardsPerView + 1;
+  const loopTestimonials = [...testimonials, ...testimonials];
 
   return (
     <section className={styles.testimonialsSection}>
@@ -124,77 +79,33 @@ function Testimonials() {
           </p>
         </div>
 
-        <div
-          className={styles.sliderWrapper}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
-          <button
-            className={`${styles.navBtn} ${styles.prevBtn}`}
-            onClick={prevSlide}
-            aria-label="Previous testimonials"
-          >
-            ‹
-          </button>
-
-          <div className={styles.sliderViewport}>
-            <div
-              className={styles.sliderTrack}
-              style={{
-                transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)`,
-              }}
-            >
-              {testimonials.map((item) => (
-                <div
-                  className={styles.card}
-                  key={item.id}
-                  style={{ width: `${100 / cardsPerView}%` }}
-                >
-                  <div className={styles.cardTop}>
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className={styles.avatar}
-                    />
-                    <div>
-                      <h3>{item.name}</h3>
-                      <p className={styles.role}>
-                        {item.role} • {item.company}
-                      </p>
-                      <span className={styles.city}>{item.city}</span>
-                    </div>
+        <div className={styles.marquee}>
+          <div className={styles.marqueeTrack}>
+            {loopTestimonials.map((item, index) => (
+              <div className={styles.card} key={`${item.id}-${index}`}>
+                <div className={styles.cardTop}>
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className={styles.avatar}
+                  />
+                  <div>
+                    <h3>{item.name}</h3>
+                    <p className={styles.role}>
+                      {item.role} • {item.company}
+                    </p>
+                    <span className={styles.city}>{item.city}</span>
                   </div>
-
-                  <div className={styles.stars}>
-                    {"★".repeat(item.rating)}
-                  </div>
-
-                  <p className={styles.message}>“{item.text}”</p>
                 </div>
-              ))}
-            </div>
+
+                <div className={styles.stars}>
+                  {"★".repeat(item.rating)}
+                </div>
+
+                <p className={styles.message}>“{item.text}”</p>
+              </div>
+            ))}
           </div>
-
-          <button
-            className={`${styles.navBtn} ${styles.nextBtn}`}
-            onClick={nextSlide}
-            aria-label="Next testimonials"
-          >
-            ›
-          </button>
-        </div>
-
-        <div className={styles.dots}>
-          {Array.from({ length: visibleDots }).map((_, index) => (
-            <button
-              key={index}
-              className={`${styles.dot} ${
-                currentIndex === index ? styles.activeDot : ""
-              }`}
-              onClick={() => setCurrentIndex(index)}
-              aria-label={`Go to testimonial set ${index + 1}`}
-            />
-          ))}
         </div>
       </div>
     </section>
