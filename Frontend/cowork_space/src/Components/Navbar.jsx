@@ -3,29 +3,52 @@ import { useNavigate } from "react-router-dom";
 import styles from "../Styles/Navbar.module.css";
 
 function Navbar() {
-  const [showWorkspace,      setShowWorkspace]      = useState(false);
-  const [showCities,         setShowCities]         = useState(false);
-  const [isMobileMenuOpen,   setIsMobileMenuOpen]   = useState(false);
-  const [mobileWorkspaceOpen,setMobileWorkspaceOpen]= useState(false);
-  const [mobileCitiesOpen,   setMobileCitiesOpen]   = useState(false);
-  const [showRoleMenu,       setShowRoleMenu]        = useState(false);
-  const [mobileRoleOpen,     setMobileRoleOpen]      = useState(false);
-   const [showEnterprise, setShowEnterprise] = useState(false);
-  const navigate  = useNavigate();
-  const token     = localStorage.getItem("access");
-  const isAdmin   = localStorage.getItem("is_admin");
-  const username  = localStorage.getItem("username");
+  const [showWorkspace, setShowWorkspace] = useState(false);
+  const [showCities, setShowCities] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileWorkspaceOpen, setMobileWorkspaceOpen] = useState(false);
+  const [mobileCitiesOpen, setMobileCitiesOpen] = useState(false);
+  const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const [mobileRoleOpen, setMobileRoleOpen] = useState(false);
+  const [showEnterprise, setShowEnterprise] = useState(false);
+  const navigate = useNavigate();
+  const token = localStorage.getItem("access");
+  const isAdmin = localStorage.getItem("is_admin");
+  const username = localStorage.getItem("username");
 
   const workspaceLinks = [
-    { label: "Office Spaces",    path: "/workspaces/office" },
+    { label: "Office Spaces", path: "/workspaces/office" },
     { label: "Coworking Spaces", path: "/workspaces/coworking" },
-    { label: "Meeting Rooms",    path: "/workspaces/meeting" },
+    { label: "Meeting Rooms", path: "/workspaces/meeting" },
   ];
 
   const cityLinks = [
     { label: "Hyderabad", value: "Hyderabad" },
-   
   ];
+
+  /* Smooth scroll to top - Works on ALL pages */
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  /* Smooth scroll to companies section OR home page - Works on ALL pages */
+  const scrollToCompanies = () => {
+    // Check if companies section exists on current page
+    const companiesSection = document.getElementById("workspace-clients-section");
+    if (companiesSection) {
+      // If on current page, scroll to section
+      companiesSection.scrollIntoView({ behavior: "smooth" });
+    } else {
+      // If not found, navigate to home and scroll to top (companies will be there)
+      navigate("/");
+      // Small delay to ensure navigation completes, then scroll
+      setTimeout(() => {
+        const section = document.getElementById("workspace-clients-section");
+        if (section) section.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }
+    closeMobileMenu();
+  };
 
   /* Close all mobile panels */
   const closeMobileMenu = () => {
@@ -66,15 +89,11 @@ function Navbar() {
     closeMobileMenu();
   };
 
-  const scrollToClients = () => {
-  const section = document.getElementById("workspace-clients-section");
-  if (section) {
-    section.scrollIntoView({ behavior: "smooth" });
-  }
-};
   const scrollToCities = (city) => {
     const section = document.getElementById("cities");
-    if (section) section.scrollIntoView({ behavior: "smooth" });
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
     setShowCities(false);
     closeMobileMenu();
   };
@@ -84,36 +103,41 @@ function Navbar() {
       <div className={styles.navInner}>
 
         {/* ── LOGO ── */}
-        <h2 className={styles.logo} onClick={() => navigate("/")}>
+        <h2 className={styles.logo} onClick={() => { navigate("/"); scrollToTop(); }}>
           CoWork
         </h2>
 
         {/* ── DESKTOP MENU ── */}
         <nav className={styles.menu}>
-          <p className={styles.menuItem} onClick={() => navigate("/")}>Home</p>
-            <p className={styles.menuItem} onClick={scrollToClients}>Companies</p>
+          <p className={styles.menuItem} onClick={() => { navigate("/"); scrollToTop(); }}>
+            Home
+          </p>
+          
+          <p className={styles.menuItem} onClick={scrollToCompanies}>
+            Companies
+          </p>
 
           {/* Enterprise */}
-<div
-  className={styles.dropdown}
-  onMouseEnter={() => setShowEnterprise(true)}
-  onMouseLeave={() => setShowEnterprise(false)}
->
-  <span className={styles.dropdownLabel}>Enterprises</span>
-  <span className={styles.arrow}>▼</span>
+          <div
+            className={styles.dropdown}
+            onMouseEnter={() => setShowEnterprise(true)}
+            onMouseLeave={() => setShowEnterprise(false)}
+          >
+            <span className={styles.dropdownLabel}>Enterprises</span>
+            <span className={styles.arrow}>▼</span>
 
-  {showEnterprise && (
-    <div className={styles.dropdownMenu}>
-      <p onClick={() => navigate("/Enterprise")}>
-        Enterprise Workspaces
-      </p>
-      <p onClick={() => navigate("/RightSpace")}>
-        Business Solutions
-      </p>
-    </div>
-  )}
-</div>
-        
+            {showEnterprise && (
+              <div className={styles.dropdownMenu}>
+                <p onClick={() => navigate("/Enterprise")}>
+                  Enterprise Workspaces
+                </p>
+                <p onClick={() => navigate("/RightSpace")}>
+                  Business Solutions
+                </p>
+              </div>
+            )}
+          </div>
+          
           {/* Workspaces */}
           <div
             className={styles.dropdown}
@@ -131,49 +155,48 @@ function Navbar() {
             )}
           </div>
 
-          {/* Cities */}
-          {/* <div
-            className={styles.dropdown}
-            onMouseEnter={() => setShowCities(true)}
-            onMouseLeave={() => setShowCities(false)}
-          >
-            <span className={styles.dropdownLabel}>Cities</span>
-            <span className={styles.arrow}>▼</span>
-            {showCities && (
-              <div className={styles.dropdownMenu}>
-                {cityLinks.map((city, i) => (
-                  <p key={i} onClick={() => scrollToCities(city.value)}>{city.label}</p>
-                ))}
-              </div>
-            )}
-          </div> */}
-
-          <p className={styles.menuItem} onClick={() => navigate("/amenities")}>Amenities</p>
+          <p className={styles.menuItem} onClick={() => navigate("/amenities")}>
+            Amenities
+          </p>
         </nav>
 
         {/* ── DESKTOP RIGHT ── */}
         <div className={styles.right}>
 
           {/* Cart */}
-          <span className={styles.icon} onClick={() => navigate("/cart")} title="Cart">🛒</span>
+          <span className={styles.icon} onClick={() => navigate("/cart")} title="Cart">
+            🛒
+          </span>
 
           {/* Profile / Login */}
-          <span className={styles.icon} onClick={handleUserClick} title="Profile">👤</span>
+          <span className={styles.icon} onClick={handleUserClick} title="Profile">
+            👤
+          </span>
 
           {/* Role menu popup (shown when not logged in) */}
           {showRoleMenu && (
             <div className={styles.roleMenu}>
-              <div onClick={() => { navigate("/auth?type=user");  setShowRoleMenu(false); }}>User</div>
-              <div onClick={() => { navigate("/auth?type=owner"); setShowRoleMenu(false); }}>Owner</div>
-              <div onClick={() => { navigate("/auth?type=admin"); setShowRoleMenu(false); }}>Admin</div>
+              <div onClick={() => { navigate("/auth?type=user"); setShowRoleMenu(false); }}>
+                User
+              </div>
+              <div onClick={() => { navigate("/auth?type=owner"); setShowRoleMenu(false); }}>
+                Owner
+              </div>
+              <div onClick={() => { navigate("/auth?type=admin"); setShowRoleMenu(false); }}>
+                Admin
+              </div>
             </div>
           )}
 
           {token ? (
             <div className={styles.userBox}>
               <span className={styles.userName}>Hi, {username || "User"}</span>
-              <button className={styles.logoutBtn} onClick={handleMyOrders}>My Orders</button>
-              <button className={styles.logoutBtn} onClick={handleLogout}>Logout</button>
+              <button className={styles.logoutBtn} onClick={handleMyOrders}>
+                My Orders
+              </button>
+              <button className={styles.logoutBtn} onClick={handleLogout}>
+                Logout
+              </button>
             </div>
           ) : (
             <button className={styles.btn} onClick={() => navigate("/auth")}>
@@ -206,37 +229,44 @@ function Navbar() {
           <div className={styles.mobileMenu}>
 
             {/* Logo in drawer */}
-            <div className={styles.mobileLogo}>CoWork</div>
+            <div 
+              className={styles.mobileLogo} 
+              onClick={() => { handleNavigate("/"); scrollToTop(); }}
+            >
+              CoWork
+            </div>
 
             {/* Home */}
-            <p className={styles.mobileItem} onClick={() => handleNavigate("/")}>
+            <p className={styles.mobileItem} onClick={() => { handleNavigate("/"); scrollToTop(); }}>
               Home
             </p>
 
-            {/* Enterprise */}
-         {/* Enterprise Mobile */}
-<div className={styles.mobileDropdown}>
-  <button
-    className={styles.mobileDropdownBtn}
-    onClick={() => setMobileRoleOpen(o => !o)}
-  >
-    Enterprises
-    <span>{mobileRoleOpen ? "−" : "+"}</span>
-  </button>
+            {/* Enterprise Mobile */}
+            <div className={styles.mobileDropdown}>
+              <button
+                className={styles.mobileDropdownBtn}
+                onClick={() => setMobileRoleOpen(o => !o)}
+              >
+                Enterprises
+                <span>{mobileRoleOpen ? "−" : "+"}</span>
+              </button>
 
-  {mobileRoleOpen && (
-    <div className={styles.mobileSubmenu}>
-      <p onClick={() => handleNavigate("/Enterprise")}>
-        Enterprise Workspaces
-      </p>
-      <p onClick={() => handleNavigate("/RightSpace")}>
-        Business Solutions
-      </p>
-    </div>
-  )}
-</div>
-              {/* Enterprise */}
-            <p className={styles.mobileItem} onClick={scrollToClients}>Companies</p>
+              {mobileRoleOpen && (
+                <div className={styles.mobileSubmenu}>
+                  <p onClick={() => handleNavigate("/Enterprise")}>
+                    Enterprise Workspaces
+                  </p>
+                  <p onClick={() => handleNavigate("/RightSpace")}>
+                    Business Solutions
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Companies */}
+            <p className={styles.mobileItem} onClick={scrollToCompanies}>
+              Companies
+            </p>
 
             {/* Workspaces accordion */}
             <div className={styles.mobileDropdown}>
@@ -255,24 +285,6 @@ function Navbar() {
                 </div>
               )}
             </div>
-
-            {/* Cities accordion */}
-            {/* <div className={styles.mobileDropdown}>
-              <button
-                className={styles.mobileDropdownBtn}
-                onClick={() => setMobileCitiesOpen(o => !o)}
-              >
-                Cities
-                <span>{mobileCitiesOpen ? "−" : "+"}</span>
-              </button>
-              {mobileCitiesOpen && (
-                <div className={styles.mobileSubmenu}>
-                  {cityLinks.map((city, i) => (
-                    <p key={i} onClick={() => scrollToCities(city.value)}>{city.label}</p>
-                  ))}
-                </div>
-              )}
-            </div> */}
 
             {/* Amenities */}
             <p className={styles.mobileItem} onClick={() => handleNavigate("/amenities")}>
@@ -301,8 +313,6 @@ function Navbar() {
                 /* Not logged in: role chooser */
                 <div className={styles.mobileRoleMenu}>
                   <span className={styles.mobileRoleTitle}>Login as</span>
-
-                  
                   <div
                     className={styles.mobileRoleItem}
                     onClick={() => handleNavigate("/auth?type=user")}
@@ -321,8 +331,6 @@ function Navbar() {
                   >
                     ⚙️ Admin
                   </div>
-                 
-                  
                 </div>
               )}
 
