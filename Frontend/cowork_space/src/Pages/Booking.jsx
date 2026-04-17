@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import axiosInstance from "../Services/Axios";
 import { useLocation } from "react-router-dom";
 import Reveal from "./Reveal";
@@ -8,18 +8,17 @@ function Booking() {
   const location = useLocation();
   const data = location.state;
   const isMultiple = data?.items ? true : false;
-  
+
   const today = new Date().toISOString().split("T")[0];
-  const [paymentId, setPaymentId] = useState(null);
 
   const [form, setForm] = useState({
-    date:today,
+    date: today,
     duration: 1,
   });
 
   const [paymentDone, setPaymentDone] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [autoConfirming, setAutoConfirming] = useState(false);
 
   const totalPrice = isMultiple
     ? data.items.reduce(
@@ -43,6 +42,38 @@ function Booking() {
       ...prev,
       [name]: name === "duration" ? Math.max(1, Number(value)) : value,
     }));
+  };
+
+  const confirmBooking = async (paymentId, bookingDate, bookingDuration) => {
+    setAutoConfirming(true);
+    try {
+      if (isMultiple) {
+        for (let item of data.items) {
+          await axiosInstance.post("cart/create/", {
+            workspace_id: item.workspace_id,
+            cart_item_id: item.id,
+            date: bookingDate,
+            duration: item.duration,
+            payment_id: paymentId,
+          });
+        }
+        alert("All Bookings Confirmed 🎉");
+      } else {
+        await axiosInstance.post("cart/create/", {
+          workspace_id: data.workspace_id,
+          cart_item_id: data.id,
+          date: bookingDate,
+          duration: Number(bookingDuration),
+          payment_id: paymentId,
+        });
+        alert("Booking Confirmed 🎉");
+      }
+
+      window.location.href = "/";
+    } catch (err) {
+      alert("Payment was successful but booking failed. Please contact support.");
+      setAutoConfirming(false);
+    }
   };
 
   const handlePayment = async () => {
@@ -97,35 +128,36 @@ function Booking() {
         theme: {
           color: "#c9a84c",
         },
-  handler: async function (response) {
-  try {
-    // STEP 1: verify payment
-    const verify = await axiosInstance.post("payment/verify/", response);
+        handler: async function (response) {
+          try {
+            // STEP 1: verify payment
+            const verify = await axiosInstance.post("payment/verify/", response);
 
-    if (verify.data.status === "success") {
+            if (verify.data.status === "success") {
+              // STEP 2: save payment
+              await axiosInstance.post("payment/save/", {
+                payment_id: response.razorpay_payment_id,
+                order_id: response.razorpay_order_id,
+                amount: totalPrice,
+              });
 
-      // STEP 2: SAVE PAYMENT
-      await axiosInstance.post("payment/save/", {
-        payment_id: response.razorpay_payment_id,
-        order_id: response.razorpay_order_id,
-        amount: totalPrice
-      });
+              // STEP 3: mark payment done in UI
+              setPaymentDone(true);
 
-      // ✅ STEP 3: STORE payment_id in state
-      setPaymentId(response.razorpay_payment_id);
-
-      setPaymentDone(true);
-      alert("Payment successful");
-
-    } else {
-      alert("Payment verification failed");
-    }
-
-  } catch (err) {
-    console.log(err);
-    alert("Payment verification error");
-  }
-},
+              // STEP 4: auto-confirm booking immediately
+              await confirmBooking(
+                response.razorpay_payment_id,
+                form.date,
+                form.duration
+              );
+            } else {
+              alert("Payment verification failed");
+            }
+          } catch (err) {
+            console.log(err);
+            alert("Payment verification error");
+          }
+        },
         modal: {
           ondismiss: function () {
             setLoadingPayment(false);
@@ -146,57 +178,18 @@ function Booking() {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!form.date) {
-      alert("Please select date");
-      return;
-    }
-
-    if (form.date < today) {
-      alert("Please select today or a future date only");
-      return;
-    }
-
-    if (!paymentDone) {
-      alert("Please complete payment first");
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-
-      if (isMultiple) {
-        for (let item of data.items) {
-          await axiosInstance.post("cart/create/", {
-            workspace_id: item.workspace_id,
-            cart_item_id: item.id,
-            date: form.date,
-            duration: item.duration,
-             payment_id: paymentId
-          });
-        }
-        alert("All Bookings Successful 🎉");
-      } else {
-        await axiosInstance.post("cart/create/", {
-          workspace_id: data.workspace_id,
-          cart_item_id: data.id,
-          date: form.date,
-          duration: Number(form.duration),
-            payment_id: paymentId
-        });
-        alert("Booking Successful 🎉");
-      }
-
-      window.location.href = "/";
-    } catch (err) {
-      alert("Error while creating booking");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
     <section className={styles.page}>
+      {autoConfirming && (
+        <div className={styles.autoConfirmOverlay}>
+          <div className={styles.autoConfirmBox}>
+            <div className={styles.spinnerRing}></div>
+            <p className={styles.autoConfirmText}>Confirming your booking…</p>
+            <span className={styles.autoConfirmSub}>Please wait, do not close this page</span>
+          </div>
+        </div>
+      )}
+
       <div className={styles.particles}>
         {[...Array(18)].map((_, i) => (
           <span key={i} className={styles.particle} style={{ "--i": i }} />
@@ -267,7 +260,9 @@ function Booking() {
         <div className={styles.bookingCard}>
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Booking Details</h3>
-            <span className={styles.stepBadge}>Step 1 of 2</span>
+            <span className={styles.stepBadge}>
+              {paymentDone ? "Step 2 of 2" : "Step 1 of 2"}
+            </span>
           </div>
 
           <div className={styles.formGrid}>
@@ -362,22 +357,9 @@ function Booking() {
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/>
                 <path d="M8 12l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              Payment Completed
+              Payment Completed — Confirming Booking…
             </div>
           )}
-
-          <button
-            onClick={handleSubmit}
-            className={styles.bookBtn}
-            disabled={submitting}
-          >
-            {submitting ? "Confirming..." : "Confirm Booking"}
-            {!submitting && (
-              <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-          </button>
         </div>
       </div>
     </section>
