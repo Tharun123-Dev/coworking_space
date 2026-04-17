@@ -1,8 +1,7 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./Enterprise.css";
 import axiosInstance from "../Services/Axios";
 
-/* ── Trusted enterprise logos (text-based) ── */
 const trustedCompanies = [
   "TCS", "Infosys", "Wipro", "Deloitte", "Accenture",
   "KPMG", "EY India", "HCL Tech", "Tech Mahindra", "Capgemini",
@@ -10,7 +9,6 @@ const trustedCompanies = [
   "Amazon", "Flipkart", "Zomato", "HDFC Bank", "ICICI Bank",
 ];
 
-/* ── Space types ── */
 const spaceTypes = [
   {
     id: "private",
@@ -74,7 +72,6 @@ const spaceTypes = [
   },
 ];
 
-/* ── Perfect Office features ── */
 const perfectFeatures = [
   { icon: "⚡", title: "1 Gbps Fibre WiFi", desc: "Dedicated enterprise-grade internet with zero downtime SLA." },
   { icon: "🔐", title: "Bank-Grade Security", desc: "Biometric entry, 24/7 CCTV, and NDA-compliant environments." },
@@ -86,7 +83,6 @@ const perfectFeatures = [
   { icon: "🚗", title: "Ample Parking", desc: "Reserved car + bike parking with EV charging points." },
 ];
 
-/* ── Testimonials ── */
 const testimonials = [
   {
     quote: "Shifting our 80-person team to this coworking space was the best operational decision we made. Productivity skyrocketed and overheads dropped 40%.",
@@ -116,9 +112,22 @@ const testimonials = [
     avatar: "PN",
     stars: 5,
   },
+  {
+    quote: "From day one, the facilities team was proactive. Internet never dropped, the cafeteria is world-class, and our team loves coming in daily.",
+    name: "Rahul Desai",
+    title: "CTO, Axiom Ventures",
+    avatar: "RD",
+    stars: 5,
+  },
+  {
+    quote: "Premium address, premium experience. Our overseas clients are always blown away when they visit our Hitec City office.",
+    name: "Meera Iyer",
+    title: "MD, GlobalLink Partners",
+    avatar: "MI",
+    stars: 5,
+  },
 ];
 
-/* ── Why Choose ── */
 const whyPoints = [
   { icon: "📍", title: "Prime Locations", desc: "25+ spaces across Hyderabad's top business corridors" },
   { icon: "⚙️", title: "Fully Customisable", desc: "Fitout, branding & layout designed around your team" },
@@ -126,7 +135,6 @@ const whyPoints = [
   { icon: "💰", title: "Transparent Pricing", desc: "All-inclusive billing — no hidden charges, ever" },
 ];
 
-/* ── Contact Form Modal ── */
 function ContactModal({ onClose, preselect }) {
   const [formData, setFormData] = useState({
     name: "", phone: "", email: "",
@@ -159,11 +167,11 @@ function ContactModal({ onClose, preselect }) {
     <div className="ep-modal-overlay" onClick={onClose}>
       <div className="ep-modal" onClick={e => e.stopPropagation()}>
         <button className="ep-modal-close" onClick={onClose}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
         </button>
         <div className="ep-modal-glow"></div>
-
-        {/* Modal Left */}
         <div className="ep-modal-left">
           <span className="ep-modal-eyebrow">Enterprise Enquiry</span>
           <h3 className="ep-modal-heading">Let's Build Your<br /><em>Perfect Office</em></h3>
@@ -182,8 +190,6 @@ function ContactModal({ onClose, preselect }) {
             Call us: +91 6309383826
           </a>
         </div>
-
-        {/* Modal Right */}
         <div className="ep-modal-right">
           {submitted ? (
             <div className="ep-modal-success">
@@ -203,7 +209,6 @@ function ContactModal({ onClose, preselect }) {
           ) : (
             <form onSubmit={handleSubmit} className="ep-modal-form" noValidate>
               <h4 className="ep-form-title">Book a Space / Get a Quote</h4>
-
               <div className="ep-form-row">
                 <div className="ep-form-group">
                   <label>Full Name <span>*</span></label>
@@ -220,7 +225,6 @@ function ContactModal({ onClose, preselect }) {
                   </div>
                 </div>
               </div>
-
               <div className="ep-form-group ep-form-full">
                 <label>Work Email <span>*</span></label>
                 <div className="ep-input-wrap">
@@ -228,7 +232,6 @@ function ContactModal({ onClose, preselect }) {
                   <input name="email" type="email" placeholder="work@company.com" value={formData.email} onChange={handleChange} required />
                 </div>
               </div>
-
               <div className="ep-form-row">
                 <div className="ep-form-group">
                   <label>Workspace Type</label>
@@ -259,14 +262,12 @@ function ContactModal({ onClose, preselect }) {
                   </div>
                 </div>
               </div>
-
               <div className="ep-form-group ep-form-full">
                 <label>Additional Requirements</label>
                 <div className="ep-input-wrap ep-ta-wrap">
                   <textarea name="notes" placeholder="Custom fitout? Specific floor? Timeline? Let us know..." value={formData.notes} onChange={handleChange} rows="3" />
                 </div>
               </div>
-
               <button type="submit" className="ep-form-submit">
                 <span>Submit Enterprise Request</span>
                 <span className="ep-submit-arrow">→</span>
@@ -280,9 +281,6 @@ function ContactModal({ onClose, preselect }) {
   );
 }
 
-/* ════════════════════════════════════════
-   MAIN ENTERPRISE PAGE
-════════════════════════════════════════ */
 export default function Enterprise() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPreselect, setModalPreselect] = useState("");
@@ -298,26 +296,19 @@ export default function Enterprise() {
     document.body.style.overflow = "";
   };
 
-  // Ticker clone for seamless loop
   const tickerItems = [...trustedCompanies, ...trustedCompanies];
+  const testiItems = [...testimonials, ...testimonials];
 
   return (
     <div className="ep-page">
 
-      {/* ══════════════════════════════
-          1. HERO
-      ══════════════════════════════ */}
+      {/* 1. HERO — centered */}
       <section className="ep-hero">
         <div className="ep-hero-bg">
-          <img
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1800&q=85"
-            alt="Enterprise workspace"
-            className="ep-hero-img"
-          />
+          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1800&q=85" alt="Enterprise workspace" className="ep-hero-img" />
           <div className="ep-hero-overlay"></div>
           <div className="ep-hero-grid"></div>
         </div>
-
         <div className="ep-hero-content">
           <div className="ep-hero-text">
             <span className="ep-hero-eyebrow">
@@ -333,7 +324,6 @@ export default function Enterprise() {
               Premium managed offices, private suites &amp; team spaces across 25+ Hyderabad locations.
               Trusted by 50+ companies — from Series A startups to Fortune 500s.
             </p>
-
             <div className="ep-hero-stats">
               {[
                 { num: "50+", lbl: "Enterprise Clients" },
@@ -347,11 +337,9 @@ export default function Enterprise() {
                 </div>
               ))}
             </div>
-
             <div className="ep-hero-ctas">
               <button className="ep-btn-primary" onClick={() => openModal()}>
-                Book a Space Now
-                <span>→</span>
+                Book a Space Now <span>→</span>
               </button>
               <a href="tel:6309383826" className="ep-btn-secondary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -360,19 +348,16 @@ export default function Enterprise() {
             </div>
           </div>
         </div>
-
         <div className="ep-scroll-hint">
           <div className="ep-scroll-dot"></div>
           <span>Scroll to explore</span>
         </div>
       </section>
 
-      {/* ══════════════════════════════
-          2. TRUSTED BY (TICKER)
-      ══════════════════════════════ */}
+      {/* 2. TRUSTED TICKER */}
       <section className="ep-trusted">
         <div className="ep-trusted-header">
-          <span className="ep-section-eyebrow">Trusted & Recommended By</span>
+          <span className="ep-section-eyebrow">Trusted &amp; Recommended By</span>
           <p className="ep-trusted-sub">50+ enterprises across Hyderabad rely on us daily</p>
         </div>
         <div className="ep-ticker-track">
@@ -387,22 +372,13 @@ export default function Enterprise() {
         </div>
       </section>
 
-      {/* ══════════════════════════════
-          3. PERFECT OFFICE
-      ══════════════════════════════ */}
+      {/* 3. PERFECT OFFICE */}
       <section className="ep-perfect">
         <div className="ep-section-head">
           <span className="ep-section-eyebrow">Everything You Need</span>
-          <h2 className="ep-section-title">
-            Everything you need for a<br />
-            <em>Perfect Office.</em>
-          </h2>
-          <p className="ep-section-desc">
-            From blazing-fast internet to concierge service — every detail is handled so your
-            team can focus on what matters most.
-          </p>
+          <h2 className="ep-section-title">Everything you need for a<br /><em>Perfect Office.</em></h2>
+          <p className="ep-section-desc">From blazing-fast internet to concierge service — every detail is handled so your team can focus on what matters most.</p>
         </div>
-
         <div className="ep-perfect-grid">
           {perfectFeatures.map((f, i) => (
             <div key={f.title} className="ep-perfect-card" style={{ animationDelay: `${i * 0.08}s` }}>
@@ -412,12 +388,8 @@ export default function Enterprise() {
             </div>
           ))}
         </div>
-
         <div className="ep-perfect-cta">
-          <button className="ep-btn-primary" onClick={() => openModal()}>
-            See More Features
-            <span>→</span>
-          </button>
+          <button className="ep-btn-primary" onClick={() => openModal()}>See More Features <span>→</span></button>
           <a href="tel:6309383826" className="ep-expert-link">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
             Talk to an Expert
@@ -425,26 +397,19 @@ export default function Enterprise() {
         </div>
       </section>
 
-      {/* ══════════════════════════════
-          4. SPACE TYPES
-      ══════════════════════════════ */}
+      {/* 4. SPACE TYPES — 6 cards in single row, NO scroll */}
       <section className="ep-spaces">
         <div className="ep-section-head">
           <span className="ep-section-eyebrow">Our Spaces</span>
-          <h2 className="ep-section-title">
-            Meeting Rooms, Lounges,<br /><em>Offices & More.</em>
-          </h2>
-          <p className="ep-section-desc">
-            Every space type you need under one roof. Click any space to enquire or book instantly.
-          </p>
+          <h2 className="ep-section-title">Meeting Rooms, Lounges,<br /><em>Offices &amp; More.</em></h2>
+          <p className="ep-section-desc">Every space type you need under one roof. Click any space to enquire or book instantly.</p>
         </div>
-
         <div className="ep-spaces-grid">
           {spaceTypes.map((space, idx) => (
             <div
               key={space.id}
               className={`ep-space-card ${activeSpace === space.id ? "ep-space-card--open" : ""}`}
-              style={{ animationDelay: `${idx * 0.1}s` }}
+              style={{ animationDelay: `${idx * 0.07}s` }}
             >
               <div className="ep-space-img-wrap">
                 <img src={space.image} alt={space.label} />
@@ -454,13 +419,10 @@ export default function Enterprise() {
                   <span>📅 Book Now</span>
                 </div>
               </div>
-
               <div className="ep-space-body">
                 <div className="ep-space-type-icon">{space.icon}</div>
                 <h3>{space.label}</h3>
                 <p className="ep-space-short">{space.short}</p>
-
-                {/* Expandable features */}
                 {activeSpace === space.id && (
                   <div className="ep-space-features">
                     {space.features.map(f => (
@@ -472,17 +434,11 @@ export default function Enterprise() {
                     <div className="ep-space-price">{space.price}</div>
                   </div>
                 )}
-
                 <div className="ep-space-actions">
-                  <button
-                    className="ep-space-know"
-                    onClick={() => setActiveSpace(activeSpace === space.id ? null : space.id)}
-                  >
-                    {activeSpace === space.id ? "Less Info ↑" : "Know More ↓"}
+                  <button className="ep-space-know" onClick={() => setActiveSpace(activeSpace === space.id ? null : space.id)}>
+                    {activeSpace === space.id ? "Less ↑" : "More ↓"}
                   </button>
-                  <button className="ep-space-book" onClick={() => openModal(space.label)}>
-                    Book Now →
-                  </button>
+                  <button className="ep-space-book" onClick={() => openModal(space.label)}>Book →</button>
                 </div>
               </div>
             </div>
@@ -490,20 +446,13 @@ export default function Enterprise() {
         </div>
       </section>
 
-      {/* ══════════════════════════════
-          5. WHY CHOOSE US
-      ══════════════════════════════ */}
+      {/* 5. WHY CHOOSE */}
       <section className="ep-why">
         <div className="ep-why-inner">
           <div className="ep-why-left">
             <span className="ep-section-eyebrow">Why Choose Us</span>
-            <h2 className="ep-section-title ep-why-title">
-              Hyderabad's Most Trusted<br /><em>Enterprise Workspace.</em>
-            </h2>
-            <p className="ep-section-desc">
-              We don't just offer desks — we build environments where enterprises thrive.
-              Scalable, beautiful, and built around your business.
-            </p>
+            <h2 className="ep-section-title ep-why-title">Hyderabad's Most Trusted<br /><em>Enterprise Workspace.</em></h2>
+            <p className="ep-section-desc">We don't just offer desks — we build environments where enterprises thrive. Scalable, beautiful, and built around your business.</p>
             <div className="ep-why-points">
               {whyPoints.map(w => (
                 <div key={w.title} className="ep-why-point">
@@ -515,24 +464,12 @@ export default function Enterprise() {
                 </div>
               ))}
             </div>
-            <button className="ep-btn-primary" onClick={() => openModal()}>
-              Get a Custom Quote
-              <span>→</span>
-            </button>
+            <button className="ep-btn-primary" onClick={() => openModal()}>Get a Custom Quote <span>→</span></button>
           </div>
-
           <div className="ep-why-right">
             <div className="ep-why-img-stack">
-              <img
-                className="ep-why-img ep-why-img--top"
-                src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600"
-                alt="enterprise workspace"
-              />
-              <img
-                className="ep-why-img ep-why-img--bot"
-                src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600"
-                alt="team space"
-              />
+              <img className="ep-why-img ep-why-img--top" src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600" alt="enterprise workspace" />
+              <img className="ep-why-img ep-why-img--bot" src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600" alt="team space" />
               <div className="ep-why-float-badge">
                 <span className="ep-why-badge-num">50+</span>
                 <span className="ep-why-badge-lbl">Enterprise Clients</span>
@@ -542,38 +479,33 @@ export default function Enterprise() {
         </div>
       </section>
 
-      {/* ══════════════════════════════
-          6. TESTIMONIALS
-      ══════════════════════════════ */}
+      {/* 6. TESTIMONIALS — single line auto-scroll, pause on hover */}
       <section className="ep-testimonials">
         <div className="ep-section-head">
           <span className="ep-section-eyebrow">What Our Clients Say</span>
           <h2 className="ep-section-title">Trusted by Leaders,<br /><em>Loved by Teams.</em></h2>
         </div>
-
-        <div className="ep-testimonials-grid">
-          {testimonials.map((t, i) => (
-            <div key={t.name} className="ep-testimonial-card" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className="ep-testi-quote-icon">"</div>
-              <div className="ep-testi-stars">
-                {Array(t.stars).fill(0).map((_, si) => <span key={si}>★</span>)}
-              </div>
-              <p className="ep-testi-text">"{t.quote}"</p>
-              <div className="ep-testi-author">
-                <div className="ep-testi-avatar">{t.avatar}</div>
-                <div>
-                  <p className="ep-testi-name">{t.name}</p>
-                  <p className="ep-testi-title">{t.title}</p>
+        <div className="ep-testi-track">
+          <div className="ep-testi-inner">
+            {testiItems.map((t, i) => (
+              <div key={i} className="ep-testimonial-card">
+                <div className="ep-testi-quote-icon">"</div>
+                <div className="ep-testi-stars">{Array(t.stars).fill(0).map((_, si) => <span key={si}>★</span>)}</div>
+                <p className="ep-testi-text">"{t.quote}"</p>
+                <div className="ep-testi-author">
+                  <div className="ep-testi-avatar">{t.avatar}</div>
+                  <div>
+                    <p className="ep-testi-name">{t.name}</p>
+                    <p className="ep-testi-title">{t.title}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════
-          7. FINAL CTA BANNER
-      ══════════════════════════════ */}
+      {/* 7. FINAL CTA */}
       <section className="ep-final-cta">
         <div className="ep-final-cta-bg">
           <img src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=1600" alt="cta bg" />
@@ -581,17 +513,10 @@ export default function Enterprise() {
         </div>
         <div className="ep-final-cta-content">
           <span className="ep-section-eyebrow ep-eyebrow-light">Ready to Scale?</span>
-          <h2 className="ep-final-cta-title">
-            Book Your Enterprise Workspace<br />in Hyderabad Today.
-          </h2>
-          <p className="ep-final-cta-sub">
-            Our team will have a proposal ready within 24 hours. No obligations, just options.
-          </p>
+          <h2 className="ep-final-cta-title">Book Your Enterprise Workspace<br />in Hyderabad Today.</h2>
+          <p className="ep-final-cta-sub">Our team will have a proposal ready within 24 hours. No obligations, just options.</p>
           <div className="ep-final-cta-btns">
-            <button className="ep-btn-primary ep-btn-large" onClick={() => openModal()}>
-              Book a Space Now
-              <span>→</span>
-            </button>
+            <button className="ep-btn-primary ep-btn-large" onClick={() => openModal()}>Book a Space Now <span>→</span></button>
             <a href="tel:6309383826" className="ep-btn-call">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               +91 6309383826
@@ -600,7 +525,6 @@ export default function Enterprise() {
         </div>
       </section>
 
-      {/* ══ MODAL ══ */}
       {modalOpen && <ContactModal onClose={closeModal} preselect={modalPreselect} />}
     </div>
   );

@@ -1,3 +1,4 @@
+
 /* ============================================================
    Enterprise.css — Dark Gold Luxury · Enterprise Grade
    ============================================================ */
@@ -90,7 +91,6 @@ html { scroll-behavior: smooth; }
   font-weight: 400;
 }
  
-/* Shared buttons */
 .ep-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -125,13 +125,14 @@ html { scroll-behavior: smooth; }
 .ep-btn-large { padding: 18px 38px; font-size: 14px; }
  
 /* ════════════════════════════════════════
-   1. HERO
+   1. HERO — CENTERED
 ════════════════════════════════════════ */
 .ep-hero {
   position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 .ep-hero-bg {
@@ -142,7 +143,7 @@ html { scroll-behavior: smooth; }
 .ep-hero-img {
   width: 100%; height: 100%;
   object-fit: cover;
-  filter: brightness(0.45) saturate(0.8);
+  filter: brightness(0.38) saturate(0.8);
   transform: scale(1.04);
   transition: transform 12s ease;
 }
@@ -151,8 +152,7 @@ html { scroll-behavior: smooth; }
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to right, rgba(7,7,7,0.88) 0%, rgba(7,7,7,0.55) 50%, rgba(7,7,7,0.35) 100%),
-    linear-gradient(to top, rgba(7,7,7,0.7) 0%, transparent 50%);
+    linear-gradient(to bottom, rgba(7,7,7,0.5) 0%, rgba(7,7,7,0.25) 40%, rgba(7,7,7,0.7) 100%);
 }
 .ep-hero-grid {
   position: absolute;
@@ -161,18 +161,27 @@ html { scroll-behavior: smooth; }
     linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
   background-size: 80px 80px;
-  mask-image: radial-gradient(ellipse at 30% 50%, black 30%, transparent 75%);
 }
  
 .ep-hero-content {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1300px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 120px 70px 100px;
+  padding: 120px 40px 100px;
+  display: flex;
+  justify-content: center;
 }
-.ep-hero-text { max-width: 680px; }
+ 
+/* ── hero text: fully centered ── */
+.ep-hero-text {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
  
 .ep-hero-eyebrow {
   display: inline-flex;
@@ -203,20 +212,21 @@ html { scroll-behavior: smooth; }
 .ep-hero-title {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
   line-height: 1;
   margin-bottom: 22px;
 }
 .ep-hero-t1 {
   font-family: var(--font-d);
-  font-size: clamp(36px, 5vw, 72px);
+  font-size: clamp(32px, 4.5vw, 64px);
   font-weight: 400;
   color: rgba(245,240,232,0.72);
   letter-spacing: 0.02em;
 }
 .ep-hero-t2 {
   font-family: var(--font-d);
-  font-size: clamp(54px, 8vw, 112px);
+  font-size: clamp(50px, 7.5vw, 108px);
   font-weight: 700;
   line-height: 0.95;
 }
@@ -229,7 +239,7 @@ html { scroll-behavior: smooth; }
 }
 .ep-hero-t3 {
   font-family: var(--font-d);
-  font-size: clamp(22px, 2.8vw, 38px);
+  font-size: clamp(20px, 2.5vw, 36px);
   font-weight: 600;
   color: rgba(245,240,232,0.55);
   font-style: italic;
@@ -237,26 +247,26 @@ html { scroll-behavior: smooth; }
 }
  
 .ep-hero-sub {
-  font-size: clamp(14px, 1.4vw, 17px);
+  font-size: clamp(14px, 1.3vw, 16px);
   color: var(--gray-l);
   line-height: 1.9;
   font-weight: 300;
   margin-bottom: 36px;
-  max-width: 580px;
+  max-width: 640px;
 }
  
 .ep-hero-stats {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 32px;
   flex-wrap: wrap;
   margin-bottom: 40px;
-  padding: 22px 28px;
+  padding: 22px 32px;
   background: rgba(7,7,7,0.6);
   backdrop-filter: blur(14px);
   border: 1px solid var(--gold-border);
   border-radius: var(--r-lg);
-  width: fit-content;
   box-shadow: 0 0 40px rgba(201,168,76,0.06);
 }
 .ep-hero-stat { text-align: center; }
@@ -280,6 +290,7 @@ html { scroll-behavior: smooth; }
 .ep-hero-ctas {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   flex-wrap: wrap;
 }
@@ -471,10 +482,10 @@ html { scroll-behavior: smooth; }
 .ep-expert-link:hover { background: var(--gold-dim2); border-color: var(--gold); transform: translateY(-2px); }
  
 /* ════════════════════════════════════════
-   4. SPACES
+   4. SPACES — 6 cards in a single full-width row, NO scroll
 ════════════════════════════════════════ */
 .ep-spaces {
-  padding: 100px 70px;
+  padding: 100px 40px;
   background: var(--card-bg);
   position: relative;
 }
@@ -485,13 +496,17 @@ html { scroll-behavior: smooth; }
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
 }
+ 
+/* 6 equal columns that fill the full row — no overflow, no scroll */
 .ep-spaces-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-  max-width: 1260px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  width: 100%;
+  max-width: 1600px;
   margin: 0 auto;
 }
+ 
 .ep-space-card {
   background: var(--surface);
   border: 1px solid var(--border2);
@@ -501,13 +516,14 @@ html { scroll-behavior: smooth; }
   animation: fadeUp 0.5s ease both;
   display: flex;
   flex-direction: column;
+  min-width: 0; /* prevent blowout */
 }
 .ep-space-card:hover { border-color: var(--gold-border); box-shadow: var(--shadow-gold); transform: translateY(-6px); }
 .ep-space-card--open { border-color: var(--gold) !important; box-shadow: 0 0 0 1px var(--gold), var(--shadow-gold) !important; }
  
 .ep-space-img-wrap {
   position: relative;
-  height: 196px;
+  height: 150px;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -525,16 +541,17 @@ html { scroll-behavior: smooth; }
 }
 .ep-space-tag {
   position: absolute;
-  top: 12px; left: 12px;
-  padding: 4px 11px;
+  top: 9px; left: 9px;
+  padding: 3px 9px;
   background: var(--gold);
   color: #080808;
   border-radius: 999px;
-  font-size: 9.5px;
+  font-size: 8px;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   box-shadow: 0 4px 12px rgba(201,168,76,0.3);
+  white-space: nowrap;
 }
 .ep-space-hover-cta {
   position: absolute;
@@ -550,60 +567,61 @@ html { scroll-behavior: smooth; }
   z-index: 3;
 }
 .ep-space-hover-cta span {
-  padding: 11px 24px;
+  padding: 8px 16px;
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));
   color: #080808;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
 }
 .ep-space-card:hover .ep-space-hover-cta { opacity: 1; }
  
-.ep-space-body { padding: 22px 22px 22px; flex: 1; display: flex; flex-direction: column; }
+.ep-space-body { padding: 16px; flex: 1; display: flex; flex-direction: column; }
 .ep-space-type-icon {
-  font-size: 24px;
-  width: 46px; height: 46px;
+  font-size: 20px;
+  width: 38px; height: 38px;
   background: var(--gold-dim);
   border: 1px solid var(--gold-border);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   transition: var(--tr);
 }
 .ep-space-card:hover .ep-space-type-icon { background: var(--gold-dim2); }
 .ep-space-body h3 {
   font-family: var(--font-d);
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--white);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  line-height: 1.2;
 }
-.ep-space-short { font-size: 13px; color: var(--gray); line-height: 1.7; margin-bottom: 14px; flex: 1; }
+.ep-space-short { font-size: 11.5px; color: var(--gray); line-height: 1.6; margin-bottom: 12px; flex: 1; }
  
 .ep-space-features {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   animation: fadeUp 0.3s ease;
 }
 .ep-space-feat {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 0;
-  font-size: 12.5px;
+  gap: 6px;
+  padding: 5px 0;
+  font-size: 11px;
   color: var(--gray-l);
   border-bottom: 1px solid var(--border);
   font-weight: 500;
 }
 .ep-space-feat:last-of-type { border-bottom: none; }
 .ep-feat-check {
-  width: 18px; height: 18px;
+  width: 15px; height: 15px;
   border-radius: 50%;
   background: var(--gold);
   color: #080808;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   display: flex;
   align-items: center;
@@ -611,45 +629,47 @@ html { scroll-behavior: smooth; }
   flex-shrink: 0;
 }
 .ep-space-price {
-  margin-top: 12px;
+  margin-top: 10px;
   font-family: var(--font-d);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--gold-light);
 }
  
 .ep-space-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin-top: auto;
 }
 .ep-space-know {
   flex: 1;
-  padding: 11px 14px;
+  padding: 9px 8px;
   border: 1.5px solid var(--border2);
   border-radius: var(--r-md);
   background: var(--surface2);
   color: var(--gray-l);
   font-family: var(--font-b);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   transition: var(--tr);
+  white-space: nowrap;
 }
 .ep-space-know:hover { border-color: var(--gold-border); color: var(--gold-light); }
 .ep-space-book {
   flex: 1;
-  padding: 11px 14px;
+  padding: 9px 8px;
   border: none;
   border-radius: var(--r-md);
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));
   color: #080808;
   font-family: var(--font-b);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   cursor: pointer;
   transition: var(--tr);
   box-shadow: 0 6px 18px rgba(201,168,76,0.2);
+  white-space: nowrap;
 }
 .ep-space-book:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(201,168,76,0.3); }
  
@@ -761,10 +781,10 @@ html { scroll-behavior: smooth; }
 }
  
 /* ════════════════════════════════════════
-   6. TESTIMONIALS
+   6. TESTIMONIALS — single-line auto-scroll ticker, pauses on hover
 ════════════════════════════════════════ */
 .ep-testimonials {
-  padding: 100px 70px;
+  padding: 100px 0;
   background: var(--card-bg);
   position: relative;
 }
@@ -775,22 +795,47 @@ html { scroll-behavior: smooth; }
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
 }
-.ep-testimonials-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
-  max-width: 1060px;
-  margin: 0 auto;
+.ep-testimonials .ep-section-head {
+  padding: 0 70px;
 }
+ 
+/* Track: hides overflow, fades edges */
+.ep-testi-track {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+}
+ 
+/* Inner: all cards in one row, animates continuously */
+.ep-testi-inner {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: testiScroll 40s linear infinite;
+  padding: 10px 0 20px;
+}
+ 
+/* Pause on hover over the entire track */
+.ep-testi-track:hover .ep-testi-inner {
+  animation-play-state: paused;
+}
+ 
+@keyframes testiScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+ 
+/* Each card: fixed width so they all look uniform */
 .ep-testimonial-card {
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: var(--r-xl);
-  padding: 32px 28px;
+  padding: 28px 24px;
   position: relative;
   overflow: hidden;
   transition: var(--tr);
-  animation: fadeUp 0.5s ease both;
+  flex-shrink: 0;
+  width: 340px;
 }
 .ep-testimonial-card::before {
   content: '';
@@ -803,31 +848,32 @@ html { scroll-behavior: smooth; }
 }
 .ep-testimonial-card:hover { border-color: var(--gold-border); transform: translateY(-6px); box-shadow: var(--shadow-gold); }
 .ep-testimonial-card:hover::before { transform: scaleX(1); }
+ 
 .ep-testi-quote-icon {
   font-family: var(--font-d);
-  font-size: 80px;
+  font-size: 72px;
   font-weight: 700;
   color: var(--gold-dim2);
   line-height: 0.6;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   display: block;
 }
-.ep-testi-stars { color: var(--gold-bright); font-size: 14px; letter-spacing: 2px; margin-bottom: 14px; }
+.ep-testi-stars { color: var(--gold-bright); font-size: 13px; letter-spacing: 2px; margin-bottom: 12px; }
 .ep-testi-text {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--gray-l);
-  line-height: 1.85;
+  line-height: 1.8;
   font-weight: 400;
   font-style: italic;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
-.ep-testi-author { display: flex; align-items: center; gap: 14px; }
+.ep-testi-author { display: flex; align-items: center; gap: 12px; }
 .ep-testi-avatar {
-  width: 44px; height: 44px;
+  width: 40px; height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--gold), var(--gold-light));
   color: #080808;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -835,8 +881,8 @@ html { scroll-behavior: smooth; }
   flex-shrink: 0;
   border: 2px solid var(--gold-border);
 }
-.ep-testi-name { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 3px; }
-.ep-testi-title { font-size: 11.5px; color: var(--gold-light); font-weight: 600; }
+.ep-testi-name { font-size: 13px; font-weight: 700; color: var(--white); margin-bottom: 3px; }
+.ep-testi-title { font-size: 11px; color: var(--gold-light); font-weight: 600; }
  
 /* ════════════════════════════════════════
    7. FINAL CTA
@@ -972,7 +1018,6 @@ html { scroll-behavior: smooth; }
 }
 .ep-modal-close:hover { background: var(--surface); color: var(--white); transform: rotate(90deg); }
  
-/* Modal Left */
 .ep-modal-left {
   background: linear-gradient(160deg, #0f0f0f, #080808);
   border-right: 1px solid var(--gold-border);
@@ -1055,7 +1100,6 @@ html { scroll-behavior: smooth; }
 }
 .ep-modal-phone:hover { background: var(--gold-dim2); border-color: var(--gold); }
  
-/* Modal Right */
 .ep-modal-right {
   padding: 44px 38px;
   display: flex;
@@ -1165,7 +1209,6 @@ html { scroll-behavior: smooth; }
 .ep-form-submit:hover .ep-submit-arrow { transform: translateX(5px); }
 .ep-form-note { text-align: center; font-size: 11px; color: rgba(245,240,232,0.28); }
  
-/* Submitting */
 .ep-modal-submitting {
   flex: 1;
   display: flex;
@@ -1177,7 +1220,6 @@ html { scroll-behavior: smooth; }
   padding: 20px;
   animation: fadeUp 0.3s ease;
 }
-@keyframes fadeUpModal { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 .ep-spin-rings { position: relative; width: 66px; height: 66px; }
 .ep-spin-rings div {
   position: absolute; inset: 0;
@@ -1218,7 +1260,6 @@ html { scroll-behavior: smooth; }
 }
 @keyframes barFill { 0%{width:0%;margin-left:0} 50%{width:70%;margin-left:0} 80%{width:100%;margin-left:0} 100%{width:0%;margin-left:100%} }
  
-/* Success */
 .ep-modal-success {
   flex: 1;
   display: flex;
@@ -1228,7 +1269,6 @@ html { scroll-behavior: smooth; }
   gap: 16px;
   text-align: center;
   padding: 24px 20px;
-  animation: fadeUpModal 0.4s ease;
 }
 .ep-success-ring {
   width: 68px; height: 68px;
@@ -1239,9 +1279,7 @@ html { scroll-behavior: smooth; }
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 28px rgba(201,168,76,0.18);
-  animation: popRing 0.5s cubic-bezier(0.34,1.56,0.64,1);
 }
-@keyframes popRing { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
 .ep-success-ring span {
   font-family: var(--font-d);
   font-size: 28px;
@@ -1282,51 +1320,53 @@ html { scroll-behavior: smooth; }
 /* ════════════════════════════════════════
    RESPONSIVE
 ════════════════════════════════════════ */
+@media (max-width: 1400px) {
+  .ep-spaces-grid { grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .ep-spaces { padding: 100px 20px; }
+}
+ 
 @media (max-width: 1200px) {
   .ep-perfect-grid { grid-template-columns: repeat(3, 1fr); }
-  .ep-spaces-grid { grid-template-columns: repeat(2, 1fr); }
-  .ep-hero-content { padding: 100px 50px 80px; }
-  .ep-perfect, .ep-spaces, .ep-why, .ep-testimonials { padding: 80px 50px; }
+  /* On smaller screens fall back to 3 columns for spaces */
+  .ep-spaces-grid { grid-template-columns: repeat(3, 1fr); }
+  .ep-hero-content { padding: 100px 40px 80px; }
+  .ep-perfect, .ep-why, .ep-testimonials { padding: 80px 50px; }
+  .ep-spaces { padding: 80px 30px; }
 }
  
 @media (max-width: 992px) {
   .ep-perfect-grid { grid-template-columns: repeat(2, 1fr); }
+  .ep-spaces-grid { grid-template-columns: repeat(2, 1fr); }
   .ep-why-inner { grid-template-columns: 1fr; gap: 48px; }
   .ep-why-img-stack { max-width: 520px; }
   .ep-modal { grid-template-columns: 1fr; max-width: 560px; }
   .ep-modal-left { border-right: none; border-bottom: 1px solid var(--gold-border); padding: 32px 28px; }
-  .ep-hero-stats { gap: 20px; padding: 18px 20px; }
 }
  
 @media (max-width: 768px) {
   .ep-hero-content { padding: 88px 24px 70px; }
-  .ep-hero-stats { flex-wrap: wrap; gap: 14px; }
-  .ep-hero-ctas { flex-direction: column; align-items: flex-start; }
-  .ep-btn-secondary { width: 100%; justify-content: center; }
-  .ep-perfect, .ep-spaces, .ep-why, .ep-testimonials { padding: 70px 22px; }
+  .ep-hero-stats { gap: 14px; padding: 18px 20px; }
+  .ep-perfect, .ep-why, .ep-testimonials { padding: 70px 22px; }
+  .ep-spaces { padding: 70px 16px; }
   .ep-perfect-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
-  .ep-spaces-grid { grid-template-columns: 1fr; }
-  .ep-testimonials-grid { grid-template-columns: 1fr; }
+  .ep-spaces-grid { grid-template-columns: 1fr 1fr; }
   .ep-why-img--top { width: 90%; }
   .ep-why-img--bot { width: 65%; }
   .ep-modal-right { padding: 30px 22px; }
   .ep-form-row { grid-template-columns: 1fr; }
   .ep-final-cta-content { padding: 60px 24px; }
+  .ep-testimonials .ep-section-head { padding: 0 22px; }
 }
  
 @media (max-width: 480px) {
   .ep-hero-content { padding: 76px 16px 60px; }
   .ep-hero-t2 { font-size: 52px; }
   .ep-perfect-grid { grid-template-columns: 1fr; }
-  .ep-perfect, .ep-spaces, .ep-why, .ep-testimonials { padding: 56px 16px; }
+  .ep-spaces-grid { grid-template-columns: 1fr; }
+  .ep-perfect, .ep-why, .ep-testimonials { padding: 56px 16px; }
   .ep-modal-left { padding: 24px 18px; }
   .ep-modal-right { padding: 22px 18px; }
   .ep-section-head { margin-bottom: 38px; }
   .ep-btn-primary { width: 100%; justify-content: center; }
-}
- 
-@media (max-width: 360px) {
-  .ep-hero-t1 { font-size: 22px; }
-  .ep-hero-t2 { font-size: 44px; }
-  .ep-hero-stats { padding: 14px 14px; gap: 10px; }
+  .ep-testimonials .ep-section-head { padding: 0 16px; }
 }
