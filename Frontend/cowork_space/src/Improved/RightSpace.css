@@ -28,7 +28,7 @@
   z-index: 1;
   font-family: var(--font-body);
   /* Desktop default — zero out negative margins */
-  margin-top: 0px;
+  margin-top: -30px;
   margin-bottom: 0;
 }
 

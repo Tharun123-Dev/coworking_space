@@ -44,6 +44,8 @@
   padding: 100px 44px 110px;
   overflow: hidden;
   font-family: var(--font-body);
+  margin-top: -80px;
+  margin-bottom: -145px;
 }
 
 .offer-section::before {
@@ -894,6 +896,7 @@
 @media (max-width: 992px) {
   .offer-section {
     padding: 70px 24px 80px;
+    margin-top: 10px;
   }
 
   .offer-meta-row {
@@ -923,6 +926,8 @@
 @media (max-width: 768px) {
   .offer-section {
     padding: 60px 18px 70px;
+    margin-top: 10px;
+    margin-bottom: 1px;
   }
 
   .offer-header {
@@ -981,6 +986,8 @@
 @media (max-width: 480px) {
   .offer-section {
     padding: 48px 14px 60px;
+    margin-top: 10px;
+    margin-bottom: 1px;
   }
 
   .offer-eyebrow {
@@ -1052,6 +1059,8 @@
 @media (max-width: 360px) {
   .offer-section {
     padding: 40px 12px 50px;
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 
   .offer-title-mid {
