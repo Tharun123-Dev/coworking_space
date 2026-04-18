@@ -5,7 +5,7 @@ import "../Styles/WorkspaceTabs.css";
 import Reveal from "../Pages/Reveal";
 
 function WorkspaceTabs() {
-  const [activeTab, setActiveTab] = useState("day_pass");
+  const [activeTab, setActiveTab] = useState("meeting");
   const [data, setData] = useState([]);
   const navigate = useNavigate();
 

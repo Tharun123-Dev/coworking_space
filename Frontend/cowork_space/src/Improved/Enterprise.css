@@ -45,6 +45,7 @@ html { scroll-behavior: smooth; }
   color: var(--white);
   font-family: var(--font-b);
   overflow-x: hidden;
+  
 }
 
 /* ════════════ SHARED ════════════ */

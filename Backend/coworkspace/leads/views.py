@@ -141,8 +141,6 @@ from workspaces.models import WorkspaceCategory
 @permission_classes([IsAuthenticated])
 def create_special_lead(request):
 
-    print(request.data)
-
     category_id = request.data.get("category")
 
     if not category_id:
@@ -152,27 +150,31 @@ def create_special_lead(request):
         category = WorkspaceCategory.objects.get(id=int(category_id))
     except WorkspaceCategory.DoesNotExist:
         return Response({"error": "Invalid category"}, status=404)
+    
+    # print(category)
+    # print(category.owner)
+    # ✅ FIX: check owner exists
+    if not category.owner:
+        return Response({"error": "No owner assigned to this category"}, status=400)
 
-    # ✅ SAVE OBJECT IN VARIABLE
     lead = SpecialLead.objects.create(
         user=request.user,
         category=category,
-        owner=category.owner,
+        owner=category.owner,  # safe now
         name=request.data.get("name"),
         email=request.data.get("email"),
         phone=request.data.get("phone"),
         company=request.data.get("company"),
-        message=request.data.get("message")
+        message=request.data.get("message"),
     )
 
-    # ===========================
-    # ✅ ADD ACTIVITY LOG
-    # ===========================
+    # ✅ ACTIVITY LOG
+    from workspaces.models import ActivityLog
     ActivityLog.objects.create(
         user=request.user,
         action="CREATE",
         model_name="SpecialLead",
-        message=f"{request.user.username} requested special workspace ({category.category})"
+        message=f"{request.user.username} requested {category.category}"
     )
 
     return Response({"message": "Lead created successfully"})
@@ -226,16 +228,29 @@ def owner_special_leads(request):
         })
 
     return Response(data)
+from workspaces.models import ActivityLog
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_special_lead(request, id):
     try:
         lead = SpecialLead.objects.get(id=id, owner=request.user)
 
-        status = request.data.get("status")
+        old_status = lead.status   # ✅ store old value
+        new_status = request.data.get("status")
 
-        lead.status = status
+        lead.status = new_status
         lead.save()
+
+        # ===========================
+        # ✅ ACTIVITY LOG
+        # ===========================
+        ActivityLog.objects.create(
+            user=request.user,
+            action="UPDATE",
+            model_name="SpecialLead",
+            message=f"{request.user.username} changed lead ({lead.category.category}) status from {old_status} → {new_status}"
+        )
 
         return Response({
             "id": lead.id,
@@ -243,7 +258,7 @@ def update_special_lead(request, id):
         })
 
     except SpecialLead.DoesNotExist:
-        return Response({"error":"Not found"},status=404)
+        return Response({"error": "Not found"}, status=404)
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

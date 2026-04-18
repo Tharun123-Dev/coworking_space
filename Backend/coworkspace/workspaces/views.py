@@ -170,10 +170,17 @@ def add_category(request):
     serializer = WorkspaceCategorySerializer(data=request.data)
 
     if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
+     category = serializer.save(owner=request.user)
 
-    return Response(serializer.errors, status=400)
+     ActivityLog.objects.create(
+        user=request.user,
+        action="CREATE",
+        model_name="Category",
+        message=f"{request.user.username} added category {category.category}"
+    )
+
+    return Response(serializer.data)
+    
 
 
 # ===========================
@@ -191,10 +198,16 @@ def update_category(request, id):
     serializer = WorkspaceCategorySerializer(obj, data=request.data)
 
     if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
+     updated = serializer.save(owner=obj.owner)
 
-    return Response(serializer.errors, status=400)
+    ActivityLog.objects.create(
+        user=request.user,
+        action="UPDATE",
+        model_name="Category",
+        message=f"{request.user.username} updated category {updated.category}"
+    )
+
+    return Response(serializer.data)
 
 
 # ===========================
@@ -213,7 +226,17 @@ def delete_category(request, id):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+        
+        name = obj.category
+
         obj.delete()
+
+        ActivityLog.objects.create(
+    user=request.user,
+    action="DELETE",
+    model_name="Category",
+    message=f"{request.user.username} deleted category {name}"
+)
 
         return Response(
             {"message": "Deleted successfully"},

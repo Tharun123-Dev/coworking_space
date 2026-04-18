@@ -102,13 +102,13 @@ function AdminDashboard() {
         </div>
         <div className={styles.topBarRight}>
           {/* RECENT ACTIVITY BUTTON - TOP RIGHT CORNER */}
-          {/* <button
+          {/* { <button
             className={`${styles.recentActivityBtn} ${styles.shadowBtn}`}
             onClick={() => navigate("/recent-activity")}
           >
             <span className={styles.navBtnIcon}>📊</span>
             <span className={styles.recentActivityText}>Recent Activity</span>
-          </button> */}
+          </button> } */}
           <div className={styles.topStats}>
             <div className={styles.topStat}>
               <strong>{workspaces.length}</strong>
