@@ -288,7 +288,7 @@ def recent_activities(request):
             "action": log.action,
             "model_name": log.model_name,
             "message": log.message,
-            "time": log.created_at.strftime("%d %b %Y %I:%M %p")
+            "time": log.created_at,
         })
 
     return Response(data)

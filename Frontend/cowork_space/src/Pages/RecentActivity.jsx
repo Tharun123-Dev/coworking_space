@@ -18,12 +18,14 @@ function RecentActivity() {
       .catch(() => console.log("Error loading activities"));
   };
 
+  // ================= ROLE STYLE =================
   const getRoleClass = (role) => {
     if (role === "Admin") return "admin";
     if (role === "Owner") return "owner";
     return "user";
   };
 
+  // ================= ACTION STYLE =================
   const getActionClass = (action) => {
     if (!action) return "info";
     const a = action.toLowerCase();
@@ -33,6 +35,7 @@ function RecentActivity() {
     return "info";
   };
 
+  // ================= ICON =================
   const getIcon = (model) => {
     if (model === "Booking") return "📦";
     if (model === "Ticket") return "🎫";
@@ -42,6 +45,37 @@ function RecentActivity() {
     return "⚡";
   };
 
+  // ================= FORMAT TIME =================
+  const formatTime = (time) => {
+    if (!time) return "-";
+
+    const date = new Date(time);
+
+    return date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // 🔥 OPTIONAL (BEST UI)
+  const timeAgo = (time) => {
+    if (!time) return "-";
+
+    const now = new Date();
+    const past = new Date(time);
+    const diff = Math.floor((now - past) / 1000);
+
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  };
+
+  // ================= EDIT =================
   const startEdit = (activity) => {
     setEditId(activity.id);
     setEditMessage(activity.message || "");
@@ -65,6 +99,7 @@ function RecentActivity() {
       .catch(() => alert("Edit failed"));
   };
 
+  // ================= DELETE =================
   const deleteActivity = (id) => {
     if (!window.confirm("Delete this activity?")) return;
 
@@ -86,6 +121,8 @@ function RecentActivity() {
   return (
     <div className="activity-container">
       <div className="activity-shell">
+
+        {/* ================= HEADER ================= */}
         <div className="activity-header">
           <div className="activity-header-left">
             <p className="activity-eyebrow">Live System Feed</p>
@@ -108,6 +145,7 @@ function RecentActivity() {
           </div>
         </div>
 
+        {/* ================= EMPTY ================= */}
         {activities.length === 0 ? (
           <div className="activity-empty">
             <div className="activity-empty-icon">🕘</div>
@@ -115,23 +153,32 @@ function RecentActivity() {
             <p>Recent system actions will appear here once activity starts.</p>
           </div>
         ) : (
+
+          // ================= LIST =================
           <div className="activity-list">
             {activities.map((a, index) => (
               <div className="activity-card" key={a.id}>
+
+                {/* LEFT TIMELINE */}
                 <div className="activity-left">
                   <div className="activity-timeline">
                     <div className={`activity-icon ${getActionClass(a.action)}`}>
                       {getIcon(a.model_name)}
                     </div>
+
                     {index !== activities.length - 1 && (
                       <div className="activity-line" />
                     )}
                   </div>
                 </div>
 
+                {/* CONTENT */}
                 <div className="activity-content">
+
+                  {/* BADGES */}
                   <div className="activity-top-row">
                     <div className="activity-badges">
+
                       <div className="activity-model-tag">
                         {a.model_name || "Activity"}
                       </div>
@@ -143,16 +190,18 @@ function RecentActivity() {
                       <div className={`role-badge ${getRoleClass(a.role)}`}>
                         {a.role || "User"}
                       </div>
+
                     </div>
                   </div>
 
+                  {/* EDIT MODE */}
                   {editId === a.id ? (
                     <div className="activity-edit-box">
                       <textarea
                         value={editMessage}
                         onChange={(e) => setEditMessage(e.target.value)}
-                        placeholder="Edit activity message"
                       />
+
                       <div className="activity-edit-actions">
                         <button
                           className="save-btn"
@@ -160,43 +209,46 @@ function RecentActivity() {
                         >
                           Save
                         </button>
-                        <button
-                          className="cancel-btn"
-                          onClick={cancelEdit}
-                        >
+
+                        <button className="cancel-btn" onClick={cancelEdit}>
                           Cancel
                         </button>
                       </div>
                     </div>
                   ) : (
                     <>
+                      {/* MESSAGE */}
                       <div className="activity-message">
                         <strong>{a.user}</strong> {a.message}
                       </div>
 
+                      {/* TIME */}
                       <div className="activity-meta">
-                        <span className="activity-time">{a.time}</span>
+                        <span className="activity-time">
+                          {formatTime(a.time)} • {timeAgo(a.time)}
+                        </span>
                       </div>
                     </>
                   )}
                 </div>
 
+                {/* ACTION BUTTONS */}
                 <div className="activity-actions">
                   <button
                     className="edit-btn"
                     onClick={() => startEdit(a)}
-                    title="Edit activity"
                   >
                     ✏️
                   </button>
+
                   <button
                     className="delete-btn"
                     onClick={() => deleteActivity(a.id)}
-                    title="Delete activity"
                   >
                     🗑️
                   </button>
                 </div>
+
               </div>
             ))}
           </div>
