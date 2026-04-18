@@ -168,7 +168,7 @@
   position: relative;
   border-radius: 28px;
   overflow: hidden;
-  min-height: 500px;
+  min-height: 450px;
   background: var(--black-card);
   border: 1px solid rgba(201, 168, 76, 0.12);
   box-shadow:

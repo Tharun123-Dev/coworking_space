@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "../Styles/WorkspaceFeature.css";
 import { useNavigate } from "react-router-dom";
 import Reveal from "../Pages/Reveal";
@@ -44,14 +44,26 @@ const data = [
 function WorkspaceFeature() {
   const [index, setIndex] = useState(0);
   const navigate = useNavigate();
+  const imageSectionRef = useRef(null);
 
   const prev = () => setIndex(index === 0 ? data.length - 1 : index - 1);
   const next = () => setIndex((index + 1) % data.length);
 
+  const handleItemClick = (i) => {
+    setIndex(i);
+
+    if (window.innerWidth <= 768 && imageSectionRef.current) {
+      setTimeout(() => {
+        imageSectionRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }, 100);
+    }
+  };
+
   return (
     <div className="wf-wrapper">
-
-      {/* ===== SECTION HEADER ===== */}
       <Reveal>
         <div className="wf-header">
           <span className="wf-tag">
@@ -63,23 +75,16 @@ function WorkspaceFeature() {
         </div>
       </Reveal>
 
-      {/* ===== MAIN CONTENT: LEFT + RIGHT ===== */}
       <div className="wf-container">
-
-        {/* LEFT SIDE */}
         <div className="wf-left">
-
-          {/* Feature list items */}
           {data.map((item, i) => (
             <div
               key={item.id}
               className={`wf-item ${i === index ? "active" : ""}`}
-              onClick={() => setIndex(i)}
+              onClick={() => handleItemClick(i)}
             >
-              {/* Number */}
               <span className="number">0{item.id}</span>
 
-              {/* Text */}
               <div className="wf-text">
                 <div className="wf-item-top">
                   <h3>{item.title}</h3>
@@ -88,23 +93,20 @@ function WorkspaceFeature() {
                 <p>{item.desc}</p>
               </div>
 
-              {/* Active indicator arrow */}
               {i === index && <span className="wf-active-arrow">→</span>}
             </div>
           ))}
 
-          {/* Progress dots */}
           <div className="wf-dots">
             {data.map((_, i) => (
               <button
                 key={i}
                 className={`wf-dot ${i === index ? "wf-dot-active" : ""}`}
-                onClick={() => setIndex(i)}
+                onClick={() => handleItemClick(i)}
               />
             ))}
           </div>
 
-          {/* Contact button */}
           <Reveal>
             <button
               className="contact-btn"
@@ -114,13 +116,9 @@ function WorkspaceFeature() {
               <span className="contact-btn-arrow">→</span>
             </button>
           </Reveal>
-
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="wf-right">
-
-          {/* Image */}
+        <div className="wf-right" ref={imageSectionRef}>
           <Reveal>
             <div className="wf-img-wrap">
               <img
@@ -128,28 +126,23 @@ function WorkspaceFeature() {
                 alt={data[index].title}
                 key={index}
               />
-              {/* Dark overlay */}
               <div className="wf-img-overlay"></div>
 
-              {/* Caption on image */}
               <div className="wf-img-caption">
                 <span className="wf-caption-tag">{data[index].tag}</span>
                 <h4>{data[index].title}</h4>
               </div>
 
-              {/* Counter badge */}
               <div className="wf-counter">
                 {String(index + 1).padStart(2, "0")} / {String(data.length).padStart(2, "0")}
               </div>
             </div>
           </Reveal>
 
-          {/* Navigation arrows */}
-          <div className="wf-arrows">
+          {/* <div className="wf-arrows">
             <button onClick={prev} aria-label="Previous">←</button>
             <button onClick={next} aria-label="Next">→</button>
-          </div>
-
+          </div> */}
         </div>
       </div>
     </div>

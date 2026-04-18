@@ -129,9 +129,7 @@ const LimitedOfferSection = ({ openModal }) => {
 
     const p = audio.play();
     if (p && typeof p.catch === "function") {
-      p.catch(() => {
-        // autoplay blocked if page is not unlocked yet
-      });
+      p.catch(() => {});
     }
   }, [audioReady]);
 
@@ -204,9 +202,7 @@ const LimitedOfferSection = ({ openModal }) => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleEnded = () => {
-      // keep ready for next section re-entry
-    };
+    const handleEnded = () => {};
 
     audio.addEventListener("ended", handleEnded);
 

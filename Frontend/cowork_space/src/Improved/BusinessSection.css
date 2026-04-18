@@ -1,8 +1,3 @@
-/* ============================================================
-   BusinessSection.css
-   BLACK & GOLD — FIFO Urgency · 5 Cards Per Row
-   ============================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
@@ -65,7 +60,6 @@
   background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
 }
 
-/* particles */
 .offer-particles {
   position: absolute;
   inset: 0;
@@ -94,7 +88,6 @@
   100% { opacity: 0; transform: translateY(-160px) scale(0.4); }
 }
 
-/* header */
 .offer-header {
   position: relative;
   z-index: 2;
@@ -120,7 +113,9 @@
   backdrop-filter: blur(8px);
 }
 
-.eyebrow-fire { font-size: 14px; }
+.eyebrow-fire {
+  font-size: 14px;
+}
 
 .eyebrow-badge {
   padding: 2px 8px;
@@ -194,7 +189,6 @@
   flex-wrap: wrap;
 }
 
-/* top boxes */
 .countdown-box,
 .availability-box,
 .fifo-box {
@@ -348,8 +342,14 @@
   flex-shrink: 0;
 }
 
-.avail-dot.free { background: var(--gold); }
-.avail-dot.claimed { background: var(--surface); border: 1px solid var(--border); }
+.avail-dot.free {
+  background: var(--gold);
+}
+
+.avail-dot.claimed {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
 
 .fifo-box {
   display: flex;
@@ -389,7 +389,6 @@
   font-weight: 400;
 }
 
-/* GRID - 5 CARDS IN ONE ROW */
 .offer-grid {
   position: relative;
   z-index: 2;
@@ -399,7 +398,6 @@
   margin-bottom: 48px;
 }
 
-/* card */
 .offer-card {
   position: relative;
   background: var(--card-bg);
@@ -455,7 +453,6 @@
   transform: translateY(-4px);
 }
 
-/* ribbon */
 .card-ribbon {
   position: absolute;
   top: 14px;
@@ -480,7 +477,6 @@
   box-shadow: none;
 }
 
-/* image */
 .offer-card-img {
   position: relative;
   height: 132px;
@@ -540,7 +536,9 @@
   padding: 12px;
 }
 
-.claimed-shield span { font-size: 24px; }
+.claimed-shield span {
+  font-size: 24px;
+}
 
 .claimed-shield p {
   font-family: var(--font-display);
@@ -556,7 +554,6 @@
   font-weight: 500;
 }
 
-/* body */
 .offer-card-body {
   padding: 16px 14px 14px;
 }
@@ -778,7 +775,6 @@
   display: none;
 }
 
-/* bottom */
 .offer-bottom-banner {
   position: relative;
   z-index: 2;
@@ -875,7 +871,6 @@
   margin-bottom: 14px;
 }
 
-/* RESPONSIVE */
 @media (max-width: 1600px) {
   .offer-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -914,8 +909,51 @@
   }
 
   .offer-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .offer-card-img {
+    height: 124px;
+  }
+
+  .offer-card-body {
+    padding: 14px 13px 13px;
+  }
+
+  .offer-card-title {
+    font-size: 19px;
+    min-height: auto;
+  }
+
+  .offer-card-type {
+    font-size: 10px;
+  }
+
+  .offer-card-meta span {
+    font-size: 11.5px;
+  }
+
+  .offer-amenities span {
+    font-size: 10px;
+    padding: 4px 7px;
+  }
+
+  .price-original {
+    font-size: 18px;
+  }
+
+  .price-discounted {
+    font-size: 24px;
+  }
+
+  .offer-urgency {
+    font-size: 11.5px;
+  }
+
+  .offer-claim-btn {
+    font-size: 11px;
+    padding: 12px 12px;
   }
 
   .offer-bottom-banner {
@@ -925,7 +963,7 @@
 
 @media (max-width: 768px) {
   .offer-section {
-    padding: 60px 18px 70px;
+    padding: 60px 16px 70px;
     margin-top: 10px;
     margin-bottom: 1px;
   }
@@ -936,6 +974,11 @@
 
   .offer-title-mid {
     font-size: clamp(50px, 14vw, 76px);
+  }
+
+  .offer-subtitle {
+    font-size: 16px;
+    line-height: 1.8;
   }
 
   .offer-meta-row {
@@ -961,13 +1004,113 @@
     min-width: 46px;
   }
 
+  .fifo-rule {
+    font-size: 13px;
+  }
+
   .offer-grid {
     grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 14px;
+    max-width: 430px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .offer-card {
+    border-radius: 18px;
   }
 
   .offer-card-img {
-    height: 170px;
+    height: 122px;
+  }
+
+  .offer-card-area-tag {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .offer-card-body {
+    padding: 14px 13px 14px;
+  }
+
+  .offer-card-type {
+    font-size: 10px;
+    margin-bottom: 7px;
+  }
+
+  .offer-card-title {
+    font-size: 22px;
+    margin-bottom: 10px;
+    line-height: 1.12;
+    min-height: auto;
+  }
+
+  .offer-card-meta {
+    gap: 8px 12px;
+    margin-bottom: 11px;
+  }
+
+  .offer-card-meta span {
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .offer-amenities {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .offer-amenities span {
+    font-size: 10.5px;
+    padding: 4px 8px;
+  }
+
+  .offer-price-row {
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 10px 11px;
+  }
+
+  .price-original {
+    font-size: 18px;
+  }
+
+  .price-slash {
+    font-size: 11px;
+  }
+
+  .price-tag {
+    font-size: 8.5px;
+  }
+
+  .price-discounted {
+    font-size: 26px;
+  }
+
+  .price-discounted small {
+    font-size: 12px;
+  }
+
+  .price-taken {
+    font-size: 12px;
+  }
+
+  .offer-urgency {
+    font-size: 12px;
+    margin-bottom: 11px;
+  }
+
+  .offer-claim-btn {
+    font-size: 11.5px;
+    padding: 12px 12px;
+  }
+
+  .claimed-shield p {
+    font-size: 17px;
+  }
+
+  .claimed-shield small {
+    font-size: 10px;
   }
 
   .offer-bottom-banner {
@@ -977,15 +1120,27 @@
     gap: 22px;
   }
 
+  .bottom-banner-title {
+    font-size: 22px;
+  }
+
+  .bottom-banner-desc {
+    font-size: 14px;
+  }
+
   .bottom-banner-steps {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .step-label {
+    font-size: 11px;
   }
 }
 
 @media (max-width: 480px) {
   .offer-section {
-    padding: 48px 14px 60px;
+    padding: 48px 12px 60px;
     margin-top: 10px;
     margin-bottom: 1px;
   }
@@ -1004,11 +1159,11 @@
   }
 
   .offer-title-bot {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .offer-subtitle {
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .countdown-box {
@@ -1025,16 +1180,80 @@
     font-size: 22px;
   }
 
+  .offer-grid {
+    gap: 12px;
+    max-width: 360px;
+  }
+
+  .offer-card {
+    border-radius: 16px;
+  }
+
+  .offer-card-img {
+    height: 108px;
+  }
+
+  .offer-card-area-tag {
+    bottom: 8px;
+    left: 10px;
+    font-size: 10px;
+    padding: 4px 9px;
+  }
+
   .offer-card-body {
-    padding: 16px 16px 18px;
+    padding: 12px 12px 13px;
+  }
+
+  .offer-card-type {
+    font-size: 9.5px;
+    margin-bottom: 6px;
   }
 
   .offer-card-title {
-    font-size: 18px;
+    font-size: 20px;
+    margin-bottom: 9px;
+  }
+
+  .offer-card-meta {
+    margin-bottom: 10px;
+  }
+
+  .offer-card-meta span {
+    font-size: 11.5px;
+  }
+
+  .offer-amenities {
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  .offer-amenities span {
+    font-size: 9.5px;
+    padding: 4px 7px;
+  }
+
+  .offer-price-row {
+    padding: 9px 10px;
+    gap: 7px;
+    margin-bottom: 10px;
+  }
+
+  .price-original {
+    font-size: 17px;
   }
 
   .price-discounted {
-    font-size: 22px;
+    font-size: 24px;
+  }
+
+  .offer-urgency {
+    font-size: 11px;
+    gap: 7px;
+  }
+
+  .offer-claim-btn {
+    font-size: 10.5px;
+    padding: 11px 10px;
   }
 
   .offer-bottom-banner {
@@ -1058,13 +1277,51 @@
 
 @media (max-width: 360px) {
   .offer-section {
-    padding: 40px 12px 50px;
+    padding: 40px 10px 50px;
     margin-top: 10px;
     margin-bottom: 10px;
   }
 
   .offer-title-mid {
     font-size: 48px;
+  }
+
+  .offer-grid {
+    max-width: 320px;
+    gap: 10px;
+  }
+
+  .offer-card-img {
+    height: 98px;
+  }
+
+  .offer-card-body {
+    padding: 11px 11px 12px;
+  }
+
+  .offer-card-title {
+    font-size: 18px;
+  }
+
+  .offer-card-meta span {
+    font-size: 11px;
+  }
+
+  .offer-amenities span {
+    font-size: 9px;
+  }
+
+  .price-original {
+    font-size: 16px;
+  }
+
+  .price-discounted {
+    font-size: 22px;
+  }
+
+  .offer-claim-btn {
+    font-size: 10px;
+    padding: 10px 10px;
   }
 
   .bottom-banner-steps {

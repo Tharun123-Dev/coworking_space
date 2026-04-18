@@ -57,7 +57,7 @@
   align-items: stretch;
   gap: 24px;
   width: max-content;
-  animation: testimonialScroll 32s linear infinite;
+  animation: testimonialScroll 60s linear infinite;
 }
 
 .marquee:hover .marqueeTrack {

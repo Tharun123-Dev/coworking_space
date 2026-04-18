@@ -5,16 +5,18 @@ import { useNavigate } from "react-router-dom";
 
 function Footer() {
   const navigate = useNavigate();
-  
+
+  const handleBookTour = () => {
+    navigate("/", { replace: false });
+  };
+
   return (
     <footer className={styles.footer}>
       <Reveal>
-        {/* Background pattern / gradient shade */}
         <div className={styles.bgPattern}></div>
 
-        {/* Main content grid */}
         <div className={styles.container}>
-          {/* Logo & tagline */}
+          {/* Left */}
           <div className={styles.logoSection}>
             <div className={styles.logo}>
               <Reveal>
@@ -36,8 +38,7 @@ function Footer() {
                 Secure, modern, and designed for productivity.
               </p>
             </Reveal>
-            
-            {/* Social icons */}
+
             <div className={styles.socialIcons}>
               <a
                 href="https://www.facebook.com/"
@@ -81,54 +82,54 @@ function Footer() {
             </div>
           </div>
 
-          {/* Our Cities */}
-          <div className={styles.linkSection}>
-            <Reveal>
-              <h4 className={styles.secTitle}>Our Cities</h4>
-            </Reveal>
-            <ul className={styles.linkList}>
+          {/* Center */}
+          <div className={styles.middleWrapper}>
+            <div className={styles.linkSection}>
               <Reveal>
-                <li><a href="#" className={styles.link}>Hyderabad</a></li>
-                <li><a href="#" className={styles.link}>Bangalore</a></li>
-                <li><a href="#" className={styles.link}>Mumbai</a></li>
-                <li><a href="#" className={styles.link}>Delhi NCR</a></li>
-                <li><a href="#" className={styles.link}>Chennai</a></li>
-                <li><a href="#" className={styles.link}>Pune</a></li>
+                <h4 className={styles.secTitle}>Our Cities</h4>
               </Reveal>
-            </ul>
-          </div>
+              <ul className={styles.linkList}>
+                <Reveal>
+                  <li><a href="#" className={styles.link}>Hyderabad</a></li>
+                  <li><a href="#" className={styles.link}>Bangalore</a></li>
+                  <li><a href="#" className={styles.link}>Mumbai</a></li>
+                  <li><a href="#" className={styles.link}>Delhi NCR</a></li>
+                  <li><a href="#" className={styles.link}>Chennai</a></li>
+                  <li><a href="#" className={styles.link}>Pune</a></li>
+                </Reveal>
+              </ul>
+            </div>
 
-          {/* Services */}
-          <div className={styles.linkSection}>
-            <Reveal>
-              <h4 className={styles.secTitle}>Services</h4>
-            </Reveal>
-            <ul className={styles.linkList}>
+            <div className={styles.linkSection}>
               <Reveal>
-                <li><a href="#" className={styles.link}>Hot Desk</a></li>
-                <li><a href="#" className={styles.link}>Dedicated Desk</a></li>
-                <li><a href="#" className={styles.link}>Private Office</a></li>
-                <li><a href="#" className={styles.link}>Meeting Rooms</a></li>
-                <li><a href="#" className={styles.link}>Virtual Office</a></li>
+                <h4 className={styles.secTitle}>Services</h4>
               </Reveal>
-            </ul>
+              <ul className={styles.linkList}>
+                <Reveal>
+                  <li><a href="#" className={styles.link}>Hot Desk</a></li>
+                  <li><a href="#" className={styles.link}>Dedicated Desk</a></li>
+                  <li><a href="#" className={styles.link}>Private Office</a></li>
+                  <li><a href="#" className={styles.link}>Meeting Rooms</a></li>
+                  <li><a href="#" className={styles.link}>Virtual Office</a></li>
+                </Reveal>
+              </ul>
+            </div>
+
+            <div className={styles.linkSection}>
+              <Reveal>
+                <h4 className={styles.secTitle}>Company</h4>
+              </Reveal>
+              <ul className={styles.linkList}>
+                <li><a href="#" className={styles.link}>About Us</a></li>
+                <li><a href="#" className={styles.link}>Careers</a></li>
+                <li><a href="#" className={styles.link}>Blog</a></li>
+                <li><a href="#" className={styles.link}>Press</a></li>
+                <li><a href="#" className={styles.link}>Partners</a></li>
+              </ul>
+            </div>
           </div>
 
-          {/* Company */}
-          <div className={styles.linkSection}>
-            <Reveal>
-              <h4 className={styles.secTitle}>Company</h4>
-            </Reveal>
-            <ul className={styles.linkList}>
-              <li><a href="#" className={styles.link}>About Us</a></li>
-              <li><a href="#" className={styles.link}>Careers</a></li>
-              <li><a href="#" className={styles.link}>Blog</a></li>
-              <li><a href="#" className={styles.link}>Press</a></li>
-              <li><a href="#" className={styles.link}>Partners</a></li>
-            </ul>
-          </div>
-
-          {/* Contact */}
+          {/* Right */}
           <div className={styles.contactSection}>
             <Reveal>
               <h4 className={styles.secTitle}>Get In Touch</h4>
@@ -142,7 +143,8 @@ function Footer() {
                   <span className={styles.contactIcon}>📞</span> +91 98765 43210
                 </li>
                 <li>
-                  <span className={styles.contactIcon}>✉️</span> <a href="mailto:hello@cowork.co">hello@cowork.co</a>
+                  <span className={styles.contactIcon}>✉️</span>{" "}
+                  <a href="mailto:hello@cowork.co">hello@cowork.co</a>
                 </li>
                 <li>
                   <span className={styles.contactIcon}>🕒</span> Mon–Sat 9 AM–10 PM
@@ -151,9 +153,10 @@ function Footer() {
             </ul>
 
             <Reveal>
-              <button 
+              <button
+                type="button"
                 className={styles.ctaButton}
-                onClick={() => navigate("/")}
+                onClick={handleBookTour}
               >
                 Book a Tour
               </button>
@@ -161,7 +164,6 @@ function Footer() {
           </div>
         </div>
 
-        {/* Bottom copyright bar */}
         <div className={styles.bottomBar}>
           <div className={styles.bottomContainer}>
             <Reveal>
