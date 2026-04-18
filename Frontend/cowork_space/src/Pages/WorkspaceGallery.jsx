@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-// ── Reduced gallery data for your actual website ─────────────────────
 const CATEGORY_DATA = {
   coworking: {
     label: "Coworking Spaces",
@@ -69,6 +68,374 @@ const STATS = {
   enterprise: [{ n: "50+", l: "Clients" }, { n: "10K+", l: "sqft" }],
 };
 
+const BOOK_LABELS = {
+  coworking: "Book Coworking →",
+  office: "Book Office →",
+  meeting: "Book Meeting →",
+  enterprise: "Enterprise →",
+};
+
+/* ─── Global CSS: responsive + hover + animations only ──────── */
+const GLOBAL_CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .wg-pills::-webkit-scrollbar { display: none; }
+
+  /* ── Pill active/hover ── */
+  .wg-pill { transition: color 0.25s, border-color 0.25s; }
+  .wg-pill:hover { color: rgba(232,228,220,0.85) !important; }
+
+  /* ── Nav arrow button — full original style ── */
+  .wg-nav-arrow {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    color: #E8E4DC;
+    padding: 0.75rem 1.25rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background 0.28s ease, transform 0.28s ease, box-shadow 0.28s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .wg-nav-arrow:hover {
+    background: rgba(255,255,255,0.18);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+  }
+  .wg-nav-arrow:active { transform: translateY(0); }
+
+  /* accent overlay on nav buttons */
+  .wg-nav-arrow.accent-overlay {
+    background: linear-gradient(135deg, var(--btn-accent-color, rgba(200,169,110,0.18)), rgba(255,255,255,0.04));
+    border-color: var(--btn-accent-color, rgba(200,169,110,0.3));
+    color: var(--btn-accent-color, #C8A96E);
+  }
+  .wg-nav-arrow.accent-overlay:hover {
+    background: linear-gradient(135deg, var(--btn-accent-color, rgba(200,169,110,0.28)), rgba(255,255,255,0.08));
+    box-shadow: 0 10px 28px rgba(0,0,0,0.3);
+  }
+
+  /* ── Image hover ── */
+  .wg-img { transition: transform 0.4s ease, filter 0.4s ease; }
+  .wg-img:hover { transform: scale(1.009) !important; filter: brightness(1) !important; }
+
+  /* ── Reveal animation ── */
+  .wg-reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .wg-reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── Tablet ── */
+  @media (max-width: 960px) {
+    .wg-section-header {
+      grid-template-columns: 1fr !important;
+      gap: 1.25rem !important;
+    }
+    .wg-right-col {
+      flex-direction: row !important;
+      align-items: center !important;
+      flex-wrap: wrap !important;
+      gap: 0.6rem !important;
+    }
+    .wg-hero-row {
+      grid-template-columns: 1fr !important;
+    }
+    .wg-side-strip {
+      flex-direction: row !important;
+      gap: 6px !important;
+    }
+    .wg-side-img {
+      flex: 1;
+      aspect-ratio: 4/3 !important;
+      height: auto !important;
+    }
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 600px) {
+    .wg-section {
+      padding: 1.75rem 1rem 2rem !important;
+    }
+    .wg-hero-row { gap: 5px !important; margin-bottom: 5px !important; }
+    .wg-mosaic { grid-template-columns: 1fr !important; gap: 5px !important; }
+    .wg-side-strip { gap: 5px !important; }
+    .wg-badges { margin-top: 0.85rem !important; }
+    .wg-stats-row { gap: 1.1rem !important; }
+    .wg-right-col { gap: 0.5rem !important; }
+    .wg-nav-arrow { padding: 0.65rem 1rem; font-size: 0.7rem; }
+    .wg-section-title { font-size: clamp(1.75rem, 7vw, 2.8rem) !important; }
+  }
+
+  @media (max-width: 400px) {
+    .wg-section { padding: 1.5rem 0.85rem 1.75rem !important; }
+    .wg-mosaic { grid-template-columns: 1fr !important; }
+  }
+`;
+
+/* ─── Inline style helpers ──────────────────────────────────── */
+const S = {
+  root: {
+    background: "#0C0C0B",
+    color: "#E8E4DC",
+    fontFamily: "'DM Sans', sans-serif",
+    minHeight: "100vh",
+    overflowX: "hidden",
+  },
+
+  pillsNav: {
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+    background: "rgba(12,12,11,0.93)",
+    backdropFilter: "blur(14px)",
+    WebkitBackdropFilter: "blur(14px)",
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    display: "flex",
+    overflowX: "auto",
+    scrollbarWidth: "none",
+    padding: "0 clamp(1rem,4vw,4rem)",
+  },
+
+  pill: (active, accent) => ({
+    flexShrink: 0,
+    padding: "1.05rem 1.45rem",
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: "0.76rem",
+    fontWeight: 500,
+    letterSpacing: "0.13em",
+    textTransform: "uppercase",
+    color: active ? "#E8E4DC" : "rgba(232,228,220,0.42)",
+    cursor: "pointer",
+    border: "none",
+    background: "transparent",
+    borderBottom: active ? `2px solid ${accent}` : "2px solid transparent",
+    whiteSpace: "nowrap",
+  }),
+
+  /* section: small but visible bottom padding for breathing room */
+  section: {
+    padding: "clamp(2.25rem,4.5vw,4.5rem) clamp(1rem,5vw,5rem) clamp(1.5rem,3vw,3rem)",
+    borderBottom: "1px solid rgba(255,255,255,0.05)",
+    margin: 0,
+  },
+
+  sectionHeader: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    alignItems: "end",
+    gap: "1.75rem",
+    marginBottom: "1rem",
+  },
+
+  eyebrow: (accent) => ({
+    display: "block",
+    fontSize: "0.69rem",
+    letterSpacing: "0.22em",
+    textTransform: "uppercase",
+    color: accent,
+    marginBottom: "0.1rem",
+  }),
+
+  title: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "clamp(2.1rem,4.5vw,3.9rem)",
+    fontWeight: 300,
+    lineHeight: 1.08,
+    color: "#E8E4DC",
+    marginBottom: "0.1rem",
+  },
+
+  titleEm: (accent) => ({
+    fontStyle: "italic",
+    color: accent,
+  }),
+
+  desc: {
+    fontSize: "0.9rem",
+    lineHeight: 1.72,
+    color: "rgba(232,228,220,0.52)",
+    maxWidth: "44ch",
+    marginTop: "0.1rem",
+  },
+
+  rightCol: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: "0.1rem",
+  },
+
+  btnGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.6rem",
+    alignItems: "flex-end",
+  },
+
+  statsRow: {
+    display: "flex",
+    gap: "2rem",
+    flexWrap: "wrap",
+    marginTop: "0.1rem",
+  },
+
+  statN: (accent) => ({
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "2rem",
+    fontWeight: 600,
+    color: accent,
+    lineHeight: 1,
+  }),
+
+  statL: {
+    fontSize: "0.65rem",
+    letterSpacing: "0.15em",
+    textTransform: "uppercase",
+    color: "rgba(232,228,220,0.38)",
+    marginTop: "0.01rem",
+  },
+
+  heroRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr 285px",
+    gap: "7px",
+    marginBottom: "1px",
+  },
+
+  sideStrip: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "7px",
+  },
+
+  heroImg: {
+    width: "100%",
+    aspectRatio: "16/9",
+    objectFit: "cover",
+    borderRadius: "5px",
+    cursor: "pointer",
+    display: "block",
+    filter: "brightness(0.84)",
+  },
+
+  sideImg: {
+    width: "100%",
+    objectFit: "cover",
+    borderRadius: "5px",
+    cursor: "pointer",
+    display: "block",
+    filter: "brightness(0.84)",
+    flex: 1,
+    minHeight: 0,
+  },
+
+  mosaic: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2,1fr)",
+    gap: "7px",
+  },
+
+  mosaicImg: {
+    width: "100%",
+    aspectRatio: "4/3",
+    objectFit: "cover",
+    borderRadius: "5px",
+    cursor: "pointer",
+    display: "block",
+    filter: "brightness(0.84)",
+  },
+
+  badges: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "7px",
+    marginTop: "1rem",
+  },
+
+  badge: {
+    fontSize: "0.68rem",
+    letterSpacing: "0.09em",
+    textTransform: "uppercase",
+    padding: "5px 13px",
+    border: "1px solid rgba(255,255,255,0.11)",
+    borderRadius: "100px",
+    color: "rgba(232,228,220,0.55)",
+    background: "rgba(255,255,255,0.03)",
+  },
+
+  lightboxBg: {
+    position: "fixed",
+    inset: 0,
+    zIndex: 9999,
+    background: "rgba(0,0,0,0.93)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "2rem",
+    cursor: "zoom-out",
+  },
+
+  lightboxImg: {
+    maxWidth: "min(90vw,1400px)",
+    maxHeight: "85vh",
+    objectFit: "contain",
+    borderRadius: "5px",
+  },
+
+  lightboxClose: {
+    position: "absolute",
+    top: "1.5rem",
+    right: "2rem",
+    fontSize: "2rem",
+    color: "rgba(255,255,255,0.5)",
+    cursor: "pointer",
+    background: "none",
+    border: "none",
+    lineHeight: 1,
+  },
+
+  fallback: {
+    background: "rgba(255,255,255,0.04)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "5px",
+    color: "rgba(255,255,255,0.15)",
+    fontSize: "0.72rem",
+    aspectRatio: "4/3",
+    width: "100%",
+  },
+
+  footer: {
+    padding: "2.5rem clamp(1rem,5vw,5rem)",
+    margin: 0,
+    textAlign: "center",
+    borderTop: "1px solid rgba(255,255,255,0.04)",
+  },
+
+  footerText: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "clamp(1.6rem,3.5vw,2.8rem)",
+    color: "rgba(232,228,220,0.36)",
+  },
+
+  footerAccent: { color: "#C8A96E" },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   Main Component
+══════════════════════════════════════════════════════════════ */
 export default function WorkspaceGallery() {
   const { type } = useParams();
   const navigate = useNavigate();
@@ -77,45 +444,33 @@ export default function WorkspaceGallery() {
   const [lightbox, setLightbox] = useState(null);
   const [imgErrors, setImgErrors] = useState({});
 
-  // Companies button → home page + companies section
   const scrollToCompanies = () => {
     navigate("/");
     setTimeout(() => {
-      const companiesSection = document.getElementById("workspace-clients-section");
-      if (companiesSection) {
-        companiesSection.scrollIntoView({ behavior: "smooth" });
-      }
+      const el = document.getElementById("workspace-clients-section");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
     }, 500);
   };
 
-  // Second button → direct home page
   const goToHomePage = () => {
     navigate("/");
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 200);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 200);
   };
 
-  // Scroll to the section matching the route param
   useEffect(() => {
     const target = type || ALL_SECTIONS[0];
     setActiveSection(target);
     const el = sectionRefs.current[target];
-    if (el) {
-      setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
-    }
+    if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
   }, [type]);
 
-  // Intersection observer to update active pill
   useEffect(() => {
     const observers = [];
     ALL_SECTIONS.forEach((key) => {
       const el = sectionRefs.current[key];
       if (!el) return;
       const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setActiveSection(key);
-        },
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(key); },
         { threshold: 0.3 }
       );
       obs.observe(el);
@@ -136,264 +491,19 @@ export default function WorkspaceGallery() {
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+      <style>{GLOBAL_CSS}</style>
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      <div style={S.root}>
 
-        .wg-root {
-          background: #0C0C0B;
-          color: #E8E4DC;
-          font-family: 'DM Sans', sans-serif;
-          min-height: 100vh;
-          overflow-x: hidden;
-        }
-
-        .wg-pills {
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          background: rgba(12,12,11,0.92);
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-          display: flex;
-          gap: 0;
-          padding: 0 clamp(1rem,4vw,4rem);
-          overflow-x: auto;
-          scrollbar-width: none;
-        }
-        .wg-pills::-webkit-scrollbar { display: none; }
-
-        .wg-pill {
-          flex-shrink: 0;
-          padding: 1.1rem 1.5rem;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 0.78rem;
-          font-weight: 500;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: rgba(232,228,220,0.45);
-          cursor: pointer;
-          border: none;
-          background: transparent;
-          border-bottom: 2px solid transparent;
-          transition: color 0.25s, border-color 0.25s;
-          white-space: nowrap;
-        }
-        .wg-pill.active {
-          color: #E8E4DC;
-          border-bottom-color: var(--pill-accent, #C8A96E);
-        }
-        .wg-pill:hover { color: rgba(232,228,220,0.8); }
-
-        .wg-nav-arrow {
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.15);
-          color: #E8E4DC;
-          padding: 0.8rem 1.2rem;
-          border-radius: 50px;
-          font-size: 0.75rem;
-          font-weight: 500;
-          letter-spacing: 0.05em;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-        .wg-nav-arrow:hover {
-          background: rgba(255,255,255,0.2);
-          transform: translateY(-1px);
-          box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-
-        .wg-section {
-          padding: clamp(4rem,8vw,8rem) clamp(1rem,5vw,5rem);
-          border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
-
-        .wg-section-header {
-          display: grid;
-          grid-template-columns: 1fr auto;
-          align-items: end;
-          gap: 2rem;
-          margin-bottom: 3.5rem;
-        }
-        @media (max-width: 768px) {
-          .wg-section-header { grid-template-columns: 1fr; gap: 1.5rem; }
-        }
-
-        .wg-eyebrow {
-          font-size: 0.72rem;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: var(--sec-accent, #C8A96E);
-          margin-bottom: 0.75rem;
-        }
-        .wg-section-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(2.4rem, 5vw, 4.2rem);
-          font-weight: 300;
-          line-height: 1.1;
-          color: #E8E4DC;
-          margin-bottom: 1rem;
-        }
-        .wg-section-title em {
-          font-style: italic;
-          color: var(--sec-accent, #C8A96E);
-        }
-        .wg-section-desc {
-          font-size: 0.95rem;
-          line-height: 1.75;
-          color: rgba(232,228,220,0.55);
-          max-width: 44ch;
-          margin-top: 1.25rem;
-        }
-
-        .wg-stats {
-          display: flex;
-          gap: 2.5rem;
-          margin-bottom: 4rem;
-          flex-wrap: wrap;
-        }
-        .wg-stat-n {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 2.2rem;
-          font-weight: 600;
-          color: var(--sec-accent, #C8A96E);
-          line-height: 1;
-        }
-        .wg-stat-l {
-          font-size: 0.7rem;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          color: rgba(232,228,220,0.4);
-          margin-top: 0.3rem;
-        }
-
-        .wg-hero-row {
-          display: grid;
-          grid-template-columns: 1fr 300px;
-          gap: 12px;
-          margin-bottom: 12px;
-        }
-        @media (max-width: 900px) {
-          .wg-hero-row { grid-template-columns: 1fr; }
-        }
-        .wg-hero-img, .wg-side-img, .wg-mosaic-img {
-          width: 100%;
-          object-fit: cover;
-          border-radius: 4px;
-          cursor: pointer;
-          transition: transform 0.4s ease, filter 0.4s ease;
-          filter: brightness(0.88);
-        }
-        .wg-hero-img {
-          aspect-ratio: 16/9;
-        }
-        .wg-side-img {
-          height: calc(50% - 6px);
-        }
-        .wg-hero-img:hover, .wg-side-img:hover, .wg-mosaic-img:hover {
-          transform: scale(1.008);
-          filter: brightness(1);
-        }
-
-        .wg-side-strip {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .wg-mosaic {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 12px;
-        }
-        @media (max-width: 700px) {
-          .wg-mosaic { grid-template-columns: 1fr; }
-        }
-        .wg-mosaic-img {
-          aspect-ratio: 4/3;
-        }
-
-        .wg-badges {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-top: 3rem;
-        }
-        .wg-badge {
-          font-size: 0.72rem;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          padding: 6px 14px;
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 100px;
-          color: rgba(232,228,220,0.6);
-          background: rgba(255,255,255,0.03);
-        }
-
-        .wg-lightbox {
-          position: fixed;
-          inset: 0;
-          z-index: 9999;
-          background: rgba(0,0,0,0.92);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem;
-          cursor: zoom-out;
-        }
-        .wg-lightbox img {
-          max-width: min(90vw, 1400px);
-          max-height: 85vh;
-          object-fit: contain;
-          border-radius: 4px;
-        }
-        .wg-lightbox-close {
-          position: absolute;
-          top: 1.5rem;
-          right: 2rem;
-          font-size: 2rem;
-          color: rgba(255,255,255,0.5);
-          cursor: pointer;
-          background: none;
-          border: none;
-        }
-        .wg-lightbox-close:hover { color: #fff; }
-
-        .wg-img-fallback {
-          width: 100%;
-          background: rgba(255,255,255,0.04);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 4px;
-          color: rgba(255,255,255,0.15);
-          font-size: 0.75rem;
-          aspect-ratio: 4/3;
-        }
-        .wg-reveal {
-          opacity: 0;
-          transform: translateY(28px);
-          transition: opacity 0.7s ease, transform 0.7s ease;
-        }
-        .wg-reveal.visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      `}</style>
-
-      <div className="wg-root">
-        <nav className="wg-pills">
+        {/* ── Sticky nav pills ── */}
+        <nav style={S.pillsNav} className="wg-pills">
           {ALL_SECTIONS.map((key) => {
             const d = CATEGORY_DATA[key];
             return (
               <button
                 key={key}
-                className={`wg-pill${activeSection === key ? " active" : ""}`}
-                style={{ "--pill-accent": d.accent }}
+                className="wg-pill"
+                style={S.pill(activeSection === key, d.accent)}
                 onClick={() => scrollTo(key)}
               >
                 {d.label}
@@ -402,6 +512,7 @@ export default function WorkspaceGallery() {
           })}
         </nav>
 
+        {/* ── Sections ── */}
         {ALL_SECTIONS.map((key) => {
           const d = CATEGORY_DATA[key];
           const stats = STATS[key];
@@ -411,96 +522,75 @@ export default function WorkspaceGallery() {
             <section
               key={key}
               ref={(el) => (sectionRefs.current[key] = el)}
+              style={S.section}
               className="wg-section"
-              style={{ "--sec-accent": d.accent }}
             >
-              <RevealDiv className="wg-section-header">
+              {/* Section header */}
+              <RevealDiv style={S.sectionHeader} className="wg-section-header">
+                {/* Left: title block */}
                 <div>
-                  <p className="wg-eyebrow">WorkNest · {d.label}</p>
-                  <h2 className="wg-section-title">
+                  <span style={S.eyebrow(d.accent)}>WorkNest · {d.label}</span>
+                  <h2 style={S.title} className="wg-section-title">
                     {d.tagline.split(" ").map((w, i) =>
-                      i === 0 ? <em key={i}>{w} </em> : w + " "
+                      i === 0
+                        ? <em key={i} style={S.titleEm(d.accent)}>{w} </em>
+                        : w + " "
                     )}
                   </h2>
-                  <p className="wg-section-desc">{d.description}</p>
+                  <p style={S.desc}>{d.description}</p>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <button
-                    className="wg-nav-arrow"
-                    onClick={scrollToCompanies}
-                    style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
-                  >
-                    ← Companies
-                  </button>
-
-                  {key === "office" && (
+                {/* Right: buttons + stats */}
+                <div style={S.rightCol} className="wg-right-col">
+                  <div style={S.btnGroup}>
+                    {/* Companies button — ghost style */}
                     <button
                       className="wg-nav-arrow"
-                      onClick={goToHomePage}
-                      style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
+                      onClick={scrollToCompanies}
                     >
-                      Book Office →
+                      ← Companies
                     </button>
-                  )}
 
-                  {key === "coworking" && (
+                    {/* Book button — accent style */}
                     <button
-                      className="wg-nav-arrow"
+                      className="wg-nav-arrow accent-overlay"
+                      style={{ "--btn-accent-color": d.accent }}
                       onClick={goToHomePage}
-                      style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
                     >
-                      Book Coworking →
+                      {BOOK_LABELS[key]}
                     </button>
-                  )}
+                  </div>
 
-                  {key === "meeting" && (
-                    <button
-                      className="wg-nav-arrow"
-                      onClick={goToHomePage}
-                      style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
-                    >
-                      Book Meeting →
-                    </button>
-                  )}
-
-                  {key === "enterprise" && (
-                    <button
-                      className="wg-nav-arrow"
-                      onClick={goToHomePage}
-                      style={{ background: "linear-gradient(135deg, var(--sec-accent), transparent)" }}
-                    >
-                      Enterprise →
-                    </button>
-                  )}
-
-                  <div className="wg-stats">
+                  {/* Stats */}
+                  <div style={S.statsRow} className="wg-stats-row">
                     {stats.map((s) => (
                       <div key={s.l}>
-                        <div className="wg-stat-n">{s.n}</div>
-                        <div className="wg-stat-l">{s.l}</div>
+                        <div style={S.statN(d.accent)}>{s.n}</div>
+                        <div style={S.statL}>{s.l}</div>
                       </div>
                     ))}
                   </div>
                 </div>
               </RevealDiv>
 
-              <RevealDiv delay={0.1}>
-                <div className="wg-hero-row">
+              {/* Hero image + side strip */}
+              <RevealDiv delay={0.08}>
+                <div style={S.heroRow} className="wg-hero-row">
                   <ImgTile
                     src={d.hero}
                     alt={`${d.label} hero`}
-                    className="wg-hero-img"
+                    imgStyle={S.heroImg}
                     onClick={() => setLightbox(d.hero)}
                     onError={() => handleImgError(`${key}-hero`)}
                     errored={imgErrors[`${key}-hero`]}
                   />
-                  <div className="wg-side-strip">
+                  <div style={S.sideStrip} className="wg-side-strip">
                     {d.grid.slice(0, 2).map((src, i) => (
                       <ImgTile
                         key={i}
                         src={src}
                         alt={`${d.label} ${i + 1}`}
+                        imgStyle={S.sideImg}
                         className="wg-side-img"
                         onClick={() => setLightbox(src)}
                         onError={() => handleImgError(`${key}-side-${i}`)}
@@ -511,13 +601,14 @@ export default function WorkspaceGallery() {
                 </div>
               </RevealDiv>
 
-              <RevealDiv delay={0.15} className="wg-mosaic">
+              {/* Mosaic grid */}
+              <RevealDiv delay={0.14} style={S.mosaic} className="wg-mosaic">
                 {d.userImages.map((src, i) => (
                   <ImgTile
                     key={i}
                     src={src}
                     alt={`${d.label} gallery ${i + 1}`}
-                    className="wg-mosaic-img"
+                    imgStyle={S.mosaicImg}
                     onClick={() => setLightbox(src)}
                     onError={() => handleImgError(`${key}-m-${i}`)}
                     errored={imgErrors[`${key}-m-${i}`]}
@@ -525,56 +616,78 @@ export default function WorkspaceGallery() {
                 ))}
               </RevealDiv>
 
-              <RevealDiv delay={0.2} className="wg-badges">
+              {/* Feature badges */}
+              <RevealDiv delay={0.18} style={S.badges} className="wg-badges">
                 {features.map((f) => (
-                  <span key={f} className="wg-badge">{f}</span>
+                  <span key={f} style={S.badge}>{f}</span>
                 ))}
               </RevealDiv>
             </section>
           );
         })}
 
-        <footer className="wg-footer" style={{ padding: "3rem clamp(1rem,5vw,5rem)" }}>
-          <p
-            style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(2rem, 4vw, 3rem)",
-              color: "rgba(232,228,220,0.4)",
-              textAlign: "center",
-            }}
-          >
-            Every great day starts with the <span style={{ color: "#C8A96E" }}>right space</span>.
+        {/* Footer */}
+        <footer style={S.footer}>
+          <p style={S.footerText}>
+            Every great day starts with the{" "}
+            <span style={S.footerAccent}>right space</span>.
           </p>
         </footer>
       </div>
 
+      {/* Lightbox */}
       {lightbox && (
-        <div className="wg-lightbox" onClick={() => setLightbox(null)}>
-          <button className="wg-lightbox-close" onClick={() => setLightbox(null)}>×</button>
-          <img src={lightbox} alt="Full view" onClick={(e) => e.stopPropagation()} />
+        <div style={S.lightboxBg} onClick={() => setLightbox(null)}>
+          <button
+            style={S.lightboxClose}
+            onClick={() => setLightbox(null)}
+          >
+            ×
+          </button>
+          <img
+            src={lightbox}
+            alt="Full view"
+            style={S.lightboxImg}
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </>
   );
 }
 
-function ImgTile({ src, alt, className, onClick, onError, errored }) {
+/* ══════════════════════════════════════════════════════════════
+   ImgTile — handles hover + error fallback
+══════════════════════════════════════════════════════════════ */
+function ImgTile({ src, alt, imgStyle, className = "", onClick, onError, errored }) {
+  const [hovered, setHovered] = useState(false);
+
   if (errored) {
-    return <div className={`wg-img-fallback ${className}`}>{alt}</div>;
+    return <div style={{ ...S.fallback }}>{alt}</div>;
   }
+
   return (
     <img
       src={src}
       alt={alt}
-      className={className}
+      className={`wg-img ${className}`}
+      style={{
+        ...imgStyle,
+        ...(hovered ? { transform: "scale(1.009)", filter: "brightness(1)" } : {}),
+      }}
       onClick={onClick}
       onError={onError}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       loading="lazy"
     />
   );
 }
 
-function RevealDiv({ children, className, delay = 0, style }) {
+/* ══════════════════════════════════════════════════════════════
+   RevealDiv — scroll-triggered fade-up
+══════════════════════════════════════════════════════════════ */
+function RevealDiv({ children, className = "", delay = 0, style }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -583,12 +696,9 @@ function RevealDiv({ children, className, delay = 0, style }) {
     if (!el) return;
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          obs.disconnect();
-        }
+        if (entry.isIntersecting) { setVisible(true); obs.disconnect(); }
       },
-      { threshold: 0.08 }
+      { threshold: 0.06 }
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -597,7 +707,7 @@ function RevealDiv({ children, className, delay = 0, style }) {
   return (
     <div
       ref={ref}
-      className={`wg-reveal${visible ? " visible" : ""} ${className || ""}`}
+      className={`wg-reveal${visible ? " visible" : ""} ${className}`}
       style={{ transitionDelay: `${delay}s`, ...style }}
     >
       {children}

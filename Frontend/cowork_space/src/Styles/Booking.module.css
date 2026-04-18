@@ -627,6 +627,7 @@
 @media (max-width: 640px) {
   .page {
     padding: 20px 12px;
+    margin-top: 40px;
   }
   .headerCard,
   .bookingCard {
@@ -657,6 +658,10 @@
 @media (max-width: 420px) {
   .title {
     font-size: 1.65rem;
+  }
+    .page {
+    /* padding: 20px 12px; */
+    margin-top: 40px;
   }
   .subtitle {
     font-size: 0.9rem;

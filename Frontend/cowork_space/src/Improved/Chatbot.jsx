@@ -7,28 +7,28 @@ function Chatbot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  // AUTO MESSAGE
   useEffect(() => {
     if (open && messages.length === 0) {
       setMessages([
         { sender: "bot", text: "Hi there 👋 How can I help you?" }
       ]);
     }
-  }, [open]);
+  }, [open, messages.length]);
 
   const sendMessage = () => {
-    if (!input) return;
+    if (!input.trim()) return;
 
     const userMsg = { sender: "user", text: input };
-    setMessages(prev => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMsg]);
 
-    axiosInstance.post("chatbot/", { message: input })
-      .then(res => {
+    axiosInstance
+      .post("chatbot/", { message: input })
+      .then((res) => {
         const botMsg = { sender: "bot", text: res.data.reply };
-        setMessages(prev => [...prev, botMsg]);
+        setMessages((prev) => [...prev, botMsg]);
       })
       .catch(() => {
-        setMessages(prev => [
+        setMessages((prev) => [
           ...prev,
           { sender: "bot", text: "Something went wrong ❌" }
         ]);
@@ -39,20 +39,23 @@ function Chatbot() {
 
   return (
     <>
-      {/* FLOAT BUTTON */}
-      <div className="chatbot-btn" onClick={() => setOpen(!open)}>
-        🤖
-      </div>
+      {!open && (
+        <button className="chatbot-btn" onClick={() => setOpen(true)}>
+          🤖
+        </button>
+      )}
 
-      {/* PANEL */}
+      <div
+        className={`chatbot-overlay ${open ? "show" : ""}`}
+        onClick={() => setOpen(false)}
+      ></div>
+
       <div className={`chatbot-panel ${open ? "open" : ""}`}>
-        
         <div className="chatbot-header">
           <h3>AI Assistant</h3>
-          <span onClick={() => setOpen(false)}>✖</span>
+          <span onClick={() => setOpen(false)}>✕</span>
         </div>
 
-        {/* MESSAGES */}
         <div className="chatbot-messages">
           {messages.map((msg, i) => (
             <div key={i} className={`msg ${msg.sender}`}>
@@ -61,16 +64,16 @@ function Chatbot() {
           ))}
         </div>
 
-        {/* INPUT */}
         <div className="chatbot-input">
           <input
+            type="text"
+            placeholder="Ask something..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask something..."
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
           <button onClick={sendMessage}>Send</button>
         </div>
-
       </div>
     </>
   );
