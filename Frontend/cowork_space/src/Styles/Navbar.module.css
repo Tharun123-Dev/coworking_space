@@ -28,7 +28,7 @@
 .navInner {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 3 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -58,7 +58,7 @@
 .menu {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 4rem;
 }
  
 .menuItem {

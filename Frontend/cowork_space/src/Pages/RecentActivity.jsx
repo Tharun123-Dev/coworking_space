@@ -52,6 +52,7 @@ function RecentActivity() {
     const date = new Date(time);
 
     return date.toLocaleString("en-IN", {
+      timeZone:"Asia/Kolkata",
       day: "2-digit",
       month: "short",
       year: "numeric",
