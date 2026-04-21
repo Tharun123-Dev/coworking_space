@@ -5,16 +5,18 @@
   position: relative;
   overflow: hidden;
   width: 100%;
+  
 }
 
 .container {
   max-width: 81.25rem;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 1.2rem 0.8rem;
   display: grid;
   grid-template-columns: minmax(13.75rem, 17.5rem) 1fr minmax(13.75rem, 17.5rem);
   align-items: start;
   column-gap: 2.5rem;
+  height: 37vh;
 }
 
 .logoSection,
@@ -101,7 +103,7 @@
   color: #cbd5e1;
   text-decoration: none;
   line-height: 1.6;
-  padding: 0.18rem 0;
+  padding: 0.40rem 0;
   border-bottom: 0.0625rem solid transparent;
   transition: color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
 }

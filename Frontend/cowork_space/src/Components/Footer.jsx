@@ -7,7 +7,20 @@ function Footer() {
   const navigate = useNavigate();
 
   const handleBookTour = () => {
-    navigate("/", { replace: false });
+    navigate("/");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const handleHomeLinkClick = (e) => {
+    e.preventDefault();
+    navigate("/");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -90,12 +103,12 @@ function Footer() {
               </Reveal>
               <ul className={styles.linkList}>
                 <Reveal>
-                  <li><a href="#" className={styles.link}>Hyderabad</a></li>
-                  <li><a href="#" className={styles.link}>Bangalore</a></li>
-                  <li><a href="#" className={styles.link}>Mumbai</a></li>
-                  <li><a href="#" className={styles.link}>Delhi NCR</a></li>
-                  <li><a href="#" className={styles.link}>Chennai</a></li>
-                  <li><a href="#" className={styles.link}>Pune</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Hyderabad</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Bangalore</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Mumbai</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Delhi NCR</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Chennai</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Pune</a></li>
                 </Reveal>
               </ul>
             </div>
@@ -106,11 +119,11 @@ function Footer() {
               </Reveal>
               <ul className={styles.linkList}>
                 <Reveal>
-                  <li><a href="#" className={styles.link}>Hot Desk</a></li>
-                  <li><a href="#" className={styles.link}>Dedicated Desk</a></li>
-                  <li><a href="#" className={styles.link}>Private Office</a></li>
-                  <li><a href="#" className={styles.link}>Meeting Rooms</a></li>
-                  <li><a href="#" className={styles.link}>Virtual Office</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Hot Desk</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Dedicated Desk</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Private Office</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Meeting Rooms</a></li>
+                  <li><a href="/" onClick={handleHomeLinkClick} className={styles.link}>Virtual Office</a></li>
                 </Reveal>
               </ul>
             </div>
@@ -119,13 +132,26 @@ function Footer() {
               <Reveal>
                 <h4 className={styles.secTitle}>Company</h4>
               </Reveal>
-              <ul className={styles.linkList}>
-                <li><a href="#" className={styles.link}>About Us</a></li>
-                <li><a href="#" className={styles.link}>Careers</a></li>
-                <li><a href="#" className={styles.link}>Blog</a></li>
-                <li><a href="#" className={styles.link}>Press</a></li>
-                <li><a href="#" className={styles.link}>Partners</a></li>
-              </ul>
+<ul
+  className={styles.linkList}
+  style={{ margin: 0, padding: 0, listStyle: "none" }}
+>
+  <li style={{ margin: "-2px 0", lineHeight: "1.2" }}>
+    <a href="/" onClick={handleHomeLinkClick} className={styles.link}>About Us</a>
+  </li>
+  <li style={{ margin: "-2px 0", lineHeight: "1.2" }}>
+    <a href="/" onClick={handleHomeLinkClick} className={styles.link}>Careers</a>
+  </li>
+  <li style={{ margin: "-2px 0", lineHeight: "1.2" }}>
+    <a href="/" onClick={handleHomeLinkClick} className={styles.link}>Blog</a>
+  </li>
+  <li style={{ margin: "-2px 0", lineHeight: "1.2" }}>
+    <a href="/" onClick={handleHomeLinkClick} className={styles.link}>Press</a>
+  </li>
+  <li style={{ margin: "-2px 0", lineHeight: "1.2" }}>
+    <a href="/" onClick={handleHomeLinkClick} className={styles.link}>Partners</a>
+  </li>
+</ul>
             </div>
           </div>
 
@@ -173,11 +199,11 @@ function Footer() {
             </Reveal>
 
             <div className={styles.privacyLinks}>
-              <a href="#" className={styles.privacyLink}>Privacy Policy</a>
+              <a href="/" onClick={handleHomeLinkClick} className={styles.privacyLink}>Privacy Policy</a>
               <span> | </span>
-              <a href="#" className={styles.privacyLink}>Terms of Service</a>
+              <a href="/" onClick={handleHomeLinkClick} className={styles.privacyLink}>Terms of Service</a>
               <span> | </span>
-              <a href="#" className={styles.privacyLink}>Cookie Policy</a>
+              <a href="/" onClick={handleHomeLinkClick} className={styles.privacyLink}>Cookie Policy</a>
             </div>
           </div>
         </div>
