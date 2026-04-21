@@ -370,7 +370,7 @@ html { scroll-behavior: smooth; }
 .ep-ticker-inner {
   display: flex;
   gap: 0;
-  animation: ticker 28s linear infinite;
+  animation: ticker 38s linear infinite;
   width: max-content;
 }
 @keyframes ticker { from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
@@ -381,7 +381,7 @@ html { scroll-behavior: smooth; }
   padding: 10px 28px;
   font-size: 13px;
   font-weight: 700;
-  color: rgba(245,240,232,0.55);
+  color: rgba(202, 207, 210, 0.55);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;

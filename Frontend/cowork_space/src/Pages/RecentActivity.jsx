@@ -48,11 +48,9 @@ function RecentActivity() {
   // ================= FORMAT TIME =================
   const formatTime = (time) => {
     if (!time) return "-";
-
     const date = new Date(time);
-
     return date.toLocaleString("en-IN", {
-      timeZone:"Asia/Kolkata",
+      timeZone: "Asia/Kolkata",
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -62,14 +60,11 @@ function RecentActivity() {
     });
   };
 
-  // 🔥 OPTIONAL (BEST UI)
   const timeAgo = (time) => {
     if (!time) return "-";
-
     const now = new Date();
     const past = new Date(time);
     const diff = Math.floor((now - past) / 1000);
-
     if (diff < 60) return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -103,7 +98,6 @@ function RecentActivity() {
   // ================= DELETE =================
   const deleteActivity = (id) => {
     if (!window.confirm("Delete this activity?")) return;
-
     axiosInstance
       .delete(`workspaces/recent-activities/delete/${id}/`)
       .then(() => fetchActivities())
@@ -112,7 +106,6 @@ function RecentActivity() {
 
   const clearAll = () => {
     if (!window.confirm("Clear all activities?")) return;
-
     axiosInstance
       .delete("workspaces/recent-activities/clear/")
       .then(() => fetchActivities())
@@ -134,15 +127,12 @@ function RecentActivity() {
             </p>
           </div>
 
+          {/* stat card only — no clear-all button here */}
           <div className="activity-header-right">
             <div className="activity-stat-card">
               <strong>{activities.length}</strong>
               <span>Total Logs</span>
             </div>
-
-            <button className="clear-btn" onClick={clearAll}>
-              Clear All
-            </button>
           </div>
         </div>
 
@@ -166,7 +156,6 @@ function RecentActivity() {
                     <div className={`activity-icon ${getActionClass(a.action)}`}>
                       {getIcon(a.model_name)}
                     </div>
-
                     {index !== activities.length - 1 && (
                       <div className="activity-line" />
                     )}
@@ -179,19 +168,15 @@ function RecentActivity() {
                   {/* BADGES */}
                   <div className="activity-top-row">
                     <div className="activity-badges">
-
                       <div className="activity-model-tag">
                         {a.model_name || "Activity"}
                       </div>
-
                       <div className={`activity-action-tag ${getActionClass(a.action)}`}>
                         {a.action || "INFO"}
                       </div>
-
                       <div className={`role-badge ${getRoleClass(a.role)}`}>
                         {a.role || "User"}
                       </div>
-
                     </div>
                   </div>
 
@@ -202,15 +187,10 @@ function RecentActivity() {
                         value={editMessage}
                         onChange={(e) => setEditMessage(e.target.value)}
                       />
-
                       <div className="activity-edit-actions">
-                        <button
-                          className="save-btn"
-                          onClick={() => saveEdit(a.id)}
-                        >
+                        <button className="save-btn" onClick={() => saveEdit(a.id)}>
                           Save
                         </button>
-
                         <button className="cancel-btn" onClick={cancelEdit}>
                           Cancel
                         </button>
@@ -218,12 +198,9 @@ function RecentActivity() {
                     </div>
                   ) : (
                     <>
-                      {/* MESSAGE */}
                       <div className="activity-message">
                         <strong>{a.user}</strong> {a.message}
                       </div>
-
-                      {/* TIME */}
                       <div className="activity-meta">
                         <span className="activity-time">
                           {formatTime(a.time)} • {timeAgo(a.time)}
@@ -235,17 +212,10 @@ function RecentActivity() {
 
                 {/* ACTION BUTTONS */}
                 <div className="activity-actions">
-                  <button
-                    className="edit-btn"
-                    onClick={() => startEdit(a)}
-                  >
+                  <button className="edit-btn" onClick={() => startEdit(a)}>
                     ✏️
                   </button>
-
-                  <button
-                    className="delete-btn"
-                    onClick={() => deleteActivity(a.id)}
-                  >
+                  <button className="delete-btn" onClick={() => deleteActivity(a.id)}>
                     🗑️
                   </button>
                 </div>
@@ -255,6 +225,15 @@ function RecentActivity() {
           </div>
         )}
       </div>
+
+      {/* ================= FIXED CLEAR ALL BUTTON ================= */}
+      {activities.length > 0 && (
+        <div className="clear-all-fixed">
+          <button className="clear-btn" onClick={clearAll}>
+            🗑 Clear All Logs
+          </button>
+        </div>
+      )}
     </div>
   );
 }

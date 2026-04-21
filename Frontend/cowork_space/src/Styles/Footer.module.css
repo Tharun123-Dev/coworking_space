@@ -5,33 +5,52 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  
 }
-
+ 
+/* ════════════════════════════════════════
+   BACKGROUND PATTERN
+════════════════════════════════════════ */
+.bgPattern {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(251, 191, 36, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 0;
+}
+ 
+/* ════════════════════════════════════════
+   MAIN CONTAINER
+════════════════════════════════════════ */
 .container {
   max-width: 81.25rem;
   margin: 0 auto;
-  padding: 1.2rem 0.8rem;
+  padding: 2.5rem 2rem;
   display: grid;
   grid-template-columns: minmax(13.75rem, 17.5rem) 1fr minmax(13.75rem, 17.5rem);
   align-items: start;
   column-gap: 2.5rem;
-  height: 37vh;
+  position: relative;
+  z-index: 1;
 }
-
+ 
+/* ════════════════════════════════════════
+   SECTIONS
+════════════════════════════════════════ */
 .logoSection,
 .contactSection,
 .linkSection {
   min-width: 0;
 }
-
+ 
 .logoSection {
   justify-self: start;
   width: 100%;
   max-width: 17.5rem;
   text-align: left;
 }
-
+ 
 .middleWrapper {
   width: 100%;
   display: flex;
@@ -40,104 +59,175 @@
   gap: 1.75rem;
   min-width: 0;
 }
-
+ 
 .linkSection {
   width: 100%;
   min-width: 7.5rem;
   max-width: 10rem;
   text-align: left;
 }
-
+ 
 .contactSection {
   justify-self: end;
   width: 100%;
   max-width: 15.625rem;
   text-align: left;
 }
-
-.logoText {
-  color: #fbbf24 !important;
+ 
+/* ════════════════════════════════════════
+   LOGO
+════════════════════════════════════════ */
+.logo {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 0.25rem;
 }
-
+ 
+.logoText {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fbbf24 !important;
+  margin: 0;
+  line-height: 1.2;
+}
+ 
 .logo h1 {
   font-size: 1.6rem;
   font-weight: 700;
   color: #fbbf24;
   margin: 0;
 }
-
-.logoSection p {
+ 
+.logoGlow {
+  position: absolute;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(12px);
+  opacity: 0.35;
+}
+ 
+.logoGlowLeft {
+  top: -0.5rem;
+  left: -0.75rem;
+  background: rgba(251, 191, 36, 0.6);
+}
+ 
+.logoGlowRight {
+  top: -0.25rem;
+  right: -0.75rem;
+  background: rgba(59, 130, 246, 0.5);
+}
+ 
+/* ════════════════════════════════════════
+   TAGLINE / SMALL PRINT
+════════════════════════════════════════ */
+.tagline {
   font-size: 0.8125rem;
   color: #cbd5e1;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   line-height: 1.7;
   max-width: 16.25rem;
 }
-
-.linkSection h4,
-.contactSection h4 {
-  font-size: 0.9375rem;
-  margin-bottom: 0.9rem;
+ 
+.smallPrint {
+  font-size: 0.75rem;
+  color: rgba(203, 213, 225, 0.55);
+  margin-top: 0.375rem;
+  line-height: 1.6;
 }
-
+ 
+/* ════════════════════════════════════════
+   SECTION TITLES
+════════════════════════════════════════ */
+.secTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 0.9rem 0;
+  letter-spacing: 0.02em;
+}
+ 
+/* ════════════════════════════════════════
+   LINK LISTS
+════════════════════════════════════════ */
 .linkSection ul,
 .contactSection ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-
+ 
 .linkList {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.1rem;
 }
-
+ 
 .linkList li {
   width: 100%;
 }
-
+ 
 .linkList li a {
   display: inline-block;
   font-size: 0.8125rem;
   color: #cbd5e1;
   text-decoration: none;
   line-height: 1.6;
-  padding: 0.40rem 0;
+  padding: 0.35rem 0;
   border-bottom: 0.0625rem solid transparent;
   transition: color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
 }
-
+ 
 .linkList li a:hover {
   color: #fbbf24;
   border-bottom-color: rgba(251, 191, 36, 0.7);
   transform: translateX(0.2rem);
 }
-
+ 
+/* ════════════════════════════════════════
+   CONTACT LIST
+════════════════════════════════════════ */
 .contactList {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
-
+ 
 .contactList li {
   font-size: 0.8125rem;
   line-height: 1.7;
+  color: #cbd5e1;
   word-break: break-word;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
 }
-
+ 
+.contactIcon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+ 
 .contactList li a {
   color: #cbd5e1;
   text-decoration: none;
   border-bottom: 0.0625rem solid transparent;
   transition: color 0.3s ease, border-color 0.3s ease;
 }
-
+ 
 .contactList li a:hover {
   color: #fbbf24;
   border-bottom-color: rgba(251, 191, 36, 0.7);
 }
-
+ 
+/* ════════════════════════════════════════
+   CTA BUTTON
+════════════════════════════════════════ */
 .ctaButton {
   display: inline-flex;
   align-items: center;
@@ -158,287 +248,386 @@
   width: 100%;
   min-height: 2.625rem;
 }
-
+ 
 .ctaButton:hover {
   transform: translateY(-0.125rem);
   background: linear-gradient(135deg, #fcd34d, #f59e0b);
   box-shadow: 0 0.75rem 1.5rem rgba(245, 158, 11, 0.36);
 }
-
+ 
 .ctaButton:active {
   transform: translateY(0);
 }
-
+ 
+/* ════════════════════════════════════════
+   SOCIAL ICONS
+════════════════════════════════════════ */
 .socialIcons {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.75rem;
   flex-wrap: wrap;
 }
-
+ 
 .icon {
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 0.3s;
+  transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
   flex-shrink: 0;
+  text-decoration: none;
 }
-
+ 
 .icon:hover {
   background: #fbbf24;
+  border-color: #fbbf24;
+  transform: translateY(-2px);
 }
-
+ 
 .iconInner {
   color: #cbd5e1;
+  font-size: 0.875rem;
   transition: color 0.3s ease;
 }
-
+ 
 .icon:hover .iconInner {
   color: #111827;
 }
-
+ 
+/* ════════════════════════════════════════
+   BOTTOM BAR
+════════════════════════════════════════ */
 .bottomBar {
   border-top: 0.0625rem solid rgba(255, 255, 255, 0.1);
-  padding: 0.75rem 0;
+  padding: 0.875rem 0;
+  position: relative;
+  z-index: 1;
 }
-
+ 
 .bottomContainer {
   max-width: 81.25rem;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
-
+ 
 .copyright {
   font-size: 0.75rem;
   line-height: 1.6;
+  color: rgba(203, 213, 225, 0.65);
+  margin: 0;
 }
-
+ 
 .privacyLinks {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.25rem;
+  font-size: 0.75rem;
+  color: rgba(203, 213, 225, 0.45);
 }
-
+ 
 .privacyLink {
   text-decoration: none;
-  color: inherit;
+  color: rgba(203, 213, 225, 0.65);
   font-size: 0.75rem;
   border-bottom: 0.0625rem solid transparent;
   transition: color 0.3s ease, border-color 0.3s ease;
 }
-
+ 
 .privacyLink:hover {
   color: #fbbf24;
   border-bottom-color: rgba(251, 191, 36, 0.7);
 }
-
-/* Large tablet */
+ 
+/* ════════════════════════════════════════
+   RESPONSIVE — Large tablet ≤ 1100px
+════════════════════════════════════════ */
 @media (max-width: 68.75rem) {
   .container {
     grid-template-columns: minmax(12.5rem, 1fr) minmax(20rem, 1.2fr) minmax(12.5rem, 1fr);
     column-gap: 1.75rem;
-    padding: 1.75rem 1.25rem;
+    padding: 2rem 1.5rem;
   }
-
+ 
   .middleWrapper {
     gap: 1.125rem;
   }
-
+ 
   .linkSection {
     min-width: 6.25rem;
     max-width: 8.75rem;
   }
-
+ 
   .contactSection {
     max-width: 13.75rem;
   }
 }
-
-/* Tablet */
+ 
+/* ════════════════════════════════════════
+   RESPONSIVE — Tablet ≤ 900px
+════════════════════════════════════════ */
 @media (max-width: 56.25rem) {
   .container {
     grid-template-columns: 1fr;
-    row-gap: 1.75rem;
-    padding: 1.75rem 1.25rem;
+    row-gap: 2rem;
+    padding: 2rem 1.5rem;
   }
-
-  .logoSection,
-  .contactSection {
+ 
+  .logoSection {
     justify-self: start;
     max-width: 100%;
     width: 100%;
   }
-
-  .logoSection p {
+ 
+  .tagline {
     max-width: 100%;
   }
-
+ 
   .middleWrapper {
     width: 100%;
-    justify-content: space-between;
-    gap: 1rem;
+    justify-content: flex-start;
+    gap: 2rem;
     flex-wrap: wrap;
   }
-
+ 
   .linkSection {
-    flex: 1 1 8.75rem;
+    flex: 1 1 8rem;
     max-width: none;
+    min-width: 7rem;
   }
-
+ 
   .contactSection {
+    justify-self: start;
+    max-width: 100%;
+    width: 100%;
     text-align: left;
   }
-
+ 
   .ctaButton {
-    width: 100%;
+    width: auto;
+    min-width: 12rem;
     max-width: 16.25rem;
   }
-
+ 
   .bottomContainer {
+    padding: 0 1.5rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+ 
+/* ════════════════════════════════════════
+   RESPONSIVE — ≤ 680px
+════════════════════════════════════════ */
+@media (max-width: 42.5rem) {
+  .container {
+    padding: 1.75rem 1.25rem;
+    row-gap: 1.75rem;
+  }
+ 
+  .middleWrapper {
+    gap: 1.5rem;
+    justify-content: space-between;
+  }
+ 
+  .linkSection {
+    flex: 1 1 7rem;
+  }
+ 
+  .contactList li {
+    font-size: 0.7813rem;
+  }
+ 
+  .bottomContainer {
+    padding: 0 1.25rem;
     flex-direction: column;
     align-items: flex-start;
-    text-align: left;
+    gap: 0.5rem;
   }
-
+ 
   .privacyLinks {
     justify-content: flex-start;
   }
 }
-
-/* Mobile */
-@media (max-width: 48rem) {
+ 
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile ≤ 560px
+════════════════════════════════════════ */
+@media (max-width: 35rem) {
   .container {
     padding: 1.5rem 1rem;
     row-gap: 1.5rem;
   }
-
-  .logoSection,
-  .contactSection {
+ 
+  .logoSection {
     text-align: center;
     justify-self: center;
   }
-
-  .logoSection p {
+ 
+  .tagline,
+  .smallPrint {
     margin-left: auto;
     margin-right: auto;
+    text-align: center;
     max-width: 100%;
   }
-
+ 
   .socialIcons {
     justify-content: center;
   }
-
+ 
   .middleWrapper {
-    flex-direction: column;
-    align-items: center;
-    gap: 1.125rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 1.25rem;
   }
-
+ 
   .linkSection {
+    flex: 1 1 calc(50% - 1rem);
+    max-width: none;
+    text-align: center;
+  }
+ 
+  .linkList li a:hover {
+    transform: none;
+  }
+ 
+  .contactSection {
     width: 100%;
     max-width: 100%;
     text-align: center;
   }
-
-  .contactSection {
-    max-width: 100%;
+ 
+  .contactList {
+    align-items: center;
   }
-
-  .contactSection ul {
-    text-align: center;
+ 
+  .contactList li {
+    justify-content: center;
   }
-
+ 
   .ctaButton {
     margin-left: auto;
     margin-right: auto;
-    max-width: 13.75rem;
+    max-width: 14rem;
+    width: 100%;
   }
-
+ 
   .bottomContainer {
     padding: 0 1rem;
     align-items: center;
     text-align: center;
   }
-
+ 
+  .copyright {
+    text-align: center;
+  }
+ 
   .privacyLinks {
     justify-content: center;
   }
-
-  .linkList li a:hover {
-    transform: none;
-  }
 }
-
-/* Small mobile */
+ 
+/* ════════════════════════════════════════
+   RESPONSIVE — Small mobile ≤ 480px
+════════════════════════════════════════ */
 @media (max-width: 30rem) {
   .container {
     padding: 1.375rem 0.875rem;
     row-gap: 1.375rem;
   }
-
+ 
+  .logoText,
   .logo h1 {
     font-size: 1.45rem;
   }
-
-  .logoSection p,
+ 
+  .tagline,
   .linkList li a,
   .contactList li {
     font-size: 0.78125rem;
     line-height: 1.7;
   }
-
-  .linkSection h4,
-  .contactSection h4 {
+ 
+  .secTitle {
     font-size: 0.875rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.625rem;
   }
-
+ 
   .socialIcons {
     gap: 0.625rem;
   }
-
+ 
   .icon {
     width: 2.125rem;
     height: 2.125rem;
   }
-
+ 
+  .iconInner {
+    font-size: 0.8125rem;
+  }
+ 
   .ctaButton {
     max-width: 13.125rem;
     min-height: 2.5rem;
     font-size: 0.75rem;
     padding: 0.5625rem 1rem;
   }
-
+ 
   .copyright,
   .privacyLink {
     font-size: 0.71875rem;
   }
-}
-
-/* Extra small mobile */
-@media (max-width: 22.5rem) {
-  .container {
-    padding: 1.25rem 0.75rem;
-  }
-
+ 
   .middleWrapper {
     gap: 1rem;
   }
-
+}
+ 
+/* ════════════════════════════════════════
+   RESPONSIVE — Extra small ≤ 360px
+════════════════════════════════════════ */
+@media (max-width: 22.5rem) {
+  .container {
+    padding: 1.25rem 0.75rem;
+    row-gap: 1.25rem;
+  }
+ 
+  .middleWrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+ 
+  .linkSection {
+    flex: none;
+    width: 100%;
+    text-align: center;
+  }
+ 
   .ctaButton {
     max-width: 100%;
   }
-
+ 
   .privacyLinks {
     gap: 0.125rem;
+    flex-direction: column;
+    align-items: center;
+  }
+ 
+  .bottomContainer {
+    gap: 0.375rem;
   }
 }

@@ -22,12 +22,12 @@ def register(request):
         user = serializer.save()
 
         # ✅ CREATE ACTIVITY
-        ActivityLog.objects.create(
-            user=user,
-            action="CREATE",
-            model_name="User",
-            message=f"{user.username} registered as a new user"
-        )
+        # ActivityLog.objects.create(
+        #     user=user,
+        #     action="CREATE",
+        #     model_name="User",
+        #     message=f"{user.username} registered as a new user"
+        # )
 
         return Response({
             "message": "User registered successfully"
@@ -62,12 +62,12 @@ def login_view(request):
             profile.save()
 
         # ✅ ADD ACTIVITY LOG
-        ActivityLog.objects.create(
-            user=user,
-            action="LOGIN",
-            model_name="User",
-            message=f"{user.username} logged in"
-        )
+        # ActivityLog.objects.create(
+        #     user=user,
+        #     action="LOGIN",
+        #     model_name="User",
+        #     message=f"{user.username} logged in"
+        # )
 
         return Response({
             "access": str(refresh.access_token),
