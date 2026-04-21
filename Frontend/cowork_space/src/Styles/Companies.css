@@ -1,9 +1,9 @@
 /* ══════════════════════════════════════
-   TeamClientsSection.css — Black & Gold
+   Companies.css — Black & Gold
    ══════════════════════════════════════ */
-
+ 
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,700&family=Jost:wght@300;400;500;600;700&display=swap');
-
+ 
 :root {
   --gold:        #c9a84c;
   --gold-dark:   #9a7a30;
@@ -22,7 +22,7 @@
   --font-head:   'Cormorant Garamond', Georgia, serif;
   --font-body:   'Jost', sans-serif;
 }
-
+ 
 /* ── Section ───────────────────────── */
 .tcs-section {
   background: var(--black);
@@ -34,7 +34,7 @@
   margin-top: -15px;
   margin-bottom: -55px;
 }
-
+ 
 .tcs-container {
   width: 100%;
   max-width: 1280px;
@@ -42,7 +42,7 @@
   padding: 0 40px;
   box-sizing: border-box;
 }
-
+ 
 /* ── Header ────────────────────────── */
 .tcs-header {
   text-align: center;
@@ -52,7 +52,7 @@
   align-items: center;
   gap: 14px;
 }
-
+ 
 .tcs-eyebrow {
   font-size: 0.7rem;
   font-weight: 700;
@@ -60,7 +60,7 @@
   text-transform: uppercase;
   color: var(--gold);
 }
-
+ 
 .tcs-heading {
   font-family: var(--font-head);
   font-size: clamp(2rem, 4vw, 3.2rem);
@@ -69,7 +69,7 @@
   margin: 0;
   line-height: 1.1;
 }
-
+ 
 .tcs-subheading {
   font-size: 0.97rem;
   color: var(--muted);
@@ -78,7 +78,7 @@
   margin: 0;
   max-width: 520px;
 }
-
+ 
 /* ── Cards Grid ────────────────────── */
 .tcs-cards-grid {
   display: grid;
@@ -86,7 +86,7 @@
   gap: 24px;
   margin-bottom: 72px;
 }
-
+ 
 /* ── Card ──────────────────────────── */
 .tcs-card {
   position: relative;
@@ -101,7 +101,7 @@
   animation: fadeUp 0.5s ease both;
   transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease);
 }
-
+ 
 .tcs-card::after {
   content: "";
   position: absolute;
@@ -111,29 +111,29 @@
   opacity: 0;
   transition: opacity var(--ease);
 }
-
+ 
 .tcs-card:hover {
   transform: translateY(-6px);
   border-color: var(--border);
   box-shadow: 0 12px 40px rgba(201, 168, 76, 0.15);
 }
-
+ 
 .tcs-card:hover::after {
   opacity: 1;
 }
-
+ 
 /* Featured card */
 .tcs-card--featured {
   border-color: var(--gold-dark);
   background: linear-gradient(160deg, #151208 0%, var(--black-2) 60%);
   box-shadow: 0 0 0 1px var(--gold-dark), 0 8px 32px rgba(201, 168, 76, 0.15);
 }
-
+ 
 .tcs-card--featured::after {
   opacity: 1;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
-
+ 
 /* Ribbon */
 .tcs-ribbon {
   position: absolute;
@@ -148,7 +148,7 @@
   white-space: nowrap;
   z-index: 1;
 }
-
+ 
 /* Card internals */
 .tcs-card-head {
   display: flex;
@@ -156,7 +156,7 @@
   align-items: flex-start;
   margin-bottom: 4px;
 }
-
+ 
 .tcs-badge {
   font-size: 0.67rem;
   font-weight: 700;
@@ -168,12 +168,12 @@
   border-radius: 100px;
   padding: 4px 12px;
 }
-
+ 
 .tcs-icon {
   font-size: 2rem;
   line-height: 1;
 }
-
+ 
 .tcs-card-title {
   font-family: var(--font-head);
   font-size: 1.65rem;
@@ -182,7 +182,7 @@
   margin: 0;
   line-height: 1.1;
 }
-
+ 
 .tcs-card-sub {
   font-size: 0.75rem;
   font-weight: 600;
@@ -191,7 +191,7 @@
   color: var(--gold);
   margin: 0;
 }
-
+ 
 .tcs-card-desc {
   font-size: 0.88rem;
   color: var(--muted);
@@ -200,7 +200,7 @@
   margin: 4px 0 0;
   flex: 1;
 }
-
+ 
 /* Features list */
 .tcs-features {
   list-style: none;
@@ -212,7 +212,7 @@
   flex-direction: column;
   gap: 8px;
 }
-
+ 
 .tcs-features li {
   display: flex;
   align-items: center;
@@ -221,13 +221,13 @@
   color: var(--off-white);
   font-weight: 400;
 }
-
+ 
 .tcs-bullet {
   color: var(--gold);
   font-size: 0.55rem;
   flex-shrink: 0;
 }
-
+ 
 /* Card buttons */
 .tcs-card-footer {
   display: flex;
@@ -235,7 +235,7 @@
   margin-top: 6px;
   flex-wrap: wrap;
 }
-
+ 
 .tcs-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -253,12 +253,12 @@
   transition: filter var(--ease), transform var(--ease);
   white-space: nowrap;
 }
-
+ 
 .tcs-btn-primary:hover {
   filter: brightness(1.12);
   transform: translateY(-1px);
 }
-
+ 
 .tcs-btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -275,23 +275,23 @@
   transition: background var(--ease);
   white-space: nowrap;
 }
-
+ 
 .tcs-btn-ghost:hover {
   background: var(--gold-glow);
 }
-
+ 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
+ 
 /* ── Clients Marquee ───────────────── */
 .tcs-clients-wrap {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
-
+ 
 .tcs-clients-label {
   font-size: 0.72rem;
   font-weight: 600;
@@ -301,7 +301,7 @@
   text-align: center;
   margin: 0;
 }
-
+ 
 .tcs-marquee {
   position: relative;
   overflow: hidden;
@@ -309,7 +309,7 @@
   border-radius: var(--radius);
   background: var(--black-2);
 }
-
+ 
 .tcs-marquee::before,
 .tcs-marquee::after {
   content: "";
@@ -319,33 +319,33 @@
   z-index: 2;
   pointer-events: none;
 }
-
+ 
 .tcs-marquee::before {
   left: 0;
   background: linear-gradient(to right, var(--black-2), transparent);
 }
-
+ 
 .tcs-marquee::after {
   right: 0;
   background: linear-gradient(to left, var(--black-2), transparent);
 }
-
+ 
 .tcs-marquee-track {
   display: flex;
   align-items: center;
   width: max-content;
   animation: scroll 28s linear infinite;
 }
-
+ 
 .tcs-marquee:hover .tcs-marquee-track {
   animation-play-state: paused;
 }
-
+ 
 @keyframes scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
-
+ 
 .tcs-client {
   display: flex;
   flex-direction: column;
@@ -356,11 +356,11 @@
   border-right: 1px solid var(--border-dim);
   transition: background var(--ease);
 }
-
+ 
 .tcs-client:hover {
   background: var(--gold-glow);
 }
-
+ 
 .tcs-client img {
   height: 30px;
   width: auto;
@@ -368,7 +368,7 @@
   filter: grayscale(0%) brightness(1);
   transition: filter var(--ease);
 }
-
+ 
 .tcs-client span {
   font-size: 0.66rem;
   font-weight: 600;
@@ -377,7 +377,7 @@
   white-space: nowrap;
   text-align: center;
 }
-
+ 
 /* ══════════════════════════════════════
    RESPONSIVE — Tablet 960px
    ══════════════════════════════════════ */
@@ -385,14 +385,13 @@
   .tcs-container {
     padding: 0 28px;
     margin-top: -80px;
-    
   }
-
+ 
   .tcs-cards-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
-
+ 
   .tcs-cards-grid .tcs-card:last-child {
     grid-column: 1 / -1;
     max-width: 480px;
@@ -400,7 +399,7 @@
     width: 100%;
   }
 }
-
+ 
 /* ══════════════════════════════════════
    RESPONSIVE — Mobile 600px
    ══════════════════════════════════════ */
@@ -409,124 +408,124 @@
   .tcs-section {
     padding: 56px 0 64px;
   }
-
+ 
   .tcs-container {
     padding: 0 16px;
     margin-top: -40px;
   }
-
+ 
   /* Header */
   .tcs-header {
     margin-bottom: 36px;
     gap: 10px;
   }
-
+ 
   .tcs-eyebrow {
     font-size: 0.62rem;
     letter-spacing: 0.13em;
   }
-
+ 
   .tcs-heading {
     font-size: clamp(1.7rem, 7vw, 2.2rem);
   }
-
+ 
   .tcs-subheading {
     font-size: 0.87rem;
     line-height: 1.65;
   }
-
-  /* Cards — single column, no override needed */
+ 
+  /* Cards — single column */
   .tcs-cards-grid {
     grid-template-columns: 1fr;
     gap: 16px;
     margin-bottom: 48px;
   }
-
+ 
   .tcs-cards-grid .tcs-card:last-child {
     grid-column: auto;
     max-width: 100%;
     justify-self: auto;
   }
-
+ 
   /* Card internals */
   .tcs-card {
     padding: 24px 18px 20px;
     gap: 9px;
   }
-
+ 
   .tcs-ribbon {
     top: 16px;
     right: -28px;
     font-size: 0.6rem;
     padding: 4px 36px;
   }
-
+ 
   .tcs-icon {
     font-size: 1.6rem;
   }
-
+ 
   .tcs-card-title {
     font-size: 1.45rem;
   }
-
+ 
   .tcs-card-sub {
     font-size: 0.7rem;
   }
-
+ 
   .tcs-card-desc {
     font-size: 0.84rem;
     line-height: 1.65;
   }
-
+ 
   .tcs-features li {
     font-size: 0.82rem;
   }
-
+ 
   /* Buttons — stretch full width on small screens */
   .tcs-card-footer {
     flex-direction: row;
     gap: 8px;
     margin-top: 4px;
   }
-
+ 
   .tcs-btn-primary,
   .tcs-btn-ghost {
     flex: 1;
     font-size: 0.8rem;
     padding: 11px 12px;
-    min-height: 44px; /* accessible tap target */
+    min-height: 44px;
   }
-
+ 
   /* Marquee */
   .tcs-clients-wrap {
     gap: 14px;
   }
-
+ 
   .tcs-clients-label {
     font-size: 0.65rem;
     letter-spacing: 0.11em;
   }
-
+ 
   .tcs-marquee::before,
   .tcs-marquee::after {
     width: 36px;
   }
-
+ 
   .tcs-client {
     padding: 16px 20px;
     min-width: 110px;
     gap: 6px;
   }
-
+ 
   .tcs-client img {
     height: 22px;
   }
-
+ 
   .tcs-client span {
     font-size: 0.6rem;
   }
 }
-
+ 
 /* ══════════════════════════════════════
    RESPONSIVE — Very Small 380px
    ══════════════════════════════════════ */
@@ -534,41 +533,40 @@
   .tcs-container {
     padding: 0 12px;
     margin-top: -20px;
-    /* margin-bottom: -20px; */
   }
-
+ 
   .tcs-section {
     padding: 44px 0 52px;
   }
-
+ 
   .tcs-heading {
     font-size: 1.55rem;
   }
-
+ 
   .tcs-card {
     padding: 20px 14px 16px;
   }
-
+ 
   .tcs-card-title {
     font-size: 1.3rem;
   }
-
+ 
   .tcs-btn-primary,
   .tcs-btn-ghost {
     font-size: 0.76rem;
     padding: 10px 10px;
   }
-
+ 
   .tcs-badge {
     font-size: 0.6rem;
     padding: 3px 9px;
   }
-
+ 
   .tcs-client {
     padding: 14px 16px;
     min-width: 96px;
   }
-
+ 
   .tcs-marquee::before,
   .tcs-marquee::after {
     width: 24px;

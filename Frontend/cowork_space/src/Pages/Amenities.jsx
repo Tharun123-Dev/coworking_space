@@ -1,71 +1,3 @@
-// import React from "react";
-// import styles from "../Styles/Amenities.module.css";
-// import {
-//   FaWifi,
-//   FaShieldAlt,
-//   FaParking,
-//   FaUsers,
-//   FaVideo,
-//   FaPhone,
-//   FaLock,
-//   FaServer,
-//   FaNetworkWired,
-//   FaDesktop,
-//   FaIdCard,
-//   FaPlug,
-//   FaHeadset,
-//   FaUserShield,
-//   FaFileAlt,
-//   FaDoorOpen,
-// } from "react-icons/fa";
-
-// const amenities = [
-//   { icon: <FaDoorOpen />, text: "24x7 Access" },
-//   { icon: <FaPlug />, text: "Air Conditioning" },
-//   { icon: <FaIdCard />, text: "Front Desk" },
-//   { icon: <FaServer />, text: "IT Services" },
-//   { icon: <FaWifi />, text: "Unlimited Internet" },
-//   { icon: <FaShieldAlt />, text: "Firewall" },
-//   { icon: <FaNetworkWired />, text: "Structured Network" },
-//   { icon: <FaNetworkWired />, text: "Managed VLAN" },
-//   { icon: <FaPlug />, text: "Switches & Routers" },
-//   { icon: <FaServer />, text: "Rack Spaces" },
-//   { icon: <FaHeadset />, text: "IT Support" },
-//   { icon: <FaUsers />, text: "Meeting Rooms" },
-//   { icon: <FaDesktop />, text: "Projectors / Display" },
-//   { icon: <FaLock />, text: "Access Control" },
-//   { icon: <FaPhone />, text: "IP Phones" },
-//   { icon: <FaFileAlt />, text: "Documentation Area" },
-//   { icon: <FaUsers />, text: "Social Hub" },
-//   { icon: <FaParking />, text: "Parking" },
-//   { icon: <FaUserShield />, text: "24x7 Security" },
-//   { icon: <FaVideo />, text: "24x7 CCTV" },
-// ];
-
-// function Amenities() {
-//   return (
-//     <section className={styles.container}>
-//       <div className={styles.top}>
-//         <div className={styles.logoBadge}>CW</div>
-//         <h1 className={styles.title}>Business Amenities</h1>
-//         <p className={styles.subtitle}>Secure · Connected · Premium</p>
-//       </div>
-
-//       <div className={styles.grid}>
-//         {amenities.map((item, index) => (
-//           <div key={index} className={styles.card}>
-//             <div className={styles.iconWrap}>
-//               <div className={styles.icon}>{item.icon}</div>
-//             </div>
-//             <p>{item.text}</p>
-//           </div>
-//         ))}
-//       </div>
-//     </section>
-//   );
-// }
-
-// export default Amenities;
 import React, { useState } from "react";
 import styles from "../Styles/Amenities.module.css";
 import {
@@ -74,31 +6,71 @@ import {
   FaIdCard, FaPlug, FaHeadset, FaUserShield, FaFileAlt, FaDoorOpen,
 } from "react-icons/fa";
 
-/* ─── All 20 amenities pinned on the image (x/y = % position) ─── */
+/* ─── 10 tags with their own preview images ─── */
 const imageTags = [
-  { icon: <FaDoorOpen />,     text: "24x7 Access",          x: 8,  y: 14 },
-  { icon: <FaPlug />,         text: "Air Conditioning",     x: 26, y: 10 },
-  { icon: <FaIdCard />,       text: "Front Desk",           x: 46, y: 7  },
-  { icon: <FaServer />,       text: "IT Services",          x: 65, y: 12 },
-  { icon: <FaWifi />,         text: "Unlimited Internet",   x: 82, y: 8  },
-  { icon: <FaShieldAlt />,    text: "Firewall",             x: 91, y: 28 },
-  { icon: <FaNetworkWired />, text: "Structured Network",   x: 85, y: 48 },
-  { icon: <FaNetworkWired />, text: "Managed VLAN",         x: 78, y: 65 },
-  { icon: <FaPlug />,         text: "Switches & Routers",   x: 62, y: 74 },
-  { icon: <FaServer />,       text: "Rack Spaces",          x: 44, y: 80 },
-  { icon: <FaHeadset />,      text: "IT Support",           x: 26, y: 75 },
-  { icon: <FaUsers />,        text: "Meeting Rooms",        x: 10, y: 68 },
-  { icon: <FaDesktop />,      text: "Projectors / Display", x: 5,  y: 50 },
-  { icon: <FaLock />,         text: "Access Control",       x: 6,  y: 32 },
-  { icon: <FaPhone />,        text: "IP Phones",            x: 18, y: 26 },
-  { icon: <FaFileAlt />,      text: "Documentation",        x: 36, y: 30 },
-  { icon: <FaUsers />,        text: "Social Hub",           x: 55, y: 35 },
-  { icon: <FaParking />,      text: "Parking",              x: 70, y: 32 },
-  { icon: <FaUserShield />,   text: "24x7 Security",        x: 38, y: 58 },
-  { icon: <FaVideo />,        text: "24x7 CCTV",            x: 56, y: 55 },
+  {
+    icon: <FaDoorOpen />,
+    text: "24x7 Access",
+    x: 8, y: 14,
+    preview: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=400&q=85",
+  },
+  {
+    icon: <FaIdCard />,
+    text: "Front Desk",
+    x: 26, y: 10,
+    preview: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=400&q=85",
+  },
+  {
+    icon: <FaServer />,
+    text: "IT Services",
+    x: 46, y: 7,
+    preview: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&q=85",
+  },
+  {
+    icon: <FaWifi />,
+    text: "Unlimited Internet",
+    x: 65, y: 12,
+    preview: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=85",
+  },
+  {
+    icon: <FaUsers />,
+    text: "Meeting Rooms",
+    x: 82, y: 8,
+    preview: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=400&q=85",
+  },
+  {
+    icon: <FaParking />,
+    text: "Parking",
+    x: 91, y: 38,
+    preview: "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=400&q=85",
+  },
+  {
+    icon: <FaVideo />,
+    text: "24x7 CCTV",
+    x: 82, y: 65,
+    preview: "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=400&q=85",
+  },
+  {
+    icon: <FaUserShield />,
+    text: "24x7 Security",
+    x: 55, y: 75,
+    preview: "https://images.unsplash.com/photo-1521790361543-f645cf042ec4?w=400&q=85",
+  },
+  {
+    icon: <FaDesktop />,
+    text: "Projectors / Display",
+    x: 26, y: 72,
+    preview: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=85",
+  },
+  {
+    icon: <FaLock />,
+    text: "Access Control",
+    x: 8, y: 48,
+    preview: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&q=85",
+  },
 ];
 
-/* ─── Same list for the bottom grid ─── */
+/* ─── All 20 amenities for the bottom grid ─── */
 const amenities = [
   { icon: <FaDoorOpen />,     text: "24x7 Access"          },
   { icon: <FaPlug />,         text: "Air Conditioning"      },
@@ -153,40 +125,67 @@ export default function Amenities() {
           className={styles.heroImg}
         />
 
-        {/* Dark vignette edges */}
+        {/* Edge gradients */}
         <div className={styles.gradTop} />
         <div className={styles.gradBottom} />
         <div className={styles.gradLeft} />
         <div className={styles.gradRight} />
 
-        {/* ── All 20 tags — always visible with name ── */}
-        {imageTags.map((tag, i) => (
-          <div
-            key={i}
-            className={`${styles.tag} ${activeTag === i ? styles.tagActive : ""}`}
-            style={{ left: `${tag.x}%`, top: `${tag.y}%` }}
-            onMouseEnter={() => setActiveTag(i)}
-            onMouseLeave={() => setActiveTag(null)}
-          >
-            {/* Pulse ring */}
-            <span className={styles.tagRing} style={{ animationDelay: `${i * 0.18}s` }} />
+        {/* ── 10 Tags with image previews ── */}
+        {imageTags.map((tag, i) => {
+          const isActive = activeTag === i;
+          /* decide tooltip direction — tags near right edge flip left */
+          const flipLeft = tag.x > 60;
+          const flipUp   = tag.y > 55;
 
-            {/* Icon dot */}
-            <span className={styles.tagDot}>
-              <span className={styles.tagIcon}>{tag.icon}</span>
-            </span>
+          return (
+            <div
+              key={i}
+              className={`${styles.tag} ${isActive ? styles.tagActive : ""}`}
+              style={{ left: `${tag.x}%`, top: `${tag.y}%` }}
+              onMouseEnter={() => setActiveTag(i)}
+              onMouseLeave={() => setActiveTag(null)}
+            >
+              {/* Pulse ring */}
+              <span
+                className={styles.tagRing}
+                style={{ animationDelay: `${i * 0.18}s` }}
+              />
 
-            {/* Name chip — always shown */}
-            <span className={styles.tagChip}>
-              {tag.text}
-            </span>
-          </div>
-        ))}
+              {/* Icon dot */}
+              <span className={styles.tagDot}>
+                <span className={styles.tagIcon}>{tag.icon}</span>
+              </span>
+
+              {/* Name chip */}
+              <span className={styles.tagChip}>{tag.text}</span>
+
+              {/* ── Preview card — appears on hover ── */}
+              <div
+                className={`${styles.tagPreview} ${flipLeft ? styles.previewLeft : styles.previewRight} ${flipUp ? styles.previewUp : styles.previewDown}`}
+              >
+                <div className={styles.previewImgWrap}>
+                  <img
+                    src={tag.preview}
+                    alt={tag.text}
+                    className={styles.previewImg}
+                    loading="lazy"
+                  />
+                  <div className={styles.previewImgOverlay} />
+                </div>
+                <div className={styles.previewBody}>
+                  <span className={styles.previewIcon}>{tag.icon}</span>
+                  <span className={styles.previewLabel}>{tag.text}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
 
         {/* Caption bar */}
         <div className={styles.imgCaption}>
           <span className={styles.captionLoc}>📍 WorkNest HQ, Hyderabad</span>
-          <span className={styles.captionHint}>All amenities tagged</span>
+          <span className={styles.captionHint}>Hover tags to explore</span>
         </div>
       </div>
 
@@ -216,4 +215,3 @@ export default function Amenities() {
     </section>
   );
 }
-

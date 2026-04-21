@@ -2,34 +2,34 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../Styles/Companies.css";
 
-const teamOptions = [
+const companyOptions = [
   {
     id: 1,
-    title: "Small Team",
-    subtitle: "20 – 50 Employees",
-    desc: "Ideal for growing startups in Hyderabad needing a professional, plug-and-play workspace without long-term commitments.",
+    title: "Startup",
+    subtitle: "Upto 20 Employees",
+    desc: "Perfect for early-stage companies in Hyderabad seeking a professional address, plug-and-play setup, and zero long-term lock-in.",
     features: ["Private Cabins", "Meeting Rooms", "High-Speed Wi-Fi", "Reception Support"],
-    icon: "👥",
+    icon: "🚀",
     badge: "Starter",
   },
   {
     id: 2,
-    title: "Medium Team",
-    subtitle: "50 – 100 Employees",
-    desc: "Flexible dedicated floors in Hyderabad's prime business districts, with custom branding and full managed services.",
+    title: "Growth",
+    subtitle: "20 – 75 Employees",
+    desc: "Dedicated floors in Hyderabad's prime business districts with custom branding, managed services, and room to scale fast.",
     features: ["Dedicated Floor", "Custom Branding", "HR Concierge", "Pantry & Café"],
-    icon: "🏢",
+    icon: "📈",
     badge: "Most Popular",
     featured: true,
   },
   {
     id: 3,
-    title: "Large Team",
-    subtitle: "100+ Employees",
-    desc: "Enterprise-grade managed campuses across Hyderabad with SLA-backed uptime and bespoke interior fitouts.",
+    title: "Scale",
+    subtitle: "75 – 200 Employees",
+    desc: "Full-floor managed campuses across HITEC City & Gachibowli with SLA-backed uptime and bespoke interior fitouts for established companies.",
     features: ["Full-Floor Access", "Executive Lounges", "Bespoke Fitouts", "Dedicated Manager"],
-    icon: "🏬",
-    badge: "Enterprise",
+    icon: "🏢",
+    badge: "Scale-Up",
   },
 ];
 
@@ -44,26 +44,26 @@ const clientLogos = [
   { name: "Philips", logo: "/logo8.png" },
 ];
 
-const TeamClientsSection = () => {
+const CompaniesSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section id="workspace-clients-section" className="tcs-section">
+    <section id="workspace-companies-section" className="tcs-section">
       <div className="tcs-container">
 
         {/* ── Section Header ── */}
         <div className="tcs-header">
           <span className="tcs-eyebrow">✦ Hyderabad's Premium Workspace Partner ✦</span>
-          <h2 className="tcs-heading">Office Space for Every Team Size</h2>
+          <h2 className="tcs-heading">Office Space for Every Company Stage</h2>
           <p className="tcs-subheading">
             Fully managed, ready-to-move workspaces across Hyderabad's top business districts —
-            HITEC City, Gachibowli & Banjara Hills.
+            HITEC City, Gachibowli &amp; Banjara Hills.
           </p>
         </div>
 
         {/* ── 3 Cards ── */}
         <div className="tcs-cards-grid">
-          {teamOptions.map((item, i) => (
+          {companyOptions.map((item, i) => (
             <div
               key={item.id}
               className={`tcs-card ${item.featured ? "tcs-card--featured" : ""}`}
@@ -124,4 +124,4 @@ const TeamClientsSection = () => {
   );
 };
 
-export default TeamClientsSection;
+export default CompaniesSection;

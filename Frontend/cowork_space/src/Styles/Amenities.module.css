@@ -121,7 +121,6 @@
 .imageWrap {
   position: relative;
   width: 100%;
-  /* tall enough so 20 spread-out tags have room */
   height: clamp(440px, 62vw, 680px);
   overflow: hidden;
 }
@@ -134,11 +133,10 @@
   object-fit: cover;
   object-position: center 38%;
   display: block;
-  /* vivid and bright */
   filter: brightness(0.68) saturate(1.2) contrast(1.06);
 }
  
-/* Edge gradients — blend image into page bg */
+/* Edge gradients */
 .gradTop {
   position: absolute;
   top: 0; left: 0; right: 0;
@@ -176,17 +174,16 @@
 }
  
 /* ═══════════════════════════════════════════
-   TAG — pin + always-visible name chip
+   TAG — pin + name chip
 ═══════════════════════════════════════════ */
 .tag {
   position: absolute;
-  /* center the tag on its x/y coordinate */
   transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   gap: 0;
   z-index: 10;
-  cursor: default;
+  cursor: pointer;
 }
  
 /* Pulsing outer ring */
@@ -228,17 +225,13 @@
   transition: transform 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
 }
  
-.tag:hover .tagDot {
+.tag:hover .tagDot,
+.tagActive .tagDot {
   transform: scale(1.22);
   background: var(--gold-light);
   box-shadow:
     0 0 0 5px rgba(212, 168, 67, 0.3),
     0 4px 18px rgba(0, 0, 0, 0.65);
-}
- 
-.tagActive .tagDot {
-  transform: scale(1.22);
-  background: var(--gold-light);
 }
  
 .tagIcon {
@@ -250,7 +243,7 @@
   line-height: 1;
 }
  
-/* ── Name chip — always visible, sits right of the dot ── */
+/* Name chip */
 .tagChip {
   position: relative;
   z-index: 2;
@@ -271,16 +264,148 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 }
  
-.tag:hover .tagChip {
+.tag:hover .tagChip,
+.tagActive .tagChip {
   background: rgba(212, 168, 67, 0.18);
   border-color: rgba(212, 168, 67, 0.7);
   color: #fff;
 }
  
-.tagActive .tagChip {
-  background: rgba(212, 168, 67, 0.18);
-  border-color: rgba(212, 168, 67, 0.7);
-  color: #fff;
+/* ═══════════════════════════════════════════
+   TAG PREVIEW CARD — image popup on hover
+═══════════════════════════════════════════ */
+.tagPreview {
+  position: absolute;
+  z-index: 30;
+  width: 190px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #141310;
+  border: 1px solid var(--gold-border);
+  box-shadow:
+    0 0 0 1px rgba(212, 168, 67, 0.12),
+    0 16px 48px rgba(0, 0, 0, 0.75),
+    0 4px 16px rgba(212, 168, 67, 0.15);
+ 
+  /* hidden by default */
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.88) translateY(6px);
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+ 
+/* Show on hover */
+.tag:hover .tagPreview,
+.tagActive .tagPreview {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateY(0);
+}
+ 
+/* Positioning: right of dot (default) */
+.previewRight {
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: scale(0.88) translateY(calc(-50% + 6px));
+}
+.tag:hover .previewRight,
+.tagActive .previewRight {
+  transform: scale(1) translateY(-50%);
+}
+ 
+/* Positioning: left of dot (for right-edge tags) */
+.previewLeft {
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: scale(0.88) translateY(calc(-50% + 6px));
+}
+.tag:hover .previewLeft,
+.tagActive .previewLeft {
+  transform: scale(1) translateY(-50%);
+}
+ 
+/* Positioning: above (for bottom-edge tags) */
+.previewUp {
+  bottom: calc(100% + 10px);
+  left: 50%;
+  top: auto;
+  transform: scale(0.88) translateX(calc(-50% + 6px));
+}
+.tag:hover .previewUp,
+.tagActive .previewUp {
+  transform: scale(1) translateX(-50%);
+}
+ 
+/* Combination: left + up */
+.previewLeft.previewUp {
+  right: calc(100% + 10px);
+  left: auto;
+  bottom: calc(100% + 10px);
+  top: auto;
+  transform: scale(0.88) translate(0, 0);
+}
+.tag:hover .previewLeft.previewUp,
+.tagActive .previewLeft.previewUp {
+  transform: scale(1) translate(0, 0);
+}
+ 
+/* Preview image */
+.previewImgWrap {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+}
+ 
+.previewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.4s ease;
+}
+ 
+.tag:hover .previewImg {
+  transform: scale(1.05);
+}
+ 
+.previewImgOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    rgba(10, 10, 9, 0.65) 100%
+  );
+}
+ 
+/* Preview body label */
+.previewBody {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px 10px;
+}
+ 
+.previewIcon {
+  font-size: 12px;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+ 
+.previewLabel {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  white-space: nowrap;
 }
  
 /* ── Caption bar at image bottom ── */
@@ -335,13 +460,13 @@
 }
  
 /* ═══════════════════════════════════════════
-   AMENITIES CARD GRID — hairline separators
+   AMENITIES CARD GRID
 ═══════════════════════════════════════════ */
 .grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0;
-  background: var(--sep);        /* bleeds through as hairline lines */
+  background: var(--sep);
   border-top: 1px solid var(--sep);
   margin: 0;
   padding: 0;
@@ -371,7 +496,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
  
-/* gold top bar slides in on hover */
 .card::before {
   content: '';
   position: absolute;
@@ -393,7 +517,7 @@
 .card:hover .cardIcon { color: var(--gold-light); }
 .card:hover .label { color: rgba(242, 237, 224, 0.92); }
  
-/* ── Icon circle ── */
+/* Icon circle */
 .iconWrap {
   width: 42px;
   height: 42px;
@@ -417,7 +541,6 @@
   transition: color 0.26s;
 }
  
-/* ── Text label ── */
 .label {
   font-size: 0.67rem;
   font-weight: 400;
@@ -443,6 +566,8 @@
   .headerRight { align-items: flex-start; }
   .grid { grid-template-columns: repeat(4, 1fr); }
   .imageWrap { height: clamp(380px, 68vw, 560px); }
+  .tagPreview { width: 160px; }
+  .previewImgWrap { height: 100px; }
 }
  
 /* ≤700px — 3 cols, smaller chips */
@@ -452,9 +577,12 @@
   .tagChip { font-size: 0.56rem; padding: 2px 7px; }
   .tagDot  { width: 22px; height: 22px; }
   .tagIcon { font-size: 10px; }
+  .tagPreview { width: 140px; }
+  .previewImgWrap { height: 88px; }
+  .previewLabel { font-size: 0.65rem; }
 }
  
-/* ≤480px — 3 cols tight */
+/* ≤480px — 3 cols tight, hide preview on mobile (use tap) */
 @media (max-width: 480px) {
   .grid { grid-template-columns: repeat(3, 1fr); }
   .card { padding: 1.2rem 0.5rem; gap: 0.5rem; }
@@ -463,12 +591,53 @@
   .label { font-size: 0.6rem; }
   .title { font-size: clamp(1.9rem, 8vw, 2.6rem); }
   .imageWrap { height: clamp(300px, 80vw, 440px); }
-  .tagChip { display: none; }          /* too crowded — hide text on very small */
+  .tagChip { display: none; }
   .tagDot  { width: 20px; height: 20px; }
   .captionHint { display: none; }
+ 
+  /* Smaller preview cards on mobile */
+  .tagPreview {
+    width: 130px;
+  }
+  .previewImgWrap { height: 78px; }
+  .previewBody { padding: 6px 8px 7px; gap: 6px; }
+  .previewLabel { font-size: 0.6rem; }
+ 
+  /* All previews open downward on mobile to avoid viewport clipping */
+  .previewRight,
+  .previewLeft {
+    left: 50%;
+    right: auto;
+    top: calc(100% + 8px);
+    bottom: auto;
+    transform: scale(0.88) translateX(calc(-50% + 6px));
+  }
+  .tag:hover .previewRight,
+  .tagActive .previewRight,
+  .tag:hover .previewLeft,
+  .tagActive .previewLeft {
+    transform: scale(1) translateX(-50%);
+  }
+ 
+  .previewUp,
+  .previewLeft.previewUp {
+    bottom: calc(100% + 8px);
+    top: auto;
+    left: 50%;
+    right: auto;
+    transform: scale(0.88) translateX(calc(-50% + 6px));
+  }
+  .tag:hover .previewUp,
+  .tagActive .previewUp,
+  .tag:hover .previewLeft.previewUp,
+  .tagActive .previewLeft.previewUp {
+    transform: scale(1) translateX(-50%);
+  }
 }
  
 /* ≤360px — 2 cols */
 @media (max-width: 360px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
+  .tagPreview { width: 120px; }
+  .previewImgWrap { height: 70px; }
 }

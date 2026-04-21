@@ -8,13 +8,13 @@
 }
 
 .container {
-  max-width: 1300px;
+  max-width: 81.25rem;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 2rem 1.5rem;
   display: grid;
-  grid-template-columns: minmax(220px, 280px) 1fr minmax(220px, 280px);
+  grid-template-columns: minmax(13.75rem, 17.5rem) 1fr minmax(13.75rem, 17.5rem);
   align-items: start;
-  column-gap: 40px;
+  column-gap: 2.5rem;
 }
 
 .logoSection,
@@ -26,7 +26,7 @@
 .logoSection {
   justify-self: start;
   width: 100%;
-  max-width: 280px;
+  max-width: 17.5rem;
   text-align: left;
 }
 
@@ -35,21 +35,21 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: 28px;
+  gap: 1.75rem;
   min-width: 0;
 }
 
 .linkSection {
   width: 100%;
-  min-width: 120px;
-  max-width: 160px;
+  min-width: 7.5rem;
+  max-width: 10rem;
   text-align: left;
 }
 
 .contactSection {
   justify-self: end;
   width: 100%;
-  max-width: 250px;
+  max-width: 15.625rem;
   text-align: left;
 }
 
@@ -65,17 +65,17 @@
 }
 
 .logoSection p {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #cbd5e1;
-  margin-top: 8px;
+  margin-top: 0.5rem;
   line-height: 1.7;
-  max-width: 260px;
+  max-width: 16.25rem;
 }
 
 .linkSection h4,
 .contactSection h4 {
-  font-size: 15px;
-  margin-bottom: 10px;
+  font-size: 0.9375rem;
+  margin-bottom: 0.9rem;
 }
 
 .linkSection ul,
@@ -85,60 +85,82 @@
   margin: 0;
 }
 
-.linkSection li a {
-  display: block;
-  font-size: 13px;
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.linkList li {
+  width: 100%;
+}
+
+.linkList li a {
+  display: inline-block;
+  font-size: 0.8125rem;
   color: #cbd5e1;
-  margin: 5px 0;
-  transition: 0.3s;
   text-decoration: none;
+  line-height: 1.6;
+  padding: 0.18rem 0;
+  border-bottom: 0.0625rem solid transparent;
+  transition: color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
 }
 
-.linkSection li a:hover {
+.linkList li a:hover {
   color: #fbbf24;
+  border-bottom-color: rgba(251, 191, 36, 0.7);
+  transform: translateX(0.2rem);
 }
 
-.contactSection li {
-  font-size: 13px;
-  margin: 5px 0;
+.contactList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.contactList li {
+  font-size: 0.8125rem;
   line-height: 1.7;
   word-break: break-word;
 }
 
-.contactSection li a {
+.contactList li a {
   color: #cbd5e1;
   text-decoration: none;
+  border-bottom: 0.0625rem solid transparent;
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 
-.contactSection li a:hover {
+.contactList li a:hover {
   color: #fbbf24;
+  border-bottom-color: rgba(251, 191, 36, 0.7);
 }
 
 .ctaButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 14px;
-  padding: 10px 20px;
-  border-radius: 999px;
-  border: 1px solid rgba(251, 191, 36, 0.35);
+  margin-top: 0.95rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 999rem;
+  border: 0.0625rem solid rgba(251, 191, 36, 0.35);
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
   color: #111827;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-decoration: none;
   letter-spacing: 0.02em;
-  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.28);
+  box-shadow: 0 0.5rem 1.25rem rgba(245, 158, 11, 0.28);
   transition: all 0.3s ease;
   cursor: pointer;
   width: 100%;
-  min-height: 42px;
+  min-height: 2.625rem;
 }
 
 .ctaButton:hover {
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
   background: linear-gradient(135deg, #fcd34d, #f59e0b);
-  box-shadow: 0 12px 24px rgba(245, 158, 11, 0.36);
+  box-shadow: 0 0.75rem 1.5rem rgba(245, 158, 11, 0.36);
 }
 
 .ctaButton:active {
@@ -147,14 +169,14 @@
 
 .socialIcons {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
   flex-wrap: wrap;
 }
 
 .icon {
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0);
   display: flex;
@@ -168,23 +190,32 @@
   background: #fbbf24;
 }
 
+.iconInner {
+  color: #cbd5e1;
+  transition: color 0.3s ease;
+}
+
+.icon:hover .iconInner {
+  color: #111827;
+}
+
 .bottomBar {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 12px 0;
+  border-top: 0.0625rem solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem 0;
 }
 
 .bottomContainer {
-  max-width: 1300px;
+  max-width: 81.25rem;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .copyright {
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.6;
 }
 
@@ -192,47 +223,50 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .privacyLink {
   text-decoration: none;
   color: inherit;
-  font-size: 12px;
+  font-size: 0.75rem;
+  border-bottom: 0.0625rem solid transparent;
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .privacyLink:hover {
   color: #fbbf24;
+  border-bottom-color: rgba(251, 191, 36, 0.7);
 }
 
 /* Large tablet */
-@media (max-width: 1100px) {
+@media (max-width: 68.75rem) {
   .container {
-    grid-template-columns: minmax(200px, 1fr) minmax(320px, 1.2fr) minmax(200px, 1fr);
-    column-gap: 28px;
-    padding: 28px 20px;
+    grid-template-columns: minmax(12.5rem, 1fr) minmax(20rem, 1.2fr) minmax(12.5rem, 1fr);
+    column-gap: 1.75rem;
+    padding: 1.75rem 1.25rem;
   }
 
   .middleWrapper {
-    gap: 18px;
+    gap: 1.125rem;
   }
 
   .linkSection {
-    min-width: 100px;
-    max-width: 140px;
+    min-width: 6.25rem;
+    max-width: 8.75rem;
   }
 
   .contactSection {
-    max-width: 220px;
+    max-width: 13.75rem;
   }
 }
 
 /* Tablet */
-@media (max-width: 900px) {
+@media (max-width: 56.25rem) {
   .container {
     grid-template-columns: 1fr;
-    row-gap: 28px;
-    padding: 28px 20px;
+    row-gap: 1.75rem;
+    padding: 1.75rem 1.25rem;
   }
 
   .logoSection,
@@ -249,12 +283,12 @@
   .middleWrapper {
     width: 100%;
     justify-content: space-between;
-    gap: 16px;
+    gap: 1rem;
     flex-wrap: wrap;
   }
 
   .linkSection {
-    flex: 1 1 140px;
+    flex: 1 1 8.75rem;
     max-width: none;
   }
 
@@ -264,7 +298,7 @@
 
   .ctaButton {
     width: 100%;
-    max-width: 260px;
+    max-width: 16.25rem;
   }
 
   .bottomContainer {
@@ -279,10 +313,10 @@
 }
 
 /* Mobile */
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .container {
-    padding: 24px 16px;
-    row-gap: 24px;
+    padding: 1.5rem 1rem;
+    row-gap: 1.5rem;
   }
 
   .logoSection,
@@ -304,7 +338,7 @@
   .middleWrapper {
     flex-direction: column;
     align-items: center;
-    gap: 18px;
+    gap: 1.125rem;
   }
 
   .linkSection {
@@ -324,11 +358,11 @@
   .ctaButton {
     margin-left: auto;
     margin-right: auto;
-    max-width: 220px;
+    max-width: 13.75rem;
   }
 
   .bottomContainer {
-    padding: 0 16px;
+    padding: 0 1rem;
     align-items: center;
     text-align: center;
   }
@@ -336,13 +370,17 @@
   .privacyLinks {
     justify-content: center;
   }
+
+  .linkList li a:hover {
+    transform: none;
+  }
 }
 
 /* Small mobile */
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
   .container {
-    padding: 22px 14px;
-    row-gap: 22px;
+    padding: 1.375rem 0.875rem;
+    row-gap: 1.375rem;
   }
 
   .logo h1 {
@@ -350,48 +388,48 @@
   }
 
   .logoSection p,
-  .linkSection li a,
-  .contactSection li {
-    font-size: 12.5px;
+  .linkList li a,
+  .contactList li {
+    font-size: 0.78125rem;
     line-height: 1.7;
   }
 
   .linkSection h4,
   .contactSection h4 {
-    font-size: 14px;
-    margin-bottom: 8px;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
   }
 
   .socialIcons {
-    gap: 10px;
+    gap: 0.625rem;
   }
 
   .icon {
-    width: 34px;
-    height: 34px;
+    width: 2.125rem;
+    height: 2.125rem;
   }
 
   .ctaButton {
-    max-width: 210px;
-    min-height: 40px;
-    font-size: 12px;
-    padding: 9px 16px;
+    max-width: 13.125rem;
+    min-height: 2.5rem;
+    font-size: 0.75rem;
+    padding: 0.5625rem 1rem;
   }
 
   .copyright,
   .privacyLink {
-    font-size: 11.5px;
+    font-size: 0.71875rem;
   }
 }
 
 /* Extra small mobile */
-@media (max-width: 360px) {
+@media (max-width: 22.5rem) {
   .container {
-    padding: 20px 12px;
+    padding: 1.25rem 0.75rem;
   }
 
   .middleWrapper {
-    gap: 16px;
+    gap: 1rem;
   }
 
   .ctaButton {
@@ -399,6 +437,6 @@
   }
 
   .privacyLinks {
-    gap: 2px;
+    gap: 0.125rem;
   }
 }
