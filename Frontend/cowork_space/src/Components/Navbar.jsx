@@ -26,31 +26,25 @@ function Navbar() {
     { label: "Hyderabad", value: "Hyderabad" },
   ];
 
-  /* Smooth scroll to top - Works on ALL pages */
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  /* Smooth scroll to companies section OR home page - Works on ALL pages */
+  /* Updated id: workspace-companies-section */
   const scrollToCompanies = () => {
-    // Check if companies section exists on current page
-    const companiesSection = document.getElementById("workspace-clients-section");
+    const companiesSection = document.getElementById("workspace-companies-section");
     if (companiesSection) {
-      // If on current page, scroll to section
       companiesSection.scrollIntoView({ behavior: "smooth" });
     } else {
-      // If not found, navigate to home and scroll to top (companies will be there)
       navigate("/");
-      // Small delay to ensure navigation completes, then scroll
       setTimeout(() => {
-        const section = document.getElementById("workspace-clients-section");
+        const section = document.getElementById("workspace-companies-section");
         if (section) section.scrollIntoView({ behavior: "smooth" });
       }, 300);
     }
     closeMobileMenu();
   };
 
-  /* Close all mobile panels */
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
     setMobileWorkspaceOpen(false);
@@ -63,7 +57,6 @@ function Navbar() {
     closeMobileMenu();
   };
 
-  /* Desktop profile icon click */
   const handleUserClick = () => {
     if (token) {
       if (isAdmin === "true") navigate("/admin-dashboard");
@@ -112,7 +105,7 @@ function Navbar() {
           <p className={styles.menuItem} onClick={() => { navigate("/"); scrollToTop(); }}>
             Home
           </p>
-          
+
           <p className={styles.menuItem} onClick={scrollToCompanies}>
             Companies
           </p>
@@ -137,7 +130,7 @@ function Navbar() {
               </div>
             )}
           </div>
-          
+
           {/* Workspaces */}
           <div
             className={styles.dropdown}
@@ -163,17 +156,14 @@ function Navbar() {
         {/* ── DESKTOP RIGHT ── */}
         <div className={styles.right}>
 
-          {/* Cart */}
           <span className={styles.icon} onClick={() => navigate("/cart")} title="Cart">
             🛒
           </span>
 
-          {/* Profile / Login */}
           <span className={styles.icon} onClick={handleUserClick} title="Profile">
             👤
           </span>
 
-          {/* Role menu popup (shown when not logged in) */}
           {showRoleMenu && (
             <div className={styles.roleMenu}>
               <div onClick={() => { navigate("/auth?type=user"); setShowRoleMenu(false); }}>
@@ -219,7 +209,7 @@ function Navbar() {
       </div>
 
       {/* ═══════════════════════════════════
-          MOBILE MENU
+          MOBILE MENU — Full-screen luxury drawer
           ═══════════════════════════════════ */}
       {isMobileMenuOpen && (
         <div
@@ -228,115 +218,143 @@ function Navbar() {
         >
           <div className={styles.mobileMenu}>
 
-            {/* Logo in drawer */}
-            <div 
-              className={styles.mobileLogo} 
-              onClick={() => { handleNavigate("/"); scrollToTop(); }}
-            >
-              CoWork
-            </div>
-
-            {/* Home */}
-            <p className={styles.mobileItem} onClick={() => { handleNavigate("/"); scrollToTop(); }}>
-              Home
-            </p>
-
-            {/* Enterprise Mobile */}
-            <div className={styles.mobileDropdown}>
-              <button
-                className={styles.mobileDropdownBtn}
-                onClick={() => setMobileRoleOpen(o => !o)}
+            {/* ── Drawer Header ── */}
+            <div className={styles.mobileHeader}>
+              <div
+                className={styles.mobileLogo}
+                onClick={() => { handleNavigate("/"); scrollToTop(); }}
               >
-                Enterprises
-                <span>{mobileRoleOpen ? "−" : "+"}</span>
-              </button>
-
-              {mobileRoleOpen && (
-                <div className={styles.mobileSubmenu}>
-                  <p onClick={() => handleNavigate("/Enterprise")}>
-                    Enterprise Workspaces
-                  </p>
-                  <p onClick={() => handleNavigate("/RightSpace")}>
-                    Business Solutions
-                  </p>
-                </div>
-              )}
+                CoWork
+              </div>
+              {/* <button className={styles.mobileClose} onClick={closeMobileMenu} aria-label="Close menu">
+                ✕
+              </button> */}
             </div>
 
-            {/* Companies */}
-            <p className={styles.mobileItem} onClick={scrollToCompanies}>
-              Companies
-            </p>
+            {/* ── User greeting strip (if logged in) ── */}
+            {token && username && (
+              <div className={styles.mobileUserStrip}>
+                <div className={styles.mobileUserAvatar}>
+                  {username.charAt(0).toUpperCase()}
+                </div>
+                <div className={styles.mobileUserInfo}>
+                  <span className={styles.mobileUserGreet}>Welcome back</span>
+                  <span className={styles.mobileUserName}>{username}</span>
+                </div>
+              </div>
+            )}
 
-            {/* Workspaces accordion */}
-            <div className={styles.mobileDropdown}>
-              <button
-                className={styles.mobileDropdownBtn}
-                onClick={() => setMobileWorkspaceOpen(o => !o)}
+            {/* ── Nav Links ── */}
+            <nav className={styles.mobileNav}>
+
+              <div
+                className={styles.mobileNavItem}
+                onClick={() => { handleNavigate("/"); scrollToTop(); }}
               >
-                Our Gallery
-                <span>{mobileWorkspaceOpen ? "−" : "+"}</span>
-              </button>
-              {mobileWorkspaceOpen && (
-                <div className={styles.mobileSubmenu}>
-                  {workspaceLinks.map((item, i) => (
-                    <p key={i} onClick={() => handleNavigate(item.path)}>{item.label}</p>
-                  ))}
+                <span className={styles.mobileNavIcon}>⌂</span>
+                <span className={styles.mobileNavLabel}>Home</span>
+                <span className={styles.mobileNavArrow}>›</span>
+              </div>
+
+              <div className={styles.mobileNavItem} onClick={scrollToCompanies}>
+                <span className={styles.mobileNavIcon}>🏢</span>
+                <span className={styles.mobileNavLabel}>Companies</span>
+                <span className={styles.mobileNavArrow}>›</span>
+              </div>
+
+              {/* Enterprises accordion */}
+              <div className={styles.mobileAccordion}>
+                <div
+                  className={`${styles.mobileNavItem} ${mobileRoleOpen ? styles.mobileNavItemOpen : ""}`}
+                  onClick={() => setMobileRoleOpen(o => !o)}
+                >
+                  <span className={styles.mobileNavIcon}>🌐</span>
+                  <span className={styles.mobileNavLabel}>Enterprises</span>
+                  <span className={`${styles.mobileNavChevron} ${mobileRoleOpen ? styles.chevronOpen : ""}`}>⌄</span>
                 </div>
-              )}
-            </div>
-
-            {/* Amenities */}
-            <p className={styles.mobileItem} onClick={() => handleNavigate("/amenities")}>
-              Amenities
-            </p>
-
-            {/* ── MOBILE RIGHT SECTION ── */}
-            <div className={styles.mobileRight}>
-
-              {/* Show username if logged in */}
-              {token && username && (
-                <div className={styles.mobileUserName}>👤 Hi, {username}</div>
-              )}
-
-              {/* Cart */}
-              <span onClick={() => handleNavigate("/cart")}>🛒 Cart</span>
-
-              {/* Logged in: profile link */}
-              {token ? (
-                <span onClick={() => {
-                  isAdmin === "true" ? handleNavigate("/admin-dashboard") : alert("Profile coming soon");
-                }}>
-                  {isAdmin === "true" ? "⚙️ Admin Dashboard" : "👤 My Profile"}
-                </span>
-              ) : (
-                /* Not logged in: role chooser */
-                <div className={styles.mobileRoleMenu}>
-                  <span className={styles.mobileRoleTitle}>Login as</span>
-                  <div
-                    className={styles.mobileRoleItem}
-                    onClick={() => handleNavigate("/auth?type=user")}
-                  >
-                    👤 User
+                {mobileRoleOpen && (
+                  <div className={styles.mobileAccordionBody}>
+                    <div
+                      className={styles.mobileSubItem}
+                      onClick={() => handleNavigate("/Enterprise")}
+                    >
+                      <span className={styles.mobileSubDot} />
+                      Enterprise Workspaces
+                    </div>
+                    <div
+                      className={styles.mobileSubItem}
+                      onClick={() => handleNavigate("/RightSpace")}
+                    >
+                      <span className={styles.mobileSubDot} />
+                      Business Solutions
+                    </div>
                   </div>
-                  <div
-                    className={styles.mobileRoleItem}
-                    onClick={() => handleNavigate("/auth?type=owner")}
-                  >
-                    🏢 Owner
-                  </div>
-                  <div
-                    className={styles.mobileRoleItem}
-                    onClick={() => handleNavigate("/auth?type=admin")}
-                  >
-                    ⚙️ Admin
-                  </div>
+                )}
+              </div>
+
+              {/* Gallery accordion */}
+              <div className={styles.mobileAccordion}>
+                <div
+                  className={`${styles.mobileNavItem} ${mobileWorkspaceOpen ? styles.mobileNavItemOpen : ""}`}
+                  onClick={() => setMobileWorkspaceOpen(o => !o)}
+                >
+                  <span className={styles.mobileNavIcon}>🖼</span>
+                  <span className={styles.mobileNavLabel}>Our Gallery</span>
+                  <span className={`${styles.mobileNavChevron} ${mobileWorkspaceOpen ? styles.chevronOpen : ""}`}>⌄</span>
                 </div>
-              )}
+                {mobileWorkspaceOpen && (
+                  <div className={styles.mobileAccordionBody}>
+                    {workspaceLinks.map((item, i) => (
+                      <div
+                        key={i}
+                        className={styles.mobileSubItem}
+                        onClick={() => handleNavigate(item.path)}
+                      >
+                        <span className={styles.mobileSubDot} />
+                        {item.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-              {/* Logged in buttons */}
+              <div
+                className={styles.mobileNavItem}
+                onClick={() => handleNavigate("/amenities")}
+              >
+                <span className={styles.mobileNavIcon}>✦</span>
+                <span className={styles.mobileNavLabel}>Amenities</span>
+                <span className={styles.mobileNavArrow}>›</span>
+              </div>
+
+              <div
+                className={styles.mobileNavItem}
+                onClick={() => handleNavigate("/cart")}
+              >
+                <span className={styles.mobileNavIcon}>🛒</span>
+                <span className={styles.mobileNavLabel}>Cart</span>
+                <span className={styles.mobileNavArrow}>›</span>
+              </div>
+
+            </nav>
+
+            {/* ── Bottom CTA Zone ── */}
+            <div className={styles.mobileBottom}>
+
               {token ? (
                 <>
+                  <div
+                    className={styles.mobileProfileRow}
+                    onClick={() => {
+                      isAdmin === "true"
+                        ? handleNavigate("/admin-dashboard")
+                        : alert("Profile coming soon");
+                    }}
+                  >
+                    <span>{isAdmin === "true" ? "⚙️ Admin Dashboard" : "👤 My Profile"}</span>
+                    <span className={styles.mobileNavArrow}>›</span>
+                  </div>
+
                   <button className={styles.mobileOrderBtn} onClick={handleMyOrders}>
                     My Orders
                   </button>
@@ -345,12 +363,42 @@ function Navbar() {
                   </button>
                 </>
               ) : (
-                <button className={styles.mobileStartBtn} onClick={() => handleNavigate("/auth")}>
-                  Get Started →
-                </button>
-              )}
+                <>
+                  <p className={styles.mobileLoginLabel}>Login as</p>
+                  <div className={styles.mobileRoleTiles}>
+                    <div
+                      className={styles.mobileRoleTile}
+                      onClick={() => handleNavigate("/auth?type=user")}
+                    >
+                      <span className={styles.mobileRoleTileIcon}>👤</span>
+                      <span>User</span>
+                    </div>
+                    <div
+                      className={styles.mobileRoleTile}
+                      onClick={() => handleNavigate("/auth?type=owner")}
+                    >
+                      <span className={styles.mobileRoleTileIcon}>🏢</span>
+                      <span>Owner</span>
+                    </div>
+                    <div
+                      className={styles.mobileRoleTile}
+                      onClick={() => handleNavigate("/auth?type=admin")}
+                    >
+                      <span className={styles.mobileRoleTileIcon}>⚙️</span>
+                      <span>Admin</span>
+                    </div>
+                  </div>
 
+                  <button
+                    className={styles.mobileStartBtn}
+                    onClick={() => handleNavigate("/auth")}
+                  >
+                    Get Started →
+                  </button>
+                </>
+              )}
             </div>
+
           </div>
         </div>
       )}
