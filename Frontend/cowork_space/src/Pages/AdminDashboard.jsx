@@ -549,7 +549,7 @@ export default function AdminDashboard() {
 
         {/* Breadcrumb */}
         <div className={styles.breadcrumb}>
-          <span className={styles.breadHome} onClick={() => setSection("overview")}>Dashboard</span>
+          {/* <span className={styles.breadHome} onClick={() => setSection("overview")}>Dashboard</span> */}
           {section !== "overview" && (
             <>
               <span className={styles.breadSep}>›</span>
