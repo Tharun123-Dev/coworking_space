@@ -1012,13 +1012,13 @@ export default function AdminDashboard() {
               </div>
             </section>
           )}
-        <div className={styles.fullWidthSection}>
+        {/* <div className={styles.fullWidthSection}>
   <FooterCarousel />
 </div>
 
 <div className={styles.fullWidthFooter}>
   <Footer />
-</div>
+</div> */}
 
 
         </main>
