@@ -506,7 +506,7 @@ export default function Enterprise() {
       </section>
 
       {/* 7. FINAL CTA */}
-      <section className="ep-final-cta">
+      {/* <section className="ep-final-cta">
         <div className="ep-final-cta-bg">
           <img src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=1600" alt="cta bg" />
           <div className="ep-final-cta-overlay"></div>
@@ -523,7 +523,7 @@ export default function Enterprise() {
             </a>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {modalOpen && <ContactModal onClose={closeModal} preselect={modalPreselect} />}
     </div>
