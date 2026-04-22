@@ -38,6 +38,7 @@ const IC = {
   check:      "M20 6L9 17l-5-5",
   arrowUp:    "M18 15l-6-6-6 6",
   arrowDown:  "M6 9l6 6 6-6",
+  dotsV:      "M12 5h.01 M12 12h.01 M12 19h.01",
 };
 
 /* ─── Sidebar groups ─── */
@@ -87,24 +88,84 @@ const SIDEBAR_GROUPS = [
   },
 ];
 
-/* ─── Mock data ─── */
-const MOCK_ACTIVITY = [
-  { icon:IC.workspace,  text:"New workspace 'Horizon Hub' added",  time:"2m ago",  color:"#C9A84C" },
-  { icon:IC.leads,      text:"Lead #4821 assigned to Ravi",         time:"11m ago", color:"#4A90D9" },
-  { icon:IC.tickets,    text:"Ticket #209 marked resolved",         time:"34m ago", color:"#4CAF82" },
-  { icon:IC.bookings,   text:"Booking #1042 confirmed",             time:"1h ago",  color:"#9B7FD4" },
-  { icon:IC.enterprise, text:"Enterprise lead from TechCorp",       time:"2h ago",  color:"#E6A23C" },
-  // { icon:IC.offers,     text:"Offer lead #88 accepted",             time:"3h ago",  color:"#E05C5C" },
+/* ─── Weekly booking chart data ─── */
+const CHART_DATA = [
+  { day: "Mon", bookings: 18, revenue: 42 },
+  { day: "Tue", bookings: 27, revenue: 63 },
+  { day: "Wed", bookings: 22, revenue: 51 },
+  { day: "Thu", bookings: 35, revenue: 82 },
+  { day: "Fri", bookings: 31, revenue: 74 },
+  { day: "Sat", bookings: 14, revenue: 33 },
+  { day: "Sun", bookings: 9,  revenue: 21 },
 ];
 
-const MOCK_TICKETS = [
-  { id:"#T-201", subject:"AC not working in Cabin 3",     status:"open",        priority:"high",   user:"Aarav M.",  time:"10m ago" },
-  { id:"#T-202", subject:"WiFi disconnecting frequently", status:"in_progress", priority:"medium", user:"Priya S.",  time:"25m ago" },
-  { id:"#T-203", subject:"Invoice discrepancy - May",     status:"open",        priority:"high",   user:"Kiran D.",  time:"1h ago"  },
-  { id:"#T-204", subject:"Parking slot not assigned",     status:"resolved",    priority:"low",    user:"Sneha R.",  time:"3h ago"  },
-  { id:"#T-205", subject:"Meeting room double booked",    status:"in_progress", priority:"medium", user:"Rahul K.",  time:"5h ago"  },
-  { id:"#T-206", subject:"Printer paper jam",             status:"resolved",    priority:"low",    user:"Meera T.",  time:"1d ago"  },
-];
+/* ─── Animated Bar Chart ─── */
+function WeeklyChart({ data }) {
+  const [animate, setAnimate] = useState(false);
+  const maxB = Math.max(...data.map(d => d.bookings));
+  const maxR = Math.max(...data.map(d => d.revenue));
+
+  useEffect(() => {
+    const t = setTimeout(() => setAnimate(true), 100);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className={styles.chartWrap}>
+      <div className={styles.chartHeader}>
+        <div>
+          <h3 className={styles.chartTitle}>Weekly Overview</h3>
+          <p className={styles.chartSub}>Bookings &amp; Revenue this week</p>
+        </div>
+        <div className={styles.chartLegend}>
+          <span className={styles.legendDot} style={{ background: "#C9A84C" }} />
+          <span className={styles.legendTxt}>Bookings</span>
+          <span className={styles.legendDot} style={{ background: "#4A90D9" }} />
+          <span className={styles.legendTxt}>Revenue (k)</span>
+        </div>
+      </div>
+
+      <div className={styles.chartBody}>
+        {data.map((d, i) => (
+          <div key={i} className={styles.chartCol}>
+            <div className={styles.chartBars}>
+              {/* Revenue bar (back) */}
+              <div className={styles.barTrack}>
+                <div
+                  className={styles.barFill}
+                  style={{
+                    height: animate ? `${(d.revenue / maxR) * 100}%` : "0%",
+                    background: "linear-gradient(180deg, #4A90D9 0%, rgba(74,144,217,0.3) 100%)",
+                    transitionDelay: `${i * 60}ms`,
+                  }}
+                />
+              </div>
+              {/* Bookings bar (front) */}
+              <div className={styles.barTrack}>
+                <div
+                  className={styles.barFill}
+                  style={{
+                    height: animate ? `${(d.bookings / maxB) * 100}%` : "0%",
+                    background: "linear-gradient(180deg, #C9A84C 0%, rgba(201,168,76,0.3) 100%)",
+                    transitionDelay: `${i * 60 + 30}ms`,
+                  }}
+                />
+              </div>
+            </div>
+            <span className={styles.chartDay}>{d.day}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Y-axis labels */}
+      <div className={styles.chartYLabels}>
+        {[100, 75, 50, 25, 0].map(v => (
+          <span key={v} className={styles.yLabel}>{v}%</span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ─── Donut chart ─── */
 const DONUT_SEGS = [
@@ -165,6 +226,15 @@ function SparkBar({ data, color }) {
   );
 }
 
+const MOCK_TICKETS = [
+  { id:"#T-201", subject:"AC not working in Cabin 3",     status:"open",        priority:"high",   user:"Aarav M.",  time:"10m ago" },
+  { id:"#T-202", subject:"WiFi disconnecting frequently", status:"in_progress", priority:"medium", user:"Priya S.",  time:"25m ago" },
+  { id:"#T-203", subject:"Invoice discrepancy - May",     status:"open",        priority:"high",   user:"Kiran D.",  time:"1h ago"  },
+  { id:"#T-204", subject:"Parking slot not assigned",     status:"resolved",    priority:"low",    user:"Sneha R.",  time:"3h ago"  },
+  { id:"#T-205", subject:"Meeting room double booked",    status:"in_progress", priority:"medium", user:"Rahul K.",  time:"5h ago"  },
+  { id:"#T-206", subject:"Printer paper jam",             status:"resolved",    priority:"low",    user:"Meera T.",  time:"1d ago"  },
+];
+
 /* ════════════════════════════════════════
    MAIN COMPONENT
 ════════════════════════════════════════ */
@@ -182,12 +252,21 @@ export default function AdminDashboard() {
   const [section,      setSection]      = useState("overview");
   const [sideOpen,     setSideOpen]     = useState(true);
   const [mobOpen,      setMobOpen]      = useState(false);
-  const [openGroups,   setOpenGroups]   = useState({ management:true, "workspaces-group":true });
+  /* ─── Only one group open at a time ─── */
+  const [openGroup,    setOpenGroup]    = useState("management");
   const [searchQ,      setSearchQ]      = useState("");
   const [toast,        setToast]        = useState(null);
   const [ticketFilter, setTicketFilter] = useState("all");
   const [notifOpen,    setNotifOpen]    = useState(false);
   const notifRef = useRef(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const SPARKS = {
     ws:   mkSpark(10, 8),
@@ -253,7 +332,8 @@ export default function AdminDashboard() {
     axiosInstance.delete(`workspaces/categories/delete/${id}/`).then(() => { showToast("Deleted"); fetchCat(); });
   };
 
-  const toggleGroup = id => setOpenGroups(p => ({ ...p, [id]: !p[id] }));
+  /* ─── Toggle: only one group open at a time ─── */
+  const toggleGroup = id => setOpenGroup(prev => prev === id ? null : id);
 
   const goNav = item => {
     if (item.path)    { navigate(item.path); setMobOpen(false); return; }
@@ -261,6 +341,14 @@ export default function AdminDashboard() {
   };
 
   const closeMob = () => setMobOpen(false);
+
+  const handleMobileMenuToggle = () => {
+    if (isMobile) {
+      setMobOpen(p => !p);
+    } else {
+      setSideOpen(p => !p);
+    }
+  };
 
   const filteredWS = workspaces.filter(w =>
     w.name?.toLowerCase().includes(searchQ.toLowerCase()) ||
@@ -280,7 +368,6 @@ export default function AdminDashboard() {
 
   const sideWidth = sideOpen ? 240 : 64;
 
-  /* ─── Section title helper ─── */
   const sectionTitle = () => {
     if (section === "overview")   return "Dashboard Overview";
     if (section === "workspaces") return "Workspace Management";
@@ -289,12 +376,16 @@ export default function AdminDashboard() {
     return "Dashboard";
   };
 
+  /* ─── Notification mock data ─── */
+  const MOCK_NOTIF = [
+    { icon:IC.workspace,  text:"New workspace 'Horizon Hub' added",  time:"2m ago",  color:"#C9A84C" },
+    { icon:IC.leads,      text:"Lead #4821 assigned to Ravi",         time:"11m ago", color:"#4A90D9" },
+    { icon:IC.tickets,    text:"Ticket #209 marked resolved",         time:"34m ago", color:"#4CAF82" },
+    { icon:IC.bookings,   text:"Booking #1042 confirmed",             time:"1h ago",  color:"#9B7FD4" },
+  ];
+
   return (
-
-    
     <div className={styles.root}>
-
-      
 
       {/* Mobile overlay */}
       {mobOpen && <div className={styles.overlay} onClick={closeMob} />}
@@ -306,10 +397,15 @@ export default function AdminDashboard() {
         {/* Logo */}
         <div className={styles.logo}>
           <div className={styles.logoMark}>WN</div>
-          {sideOpen && (
+          {(sideOpen || mobOpen) && (
             <span className={styles.logoText}>
               Work<span className={styles.logoGold}>Nest</span>
             </span>
+          )}
+          {isMobile && mobOpen && (
+            <button className={styles.sideCloseBtn} onClick={closeMob} title="Close menu">
+              <Icon d={IC.close} size={15} />
+            </button>
           )}
         </div>
 
@@ -324,26 +420,27 @@ export default function AdminDashboard() {
                   key={group.id}
                   className={`${styles.navItem} ${section === group.section ? styles.navItemActive : ""}`}
                   onClick={() => { setSection(group.section); closeMob(); }}
-                  title={!sideOpen ? group.label : ""}
+                  title={!sideOpen && !mobOpen ? group.label : ""}
                 >
                   <span className={styles.navIco}><Icon d={group.icon} size={15} /></span>
-                  {sideOpen && <span className={styles.navLabel}>{group.label}</span>}
+                  {(sideOpen || mobOpen) && <span className={styles.navLabel}>{group.label}</span>}
                 </button>
               );
             }
 
-            const isOpen   = !!openGroups[group.id];
+            /* ─── Only one group open at a time ─── */
+            const isOpen   = openGroup === group.id;
             const isActive = group.children.some(c => c.section === section);
 
             return (
               <div key={group.id}>
                 <button
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
-                  onClick={() => sideOpen && toggleGroup(group.id)}
-                  title={!sideOpen ? group.label : ""}
+                  onClick={() => (sideOpen || mobOpen) && toggleGroup(group.id)}
+                  title={!sideOpen && !mobOpen ? group.label : ""}
                 >
                   <span className={styles.navIco}><Icon d={group.icon} size={15} /></span>
-                  {sideOpen && (
+                  {(sideOpen || mobOpen) && (
                     <>
                       <span className={styles.navLabel}>{group.label}</span>
                       <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}>
@@ -353,7 +450,7 @@ export default function AdminDashboard() {
                   )}
                 </button>
 
-                {sideOpen && isOpen && (
+                {(sideOpen || mobOpen) && isOpen && (
                   <div className={styles.navChildren}>
                     {group.children.map(child => (
                       <button
@@ -374,7 +471,7 @@ export default function AdminDashboard() {
 
         <div className={styles.sideFooter}>
           <div className={styles.divider} />
-          {sideOpen && (
+          {(sideOpen || mobOpen) && (
             <div className={styles.sideUser}>
               <div className={styles.sideAvatar}>A</div>
               <div>
@@ -388,39 +485,31 @@ export default function AdminDashboard() {
       </aside>
 
       {/* ══════ MAIN ══════ */}
-      <div className={styles.main} style={{ marginLeft: sideWidth }}>
+      <div className={styles.main} style={{ marginLeft: isMobile ? 0 : sideWidth }}>
 
         {/* Topbar */}
         <header className={styles.topbar}>
-          <button className={styles.menuBtn}
-            onClick={() => { setSideOpen(p => !p); setMobOpen(p => !p); }}>
-            <Icon d={mobOpen ? IC.close : IC.menu} size={17} />
+          <button
+            className={`${styles.menuBtn} ${isMobile ? styles.menuBtnMobile : ""}`}
+            onClick={handleMobileMenuToggle}
+            title={isMobile ? "Open menu" : (sideOpen ? "Collapse sidebar" : "Expand sidebar")}
+          >
+            <Icon d={isMobile ? IC.dotsV : (sideOpen ? IC.menu : IC.menu)} size={isMobile ? 18 : 17} />
           </button>
 
+          {/* Desktop title */}
           <div className={styles.topTitle}>
             <span className={styles.topSub}>Admin Panel</span>
             <span className={styles.topSection}>{sectionTitle()}</span>
           </div>
 
-          <div className={styles.topSearch}>
-            <Icon d={IC.search} size={13} />
-            <input
-              className={styles.searchInp}
-              placeholder="Search workspaces..."
-              value={searchQ}
-              onChange={e => setSearchQ(e.target.value)}
-            />
-          </div>
-
           <div className={styles.topRight}>
-            {/* Activity button */}
             <button className={styles.actBtn} onClick={() => navigate("/recent-activity")}>
               <span className={styles.livePulse} />
               <Icon d={IC.activity} size={14} />
               <span className={styles.actBtnTxt}>Activity</span>
             </button>
 
-            {/* Notifications */}
             <div className={styles.notifWrap} ref={notifRef}>
               <button
                 className={`${styles.iconBtn} ${notifOpen ? styles.iconBtnActive : ""}`}
@@ -437,7 +526,7 @@ export default function AdminDashboard() {
                     <span>Notifications</span>
                     <span className={styles.notifCount}>3 new</span>
                   </div>
-                  {MOCK_ACTIVITY.slice(0, 4).map((a, i) => (
+                  {MOCK_NOTIF.map((a, i) => (
                     <div key={i} className={styles.notifItem}>
                       <span className={styles.notifIco} style={{ color: a.color }}>
                         <Icon d={a.icon} size={12} />
@@ -455,14 +544,6 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-
-            {/* Refresh */}
-            <button className={styles.iconBtn} title="Refresh"
-              onClick={() => { fetchWS(); fetchCat(); showToast("Data refreshed"); }}>
-              <Icon d={IC.refresh} size={15} />
-            </button>
-
-            <div className={styles.topAvatar}>A</div>
           </div>
         </header>
 
@@ -502,65 +583,20 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-              {/* Middle row: workspaces table + donut */}
-              <div className={styles.midRow}>
-                <div className={styles.panel}>
-                  <div className={styles.panelHead}>
-                    <h3 className={styles.panelTitle}>Recent Workspaces</h3>
-                    <button className={styles.seeAll} onClick={() => setSection("workspaces")}>View all →</button>
-                  </div>
-                  <div className={styles.miniList}>
-                    {workspaces.slice(0, 6).map((w, i) => (
-                      <div key={w.id} className={styles.miniRow}>
-                        <span className={styles.miniIdx}>{String(i + 1).padStart(2, "0")}</span>
-                        <div className={styles.miniInfo}>
-                          <span className={styles.miniName}>{w.name}</span>
-                          <span className={styles.miniCity}>{w.city}</span>
-                        </div>
-                        <span className={styles.miniPrice}>₹{w.price}</span>
-                        <button className={styles.miniEdit} onClick={() => handleEdit(w)}>
-                          <Icon d={IC.edit} size={11} />
-                        </button>
-                      </div>
-                    ))}
-                    {workspaces.length === 0 && <p className={styles.empty}>No workspaces yet</p>}
-                  </div>
-                </div>
-
-                {/* Donut */}
-                <div className={styles.panel}>
-                  <div className={styles.panelHead}>
-                    <h3 className={styles.panelTitle}>Space Mix</h3>
-                    <span className={styles.panelSub}>By category type</span>
-                  </div>
-                  <div className={styles.donutSection}>
-                    <DonutChart data={DONUT_SEGS} />
-                  </div>
-                </div>
+              {/* ─── Weekly Chart (replaces recent workspaces + activity) ─── */}
+              <div className={styles.chartPanel}>
+                <WeeklyChart data={CHART_DATA} />
               </div>
 
-              {/* Activity feed */}
+              {/* Space Mix donut */}
               <div className={styles.panel}>
                 <div className={styles.panelHead}>
-                  <h3 className={styles.panelTitle}>Recent Activity</h3>
-                  <span className={styles.liveTag}><span />LIVE</span>
+                  <h3 className={styles.panelTitle}>Space Mix</h3>
+                  <span className={styles.panelSub}>By category type</span>
                 </div>
-                <div className={styles.feedGrid}>
-                  {MOCK_ACTIVITY.map((a, i) => (
-                    <div key={i} className={styles.feedItem}>
-                      <div className={styles.feedIco} style={{ background:`${a.color}18`, color:a.color }}>
-                        <Icon d={a.icon} size={12} />
-                      </div>
-                      <div className={styles.feedMeta}>
-                        <span className={styles.feedTxt}>{a.text}</span>
-                        <span className={styles.feedTime}><Icon d={IC.clock} size={9} />{a.time}</span>
-                      </div>
-                    </div>
-                  ))}
+                <div className={styles.donutSection}>
+                  <DonutChart data={DONUT_SEGS} />
                 </div>
-                <button className={styles.seeAllBtn} onClick={() => navigate("/recent-activity")}>
-                  View All Activity →
-                </button>
               </div>
 
             </div>
@@ -782,12 +818,9 @@ export default function AdminDashboard() {
                       {t.status === "open" ? "Open" : t.status === "in_progress" ? "In Progress" : "Resolved"}
                     </span>
                     <span className={styles.ticketTime}><Icon d={IC.clock} size={10} />{t.time}</span>
-                    <button
-  className={styles.editBtn}
-  onClick={() => navigate(`/admin-tickets/${t.id}`)}
->
-  <Icon d={IC.edit} size={11} /> Manage
-</button>
+                    <button className={styles.editBtn} onClick={() => navigate(`/admin-tickets/${t.id}`)}>
+                      <Icon d={IC.edit} size={11} /> Manage
+                    </button>
                   </div>
                 ))}
               </div>
