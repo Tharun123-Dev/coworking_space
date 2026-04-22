@@ -36,61 +36,61 @@ import BusinessEnterpriseContact from "./Improved/BusinessEnterpriseContact";
 import AdminBusinessEnterprise from "./Improved/AdminBusinessEnterprise";
 import AdminTickets from "./Pages/AdminTickets";
 import RecentActivity from "./Pages/RecentActivity";
-
+import AdminLayout from "./Components/AdminLayout";
 
 function App() {
   return (
     <BrowserRouter>
     <ScrollToTop/>
 
-      <Routes>
+     <Routes>
 
-        <Route element={<MainLayout />}>
+  {/* USER ROUTES */}
+  <Route element={<MainLayout />}>
+    <Route path="/" element={<HomeLayout />} />
+    <Route path="/contact" element={<Contact />} />
+    <Route path="/view" element={<View />} />
+    <Route path="/auth" element={<Auth />} />
+    <Route path="/cart" element={<Cart />} />
+    <Route path="/booking" element={<Booking />} />
+    <Route path="/details/:id" element={<Details />} />
+    <Route path="/amenities" element={<Amenities />} />
+    <Route path="/Enterprise" element={<Enterprise />} />
+    <Route path="/RightSpace" element={<RightSpace />} />
+    <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
+    <Route path="/my-orders" element={<MyOrders />} />
+    <Route path="/special-contact/:id" element={<SpecialContact />} />
+    <Route path="/speciall-contact/:id" element={<CompanyContact />} />
+    <Route path="/business-enterprise/:name" element={<BusinessEnterpriseContact />} />
+  </Route>
 
-          <Route path="/" element={<HomeLayout />} />
 
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/view" element={<View />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/booking" element={<Booking />} />
+  {/* ADMIN ROUTES 🔥 */}
+  <Route element={<AdminLayout />}>
+    <Route path="/admin-dashboard" element={<AdminDashboard />} />
+    <Route path="/admin-leads" element={<AdminLeads />} />
+    <Route path="/admin-leadss" element={<AdminLeadss />} />
+    <Route path="/admin-Enterprise" element={<AdminEnterprise />} />
+    <Route path="/admin-users" element={<AdminUsers />} />
+    <Route path="/admin-bookings" element={<AdminBookings />} />
+    <Route path="/admin-tickets" element={<AdminTickets />} />
+    <Route path="/recent-activity" element={<RecentActivity />} />
+    <Route path="/enterprise-business" element={<AdminBusinessEnterprise />} />
+    <Route path="/company-special-leads" element={<CompanyAdminleads />} />
+    <Route path="/owner-special-leads" element={<AdminSpecialLeads />} />
+  </Route>
 
-          <Route path="/details/:id" element={<Details />} />
 
+  {/* OWNER ROUTES (optional separate layout later) */}
+  <Route element={<AdminLayout />}>
+    <Route path="/create-owner" element={<CreateOwner />} />
+    <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+    <Route path="/owner-bookings" element={<OwnerBookings />} />
+    <Route path="/owner-leads" element={<OwnerLeads />} />
+    <Route path="/company-leads" element={<CompanyOwnerleads />} />
+  </Route>
 
-          <Route path="/amenities" element={<Amenities />} />
-          <Route path="/Enterprise" element={<Enterprise />} />
-          <Route path="/RightSpace" element={<RightSpace/>} />
-          
-          <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
-
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/admin-leads" element={<AdminLeads />} />
-          <Route path="/admin-leadss" element={<AdminLeadss />} />
-          <Route path="/admin-Enterprise" element={<AdminEnterprise />} />
-          <Route path="/admin-users" element={<AdminUsers />} />
-          <Route path="/admin-bookings" element={<AdminBookings />} />
-
-          <Route path="/create-owner" element={<CreateOwner />} />
-          <Route path="/owner-dashboard" element={<OwnerDashboard />} />
-          <Route path="/owner-bookings" element={<OwnerBookings />} />
-
-          <Route path="/my-orders" element={<MyOrders />} />
-          <Route path="/special-contact/:id" element={<SpecialContact />} />
-          <Route path="/speciall-contact/:id" element={<CompanyContact/>} />
-          <Route path="/owner-leads" element={<OwnerLeads/>} />
-          <Route path="/company-leads" element={<CompanyOwnerleads/>} />
-            <Route path="/owner-special-leads" element={<AdminSpecialLeads/>} />
-             <Route path="/company-special-leads" element={<CompanyAdminleads/>} />
-             <Route path="/enterprise-business" element={<AdminBusinessEnterprise/>} />
-             <Route path="/admin-tickets" element={<AdminTickets/>} />
-                <Route path="/recent-activity" element={<RecentActivity/>} />
-             <Route path="/business-enterprise/:name" element={<BusinessEnterpriseContact/>} />
-
-           
-        </Route>
-
-      </Routes>
+</Routes>
 
     </BrowserRouter>
   );
