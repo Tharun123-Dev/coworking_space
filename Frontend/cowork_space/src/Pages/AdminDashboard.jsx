@@ -507,7 +507,7 @@ export default function AdminDashboard() {
             <button className={styles.actBtn} onClick={() => navigate("/recent-activity")}>
               <span className={styles.livePulse} />
               <Icon d={IC.activity} size={14} />
-              <span className={styles.actBtnTxt}>Activity</span>
+              <span className={styles.actBtnTxt}>Recent Activity</span>
             </button>
 
             <div className={styles.notifWrap} ref={notifRef}>
