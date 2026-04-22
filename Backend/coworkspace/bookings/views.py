@@ -38,6 +38,7 @@ def create_booking(request):
         duration=duration,
         date=date,
         total_price=total_price,
+        status="confirmed",
         payment_id=request.data.get("payment_id"),
         payment_status="PAID"
     )
@@ -171,11 +172,8 @@ def get_all_bookings(request):
         })
 
     return Response(data)
+from rest_framework.response import Response
 
-
-# ===============================
-# OWNER BOOKINGS (ONLY THEIR)
-# ===============================
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def owner_bookings(request):
@@ -187,50 +185,48 @@ def owner_bookings(request):
     for b in bookings:
         data.append({
             "id": b.id,
-                # ✅ SAFE IMAGE FIX
-    "image": (
-        b.workspace.image.url
-        if hasattr(b.workspace.image, "url")
-        else b.workspace.image
-    ),
+            "image": (
+                b.workspace.image.url
+                if hasattr(b.workspace.image, "url")
+                else b.workspace.image
+            ),
             "user": b.user.username,
             "workspace": b.workspace.name,
             "location": b.workspace.location,
             "date": b.date,
             "duration": b.duration,
             "total_price": b.total_price,
-            "status": b.status
+            "status": b.status if b.status else "confirmed",
+            "payment_status": getattr(b, "payment_status", "PAID"),
         })
 
     return Response(data)
-
-
 # ===============================
 # CONFIRM BOOKING (OWNER)
 # ===============================
-from workspaces.models import ActivityLog
+# from workspaces.models import ActivityLog
 
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def confirm_booking(request, id):
+# @api_view(['PUT'])
+# @permission_classes([IsAuthenticated])
+# def confirm_booking(request, id):
 
-    booking = Booking.objects.get(id=id)
+#     booking = Booking.objects.get(id=id)
 
-    if booking.owner != request.user:
-        return Response({"error": "Not allowed"}, status=403)
+#     if booking.owner != request.user:
+#         return Response({"error": "Not allowed"}, status=403)
 
-    booking.status = "confirmed"
-    booking.save()
+#     booking.status = "confirmed"
+#     booking.save()
 
-    # ✅ ADD ACTIVITY LOG
-    ActivityLog.objects.create(
-        user=request.user,
-        action="UPDATE",
-        model_name="Booking",
-        message=f"{request.user.username} confirmed booking for {booking.workspace.name}"
-    )
+#     # ✅ ADD ACTIVITY LOG
+#     ActivityLog.objects.create(
+#         user=request.user,
+#         action="UPDATE",
+#         model_name="Booking",
+#         message=f"{request.user.username} confirmed booking for {booking.workspace.name}"
+#     )
 
-    return Response({"message": "Booking confirmed"})
+#     return Response({"message": "Booking confirmed"})
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def cancel_booking(request, id):
@@ -398,16 +394,11 @@ def owner_revenue(request):
         total=Sum("total_price")
     )["total"] or 0
 
-    pending = bookings.filter(status="pending").aggregate(
-        total=Sum("total_price")
-    )["total"] or 0
-
     cancelled = bookings.filter(status="cancelled").count()
 
     return Response({
         "total_revenue": total,
         "confirmed_revenue": confirmed,
-        "pending_revenue": pending,
         "cancelled_count": cancelled
     })
 
@@ -418,36 +409,36 @@ from bookings.models import Booking
 import razorpay
 from django.conf import settings
 
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def verify_booking(request, id):
+# @api_view(['PUT'])
+# @permission_classes([IsAuthenticated])
+# def verify_booking(request, id):
 
-    try:
-        booking = Booking.objects.get(id=id)
-    except Booking.DoesNotExist:
-        return Response({"error": "Booking not found"}, status=404)
+#     try:
+#         booking = Booking.objects.get(id=id)
+#     except Booking.DoesNotExist:
+#         return Response({"error": "Booking not found"}, status=404)
 
-    # ✅ only owner can verify
-    if booking.owner != request.user:
-        return Response({"error": "Not allowed"}, status=403)
+#     # ✅ only owner can verify
+#     if booking.owner != request.user:
+#         return Response({"error": "Not allowed"}, status=403)
 
-    # ❌ already cancelled
-    if booking.status == "cancelled":
-        return Response({"error": "Cannot verify cancelled booking"})
+#     # ❌ already cancelled
+#     if booking.status == "cancelled":
+#         return Response({"error": "Cannot verify cancelled booking"})
 
-    booking.status = "confirmed"
-    booking.payment_status = "VERIFIED"
-    booking.save()
+#     booking.status = "confirmed"
+#     booking.payment_status = "VERIFIED"
+#     booking.save()
 
-    # ✅ ADD ACTIVITY LOG
-    ActivityLog.objects.create(
-        user=request.user,
-        action="UPDATE",
-        model_name="Booking",
-        message=f"{request.user.username} verified booking for {booking.workspace.name}"
-    )
+#     # ✅ ADD ACTIVITY LOG
+#     ActivityLog.objects.create(
+#         user=request.user,
+#         action="UPDATE",
+#         model_name="Booking",
+#         message=f"{request.user.username} verified booking for {booking.workspace.name}"
+#     )
 
-    return Response({"message": "Booking verified successfully"})
+#     return Response({"message": "Booking verified successfully"})
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

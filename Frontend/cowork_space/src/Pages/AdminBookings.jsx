@@ -26,7 +26,7 @@ function AdminBookings() {
 
   const stats = useMemo(() => ({
     total:     bookings.length,
-    pending:   bookings.filter(b => b.status === "pending").length,
+    // pending:   bookings.filter(b => b.status === "pending").length,
     confirmed: bookings.filter(b => b.status === "confirmed").length,
     cancelled: bookings.filter(b => b.status === "cancelled").length,
   }), [bookings]);
@@ -42,13 +42,11 @@ function AdminBookings() {
   });
 
   const getStatusClass = (status) => {
-    if (!status) return "pending";
-    const s = status.toLowerCase();
-    if (s === "pending") return "pending";
-    if (s === "confirmed") return "confirmed";
-    if (s === "cancelled") return "cancelled";
-    return "pending";
-  };
+  const s = (status || "").toLowerCase();
+  if (s === "confirmed") return "confirmed";
+  if (s === "cancelled") return "cancelled";
+  return "confirmed";
+};
 
   const handleImageClick = (item) => {
     setSelectedBooking(item);
@@ -95,7 +93,7 @@ function AdminBookings() {
       <div className="stats-bar">
         {[
           { label: "Total",     value: stats.total,     color: "#f4c430", active: filter === "All"       },
-          { label: "Pending",   value: stats.pending,   color: "#f59e0b", active: filter === "pending"   },
+          // { label: "Pending",   value: stats.pending,   color: "#f59e0b", active: filter === "pending"   },
           { label: "Confirmed", value: stats.confirmed, color: "#22c55e", active: filter === "confirmed" },
           { label: "Cancelled", value: stats.cancelled, color: "#ef4444", active: filter === "cancelled" },
         ].map(s => (
@@ -127,7 +125,7 @@ function AdminBookings() {
         </div>
         <select value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="All">All Status</option>
-          <option value="pending">Pending</option>
+          {/* <option value="pending">Pending</option> */}
           <option value="confirmed">Confirmed</option>
           <option value="cancelled">Cancelled</option>
         </select>
@@ -148,7 +146,7 @@ function AdminBookings() {
         <div className="empty-box">
           <div className="empty-icon">🔍</div>
           <h3>No bookings found</h3>
-          <p>Try changing the search or filter to view more records.</p>
+          <p>No confirmed or cancelled bookings match your search.</p>
         </div>
       ) : (
         <>
@@ -355,7 +353,7 @@ function AdminBookings() {
                   <div className="info-card">
                     <span className="info-label">Booking Status</span>
                     <strong className={`status-text ${getStatusClass(selectedBooking.status)}`}>
-                      {selectedBooking.status || "pending"}
+                      {selectedBooking.status || "confirmed"}
                     </strong>
                   </div>
                   <div className="info-card full">

@@ -69,33 +69,28 @@ function MyOrders() {
       .finally(() => setLoadingSpecial(false));
   };
 
-  const getStatusClass = (status) => {
-    if (!status) return "pending";
-    const s = String(status).toLowerCase();
+const getStatusClass = (status) => {
+  const s = String(status || "").toLowerCase();
 
-    if (s === "pending") return "pending";
-    if (s === "confirmed") return "confirmed";
-    if (s === "contacted") return "contacted";
-    if (s === "cancelled") return "cancelled";
-    if (s === "approved") return "confirmed";
-    if (s === "refunded") return "confirmed";
-    return "pending";
-  };
+  if (s === "confirmed") return "confirmed";
+  if (s === "cancelled") return "cancelled";
+  if (s === "contacted") return "contacted";
+  return "confirmed"; // default
+};
+const pendingOrdersForCancel = useMemo(() => {
+  return orders.filter((item) => {
+    const bookingStatus = String(item.status || "").toLowerCase();
+    const paymentStatus = String(item.payment_status || "").toUpperCase();
+    const cancelStatus = String(item.cancel_status || "").toUpperCase();
 
-  const pendingOrdersForCancel = useMemo(() => {
-    return orders.filter((item) => {
-      const bookingStatus = String(item.status || "").toLowerCase();
-      const paymentStatus = String(item.payment_status || "").toUpperCase();
-      const cancelStatus = String(item.cancel_status || "").toUpperCase();
+    const isConfirmed = bookingStatus === "confirmed";
+    const notRefunded = paymentStatus !== "REFUNDED";
+    const notCancelled = bookingStatus !== "cancelled";
+    const noPendingCancelRequest = cancelStatus !== "PENDING";
 
-      const onlyPending = bookingStatus === "pending";
-      const notRefunded = paymentStatus !== "REFUNDED";
-      const notCancelled = bookingStatus !== "cancelled";
-      const noPendingCancelRequest = cancelStatus !== "PENDING";
-
-      return onlyPending && notRefunded && notCancelled && noPendingCancelRequest;
-    });
-  }, [orders]);
+    return isConfirmed && notRefunded && notCancelled && noPendingCancelRequest;
+  });
+}, [orders]);
 
   const selectedTicketBooking = useMemo(
     () => orders.find((o) => String(o.id) === String(ticket.booking_id)),
@@ -359,7 +354,7 @@ function MyOrders() {
           ) : orders.length === 0 ? (
             <div className="empty-state">
               <h4>No workspace bookings yet</h4>
-              <p>Your confirmed and pending workspace bookings will appear here.</p>
+              <p>Your confirmed  workspace bookings will appear here.</p>
             </div>
           ) : (
             <div className="table-wrapper">
@@ -417,20 +412,16 @@ function MyOrders() {
                         </td>
 
                         <td>
-                          {isRefunded ? (
-                            <span style={{ color: "#4CAF50", fontWeight: "bold" }}>
-                              💰 Refunded
-                            </span>
-                          ) : isConfirmed ? (
-                            <span style={{ color: "#00C853", fontWeight: "bold" }}>
-                              ✅ Paid
-                            </span>
-                          ) : (
-                            <span style={{ color: "#FFC107", fontWeight: "bold" }}>
-                              ⏳ Processing
-                            </span>
-                          )}
-                        </td>
+  {isRefunded ? (
+    <span style={{ color: "#4CAF50", fontWeight: "bold" }}>
+      💰 Refunded
+    </span>
+  ) : (
+    <span style={{ color: "#00C853", fontWeight: "bold" }}>
+      ✅ Paid
+    </span>
+  )}
+</td>
 
                         <td>
                           {isRefunded ? (
@@ -669,7 +660,7 @@ function MyOrders() {
                 <p className="ticket-mini-badge">Cancel Booking</p>
                 <h3>Request Order Cancellation</h3>
                 <p className="ticket-subtext">
-                  Only pending bookings are shown here for cancellation.
+                  Only confirm bookings are shown here for cancellation.
                 </p>
               </div>
 

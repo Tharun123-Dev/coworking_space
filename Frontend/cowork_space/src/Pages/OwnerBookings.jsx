@@ -22,12 +22,10 @@ const saveState = (id, patch) => {
 // ────────────────────────────────────────────────────────────────────────────
 
 function StatusPill({ status }) {
-  const map = {
-    pending: { label: "Pending", cls: "pill-pending" },
-    confirmed: { label: "Confirmed", cls: "pill-confirmed" },
-    cancelled: { label: "Cancelled", cls: "pill-cancelled" },
-  };
-
+ const map = {
+  confirmed: { label: "Confirmed", cls: "pill-confirmed" },
+  cancelled: { label: "Cancelled", cls: "pill-cancelled" },
+};
   const { label, cls } = map[status?.toLowerCase()] || map.pending;
   return <span className={`ob-pill ${cls}`}>{label}</span>;
 }
@@ -147,110 +145,110 @@ export default function OwnerBookings() {
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
-  const verifyBooking = async (id) => {
-    const current = getLatestBooking(id);
+  // const verifyBooking = async (id) => {
+  //   const current = getLatestBooking(id);
 
-    if (!current) return;
-    if (isBusy(id)) return;
+  //   if (!current) return;
+  //   if (isBusy(id)) return;
 
-    if (current.status === "cancelled") {
-      showToast("❌ Cancelled booking cannot be verified");
-      return;
-    }
+  //   if (current.status === "cancelled") {
+  //     showToast("❌ Cancelled booking cannot be verified");
+  //     return;
+  //   }
 
-    if (current.payment_status === "VERIFIED") {
-      showToast("✅ Payment already verified");
-      return;
-    }
+  //   if (current.payment_status === "VERIFIED") {
+  //     showToast("✅ Payment already verified");
+  //     return;
+  //   }
 
-    setBusy(id, true);
-    try {
-      await axiosInstance.put(`cart/booking/verify/${id}/`);
-      updateBookingState(id, { payment_status: "VERIFIED" });
-      pulse(id);
-      showToast("✅ Payment verified successfully");
-    } catch (error) {
-      console.error("Verification failed:", error);
-      showToast("❌ Verification failed");
-    } finally {
-      setBusy(id, false);
-    }
-  };
+  //   setBusy(id, true);
+  //   try {
+  //     await axiosInstance.put(`cart/booking/verify/${id}/`);
+  //     updateBookingState(id, { payment_status: "VERIFIED" });
+  //     pulse(id);
+  //     showToast("✅ Payment verified successfully");
+  //   } catch (error) {
+  //     console.error("Verification failed:", error);
+  //     showToast("❌ Verification failed");
+  //   } finally {
+  //     setBusy(id, false);
+  //   }
+  // };
 
-  const confirmBooking = async (id) => {
-    const current = getLatestBooking(id);
+  // const confirmBooking = async (id) => {
+  //   const current = getLatestBooking(id);
 
-    if (!current) return;
-    if (isBusy(id)) return;
+  //   if (!current) return;
+  //   if (isBusy(id)) return;
 
-    if (current.status !== "pending") {
-      showToast("❌ This booking is no longer pending");
-      return;
-    }
+  //   if (current.status !== "pending") {
+  //     showToast("❌ This booking is no longer pending");
+  //     return;
+  //   }
 
-    if (current.payment_status !== "VERIFIED") {
-      showToast("❌ Verify payment before confirming");
-      return;
-    }
+  //   if (current.payment_status !== "VERIFIED") {
+  //     showToast("❌ Verify payment before confirming");
+  //     return;
+  //   }
 
-    setBusy(id, true);
-    try {
-      await axiosInstance.put(`cart/booking-confirm/${id}/`);
-      updateBookingState(id, { status: "confirmed" });
-      pulse(id);
-      showToast("✅ Booking confirmed!");
-    } catch (error) {
-      console.error("Confirmation failed:", error);
-      showToast("❌ Confirmation failed");
-    } finally {
-      setBusy(id, false);
-    }
-  };
+  //   setBusy(id, true);
+  //   try {
+  //     await axiosInstance.put(`cart/booking-confirm/${id}/`);
+  //     updateBookingState(id, { status: "confirmed" });
+  //     pulse(id);
+  //     showToast("✅ Booking confirmed!");
+  //   } catch (error) {
+  //     console.error("Confirmation failed:", error);
+  //     showToast("❌ Confirmation failed");
+  //   } finally {
+  //     setBusy(id, false);
+  //   }
+  // };
 
-  const cancelBooking = async (id) => {
-    const current = getLatestBooking(id);
+  // const cancelBooking = async (id) => {
+  //   const current = getLatestBooking(id);
 
-    if (!current) return;
-    if (isBusy(id)) return;
+  //   if (!current) return;
+  //   if (isBusy(id)) return;
 
-    if (current.status !== "pending") {
-      showToast("❌ This booking is no longer pending");
-      return;
-    }
+  //   if (current.status !== "pending") {
+  //     showToast("❌ This booking is no longer pending");
+  //     return;
+  //   }
 
-    if (current.payment_status !== "VERIFIED") {
-      showToast("❌ Verify payment before cancelling");
-      return;
-    }
+  //   if (current.payment_status !== "VERIFIED") {
+  //     showToast("❌ Verify payment before cancelling");
+  //     return;
+  //   }
 
-    setBusy(id, true);
-    try {
-      await axiosInstance.put(`cart/booking-cancel/${id}/`);
+  //   setBusy(id, true);
+  //   try {
+  //     await axiosInstance.put(`cart/booking-cancel/${id}/`);
 
-      if (current.payment_id) {
-        await axiosInstance.post("payment/refund/", {
-          payment_id: current.payment_id,
-        });
+  //     if (current.payment_id) {
+  //       await axiosInstance.post("payment/refund/", {
+  //         payment_id: current.payment_id,
+  //       });
 
-        updateBookingState(id, {
-          status: "cancelled",
-          payment_status: "REFUNDED",
-        });
-      } else {
-        updateBookingState(id, {
-          status: "cancelled",
-        });
-      }
+  //       updateBookingState(id, {
+  //         status: "cancelled",
+  //         payment_status: "REFUNDED",
+  //       });
+  //     } else {
+  //       updateBookingState(id, {
+  //         status: "cancelled",
+  //       });
+  //     }
 
-      pulse(id);
-      showToast("💰 Booking cancelled & refund initiated");
-    } catch (error) {
-      console.error("Cancel/refund failed:", error);
-      showToast("❌ Cancel or refund failed");
-    } finally {
-      setBusy(id, false);
-    }
-  };
+  //     pulse(id);
+  //     showToast("💰 Booking cancelled & refund initiated");
+  //   } catch (error) {
+  //     console.error("Cancel/refund failed:", error);
+  //     showToast("❌ Cancel or refund failed");
+  //   } finally {
+  //     setBusy(id, false);
+  //   }
+  // };
 
   // ── Cancel Request Actions ───────────────────────────────────────────────
 
@@ -289,7 +287,7 @@ export default function OwnerBookings() {
   const stats = {
     total: merged.length,
     confirmed: merged.filter((b) => b.status === "confirmed").length,
-    pending: merged.filter((b) => b.status === "pending").length,
+    // pending: merged.filter((b) => b.status === "pending").length,
     cancelled: merged.filter((b) => b.status === "cancelled").length,
   };
 
@@ -304,7 +302,7 @@ export default function OwnerBookings() {
             <span className="ob-badge-tag">Owner Dashboard</span>
             <h1>Booking Requests</h1>
             <p>
-              Manage, review and respond to workspace booking requests from users.
+              view all confirmed booking and manage cancellation requests
             </p>
           </div>
 
@@ -361,7 +359,7 @@ export default function OwnerBookings() {
                     <th>Duration</th>
                     <th>Amount</th>
                     <th>Status</th>
-                    <th>Payment</th>
+                    {/* <th>Payment</th> */}
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -369,11 +367,11 @@ export default function OwnerBookings() {
                 <tbody>
                   {merged.map((item) => {
                     const pendingRow = isBusy(item.id);
-                    const isPending = item.status === "pending";
+                    // const isPending = item.status === "pending";
                     const isConfirmed = item.status === "confirmed";
                     const isCancelled = item.status === "cancelled";
-                    const isVerified = item.payment_status === "VERIFIED";
-                    const isRefunded = item.payment_status === "REFUNDED";
+                    // const isVerified = item.payment_status === "VERIFIED";
+                    // const isRefunded = item.payment_status === "REFUNDED";
                     const isPulsing = animatingId === item.id;
 
                     return (
@@ -408,63 +406,27 @@ export default function OwnerBookings() {
                           <StatusPill status={item.status} />
                         </td>
 
-                        <td>
-                          <div className="ob-pay-cell">
-                            <PaymentBadge status={item.payment_status} />
+               
+                         
+                       <td>
+  <div className="ob-action-cell">
 
-                            {!isVerified && !isRefunded && !isCancelled && (
-                              <button
-                                className="ob-btn ob-btn-verify"
-                                onClick={() => verifyBooking(item.id)}
-                                disabled={pendingRow}
-                              >
-                                {pendingRow ? "Processing..." : "Verify"}
-                              </button>
-                            )}
-                          </div>
-                        </td>
+    {/* ✅ CONFIRMED */}
+    {item.status === "confirmed" && (
+      <span className="ob-done-badge done-confirmed">
+        <span>✓</span> Confirmed
+      </span>
+    )}
 
-                        <td>
-                          <div className="ob-action-cell">
-                            {isPending && isVerified && !isCancelled && (
-                              <>
-                                <button
-                                  className="ob-btn ob-btn-confirm"
-                                  onClick={() => confirmBooking(item.id)}
-                                  disabled={pendingRow}
-                                >
-                                  {pendingRow ? "Processing..." : "Confirm"}
-                                </button>
+    {/* ❌ CANCELLED */}
+    {item.status === "cancelled" && (
+      <span className="ob-done-badge done-cancelled">
+        <span>✕</span> Cancelled
+      </span>
+    )}
 
-                                <button
-                                  className="ob-btn ob-btn-cancel"
-                                  onClick={() => cancelBooking(item.id)}
-                                  disabled={pendingRow}
-                                >
-                                  {pendingRow ? "Processing..." : "Cancel"}
-                                </button>
-                              </>
-                            )}
-
-                            {isPending && !isVerified && !isRefunded && !isCancelled && (
-                              <span className="ob-await-text">
-                                Awaiting verification
-                              </span>
-                            )}
-
-                            {isConfirmed && (
-                              <span className="ob-done-badge done-confirmed">
-                                <span>✓</span> Confirmed
-                              </span>
-                            )}
-
-                            {isCancelled && (
-                              <span className="ob-done-badge done-cancelled">
-                                <span>✕</span> Cancelled
-                              </span>
-                            )}
-                          </div>
-                        </td>
+  </div>
+</td>
                       </tr>
                     );
                   })}
@@ -620,7 +582,7 @@ export default function OwnerBookings() {
                   </p>
                   <div className="ob-pricing-points">
                     <div>✓ Workspace reserved for selected slot</div>
-                    <div>✓ Owner approval based booking flow</div>
+                    <div>✓ confirm booking</div>
                     <div>✓ Direct management from dashboard</div>
                   </div>
                 </div>
@@ -633,49 +595,19 @@ export default function OwnerBookings() {
                 <small>Total Booking Value</small>
               </div>
 
-              <div className="ob-footer-actions">
-                {selectedBooking.status === "pending" &&
-                  selectedBooking.payment_status === "VERIFIED" && (
-                    <>
-                      <button
-                        className="ob-btn ob-btn-cancel"
-                        onClick={() => cancelBooking(selectedBooking.id)}
-                        disabled={isBusy(selectedBooking.id)}
-                      >
-                        {isBusy(selectedBooking.id)
-                          ? "Processing..."
-                          : "Cancel Booking"}
-                      </button>
+            <div className="ob-footer-actions">
+  {selectedBooking.status === "confirmed" && (
+    <span className="ob-done-badge done-confirmed">
+      ✓ Booking Confirmed
+    </span>
+  )}
 
-                      <button
-                        className="ob-btn ob-btn-confirm"
-                        onClick={() => confirmBooking(selectedBooking.id)}
-                        disabled={isBusy(selectedBooking.id)}
-                      >
-                        {isBusy(selectedBooking.id)
-                          ? "Processing..."
-                          : "Confirm Booking"}
-                      </button>
-                    </>
-                  )}
-
-                {selectedBooking.status === "pending" &&
-                  selectedBooking.payment_status !== "VERIFIED" && (
-                    <span className="ob-await-text">Verify payment first</span>
-                  )}
-
-                {selectedBooking.status === "confirmed" && (
-                  <span className="ob-done-badge done-confirmed">
-                    ✓ Already Confirmed
-                  </span>
-                )}
-
-                {selectedBooking.status === "cancelled" && (
-                  <span className="ob-done-badge done-cancelled">
-                    ✕ Already Cancelled
-                  </span>
-                )}
-              </div>
+  {selectedBooking.status === "cancelled" && (
+    <span className="ob-done-badge done-cancelled">
+      ✕ Booking Cancelled
+    </span>
+  )}
+</div>
             </div>
           </div>
         </div>
