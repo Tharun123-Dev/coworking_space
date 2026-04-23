@@ -14,6 +14,7 @@ class Workspace(models.Model):
     name = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
     location = models.CharField(max_length=200)
+   
     price = models.IntegerField()
     description = models.TextField()
     image = models.URLField()
@@ -70,4 +71,42 @@ class ActivityLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.message
+        return self.message 
+    
+class WorkspaceSlot(models.Model):
+
+    SLOT_TYPE = [
+        ("hour", "Hourly"),
+        ("day", "Full Day"),
+    ]
+
+    workspace = models.ForeignKey(
+        Workspace,
+        on_delete=models.CASCADE,
+        related_name="slots"   # ✅ ADD THIS
+    )
+
+    date = models.DateField()
+
+    slot_type = models.CharField(max_length=10, choices=SLOT_TYPE)
+
+    start_time = models.IntegerField(null=True, blank=True)
+    end_time = models.IntegerField(null=True, blank=True)
+
+    capacity = models.IntegerField(default=50)
+    booked_count = models.IntegerField(default=0)
+
+    price = models.IntegerField()
+
+    def is_full(self):
+        return self.booked_count >= self.capacity
+    
+
+    
+
+
+
+
+
+
+    

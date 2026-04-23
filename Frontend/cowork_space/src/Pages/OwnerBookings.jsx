@@ -356,7 +356,7 @@ export default function OwnerBookings() {
                     <th>Workspace</th>
                     <th>Customer</th>
                     <th>Date</th>
-                    <th>Duration</th>
+                    <th>Slot</th>
                     <th>Amount</th>
                     <th>Status</th>
                     {/* <th>Payment</th> */}
@@ -396,7 +396,11 @@ export default function OwnerBookings() {
                         <td className="ob-user-cell">{item.user}</td>
                         <td>{item.date}</td>
                         <td>
-                          <span className="ob-dur-chip">{item.duration}d</span>
+                          <div className="ob-dur-chip">
+  <strong>{item.slot_type}</strong>
+  <br />
+  <small>{item.slot_time}</small>
+</div>
                         </td>
                         <td>
                           <strong className="ob-price">₹{item.total_price}</strong>
@@ -528,7 +532,7 @@ export default function OwnerBookings() {
                   {[
                     ["Customer", selectedBooking.user],
                     ["Date", selectedBooking.date],
-                    ["Duration", `${selectedBooking.duration} hrs`],
+                    ["Slot", `${selectedBooking.slot_type} (${selectedBooking.slot_time})`],
                     [
                       "Status",
                       <span
@@ -578,7 +582,7 @@ export default function OwnerBookings() {
                   <span className="ob-pricing-label">Booking Amount</span>
                   <h2>₹{selectedBooking.total_price}</h2>
                   <p>
-                    For {selectedBooking.duration} hrs on {selectedBooking.date}
+                   For {selectedBooking.slot_type} ({selectedBooking.slot_time}) on {selectedBooking.date}
                   </p>
                   <div className="ob-pricing-points">
                     <div>✓ Workspace reserved for selected slot</div>

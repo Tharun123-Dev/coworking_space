@@ -4,9 +4,14 @@ from rest_framework import status
 from rest_framework.permissions import BasePermission
 from rest_framework.permissions import IsAdminUser
 from workspaces.models import ActivityLog
-
+from django.shortcuts import get_object_or_404
 from .models import Workspace
 from .serializers import WorkspaceSerializer, WorkspaceCategorySerializer, WorkspaceCategory
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Workspace,WorkspaceSlot
 
 
 # 🔥 ADMIN + OWNER PERMISSION
@@ -128,6 +133,20 @@ def update_workspace(request, id):
         return Response(serializer.data)
 
     return Response(serializer.errors, status=400)
+
+@api_view(['PUT'])
+@permission_classes([IsAdminOrOwner])
+def toggle_workspace(request, id):
+
+    workspace = get_object_or_404(Workspace, id=id, owner=request.user)
+
+    workspace.is_available = not workspace.is_available
+    workspace.save()
+
+    return Response({
+        "message": "Updated",
+        "is_available": workspace.is_available
+    })
 
 # ===========================
 # DELETE WORKSPACE
@@ -315,3 +334,196 @@ def delete_activity(request, id):
 def clear_all_activities(request):
     ActivityLog.objects.all().delete()
     return Response({"message": "All activities cleared"})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_slot(request):
+
+    workspace_id = request.data.get("workspace_id")
+    date = request.data.get("date")
+    start_time = int(request.data.get("start_time"))
+    end_time = int(request.data.get("end_time"))
+    interval = int(request.data.get("interval", 1))
+    capacity = int(request.data.get("capacity", 50))
+    price = int(request.data.get("price", 0))
+    slot_type = request.data.get("slot_type", "hour")
+
+    workspace = get_object_or_404(Workspace, id=workspace_id)
+
+    # 🔒 owner check
+    if workspace.owner != request.user:
+        return Response({"error": "Not allowed"}, status=403)
+
+    created_slots = []
+
+    # ✅ HOURLY SLOT GENERATION
+    if slot_type == "hour":
+        current = start_time
+
+        while current < end_time:
+            slot = WorkspaceSlot.objects.create(
+                workspace=workspace,
+                date=date,
+                slot_type="hour",
+                start_time=current,
+                end_time=current + interval,
+                capacity=capacity,
+                price=price
+            )
+            created_slots.append(slot.id)
+            current += interval
+
+    # ✅ FULL DAY SLOT
+    elif slot_type == "day":
+        slot = WorkspaceSlot.objects.create(
+            workspace=workspace,
+            date=date,
+            slot_type="day",
+            capacity=capacity,
+            price=price
+        )
+        created_slots.append(slot.id)
+
+    return Response({
+        "message": "Slots created successfully",
+        "slots_created": len(created_slots)
+    })
+
+
+@api_view(['GET'])
+def get_workspace_slots(request, workspace_id):
+
+    date = request.GET.get("date")
+
+    slots = WorkspaceSlot.objects.filter(
+        workspace_id=workspace_id,
+        date=date
+    )
+
+    data = []
+
+    for s in slots:
+       data.append({
+    "id": s.id,
+    "slot_type": s.slot_type,
+
+    # ✅ FIX HERE
+  "start_time": (
+    s.start_time.strftime("%H:%M")
+    if hasattr(s.start_time, "strftime")
+    else f"{s.start_time}:00" if s.start_time is not None else None
+),
+
+"end_time": (
+    s.end_time.strftime("%H:%M")
+    if hasattr(s.end_time, "strftime")
+    else f"{s.end_time}:00" if s.end_time is not None else None
+),
+
+    "price": s.price,
+    "capacity": s.capacity,
+    "booked": s.booked_count,
+    "is_full": s.is_full()
+})
+
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def owner_slots(request):
+
+    slots = WorkspaceSlot.objects.filter(
+        workspace__owner=request.user
+    ).select_related("workspace").order_by("-id")
+
+    data = []
+
+    for s in slots:
+        data.append({
+            "id": s.id,
+            "workspace_id": s.workspace.id,
+            "workspace_name": s.workspace.name,
+
+            "date": s.date,
+            "slot_type": s.slot_type,
+
+            "start_time": getattr(s, "start_time", ""),
+            "end_time": getattr(s, "end_time", ""),
+
+            "capacity": s.capacity,
+            "price": s.price,
+        })
+
+    return Response(data)
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import WorkspaceSlot
+
+
+# ✅ UPDATE SLOT
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_slot(request, id):
+    try:
+        slot = WorkspaceSlot.objects.get(id=id, workspace__owner=request.user)
+
+        slot.date = request.data.get("date", slot.date)
+        slot.slot_type = request.data.get("slot_type", slot.slot_type)
+        slot.start_time = request.data.get("start_time", slot.start_time)
+        slot.end_time = request.data.get("end_time", slot.end_time)
+        slot.capacity = request.data.get("capacity", slot.capacity)
+        slot.price = request.data.get("price", slot.price)
+
+        slot.save()
+
+        return Response({"message": "Slot updated successfully"})
+
+    except WorkspaceSlot.DoesNotExist:
+        return Response({"error": "Slot not found"}, status=404)
+
+
+# ✅ DELETE SLOT
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_slot(request, id):
+    try:
+        slot = WorkspaceSlot.objects.get(id=id, workspace__owner=request.user)
+        slot.delete()
+        return Response({"message": "Slot deleted successfully"})
+    except WorkspaceSlot.DoesNotExist:
+        return Response({"error": "Slot not found"}, status=404)
+    
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from datetime import date
+import calendar
+
+@api_view(["GET"])
+def workspace_month_status(request, workspace_id):
+    year = int(request.GET.get("year"))
+    month = int(request.GET.get("month"))
+
+    days = calendar.monthrange(year, month)[1]
+
+    data = {}
+
+    for d in range(1, days + 1):
+        current_date = f"{year}-{str(month).zfill(2)}-{str(d).zfill(2)}"
+
+        slots = WorkspaceSlot.objects.filter(
+            workspace_id=workspace_id,
+            date=current_date
+        )
+
+        if not slots.exists():
+            data[current_date] = "unreleased"
+            continue
+
+        all_full = all(s.booked >= s.capacity for s in slots)
+
+        data[current_date] = "full" if all_full else "available"
+
+    return Response(data)

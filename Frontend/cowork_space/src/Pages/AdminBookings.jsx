@@ -41,11 +41,11 @@ function AdminBookings() {
     return matchesSearch && matchesFilter;
   });
 
-  const getStatusClass = (status) => {
+const getStatusClass = (status) => {
   const s = (status || "").toLowerCase();
   if (s === "confirmed") return "confirmed";
   if (s === "cancelled") return "cancelled";
-  return "confirmed";
+  return "pending"; // ✅ safer
 };
 
   const handleImageClick = (item) => {
@@ -68,9 +68,11 @@ function AdminBookings() {
   }, [selectedBooking]);
 
   const bookingPriceLabel = useMemo(() => {
-    if (!selectedBooking) return "";
-    return selectedBooking.duration > 1 ? `${selectedBooking.duration}-Day` : "1-Day";
-  }, [selectedBooking]);
+  if (!selectedBooking) return "";
+  return selectedBooking.slot_type === "Hourly"
+    ? "Hourly Booking"
+    : "Full Day Booking";
+}, [selectedBooking]);
 
   return (
     <div className="admin-bookings">
@@ -161,7 +163,7 @@ function AdminBookings() {
                   <th>Workspace</th>
                   <th>Location</th>
                   <th>Date</th>
-                  <th>Duration</th>
+                  <th>Slot</th>
                   <th>Price</th>
                   <th>Status</th>
                 </tr>
@@ -189,7 +191,13 @@ function AdminBookings() {
                     <td><strong className="ws-name">{item.workspace || "-"}</strong></td>
                     <td><span className="location-chip">📍 {item.location || "-"}</span></td>
                     <td>{item.date || "-"}</td>
-                    <td><span className="duration-chip">{item.duration} day</span></td>
+                    <td>
+  <div className="duration-chip">
+    <strong>{item.slot_type}</strong>
+    <br />
+    <small>{item.slot_time}</small>
+  </div>
+</td>
                     <td><span className="price-text">₹{item.price}</span></td>
                     <td>
                       <span className={`status ${getStatusClass(item.status)}`}>
@@ -224,7 +232,10 @@ function AdminBookings() {
                       { label: "Owner",    value: item.owner || "-"    },
                       { label: "User",     value: item.user || "-"     },
                       { label: "Date",     value: item.date || "-"     },
-                      { label: "Duration", value: `${item.duration} day` },
+                     {
+  label: "Slot",
+  value: `${item.slot_type} (${item.slot_time})`
+},
                     ].map(r => (
                       <div key={r.label} className="mobile-card-row">
                         <span className="mobile-row-label">{r.label}</span>
@@ -376,11 +387,15 @@ function AdminBookings() {
                   </div>
                   <div className="info-card">
                     <span className="info-label">Duration</span>
-                    <strong>{selectedBooking.duration} day</strong>
+                   <strong>
+  {selectedBooking.slot_type} ({selectedBooking.slot_time})
+</strong>
                   </div>
                   <div className="info-card">
                     <span className="info-label">Billing Type</span>
-                    <strong>Per Day</strong>
+                    <strong>
+  {selectedBooking.slot_type === "Hourly" ? "Per Hour" : "Per Day"}
+</strong>
                   </div>
                   <div className="info-card">
                     <span className="info-label">Package</span>
@@ -389,7 +404,7 @@ function AdminBookings() {
                   <div className="info-card full">
                     <span className="info-label">Summary</span>
                     <p className="pricing-summary">
-                      This workspace booking is priced at ₹{selectedBooking.price} for {selectedBooking.duration} day booking duration.
+                      This workspace booking is priced at ₹{selectedBooking.price} for {selectedBooking.slot_type} ({selectedBooking.slot_time}) booking duration.
                       You can use this preview to inspect the same card-style presentation as your landing page.
                     </p>
                   </div>

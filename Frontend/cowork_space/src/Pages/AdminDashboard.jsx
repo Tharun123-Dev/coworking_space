@@ -61,10 +61,10 @@ const SIDEBAR_GROUPS = [
   {
     id:"leads-group", label:"Leads", icon:IC.leads,
     children:[
-      { id:"leads",      label:"View Leads",       icon:IC.leads,      path:"/admin-leads" },
-      { id:"offerleads", label:"Offer Leads",       icon:IC.offers,     path:"/admin-leadss" },
-      { id:"enterprise", label:"Enterprise Leads",  icon:IC.enterprise, path:"/admin-Enterprise" },
-      { id:"ownerlead",  label:"Owner Leads",        icon:IC.tag,        path:"/owner-special-leads" },
+      { id:"leads",       label:"View Leads",        icon:IC.leads,      path:"/admin-leads" },
+      { id:"offerleads",  label:"Offer Leads",       icon:IC.offers,     path:"/admin-leadss" },
+      { id:"enterprise",  label:"Enterprise Leads",  icon:IC.enterprise, path:"/admin-Enterprise" },
+      { id:"ownerlead",   label:"Owner Leads",       icon:IC.tag,        path:"/owner-special-leads" },
     ]
   },
   {
@@ -83,7 +83,7 @@ const SIDEBAR_GROUPS = [
   {
     id:"support-group", label:"Support", icon:IC.support,
     children:[
-     { id:"tickets", label:"Support Tickets", icon:IC.tickets, path:"/admin-tickets" },
+      { id:"tickets", label:"Support Tickets", icon:IC.tickets, path:"/admin-tickets" },
     ]
   },
 ];
@@ -227,7 +227,7 @@ function SparkBar({ data, color }) {
 }
 
 const MOCK_TICKETS = [
-  { id:"#T-201", subject:"AC not working in Cabin 3",     status:"open",        priority:"high",   user:"Aarav M.",  time:"10m ago" },
+  { id:"#T-201", subject:"AC not working in Cabin 3",      status:"open",        priority:"high",   user:"Aarav M.",  time:"10m ago" },
   { id:"#T-202", subject:"WiFi disconnecting frequently", status:"in_progress", priority:"medium", user:"Priya S.",  time:"25m ago" },
   { id:"#T-203", subject:"Invoice discrepancy - May",     status:"open",        priority:"high",   user:"Kiran D.",  time:"1h ago"  },
   { id:"#T-204", subject:"Parking slot not assigned",     status:"resolved",    priority:"low",    user:"Sneha R.",  time:"3h ago"  },
@@ -241,18 +241,24 @@ const MOCK_TICKETS = [
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
-  const [owners,     setOwners]     = useState([]);
-  const [workspaces, setWorkspaces] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [owners,      setOwners]      = useState([]);
+  const [workspaces,  setWorkspaces]  = useState([]);
+  const [categories,  setCategories]  = useState([]);
 
-  const [form,    setForm]    = useState({ name:"", city:"", location:"", price:"", image:"", description:"" });
-  const [editId,  setEditId]  = useState(null);
-  const [catForm, setCatForm] = useState({ name:"", category:"", description:"", image:"", hourly_price:"", daily_price:"", monthly_price:"", is_available:true, owner:"" });
+  // Updated form with is_available
+  const [form,     setForm]    = useState({ 
+    name:"", city:"", location:"", price:"", image:"", description:"", 
+    is_available: true 
+  });
+  const [editId,   setEditId]  = useState(null);
+  const [catForm,  setCatForm] = useState({ 
+    name:"", category:"", description:"", image:"", hourly_price:"", daily_price:"", monthly_price:"", 
+    is_available:true, owner:"" 
+  });
 
-  const [section,      setSection]      = useState("overview");
+  const [section,       setSection]       = useState("overview");
   const [sideOpen,     setSideOpen]     = useState(true);
   const [mobOpen,      setMobOpen]      = useState(false);
-  /* ─── Only one group open at a time ─── */
   const [openGroup,    setOpenGroup]    = useState("management");
   const [searchQ,      setSearchQ]      = useState("");
   const [toast,        setToast]        = useState(null);
@@ -295,44 +301,67 @@ export default function AdminDashboard() {
   };
 
   const handleSubmit = () => {
-    if (!form.name || !form.city || !form.price) { showToast("Fill required fields", "error"); return; }
+    if (!form.name || !form.city || !form.price) { 
+      showToast("Fill required fields", "error"); 
+      return; 
+    }
     const req = editId
       ? axiosInstance.put(`workspaces/update/${editId}/`, form)
       : axiosInstance.post("workspaces/add/", form);
     req.then(() => {
       showToast(editId ? "Updated successfully" : "Workspace added");
       setEditId(null);
-      setForm({ name:"", city:"", location:"", price:"", image:"", description:"" });
+      setForm({ 
+        name:"", city:"", location:"", price:"", image:"", description:"", 
+        is_available: true 
+      });
       fetchWS();
     }).catch(() => showToast("Operation failed", "error"));
   };
 
   const handleEdit = item => {
-    setForm(item); setEditId(item.id);
+    setForm({
+      name: item.name,
+      city: item.city,
+      location: item.location || "",
+      price: item.price,
+      image: item.image || "",
+      description: item.description || "",
+      is_available: item.is_available || true
+    });
+    setEditId(item.id);
     setSection("workspaces");
     window.scrollTo({ top:0, behavior:"smooth" });
   };
 
   const handleDelete = id => {
     if (!window.confirm("Delete this workspace?")) return;
-    axiosInstance.delete(`workspaces/delete/${id}/`).then(() => { showToast("Deleted"); fetchWS(); });
+    axiosInstance.delete(`workspaces/delete/${id}/`).then(() => { 
+      showToast("Deleted"); 
+      fetchWS(); 
+    });
   };
 
   const handleAddCat = () => {
     axiosInstance.post("workspaces/categories/add/", catForm)
       .then(() => {
         showToast("Category added");
-        setCatForm({ name:"", category:"", description:"", image:"", hourly_price:"", daily_price:"", monthly_price:"", is_available:true, owner:"" });
+        setCatForm({ 
+          name:"", category:"", description:"", image:"", hourly_price:"", daily_price:"", monthly_price:"", 
+          is_available:true, owner:"" 
+        });
         fetchCat();
       }).catch(() => showToast("Failed to add", "error"));
   };
 
   const handleDeleteCat = id => {
     if (!window.confirm("Delete this category?")) return;
-    axiosInstance.delete(`workspaces/categories/delete/${id}/`).then(() => { showToast("Deleted"); fetchCat(); });
+    axiosInstance.delete(`workspaces/categories/delete/${id}/`).then(() => { 
+      showToast("Deleted"); 
+      fetchCat(); 
+    });
   };
 
-  /* ─── Toggle: only one group open at a time ─── */
   const toggleGroup = id => setOpenGroup(prev => prev === id ? null : id);
 
   const goNav = item => {
@@ -360,10 +389,10 @@ export default function AdminDashboard() {
     : MOCK_TICKETS.filter(t => t.status === ticketFilter);
 
   const STATS = [
-    { label:"Workspaces",       value:workspaces.length,                           color:"#C9A84C", spark:SPARKS.ws,  trend:"+12%", up:true,  icon:IC.workspace },
-    { label:"Categories",       value:categories.length,                            color:"#9B7FD4", spark:SPARKS.cat, trend:"+8%",  up:true,  icon:IC.category  },
-    { label:"Available Spaces", value:categories.filter(c=>c.is_available).length,  color:"#4CAF82", spark:SPARKS.avl, trend:"-3%",  up:false, icon:IC.check     },
-    { label:"Total Owners",     value:owners.length,                                color:"#E6A23C", spark:SPARKS.own, trend:"+5%",  up:true,  icon:IC.owners    },
+    { label:"Workspaces",        value:workspaces.length,                     color:"#C9A84C", spark:SPARKS.ws,  trend:"+12%", up:true,  icon:IC.workspace },
+    { label:"Categories",        value:categories.length,                      color:"#9B7FD4", spark:SPARKS.cat, trend:"+8%",  up:true,  icon:IC.category  },
+    { label:"Available Spaces",  value:workspaces.filter(w=>w.is_available).length, color:"#4CAF82", spark:SPARKS.avl, trend:"-3%",  up:false, icon:IC.check     },
+    { label:"Total Owners",      value:owners.length,                          color:"#E6A23C", spark:SPARKS.own, trend:"+5%",  up:true,  icon:IC.owners    },
   ];
 
   const sideWidth = sideOpen ? 240 : 64;
@@ -376,7 +405,6 @@ export default function AdminDashboard() {
     return "Dashboard";
   };
 
-  /* ─── Notification mock data ─── */
   const MOCK_NOTIF = [
     { icon:IC.workspace,  text:"New workspace 'Horizon Hub' added",  time:"2m ago",  color:"#C9A84C" },
     { icon:IC.leads,      text:"Lead #4821 assigned to Ravi",         time:"11m ago", color:"#4A90D9" },
@@ -428,7 +456,6 @@ export default function AdminDashboard() {
               );
             }
 
-            /* ─── Only one group open at a time ─── */
             const isOpen   = openGroup === group.id;
             const isActive = group.children.some(c => c.section === section);
 
@@ -497,7 +524,6 @@ export default function AdminDashboard() {
             <Icon d={isMobile ? IC.dotsV : (sideOpen ? IC.menu : IC.menu)} size={isMobile ? 18 : 17} />
           </button>
 
-          {/* Desktop title */}
           <div className={styles.topTitle}>
             <span className={styles.topSub}>Admin Panel</span>
             <span className={styles.topSection}>{sectionTitle()}</span>
@@ -547,9 +573,7 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* Breadcrumb */}
         <div className={styles.breadcrumb}>
-          {/* <span className={styles.breadHome} onClick={() => setSection("overview")}>Dashboard</span> */}
           {section !== "overview" && (
             <>
               <span className={styles.breadSep}>›</span>
@@ -558,14 +582,12 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* Content */}
         <main className={styles.content}>
 
           {/* ════ OVERVIEW ════ */}
           {section === "overview" && (
             <div className={styles.overview}>
 
-              {/* Stat cards */}
               <div className={styles.statsGrid}>
                 {STATS.map((s, i) => (
                   <div key={i} className={styles.statCard} style={{ "--ac": s.color }}>
@@ -583,12 +605,10 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-              {/* ─── Weekly Chart (replaces recent workspaces + activity) ─── */}
               <div className={styles.chartPanel}>
                 <WeeklyChart data={CHART_DATA} />
               </div>
 
-              {/* Space Mix donut */}
               <div className={styles.panel}>
                 <div className={styles.panelHead}>
                   <h3 className={styles.panelTitle}>Space Mix</h3>
@@ -622,15 +642,28 @@ export default function AdminDashboard() {
                 <div className={styles.formGrid}>
                   {[
                     { ph:"Workspace Name *", key:"name" },
-                    { ph:"City *",           key:"city" },
-                    { ph:"Location",         key:"location" },
-                    { ph:"Price (₹) *",      key:"price" },
-                    { ph:"Description",      key:"description" },
-                    { ph:"Image URL",        key:"image" },
+                    { ph:"City *",            key:"city" },
+                    { ph:"Location",          key:"location" },
+                    { ph:"Price (₹) *",       key:"price" },
+                    { ph:"Description",       key:"description" },
+                    { ph:"Image URL",         key:"image" },
                   ].map(f => (
                     <input key={f.key} className={styles.inp} placeholder={f.ph}
                       value={form[f.key]} onChange={e => setForm({ ...form, [f.key]:e.target.value })} />
                   ))}
+                  
+                  {/* ✅ AVAILABILITY DROPDOWN - SAME AS PREVIOUS */}
+                  <select 
+                    className={styles.selectField}
+                    value={form.is_available ? "available" : "unavailable"}
+                    onChange={(e) => setForm({
+                      ...form,
+                      is_available: e.target.value === "available"
+                    })}
+                  >
+                    <option value="available">✅ Available</option>
+                    <option value="unavailable">❌ Unavailable</option>
+                  </select>
                 </div>
                 <div className={styles.formActs}>
                   <button className={styles.btnGold} onClick={handleSubmit}>
@@ -639,7 +672,13 @@ export default function AdminDashboard() {
                   </button>
                   {editId && (
                     <button className={styles.btnGhost}
-                      onClick={() => { setEditId(null); setForm({ name:"", city:"", location:"", price:"", image:"", description:"" }); }}>
+                      onClick={() => { 
+                        setEditId(null); 
+                        setForm({ 
+                          name:"", city:"", location:"", price:"", image:"", description:"", 
+                          is_available: true 
+                        }); 
+                      }}>
                       Cancel
                     </button>
                   )}
@@ -658,7 +697,16 @@ export default function AdminDashboard() {
               <div className={styles.tableWrap}>
                 <table className={styles.table}>
                   <thead>
-                    <tr><th>#</th><th>Name</th><th>City</th><th>Location</th><th>Price</th><th>Actions</th></tr>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>City</th>
+                      <th>Location</th>
+                      <th>Price</th>
+                      {/* ✅ ADDED STATUS COLUMN */}
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {filteredWS.map((item, i) => (
@@ -668,6 +716,18 @@ export default function AdminDashboard() {
                         <td>{item.city}</td>
                         <td className={styles.tdMuted}>{item.location || "—"}</td>
                         <td className={styles.tdGold}>₹{item.price}</td>
+                        
+                        {/* ✅ STATUS BADGE - SAME AS PREVIOUS */}
+                        <td>
+                          <span
+                            className={`${styles.status} ${
+                              item.is_available ? styles.available : styles.unavailable
+                            }`}
+                          >
+                            {item.is_available ? "Available" : "Unavailable"}
+                          </span>
+                        </td>
+                        
                         <td>
                           <div className={styles.actCell}>
                             <button className={styles.editBtn} onClick={() => handleEdit(item)}>
@@ -681,7 +741,7 @@ export default function AdminDashboard() {
                       </tr>
                     ))}
                     {filteredWS.length === 0 && (
-                      <tr><td colSpan="6" className={styles.tdEmpty}>No workspaces found</td></tr>
+                      <tr><td colSpan="7" className={styles.tdEmpty}>No workspaces found</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -787,9 +847,15 @@ export default function AdminDashboard() {
                   <p className={styles.secSub}>Manage and resolve user support requests.</p>
                 </div>
                 <div className={styles.ticketSummary}>
-                  <span className={`${styles.countPill} ${styles.pillRed}`}>{MOCK_TICKETS.filter(t => t.status === "open").length} Open</span>
-                  <span className={`${styles.countPill} ${styles.pillOrange}`}>{MOCK_TICKETS.filter(t => t.status === "in_progress").length} In Prog</span>
-                  <span className={`${styles.countPill} ${styles.pillGreen}`}>{MOCK_TICKETS.filter(t => t.status === "resolved").length} Done</span>
+                  <span className={`${styles.countPill} ${styles.pillRed}`}>
+                    {MOCK_TICKETS.filter(t => t.status === "open").length} Open
+                  </span>
+                  <span className={`${styles.countPill} ${styles.pillOrange}`}>
+                    {MOCK_TICKETS.filter(t => t.status === "in_progress").length} In Prog
+                  </span>
+                  <span className={`${styles.countPill} ${styles.pillGreen}`}>
+                    {MOCK_TICKETS.filter(t => t.status === "resolved").length} Done
+                  </span>
                 </div>
               </div>
 

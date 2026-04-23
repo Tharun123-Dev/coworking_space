@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from workspaces.models import Workspace
 from django.utils import timezone
 from datetime import timedelta
+from workspaces.models import WorkspaceSlot
 
 
 def cart_expiry():
@@ -41,6 +42,12 @@ class CartItem(models.Model):
 
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    slot = models.ForeignKey(
+    WorkspaceSlot,
+    on_delete=models.CASCADE,
+    null=True,
+    blank=True
+)
 
     workspace = models.ForeignKey(
         Workspace,
@@ -56,7 +63,7 @@ class Booking(models.Model):
     )
 
     date = models.DateField()
-    duration = models.IntegerField()
+   
 
     total_price = models.IntegerField(default=0)
 
@@ -98,3 +105,31 @@ class CancelRequest(models.Model):
             ("REJECTED", "Rejected")
         ]
     )
+
+class Slot(models.Model):
+
+    SLOT_TYPE = [
+        ("HOURLY", "Hourly"),
+        ("FULL_DAY", "Full Day"),
+    ]
+
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
+    date = models.DateField()
+
+    slot_type = models.CharField(max_length=20, choices=SLOT_TYPE)
+
+    # Only for hourly slots
+    time = models.CharField(max_length=20, null=True, blank=True)
+
+    price = models.IntegerField()
+
+    capacity = models.IntegerField(default=50)
+    booked_count = models.IntegerField(default=0)
+
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def is_full(self):
+        return self.booked_count >= self.capacity
+
+    def __str__(self):
+        return f"{self.workspace.name} - {self.date} - {self.time or 'Full Day'}"

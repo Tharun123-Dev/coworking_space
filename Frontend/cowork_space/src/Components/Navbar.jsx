@@ -155,10 +155,10 @@ function Navbar() {
 
         {/* ── DESKTOP RIGHT ── */}
         <div className={styles.right}>
-
+{/* 
           <span className={styles.icon} onClick={() => navigate("/cart")} title="Cart">
             🛒
-          </span>
+          </span> */}
 
           <span className={styles.icon} onClick={handleUserClick} title="Profile">
             👤
@@ -331,8 +331,8 @@ function Navbar() {
                 className={styles.mobileNavItem}
                 onClick={() => handleNavigate("/cart")}
               >
-                <span className={styles.mobileNavIcon}>🛒</span>
-                <span className={styles.mobileNavLabel}>Cart</span>
+                {/* <span className={styles.mobileNavIcon}>🛒</span> */}
+                {/* <span className={styles.mobileNavLabel}>Cart</span> */}
                 <span className={styles.mobileNavArrow}>›</span>
               </div>
 

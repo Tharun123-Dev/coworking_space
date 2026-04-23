@@ -365,12 +365,12 @@ const pendingOrdersForCancel = useMemo(() => {
                     <th>Workspace</th>
                     <th>Location</th>
                     <th>Date</th>
-                    <th>Duration</th>
+                    <th>Slot</th>
                     <th>Price</th>
                     <th>Status</th>
                     <th>Payment Status</th>
-                    <th>Refund Amount</th>
-                    <th>Cancel Status</th>
+                   
+                    
                   </tr>
                 </thead>
 
@@ -402,7 +402,11 @@ const pendingOrdersForCancel = useMemo(() => {
                         <td>{item.workspace}</td>
                         <td>{item.location}</td>
                         <td>{item.date}</td>
-                        <td>{item.duration} day</td>
+                        <td>
+  {item.slot_type === "Hourly"
+    ? item.slot_time
+    : "Full Day"}
+</td>
                         <td>₹{item.price || item.total_price}</td>
 
                         <td>
@@ -423,41 +427,6 @@ const pendingOrdersForCancel = useMemo(() => {
   )}
 </td>
 
-                        <td>
-                          {isRefunded ? (
-                            <span style={{ color: "#FF9800", fontWeight: "bold" }}>
-                              ₹{item.refund_amount || 0}
-                            </span>
-                          ) : isConfirmed ? (
-                            <span style={{ color: "#2196F3", fontWeight: "bold" }}>
-                              No Refund
-                            </span>
-                          ) : isCancelled ? (
-                            <span style={{ color: "#9E9E9E", fontWeight: "bold" }}>
-                              Pending Refund
-                            </span>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
-
-                        <td>
-                          {item.cancel_status === "PENDING" ? (
-                            <span style={{ color: "#ff9800", fontWeight: "bold" }}>
-                              ⏳ Cancel Requested
-                            </span>
-                          ) : item.status === "cancelled" && item.payment_status === "REFUNDED" ? (
-                            <span style={{ color: "red", fontWeight: "bold" }}>
-                              ❌ Cancelled & 💰 Refunded ₹{item.refund_amount || 0}
-                            </span>
-                          ) : item.status === "confirmed" ? (
-                            <span style={{ color: "green", fontWeight: "bold" }}>
-                              ✅ Active Booking
-                            </span>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
                       </tr>
                     );
                   })}
