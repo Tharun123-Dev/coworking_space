@@ -26,6 +26,7 @@ function HyderabadWorkspaces() {
   const navigate = useNavigate();
 
   const [workspaces, setWorkspaces] = useState([]);
+  const [selectedSeats, setSelectedSeats] = useState("1");
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -166,16 +167,13 @@ function HyderabadWorkspaces() {
     setCalLoading(false);
   };
 
- const handleBookNow = (item) => {
-  const token = localStorage.getItem("access");
-  if (!token) {
-    alert("Please login first 🔒");
-    navigate("/auth?type=user");
-    return;
-  
-  // Pass workspace as location state
-  navigate("/slot-booking", { state: { workspace: item } });
-};
+  const handleBookNow = (item) => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      alert("Please login first 🔒");
+      navigate("/auth?type=user");
+      return;
+    }
 
     setSelectedWorkspace(item);
     setShowBookingModal(true);
@@ -224,6 +222,7 @@ function HyderabadWorkspaces() {
 
     setSelectedDate(dateStr);
     setSelectedSlot(null);
+    setSelectedSeats(1);
     setSlotSearch("");
     fetchSlots(selectedWorkspace.id, dateStr);
   };
@@ -238,7 +237,7 @@ function HyderabadWorkspaces() {
       setBookingLoading(true);
 
       const res = await axiosInstance.post("payment/create/", {
-        amount: selectedSlot.price,
+        amount: selectedSeats * selectedSlot.price,
       });
 
       const order = res.data;
@@ -276,10 +275,17 @@ function HyderabadWorkspaces() {
         handler: async function (response) {
           try {
             const verify = await axiosInstance.post("payment/verify/", response);
+            console.log("BOOKING PAYLOAD", {
+  slot_id: selectedSlot?.id,
+  seats: selectedSeats,
+  payment_id: response.razorpay_payment_id,
+  selectedSlot
+});
 
             if (verify.data.status === "success") {
               await axiosInstance.post("cart/create/", {
                 slot_id: selectedSlot.id,
+                seats: selectedSeats,
                 payment_id: response.razorpay_payment_id,
               });
 
@@ -997,14 +1003,7 @@ function HyderabadWorkspaces() {
               </div>
 
               {selectedDate && (
-                <div className={styles.slotSection}>
-                  <div className={styles.slotSectionHead}>
-                    <h3 className={styles.slotSectionTitle}>Available slots</h3>
-                    <p className={styles.calSelectedDateLabel}>
-                      Selected date: <strong>{selectedDate}</strong>
-                    </p>
-                  </div>
-
+                <>
                   <div className={styles.slotSearchWrap}>
                     <span className={styles.slotSearchIcon}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1054,7 +1053,12 @@ function HyderabadWorkspaces() {
                               key={slot.id}
                               className={slotClass}
                               disabled={slot.is_full}
-                              onClick={() => !slot.is_full && setSelectedSlot(slot)}
+                              onClick={() => {
+                                if (!slot.is_full) {
+                                  setSelectedSlot(slot);
+                                  setSelectedSeats(1);
+                                }
+                              }}
                             >
                               <span className={styles.slotTime}>
                                 {slot.slot_type === "day"
@@ -1063,7 +1067,7 @@ function HyderabadWorkspaces() {
                               </span>
 
                               <span className={styles.slotMeta}>
-                                ₹{slot.price} · {slot.booked}/{slot.capacity} booked
+                                ₹{slot.price} · {slot.capacity - slot.booked} seats left
                               </span>
                             </button>
                           );
@@ -1071,7 +1075,44 @@ function HyderabadWorkspaces() {
                       </div>
                     )}
                   </div>
-                </div>
+
+                  {selectedSlot && (
+                    <div className={styles.capacityBox}>
+                      <p>
+                        Available Seats:{" "}
+                        <strong>{selectedSlot.capacity - selectedSlot.booked}</strong>
+                      </p>
+
+<input
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  placeholder="Seats"
+  value={selectedSeats === "" ? "" : selectedSeats}
+  onChange={(e) => {
+    let value = e.target.value.replace(/\D/g, "");
+
+    if (value === "") {
+      setSelectedSeats("");
+      return;
+    }
+
+    value = String(Math.max(1, Math.min(
+      Number(value.replace(/^0+/, "") || "0"),
+      selectedSlot.capacity - selectedSlot.booked
+    )));
+
+    setSelectedSeats(value);
+  }}
+  className={styles.capacityInput}
+/>
+
+                      <p className={styles.totalPrice}>
+                        Total: ₹{selectedSeats * selectedSlot.price}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
 
               <button

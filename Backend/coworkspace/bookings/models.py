@@ -48,6 +48,7 @@ class Booking(models.Model):
     null=True,
     blank=True
 )
+    seats=models.IntegerField(default=1)
 
     workspace = models.ForeignKey(
         Workspace,

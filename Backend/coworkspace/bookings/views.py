@@ -11,42 +11,65 @@ from django.utils import timezone
 from .models import Slot
 from workspaces.models import ActivityLog   # adjust if path different
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Booking
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from workspaces.models import WorkspaceSlot
+from .models import Booking
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_booking(request):
+    try:
+        slot_id = request.data.get("slot_id")
+        seats = int(request.data.get("seats", 1))
 
-    slot_id = request.data.get("slot_id")
+        if not slot_id:
+            return Response({"error": "slot_id required"}, status=400)
 
-    if not slot_id:
-        return Response({"error": "slot_id required"}, status=400)
+        if seats < 1:
+            return Response({"error": "Seats must be at least 1"}, status=400)
 
-    from workspaces.models import WorkspaceSlot
-    slot = get_object_or_404(WorkspaceSlot, id=slot_id)
+        slot = get_object_or_404(WorkspaceSlot, id=slot_id)
 
-    if slot.is_full():
-        return Response({"error": "Slot full"}, status=400)
+        available = slot.capacity - slot.booked_count
 
-    workspace = slot.workspace
-    user = request.user
+        if seats > available:
+            return Response({"error": f"Only {available} seats left"}, status=400)
 
-    booking = Booking.objects.create(
-        user=user,
-        slot=slot,
-        workspace=workspace,
-        owner=workspace.owner,
-        date=slot.date,
-        total_price=slot.price,
-        payment_status="VERIFIED",
-        status="confirmed"
-    )
+        workspace = slot.workspace
+        user = request.user
 
-    slot.booked_count += 1
-    slot.save()
+        booking = Booking.objects.create(
+            user=user,
+            slot=slot,
+            workspace=workspace,
+            owner=workspace.owner,
+            date=slot.date,
+            seats=seats,
+            total_price=slot.price * seats,
+            payment_status="VERIFIED",
+            status="confirmed"
+        )
 
-    return Response({
-        "message": "Booking successful",
-        "booking_id": booking.id
-    })
+        slot.booked_count += seats
+        slot.save()
+
+        return Response({
+            "message": "Booking successful",
+            "booking_id": booking.id
+        }, status=201)
+
+    except ValueError:
+        return Response({"error": "Invalid seats value"}, status=400)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 # ===============================
 # ADD TO CART
 # ===============================

@@ -281,7 +281,7 @@ const deleteSlot = (id) => {
   </button>
 
   {/* CUSTOMERS */}
-  <button
+  {/* <button
     className={`${styles.btnBox} ${styles.greenBtn} ${
       activeSection === "customers" ? styles.activeBtn : ""
     }`}
@@ -292,7 +292,7 @@ const deleteSlot = (id) => {
     }}
   >
     👥 Customers
-  </button>
+  </button> */}
 
   {/* OWNER LEADS */}
   <button
