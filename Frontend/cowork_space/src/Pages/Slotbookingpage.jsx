@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
-import styles from "../Styles/SlotBookingPage.module.css";
+import styles from "../Styles/Slotbookpage.module.css";
 
 // ── Helpers ──────────────────────────────────────────────────────
 function buildMonthMatrix(year, month) {
