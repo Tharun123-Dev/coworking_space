@@ -37,6 +37,7 @@ import AdminBusinessEnterprise from "./Improved/AdminBusinessEnterprise";
 import AdminTickets from "./Pages/AdminTickets";
 import RecentActivity from "./Pages/RecentActivity";
 import AdminLayout from "./Components/AdminLayout";
+import SlotBookingPage from "./Pages/Slotbookingpage";
 
 function App() {
   return (
@@ -62,6 +63,7 @@ function App() {
     <Route path="/special-contact/:id" element={<SpecialContact />} />
     <Route path="/speciall-contact/:id" element={<CompanyContact />} />
     <Route path="/business-enterprise/:name" element={<BusinessEnterpriseContact />} />
+     <Route path="/slot-booking" element={<SlotBookingPage/>} />
   </Route>
 
 

@@ -569,8 +569,8 @@ body {
 
 .panel {
   width: 100%;
-  max-width: 640px;
-  max-height: 90vh;
+  max-width: 840px;
+  max-height: 100vh;
   background: linear-gradient(180deg, #111214 0%, #0b0c0d 100%);
   border-radius: 22px;
   border: 1px solid rgba(201, 151, 44, 0.16);

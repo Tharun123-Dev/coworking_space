@@ -166,13 +166,16 @@ function HyderabadWorkspaces() {
     setCalLoading(false);
   };
 
-  const handleBookNow = (item) => {
-    const token = localStorage.getItem("access");
-    if (!token) {
-      alert("Please login first 🔒");
-      navigate("/auth?type=user");
-      return;
-    }
+ const handleBookNow = (item) => {
+  const token = localStorage.getItem("access");
+  if (!token) {
+    alert("Please login first 🔒");
+    navigate("/auth?type=user");
+    return;
+  
+  // Pass workspace as location state
+  navigate("/slot-booking", { state: { workspace: item } });
+};
 
     setSelectedWorkspace(item);
     setShowBookingModal(true);
