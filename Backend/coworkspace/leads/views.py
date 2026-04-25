@@ -595,3 +595,53 @@ def update_ticket(request,id):
     ticket.save()
 
     return Response({"message":"updated"})
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import ModernLead
+
+# CREATE
+@api_view(["POST"])
+def create_modern_lead(request):
+    data = request.data
+
+    ModernLead.objects.create(
+        name=data.get("name"),
+        email=data.get("email"),
+        phone=data.get("phone"),
+        company=data.get("company"),
+        message=data.get("message"),
+    )
+
+    return Response({"message": "Lead saved successfully"})
+
+@api_view(["GET"])
+def get_modern_leads(request):
+    leads = ModernLead.objects.all().order_by("-id")
+
+    data = []
+    for l in leads:
+        data.append({
+            "id": l.id,
+            "name": l.name,
+            "email": l.email,
+            "phone": l.phone,
+            "company": l.company,
+            "message": l.message,
+            "date": l.created_at,
+        })
+
+    return Response(data)
+
+# views.py
+
+@api_view(["PUT"])
+def update_lead_status(request, id):
+    try:
+        lead = ModernLead.objects.get(id=id)
+        lead.status = request.data.get("status")
+        lead.save()
+
+        return Response({"message": "Status updated"})
+    except ModernLead.DoesNotExist:
+        return Response({"error": "Lead not found"}, status=404)

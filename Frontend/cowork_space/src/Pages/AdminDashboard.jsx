@@ -63,7 +63,7 @@ const SIDEBAR_GROUPS = [
     children:[
       { id:"leads",       label:"View Leads",        icon:IC.leads,      path:"/admin-leads" },
       { id:"offerleads",  label:"Offer Leads",       icon:IC.offers,     path:"/admin-leadss" },
-      { id:"enterprise",  label:"Enterprise Leads",  icon:IC.enterprise, path:"/admin-Enterprise" },
+      { id:"enterprise",  label:"Modern Leads",  icon:IC.enterprise, path:"/admin-Enterprise" },
       { id:"ownerlead",   label:"Owner Leads",       icon:IC.tag,        path:"/owner-special-leads" },
     ]
   },

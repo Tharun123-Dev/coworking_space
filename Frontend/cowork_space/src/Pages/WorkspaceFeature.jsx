@@ -14,98 +14,129 @@ const PHRASES = [
 
 const FEATURES = [
   {
-    icon: "📍", bg: "bgBlue",
+    icon: "📍",
+    bg: "bgBlue",
     title: "Prime Business Address",
-    sub: "Establish credibility with a prestigious city-center address for GST, courier & branding",
+    sub: "Establish credibility with a prestigious city-center address",
   },
   {
-    icon: "🤝", bg: "bgGreen",
-    title: "Community & Networking Events",
-    sub: "Weekly founder meetups, skill workshops & investor connect sessions to grow faster",
+    icon: "🤝",
+    bg: "bgGreen",
+    title: "Community & Networking",
+    sub: "Weekly events and startup connections",
   },
   {
-    icon: "🎁", bg: "bgPurple",
-    title: "Exclusive Partner Discounts",
-    sub: "Save on AWS, Zoho, legal services, accounting & 50+ global business tools",
+    icon: "🎁",
+    bg: "bgPurple",
+    title: "Partner Discounts",
+    sub: "Save on tools, legal & business services",
   },
   {
-    icon: "✈️", bg: "bgAmber",
-    title: "Airport Lounge Premium Access",
-    sub: "Complimentary lounge pass for business travel — work comfortably between flights",
+    icon: "✈️",
+    bg: "bgAmber",
+    title: "Travel Benefits",
+    sub: "Airport lounge access & travel comfort",
   },
   {
-    icon: "🏢", bg: "bgTeal",
-    title: "Dedicated Receptionist & Concierge",
-    sub: "Professional staff to greet guests, handle mail & manage day-to-day needs",
+    icon: "🏢",
+    bg: "bgTeal",
+    title: "Reception Support",
+    sub: "Professional staff & mail handling",
   },
   {
-    icon: "🔒", bg: "bgRed",
-    title: "24/7 Secure Access & Support",
-    sub: "Round-the-clock building access, CCTV security & instant support anytime",
+    icon: "🔒",
+    bg: "bgRed",
+    title: "24/7 Secure Access",
+    sub: "Full-time access with security",
   },
 ];
 
 function SpecialContact() {
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
   const [typed, setTyped] = useState("");
   const stateRef = useRef({ pi: 0, ci: 0, deleting: false });
 
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    message: "",
+  });
+
+  // 🔹 Typing Effect
   useEffect(() => {
     let timer;
+
     const tick = () => {
       const s = stateRef.current;
       const phrase = PHRASES[s.pi];
+
       if (!s.deleting) {
         s.ci++;
         setTyped(phrase.slice(0, s.ci));
+
         if (s.ci === phrase.length) {
           s.deleting = true;
-          timer = setTimeout(tick, 1500);
+          timer = setTimeout(tick, 1200);
         } else {
-          timer = setTimeout(tick, 65);
+          timer = setTimeout(tick, 60);
         }
       } else {
         s.ci--;
         setTyped(phrase.slice(0, s.ci));
+
         if (s.ci === 0) {
           s.deleting = false;
           s.pi = (s.pi + 1) % PHRASES.length;
           timer = setTimeout(tick, 300);
         } else {
-          timer = setTimeout(tick, 38);
+          timer = setTimeout(tick, 40);
         }
       }
     };
+
     timer = setTimeout(tick, 400);
     return () => clearTimeout(timer);
   }, []);
 
-  const [form, setForm] = useState({
-    name: "", email: "", phone: "", company: "", message: "",
-  });
+  // 🔹 Handle Input
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // 🔹 Submit to Backend
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const handleSubmit = async () => {
     if (!form.name.trim() || !form.phone.trim()) {
       alert("Please fill required fields ❌");
       return;
     }
+
     try {
       setLoading(true);
-      await axiosInstance.post("leads/special/add/", {
-        name: form.name, email: form.email, phone: form.phone,
-        company: form.company, message: form.message,
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("access")}` },
+
+      await axiosInstance.post("leads/modern-lead/create/", form);
+
+      alert("Request submitted successfully ✅");
+
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        company: "",
+        message: "",
       });
-      alert("Request Sent Successfully ✅");
-      setForm({ name: "", email: "", phone: "", company: "", message: "" });
-      navigate("/my-orders");
+
+      navigate("/request-sent");
     } catch (error) {
-      console.log("Backend error:", error.response?.data);
+      console.error(error);
       alert("Something went wrong ❌");
     } finally {
       setLoading(false);
@@ -114,6 +145,7 @@ function SpecialContact() {
 
   return (
     <>
+      {/* NAVBAR */}
       <nav className={styles.navbar}>
         <div className={styles.logoDots}>
           <span className={`${styles.dot} ${styles.dotPurple}`} />
@@ -123,11 +155,14 @@ function SpecialContact() {
         <span className={styles.brand}>CoWork</span>
       </nav>
 
+      {/* MAIN */}
       <section className={styles.specialPage}>
         <div className={styles.wrapper}>
-
+          
+          {/* LEFT CONTENT */}
           <div className={styles.leftPanel}>
             <span className={styles.tag}>Modern Office Spaces</span>
+
             <h1>Your Smartest Workspace Decision Starts Here</h1>
 
             <div className={styles.typingLine}>
@@ -137,8 +172,7 @@ function SpecialContact() {
             </div>
 
             <p className={styles.description}>
-              Join 2,000+ professionals who scaled their businesses from a CoWork space.
-              From solo founders to growing teams — we have the perfect setup for you.
+              Join professionals who scale faster using premium coworking spaces.
             </p>
 
             <ul className={styles.featureList}>
@@ -156,34 +190,58 @@ function SpecialContact() {
             </ul>
           </div>
 
-          <div className={styles.formCard}>
-            <div className={styles.formGroup}>
-              <input name="name" type="text" placeholder="Full Name *"
-                value={form.name} onChange={handleChange} className={styles.input} />
-            </div>
-            <div className={styles.formGroup}>
-              <input name="email" type="email" placeholder="Email Address"
-                value={form.email} onChange={handleChange} className={styles.input} />
-            </div>
-            <div className={styles.formGroup}>
-              <input name="company" type="text" placeholder="Company Name or Self"
-                value={form.company} onChange={handleChange} className={styles.input} />
-            </div>
-            <div className={styles.formGroup}>
-              <input name="phone" type="text" placeholder="Phone Number *"
-                value={form.phone} onChange={handleChange} className={styles.input} />
-            </div>
-            <div className={styles.formGroup}>
-              <textarea name="message" rows="4"
-                placeholder="Team size & workspace requirement (e.g. 5-person private cabin, 3 months)..."
-                value={form.message} onChange={handleChange} className={styles.textarea} />
-            </div>
-            <button type="button" onClick={handleSubmit}
-              className={styles.submitBtn} disabled={loading}>
+          {/* FORM */}
+          <form className={styles.formCard} onSubmit={handleSubmit}>
+            
+            <input
+              name="name"
+              placeholder="Full Name *"
+              value={form.name}
+              onChange={handleChange}
+              className={styles.input}
+            />
+
+            <input
+              name="email"
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              className={styles.input}
+            />
+
+            <input
+              name="company"
+              placeholder="Company"
+              value={form.company}
+              onChange={handleChange}
+              className={styles.input}
+            />
+
+            <input
+              name="phone"
+              placeholder="Phone Number *"
+              value={form.phone}
+              onChange={handleChange}
+              className={styles.input}
+            />
+
+            <textarea
+              name="message"
+              placeholder="Your requirement..."
+              value={form.message}
+              onChange={handleChange}
+              className={styles.textarea}
+            />
+
+            <button
+              type="submit"
+              className={styles.submitBtn}
+              disabled={loading}
+            >
               {loading ? "Submitting..." : "Get a Free Callback"}
             </button>
-          </div>
-
+          </form>
         </div>
       </section>
     </>
