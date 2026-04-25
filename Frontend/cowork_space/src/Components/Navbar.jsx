@@ -116,13 +116,13 @@ function Navbar() {
             onMouseEnter={() => setShowEnterprise(true)}
             onMouseLeave={() => setShowEnterprise(false)}
           >
-            <span className={styles.dropdownLabel}>Enterprises</span>
+            <span className={styles.dropdownLabel}>Bookings</span>
             <span className={styles.arrow}>▼</span>
 
             {showEnterprise && (
               <div className={styles.dropdownMenu}>
                 <p onClick={() => navigate("/Enterprise")}>
-                  Enterprise Workspaces
+                 Workspaces
                 </p>
                 <p onClick={() => navigate("/RightSpace")}>
                   Business Solutions
@@ -269,7 +269,7 @@ function Navbar() {
                   onClick={() => setMobileRoleOpen(o => !o)}
                 >
                   <span className={styles.mobileNavIcon}>🌐</span>
-                  <span className={styles.mobileNavLabel}>Enterprises</span>
+                  <span className={styles.mobileNavLabel}>Bookings</span>
                   <span className={`${styles.mobileNavChevron} ${mobileRoleOpen ? styles.chevronOpen : ""}`}>⌄</span>
                 </div>
                 {mobileRoleOpen && (
@@ -279,7 +279,7 @@ function Navbar() {
                       onClick={() => handleNavigate("/Enterprise")}
                     >
                       <span className={styles.mobileSubDot} />
-                      Enterprise Workspaces
+                     Workspaces
                     </div>
                     <div
                       className={styles.mobileSubItem}

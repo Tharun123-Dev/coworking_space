@@ -14,6 +14,7 @@ import { useState } from "react";
 import Testimonials from "../Pages/Testimonials";
 import HydCards from "../Pages/HyderabadWorkspaces.jsx";
 import Compaines from "../Pages/Companies.jsx"
+import Hyderabad from "../Improved/Hyderabad.jsx"
 
 function HomeLayout() {
   const [selected, setSelected] = useState(null);
@@ -21,19 +22,23 @@ function HomeLayout() {
   return (
     <>
       <Home />
+      <Hyderabad/>
+         <Feature />
       <Compaines/>
-      <HydCards/>
-      <Feature />
-      <WorkspaceTabs />
+
+      {/* <HydCards/> */}
+   
+      {/* <WorkspaceTabs /> */}
       <BusinessSection openModal={setSelected} />
       <ContactModal selected={selected} setSelected={setSelected} />
-      <RightSpace openModal={setSelected} />
+      {/* <RightSpace openModal={setSelected} /> */}
       <WorkspaceFeature />
       {/* <Cities /> */}
       {/* <AISeats /> */}
       <Reviews />
+          <AddReview />
       <Testimonials/>
-      <AddReview />
+  
       
     </>
   );

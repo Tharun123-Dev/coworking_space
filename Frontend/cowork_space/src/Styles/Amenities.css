@@ -1,0 +1,110 @@
+/* Amenities.css */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
+
+.am-section {
+  background: #fff;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+  margin-top: 50px;
+}
+
+.am-eyebrow {
+  font-size: 0.82rem;
+  color: #999;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+
+.am-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 2.5rem;
+}
+
+/* Grid */
+.am-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2.5rem 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Item */
+.am-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.am-icon-wrap {
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.9rem;
+}
+
+.am-icon-wrap svg {
+  width: 52px;
+  height: 52px;
+  stroke: #7b6fe0;
+  fill: none;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.am-item h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 0.4rem;
+}
+
+.am-item p {
+  font-size: 0.8rem;
+  color: #888;
+  line-height: 1.6;
+}
+
+/* Button */
+.am-btn {
+  margin-top: 2.5rem;
+  background: #f5a623;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.65rem 2.2rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.2s;
+}
+
+.am-btn:hover {
+  background: #e09518;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .am-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 1rem;
+  }
+  .am-title {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .am-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

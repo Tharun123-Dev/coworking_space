@@ -3,123 +3,72 @@ import "../Styles/FAQ.css";
 
 const faqData = [
   {
-    question: "What facilities are available in your coworking space?",
-    answer:
-      "We provide high-speed Wi-Fi, ergonomic seating, power backup, meeting rooms, pantry access, printing support, and a professional work atmosphere to keep you focused and productive.",
+    question: "What is CoWork and how is it different from other coworking spaces in Hyderabad?",
+    answer: "CoWork is a premium coworking brand built for professionals, startups, and enterprises. We offer curated workspaces with top-tier amenities, flexible plans, and a community-first approach that goes beyond just a desk.",
   },
   {
-    question: "Do you offer flexible day passes and monthly plans?",
-    answer:
-      "Yes, you can choose from day passes, weekly plans, monthly memberships, dedicated desks, and private office options based on your work style and usage frequency.",
+    question: "What types of workspaces are available at CoWork coworking space in Hyderabad?",
+    answer: "We offer hot desks, dedicated desks, private cabins, team offices, and virtual office plans — all available across multiple locations in Hyderabad.",
   },
   {
-    question: "Can startups and teams book private cabins?",
-    answer:
-      "Yes, private cabins and team offices are available for startups, agencies, and growing teams that need privacy and collaboration space. Sizes and pricing vary by location.",
+    question: "Can I book a meeting room at your coworking space in Hyderabad?",
+    answer: "Yes, meeting rooms can be booked by the hour or day. Members enjoy discounted rates and priority access, while guests can book on a pay-per-use basis.",
   },
   {
-    question: "Is meeting room booking included in all plans?",
-    answer:
-      "Meeting rooms can be booked separately, and some memberships include discounted or priority booking access. You can reserve online or via the front desk.",
+    question: "Is there 24/7 access at CoWork coworking space in Hyderabad?",
+    answer: "Selected premium plans include extended-hours and 24/7 access. Please check with your preferred branch for availability and plan details.",
   },
   {
-    question: "Do you provide 24/7 access?",
-    answer:
-      "Selected plans include extended and 24/7 access, depending on the location and membership type. Contact us for details about your desired branch.",
+    question: "What amenities are included in CoWork coworking spaces in Hyderabad?",
+    answer: "We provide high-speed Wi-Fi, power backup, ergonomic seating, printing & scanning, pantry access, daily housekeeping, CCTV surveillance, and IT support.",
   },
   {
-    question: "Is parking available for members?",
-    answer:
-      "Parking depends on the branch, but most locations provide bike parking and limited car parking support. Some centers have tie‑ups with nearby parking facilities.",
+    question: "Who can use CoWork coworking space in Hyderabad?",
+    answer: "CoWork is open to freelancers, remote workers, startup founders, small teams, enterprises, and anyone who wants a professional workspace on flexible terms.",
   },
   {
-    question: "What are your day‑pass options and pricing?",
-    answer:
-      "Day passes give you access from 9:00 AM to 6:00 PM and include Wi‑Fi, seating, and basic support. Flexible pricing is available for startups and frequent visitors.",
+    question: "Are there flexible plans available at CoWork?",
+    answer: "Yes — day passes, weekly passes, monthly memberships, and long-term dedicated desk or private office plans are all available. We'll find the right fit for you.",
   },
   {
-    question: "Can I upgrade my plan later?",
-    answer:
-      "Yes, you can upgrade from day passes to weekly/monthly plans or dedicated desks at any time. We’ll help you migrate your data and workspace preferences smoothly.",
+    question: "Where are CoWork coworking spaces located in Hyderabad?",
+    answer: "We have multiple branches across Hyderabad including Hitech City, Banjara Hills, Gachibowli, and Madhapur. More locations coming soon.",
   },
 ];
 
 export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState(0);
-  const [showAll, setShowAll] = useState(false);
+  const [openIndex, setOpenIndex] = useState(-1);
 
-  const toggleFaq = (index) => {
-    if (openIndex === index) {
-      setOpenIndex(null);
-    } else {
-      setOpenIndex(index);
-    }
-  };
-
-  const handleToggleAll = () => {
-    // close all if any is open, otherwise open the first one
-    if (openIndex === 0) {
-      setOpenIndex(null);
-    } else {
-      setOpenIndex(0);
-      setShowAll(true);
-    }
-  };
+  const toggle = (i) => setOpenIndex(openIndex === i ? -1 : i);
 
   return (
-    <section className="faqSection">
-      <div className="faqContainer">
-        <div className="faqHeader">
-          <span className="faqBadge">Frequently Asked Questions</span>
-          <h2 className="faqTitle">Questions before booking your workspace</h2>
-          <p className="faqSubtitle">
-            Clear answers about plans, amenities, cabins, meeting rooms, access,
-            and workspace flexibility.
-          </p>
+    <section className="faq-section">
+      <div className="faq-container">
+        <h2 className="faq-title">
+          Frequently Asked <span>Questions</span>
+        </h2>
 
-          {/* SHOW ALL / HIDE ALL */}
-          <button
-            type="button"
-            className="faqToggleAll"
-            onClick={handleToggleAll}
-            aria-expanded={openIndex === 0}
-          >
-            {openIndex === 0 ? "Hide all" : "Show all answers"}
-          </button>
-        </div>
-
-        <div className="faqList">
-          {faqData.map((item, index) => {
-            const isOpen = openIndex === index;
-
+        <div className="faq-list">
+          {faqData.map((item, i) => {
+            const isOpen = openIndex === i;
             return (
-              <div
-                className={`faqItem ${isOpen ? "faqItem--active" : ""}`}
-                key={index}
-              >
+              <div className={`faq-item ${isOpen ? "open" : ""}`} key={i}>
                 <button
-                  className="faqQuestion"
-                  onClick={() => toggleFaq(index)}
+                  className="faq-btn"
+                  onClick={() => toggle(i)}
                   aria-expanded={isOpen}
-                  aria-controls={`faq-answer-${index}`}
-                  tabIndex={0}
+                  aria-controls={`faq-ans-${i}`}
                 >
-                  <span className="faqQuestionText">{item.question}</span>
-
-                  <span className={`faqIcon ${isOpen ? "faqIcon--open" : ""}`}>
-                    <span className="faqIcon__line faqIcon__line--h"></span>
-                    <span className="faqIcon__line faqIcon__line--v"></span>
-                  </span>
+                  <span className="faq-q">{item.question}</span>
+                  <span className="faq-icon" aria-hidden="true" />
                 </button>
 
                 <div
-                  id={`faq-answer-${index}`}
-                  className={`faqAnswerWrap ${isOpen ? "faqAnswerWrap--show" : ""}`}
+                  id={`faq-ans-${i}`}
+                  className={`faq-body ${isOpen ? "open" : ""}`}
                   aria-hidden={!isOpen}
                 >
-                  <div className="faqAnswer">
-                    <p>{item.answer}</p>
-                  </div>
+                  <p className="faq-ans">{item.answer}</p>
                 </div>
               </div>
             );

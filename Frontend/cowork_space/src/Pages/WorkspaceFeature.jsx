@@ -1,152 +1,193 @@
-import { useState, useRef } from "react";
-import "../Styles/WorkspaceFeature.css";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Reveal from "../Pages/Reveal";
+import axiosInstance from "../Services/Axios";
+import styles from "../Styles/WorkspaceFeature.module.css";
 
-const data = [
-  {
-    id: 1,
-    title: "Desks",
-    desc: "Upgrade your desks with sit-stand functionality or choose spacious executive models built for productivity.",
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c",
-    tag: "Most Popular"
-  },
-  {
-    id: 2,
-    title: "Chairs",
-    desc: "Elevate seating comfort with upgraded chairs offering superior lumbar support and ergonomic design.",
-    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7",
-    tag: "Premium"
-  },
-  {
-    id: 3,
-    title: "Meeting Spaces",
-    desc: "Create personalized meeting areas tailored to your team's collaboration and presentation needs.",
-    image: "https://images.unsplash.com/photo-1556761175-4b46a572b786",
-    tag: "Enterprise"
-  },
-  {
-    id: 4,
-    title: "Furniture Options",
-    desc: "Choose additional furnishings to establish a relaxing, productive and inspiring atmosphere.",
-    image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511",
-    tag: "Flexible"
-  },
-  {
-    id: 5,
-    title: "Storage Solutions",
-    desc: "Ensure your workspace stays organized, clean and secure with our smart storage options.",
-    image: "https://images.unsplash.com/photo-1598300056393-4aac492f4344",
-    tag: "Smart"
-  }
+const PHRASES = [
+  "Flexible Hot Desks",
+  "Private Cabins",
+  "Fully Furnished Offices",
+  "Meeting & Conference Rooms",
+  "Virtual Office Plans",
+  "Coworking Day Passes",
 ];
 
-function WorkspaceFeature() {
-  const [index, setIndex] = useState(0);
+const FEATURES = [
+  {
+    icon: "📍", bg: "bgBlue",
+    title: "Prime Business Address",
+    sub: "Establish credibility with a prestigious city-center address for GST, courier & branding",
+  },
+  {
+    icon: "🤝", bg: "bgGreen",
+    title: "Community & Networking Events",
+    sub: "Weekly founder meetups, skill workshops & investor connect sessions to grow faster",
+  },
+  {
+    icon: "🎁", bg: "bgPurple",
+    title: "Exclusive Partner Discounts",
+    sub: "Save on AWS, Zoho, legal services, accounting & 50+ global business tools",
+  },
+  {
+    icon: "✈️", bg: "bgAmber",
+    title: "Airport Lounge Premium Access",
+    sub: "Complimentary lounge pass for business travel — work comfortably between flights",
+  },
+  {
+    icon: "🏢", bg: "bgTeal",
+    title: "Dedicated Receptionist & Concierge",
+    sub: "Professional staff to greet guests, handle mail & manage day-to-day needs",
+  },
+  {
+    icon: "🔒", bg: "bgRed",
+    title: "24/7 Secure Access & Support",
+    sub: "Round-the-clock building access, CCTV security & instant support anytime",
+  },
+];
+
+function SpecialContact() {
   const navigate = useNavigate();
-  const imageSectionRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [typed, setTyped] = useState("");
+  const stateRef = useRef({ pi: 0, ci: 0, deleting: false });
 
-  const prev = () => setIndex(index === 0 ? data.length - 1 : index - 1);
-  const next = () => setIndex((index + 1) % data.length);
+  useEffect(() => {
+    let timer;
+    const tick = () => {
+      const s = stateRef.current;
+      const phrase = PHRASES[s.pi];
+      if (!s.deleting) {
+        s.ci++;
+        setTyped(phrase.slice(0, s.ci));
+        if (s.ci === phrase.length) {
+          s.deleting = true;
+          timer = setTimeout(tick, 1500);
+        } else {
+          timer = setTimeout(tick, 65);
+        }
+      } else {
+        s.ci--;
+        setTyped(phrase.slice(0, s.ci));
+        if (s.ci === 0) {
+          s.deleting = false;
+          s.pi = (s.pi + 1) % PHRASES.length;
+          timer = setTimeout(tick, 300);
+        } else {
+          timer = setTimeout(tick, 38);
+        }
+      }
+    };
+    timer = setTimeout(tick, 400);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const handleItemClick = (i) => {
-    setIndex(i);
+  const [form, setForm] = useState({
+    name: "", email: "", phone: "", company: "", message: "",
+  });
 
-    if (window.innerWidth <= 768 && imageSectionRef.current) {
-      setTimeout(() => {
-        imageSectionRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      }, 100);
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async () => {
+    if (!form.name.trim() || !form.phone.trim()) {
+      alert("Please fill required fields ❌");
+      return;
+    }
+    try {
+      setLoading(true);
+      await axiosInstance.post("leads/special/add/", {
+        name: form.name, email: form.email, phone: form.phone,
+        company: form.company, message: form.message,
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("access")}` },
+      });
+      alert("Request Sent Successfully ✅");
+      setForm({ name: "", email: "", phone: "", company: "", message: "" });
+      navigate("/my-orders");
+    } catch (error) {
+      console.log("Backend error:", error.response?.data);
+      alert("Something went wrong ❌");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="wf-wrapper">
-      <Reveal>
-        <div className="wf-header">
-          <span className="wf-tag">
-            <span className="wf-tag-dot"></span>
-            Workspace Customization
-          </span>
-          <h2>Customize Your <span className="wf-gold">Office Space</span></h2>
-          <p>Tailor every detail of your workspace to reflect your unique style, brand, and workflow.</p>
+    <>
+      <nav className={styles.navbar}>
+        <div className={styles.logoDots}>
+          <span className={`${styles.dot} ${styles.dotPurple}`} />
+          <span className={`${styles.dot} ${styles.dotGreen}`} />
+          <span className={`${styles.dot} ${styles.dotYellow}`} />
         </div>
-      </Reveal>
+        <span className={styles.brand}>CoWork</span>
+      </nav>
 
-      <div className="wf-container">
-        <div className="wf-left">
-          {data.map((item, i) => (
-            <div
-              key={item.id}
-              className={`wf-item ${i === index ? "active" : ""}`}
-              onClick={() => handleItemClick(i)}
-            >
-              <span className="number">0{item.id}</span>
+      <section className={styles.specialPage}>
+        <div className={styles.wrapper}>
 
-              <div className="wf-text">
-                <div className="wf-item-top">
-                  <h3>{item.title}</h3>
-                  <span className="wf-item-tag">{item.tag}</span>
-                </div>
-                <p>{item.desc}</p>
-              </div>
+          <div className={styles.leftPanel}>
+            <span className={styles.tag}>Modern Office Spaces</span>
+            <h1>Your Smartest Workspace Decision Starts Here</h1>
 
-              {i === index && <span className="wf-active-arrow">→</span>}
+            <div className={styles.typingLine}>
+              <span className={styles.tick}>✓</span>
+              <span className={styles.typedText}>{typed}</span>
+              <span className={styles.cursor} />
             </div>
-          ))}
 
-          <div className="wf-dots">
-            {data.map((_, i) => (
-              <button
-                key={i}
-                className={`wf-dot ${i === index ? "wf-dot-active" : ""}`}
-                onClick={() => handleItemClick(i)}
-              />
-            ))}
+            <p className={styles.description}>
+              Join 2,000+ professionals who scaled their businesses from a CoWork space.
+              From solo founders to growing teams — we have the perfect setup for you.
+            </p>
+
+            <ul className={styles.featureList}>
+              {FEATURES.map((f, i) => (
+                <li key={i} className={styles.featureItem}>
+                  <div className={`${styles.featureIcon} ${styles[f.bg]}`}>
+                    {f.icon}
+                  </div>
+                  <div className={styles.featureText}>
+                    <span className={styles.featureTitle}>{f.title}</span>
+                    <span className={styles.featureSub}>{f.sub}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <Reveal>
-            <button
-              className="contact-btn"
-              onClick={() => { window.location.href = "/Contact"; }}
-            >
-              <span>Contact Us</span>
-              <span className="contact-btn-arrow">→</span>
-            </button>
-          </Reveal>
-        </div>
-
-        <div className="wf-right" ref={imageSectionRef}>
-          <Reveal>
-            <div className="wf-img-wrap">
-              <img
-                src={data[index].image}
-                alt={data[index].title}
-                key={index}
-              />
-              <div className="wf-img-overlay"></div>
-
-              <div className="wf-img-caption">
-                <span className="wf-caption-tag">{data[index].tag}</span>
-                <h4>{data[index].title}</h4>
-              </div>
-
-              <div className="wf-counter">
-                {String(index + 1).padStart(2, "0")} / {String(data.length).padStart(2, "0")}
-              </div>
+          <div className={styles.formCard}>
+            <div className={styles.formGroup}>
+              <input name="name" type="text" placeholder="Full Name *"
+                value={form.name} onChange={handleChange} className={styles.input} />
             </div>
-          </Reveal>
+            <div className={styles.formGroup}>
+              <input name="email" type="email" placeholder="Email Address"
+                value={form.email} onChange={handleChange} className={styles.input} />
+            </div>
+            <div className={styles.formGroup}>
+              <input name="company" type="text" placeholder="Company Name or Self"
+                value={form.company} onChange={handleChange} className={styles.input} />
+            </div>
+            <div className={styles.formGroup}>
+              <input name="phone" type="text" placeholder="Phone Number *"
+                value={form.phone} onChange={handleChange} className={styles.input} />
+            </div>
+            <div className={styles.formGroup}>
+              <textarea name="message" rows="4"
+                placeholder="Team size & workspace requirement (e.g. 5-person private cabin, 3 months)..."
+                value={form.message} onChange={handleChange} className={styles.textarea} />
+            </div>
+            <button type="button" onClick={handleSubmit}
+              className={styles.submitBtn} disabled={loading}>
+              {loading ? "Submitting..." : "Get a Free Callback"}
+            </button>
+          </div>
 
-          {/* <div className="wf-arrows">
-            <button onClick={prev} aria-label="Previous">←</button>
-            <button onClick={next} aria-label="Next">→</button>
-          </div> */}
         </div>
-      </div>
-    </div>
+      </section>
+    </>
   );
 }
 
-export default WorkspaceFeature;
+export default SpecialContact;

@@ -1,278 +1,925 @@
 
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500;700&display=swap');
+
+  * , *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: #0c0c0b;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+
   .wg-root {
-    background: #0C0C0B;
-    color: #E8E4DC;
+    background:
+      radial-gradient(circle at top right, rgba(255,255,255,0.03), transparent 28%),
+      linear-gradient(180deg, #0c0c0b 0%, #11110f 100%);
+    color: #e8e4dc;
     font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
-    margin-top: -100px;
   }
 
+  /* ─────────────────────────
+     Sticky nav pills
+  ───────────────────────── */
   .wg-pills {
     position: sticky;
     top: 0;
-    z-index: 100;
-    background: rgba(12,12,11,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    z-index: 200;
     display: flex;
-    gap: 0;
-    padding: 0 clamp(1rem,4vw,4rem);
+    align-items: center;
+    gap: 0.15rem;
     overflow-x: auto;
     scrollbar-width: none;
+    padding: 0 clamp(0.75rem, 3vw, 3rem);
+    background: rgba(12, 12, 11, 0.92);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
   }
-  .wg-pills::-webkit-scrollbar { display: none; }
+
+  .wg-pills::-webkit-scrollbar {
+    display: none;
+  }
 
   .wg-pill {
     flex-shrink: 0;
-    padding: 1.1rem 1.5rem;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
     color: rgba(232,228,220,0.45);
     cursor: pointer;
-    border: none;
-    background: transparent;
-    border-bottom: 2px solid transparent;
-    transition: color 0.25s, border-color 0.25s;
     white-space: nowrap;
-  }
-  .wg-pill.active {
-    color: #E8E4DC;
-    border-bottom-color: var(--pill-accent, #C8A96E);
-  }
-  .wg-pill:hover { color: rgba(232,228,220,0.8); }
-
-  .wg-nav-arrow {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: #E8E4DC;
-    padding: 0.8rem 1.2rem;
-    border-radius: 50px;
-    font-size: 0.75rem;
+    padding: 1rem 1.15rem;
+    font-size: 0.74rem;
     font-weight: 500;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition:
+      color 0.25s ease,
+      border-color 0.25s ease,
+      background 0.25s ease;
+  }
+
+  .wg-pill:hover {
+    color: rgba(232,228,220,0.82);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .wg-pill.active {
+    color: #fff;
+    border-bottom-color: var(--pill-accent, #c8a96e);
+  }
+
+  /* ─────────────────────────
+     Buttons
+  ───────────────────────── */
+  .wg-btn {
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: #e8e4dc;
+    border-radius: 999px;
+    padding: 0.78rem 1.2rem;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-  }
-  .wg-nav-arrow:hover {
-    background: rgba(255,255,255,0.2);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    justify-content: center;
+    gap: 0.45rem;
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+      transform 0.25s ease,
+      background 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
   }
 
-  /* ── KEY FIX: sections flush, zero gap between them ── */
+  .wg-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255,255,255,0.12);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.28);
+  }
+
+  .wg-btn.accent {
+    color: var(--btn-color, #c8a96e);
+    border-color: rgba(var(--btn-rgb, 200,169,110), 0.42);
+    background: rgba(var(--btn-rgb, 200,169,110), 0.12);
+  }
+
+  .wg-btn.accent:hover {
+    background: rgba(var(--btn-rgb, 200,169,110), 0.22);
+    border-color: rgba(var(--btn-rgb, 200,169,110), 0.65);
+  }
+
+  /* ─────────────────────────
+     Sections
+  ───────────────────────── */
   .wg-section {
-    padding: clamp(2.5rem,5vw,5rem) clamp(1rem,5vw,5rem);
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    margin: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
   }
 
-  /* ── Section header: tighter bottom margin ── */
   .wg-section-header {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
     gap: 2rem;
-    margin-bottom: 2rem;
-  }
-  @media (max-width: 768px) {
-    .wg-section-header { grid-template-columns: 1fr; gap: 1rem; }
+    padding:
+      clamp(2rem, 4vw, 3.75rem)
+      clamp(1rem, 3vw, 3rem)
+      clamp(1rem, 2vw, 1.5rem);
   }
 
   .wg-eyebrow {
-    font-size: 0.72rem;
-    letter-spacing: 0.2em;
+    display: inline-block;
+    margin-bottom: 0.45rem;
+    color: var(--sec-accent, #c8a96e);
+    font-size: 0.67rem;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--sec-accent, #C8A96E);
-    margin-bottom: 0.5rem;
   }
+
   .wg-section-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-size: clamp(2.15rem, 4.4vw, 4rem);
     font-weight: 300;
-    line-height: 1.1;
-    color: #E8E4DC;
-    margin-bottom: 0.6rem;
-  }
-  .wg-section-title em {
-    font-style: italic;
-    color: var(--sec-accent, #C8A96E);
-  }
-  .wg-section-desc {
-    font-size: 0.93rem;
-    line-height: 1.7;
-    color: rgba(232,228,220,0.55);
-    max-width: 44ch;
-    margin-top: 0.75rem;
+    line-height: 1.03;
+    color: #f3eee4;
+    max-width: 10ch;
   }
 
-  /* ── Stats: tighter spacing ── */
-  .wg-stats {
-    display: flex;
-    gap: 2rem;
-    margin-bottom: 0;
-    margin-top: 1rem;
-    flex-wrap: wrap;
+  .wg-section-title em {
+    color: var(--sec-accent, #c8a96e);
+    font-style: italic;
   }
+
+  .wg-section-desc {
+    margin-top: 0.7rem;
+    max-width: 46ch;
+    color: rgba(232,228,220,0.58);
+    font-size: 0.94rem;
+    line-height: 1.8;
+  }
+
+  .wg-right-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1.15rem;
+  }
+
+  .wg-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.65rem;
+  }
+
+  .wg-stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 1.5rem;
+  }
+
   .wg-stat-n {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 2rem;
+    color: var(--sec-accent, #c8a96e);
+    font-size: clamp(1.55rem, 2vw, 2rem);
     font-weight: 600;
-    color: var(--sec-accent, #C8A96E);
     line-height: 1;
   }
+
   .wg-stat-l {
-    font-size: 0.68rem;
-    letter-spacing: 0.15em;
+    margin-top: 0.2rem;
+    color: rgba(232,228,220,0.38);
+    font-size: 0.61rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: rgba(232,228,220,0.4);
-    margin-top: 0.25rem;
   }
 
-  /* ── Images: tighter grid gaps ── */
-  .wg-hero-row {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-  @media (max-width: 900px) {
-    .wg-hero-row { grid-template-columns: 1fr; }
-  }
-
-  .wg-hero-img, .wg-side-img, .wg-mosaic-img {
+  /* ─────────────────────────
+     Gallery
+  ───────────────────────── */
+  .wg-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     width: 100%;
+    padding: 0 4px;
+  }
+
+  .wg-row {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .wg-tile,
+  .wg-view-more-tile {
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    border-radius: 0;
+    background: #181816;
+  }
+
+  .wg-tile {
+    cursor: zoom-in;
+  }
+
+  .wg-tile img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.4s ease, filter 0.4s ease;
-    filter: brightness(0.88);
-    display: block;
+    filter: brightness(0.82);
+    transition: transform 0.45s ease, filter 0.35s ease;
+    will-change: transform;
   }
-  .wg-hero-img {
-    aspect-ratio: 16/9;
-  }
-  .wg-side-img {
-    height: calc(50% - 4px);
-    aspect-ratio: unset;
-  }
-  .wg-hero-img:hover, .wg-side-img:hover, .wg-mosaic-img:hover {
-    transform: scale(1.008);
+
+  .wg-tile:hover img {
+    transform: scale(1.05);
     filter: brightness(1);
   }
 
-  .wg-side-strip {
+  .wg-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.75rem 0.8rem 0.55rem;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.78) 100%);
+    color: rgba(255,255,255,0.78);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+  }
+
+  .wg-tile:hover .wg-caption {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .wg-zoom {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.92);
+    color: #111;
+    font-size: 0.78rem;
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    pointer-events: none;
+  }
+
+  .wg-tile:hover .wg-zoom {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* ─────────────────────────
+     View more tile
+  ───────────────────────── */
+  .wg-view-more-tile {
+    cursor: pointer;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 1rem;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.04)),
+      #111110;
+    transition: background 0.3s ease, transform 0.25s ease;
   }
 
-  .wg-mosaic {
+  .wg-view-more-tile:hover {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.06)),
+      #161514;
+  }
+
+  .wg-view-more-tile .vm-grid {
+    width: 72%;
+    height: 58%;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 0;
-  }
-  @media (max-width: 700px) {
-    .wg-mosaic { grid-template-columns: 1fr; }
-  }
-  .wg-mosaic-img {
-    aspect-ratio: 4/3;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+    border-radius: 4px;
+    overflow: hidden;
+    opacity: 0.28;
+    transition: opacity 0.25s ease;
   }
 
-  /* ── Badges: tight top margin only ── */
+  .wg-view-more-tile:hover .vm-grid {
+    opacity: 0.45;
+  }
+
+  .wg-view-more-tile .vm-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .wg-view-more-tile .vm-count {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem;
+    line-height: 1;
+    color: rgba(232,228,220,0.6);
+  }
+
+  .wg-view-more-tile .vm-label {
+    color: var(--sec-accent, #c8a96e);
+    text-align: center;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.5;
+  }
+
+  .wg-view-more-tile .vm-arrow {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(var(--sec-rgb, 200,169,110), 0.45);
+    color: var(--sec-accent, #c8a96e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  }
+
+  .wg-view-more-tile:hover .vm-arrow {
+    transform: translateX(2px);
+    background: rgba(var(--sec-rgb, 200,169,110), 0.12);
+    border-color: rgba(var(--sec-rgb, 200,169,110), 0.68);
+  }
+
+  /* ─────────────────────────
+     Feature badges
+  ───────────────────────── */
   .wg-badges {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 1.25rem;
-    margin-bottom: 0;
+    padding:
+      clamp(0.8rem, 1.4vw, 1.2rem)
+      clamp(1rem, 3vw, 3rem)
+      clamp(1.4rem, 2vw, 2rem);
   }
+
   .wg-badge {
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
+    padding: 0.42rem 0.9rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.025);
+    color: rgba(232,228,220,0.55);
+    font-size: 0.63rem;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
-    padding: 6px 14px;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 100px;
-    color: rgba(232,228,220,0.6);
-    background: rgba(255,255,255,0.03);
   }
 
-  .wg-lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: rgba(0,0,0,0.92);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    cursor: zoom-out;
-  }
-  .wg-lightbox img {
-    max-width: min(90vw, 1400px);
-    max-height: 85vh;
-    object-fit: contain;
-    border-radius: 4px;
-  }
-  .wg-lightbox-close {
-    position: absolute;
-    top: 1.5rem;
-    right: 2rem;
-    font-size: 2rem;
-    color: rgba(255,255,255,0.5);
-    cursor: pointer;
-    background: none;
-    border: none;
-  }
-  .wg-lightbox-close:hover { color: #fff; }
-
-  .wg-img-fallback {
-    width: 100%;
-    background: rgba(255,255,255,0.04);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    color: rgba(255,255,255,0.15);
-    font-size: 0.75rem;
-    aspect-ratio: 4/3;
-  }
-
+  /* ─────────────────────────
+     Reveal
+  ───────────────────────── */
   .wg-reveal {
     opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+    transform: translateY(18px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
   }
+
   .wg-reveal.visible {
     opacity: 1;
     transform: translateY(0);
   }
 
-  /* ── Footer: no extra gap ── */
-  .wg-footer {
-    padding: 2.5rem clamp(1rem,5vw,5rem);
-    margin: 0;
+  /* ─────────────────────────
+     Lightbox
+  ───────────────────────── */
+  .wg-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3.5rem 4rem;
+    background: rgba(6,6,5,0.97);
+    cursor: zoom-out;
+    animation: lbFadeIn 0.2s ease;
   }
 
-  /* ── Mobile ── */
-  @media (max-width: 600px) {
-    .wg-section {
-      padding: 2rem 1rem;
+  @keyframes lbFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .wg-lightbox img {
+    max-width: min(90vw, 1400px);
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 4px;
+    cursor: default;
+    animation: lbImgIn 0.22s ease;
+  }
+
+  @keyframes lbImgIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .wg-lightbox-close {
+    position: absolute;
+    top: 1.1rem;
+    right: 1.6rem;
+    border: none;
+    background: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .wg-lightbox-close:hover {
+    color: #fff;
+  }
+
+  .wg-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.62);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    cursor: pointer;
+    transition: background 0.22s ease, color 0.22s ease;
+  }
+
+  .wg-lightbox-nav:hover {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+  }
+
+  .wg-lightbox-prev { left: 1.2rem; }
+  .wg-lightbox-next { right: 1.2rem; }
+
+  .wg-lightbox-footer {
+    position: absolute;
+    left: 50%;
+    bottom: 1.2rem;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    white-space: nowrap;
+  }
+
+  .wg-lightbox-caption {
+    color: rgba(255,255,255,0.42);
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .wg-lightbox-dots {
+    display: flex;
+    gap: 5px;
+  }
+
+  .wg-lightbox-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .wg-lightbox-dot.active {
+    background: rgba(255,255,255,0.78);
+    transform: scale(1.25);
+  }
+
+  /* ─────────────────────────
+     Modal gallery
+  ───────────────────────── */
+  .wg-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 8888;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 4rem;
+    background: rgba(6,6,5,0.985);
+    animation: lbFadeIn 0.25s ease;
+  }
+
+  .wg-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem clamp(1rem, 3vw, 3rem);
+    background: rgba(10,10,9,0.94);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .wg-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #e8e4dc;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.45rem, 3vw, 2.1rem);
+    font-weight: 300;
+  }
+
+  .wg-modal-title em {
+    color: var(--sec-accent, #c8a96e);
+    font-style: italic;
+  }
+
+  .wg-modal-close {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.07);
+    color: rgba(232,228,220,0.65);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.22s ease, color 0.22s ease;
+  }
+
+  .wg-modal-close:hover {
+    background: rgba(255,255,255,0.16);
+    color: #fff;
+  }
+
+  .wg-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .wg-modal-tile {
+    position: relative;
+    overflow: hidden;
+    background: #181816;
+    aspect-ratio: 4 / 3;
+    cursor: zoom-in;
+  }
+
+  .wg-modal-tile.wide {
+    grid-column: span 2;
+    aspect-ratio: 16 / 7;
+  }
+
+  .wg-modal-tile.tall {
+    grid-row: span 2;
+    aspect-ratio: auto;
+  }
+
+  .wg-modal-tile.tall .wg-modal-inner {
+    min-height: 360px;
+    height: 100%;
+  }
+
+  .wg-modal-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .wg-modal-tile img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.82);
+    transition: transform 0.42s ease, filter 0.32s ease;
+  }
+
+  .wg-modal-tile:hover img {
+    transform: scale(1.04);
+    filter: brightness(1);
+  }
+
+  .wg-modal-num {
+    position: absolute;
+    top: 9px;
+    left: 10px;
+    color: rgba(255,255,255,0.34);
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+  }
+
+  .wg-modal-cap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.58rem 0.72rem 0.46rem;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
+    color: rgba(255,255,255,0.72);
+    font-size: 0.57rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    pointer-events: none;
+  }
+
+  .wg-modal-tile:hover .wg-modal-cap {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─────────────────────────
+     Footer
+  ───────────────────────── */
+  .wg-footer {
+    padding: 2.75rem clamp(1rem, 3vw, 3rem);
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .wg-footer-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 3.2vw, 2.8rem);
+    font-weight: 300;
+    color: rgba(232,228,220,0.32);
+  }
+
+  .wg-footer-accent {
+    color: #c8a96e;
+  }
+
+  /* ─────────────────────────
+     Responsive
+  ───────────────────────── */
+  @media (max-width: 1080px) {
+    .wg-section-header {
+      grid-template-columns: 1fr;
+      align-items: start;
     }
-    .wg-hero-row {
-      gap: 6px;
-      margin-bottom: 6px;
+
+    .wg-right-col {
+      align-items: flex-start;
     }
-    .wg-mosaic { gap: 6px; }
-    .wg-side-strip { gap: 6px; }
-    .wg-badges { margin-top: 1rem; }
-    .wg-stats { gap: 1.25rem; }
+
+    .wg-btn-group {
+      justify-content: flex-start;
+    }
+
+    .wg-stats-row {
+      justify-content: flex-start;
+    }
+
+    .wg-section-title {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .wg-gallery {
+      gap: 3px;
+      padding: 0 3px;
+    }
+
+    .wg-row {
+      gap: 3px;
+      flex-wrap: wrap;
+    }
+
+    .wg-row > .wg-tile,
+    .wg-row > .wg-view-more-tile {
+      flex: 1 1 calc(50% - 3px) !important;
+      aspect-ratio: 4 / 3 !important;
+    }
+
+    .wg-modal-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .wg-modal-tile.wide {
+      grid-column: span 2;
+      aspect-ratio: 16 / 8;
+    }
+
+    .wg-modal-tile.tall {
+      grid-row: auto;
+      aspect-ratio: 4 / 3;
+    }
+
+    .wg-modal-tile.tall .wg-modal-inner {
+      min-height: unset;
+      height: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .wg-pills {
+      padding: 0 0.5rem;
+    }
+
+    .wg-pill {
+      padding: 0.95rem 0.9rem;
+      font-size: 0.68rem;
+    }
+
+    .wg-section-header {
+      padding: 1.5rem 0.9rem 1rem;
+      gap: 1.15rem;
+    }
+
+    .wg-section-title {
+      font-size: clamp(1.75rem, 8vw, 2.7rem);
+      line-height: 1.06;
+    }
+
+    .wg-section-desc {
+      font-size: 0.88rem;
+      line-height: 1.72;
+    }
+
+    .wg-btn-group {
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .wg-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .wg-stats-row {
+      gap: 1rem;
+    }
+
+    .wg-badges {
+      padding: 0.8rem 0.9rem 1.2rem;
+    }
+
+    .wg-gallery {
+      padding: 0 2px;
+      gap: 2px;
+    }
+
+    .wg-row {
+      gap: 2px;
+    }
+
+    .wg-row > .wg-tile,
+    .wg-row > .wg-view-more-tile {
+      flex: 1 1 100% !important;
+      width: 100%;
+      aspect-ratio: 4 / 3 !important;
+    }
+
+    .wg-caption,
+    .wg-modal-cap {
+      opacity: 1;
+      transform: none;
+    }
+
+    .wg-zoom {
+      opacity: 1;
+      transform: scale(1);
+      width: 24px;
+      height: 24px;
+      font-size: 0.7rem;
+    }
+
+    .wg-lightbox {
+      padding: 2.7rem 0.5rem;
+    }
+
+    .wg-lightbox img {
+      max-width: 92vw;
+      max-height: 72vh;
+    }
+
+    .wg-lightbox-nav {
+      width: 38px;
+      height: 38px;
+      font-size: 1rem;
+    }
+
+    .wg-lightbox-prev {
+      left: 0.35rem;
+    }
+
+    .wg-lightbox-next {
+      right: 0.35rem;
+    }
+
+    .wg-lightbox-footer {
+      bottom: 0.8rem;
+      gap: 0.6rem;
+      flex-direction: column;
+    }
+
+    .wg-lightbox-caption {
+      text-align: center;
+      white-space: normal;
+      max-width: 90vw;
+      font-size: 0.58rem;
+      line-height: 1.5;
+    }
+
+    .wg-modal-header {
+      padding: 0.9rem 0.85rem;
+    }
+
+    .wg-modal-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2px;
+      padding: 2px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .wg-section-title {
+      font-size: 1.65rem;
+    }
+
+    .wg-section-desc {
+      font-size: 0.84rem;
+    }
+
+    .wg-stat-n {
+      font-size: 1.35rem;
+    }
+
+    .wg-badge {
+      font-size: 0.58rem;
+      padding: 0.38rem 0.72rem;
+    }
+
+    .wg-modal-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .wg-modal-tile,
+    .wg-modal-tile.wide,
+    .wg-modal-tile.tall {
+      grid-column: span 1;
+      aspect-ratio: 4 / 3 !important;
+    }
   }

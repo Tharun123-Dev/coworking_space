@@ -1,15 +1,388 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>cowork_space</title>
+    <title>Cowork Space</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      .popup-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.62);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        z-index: 9999;
+      }
+
+      .popup-box {
+        position: relative;
+        width: 100%;
+        max-width: 980px;
+        background: #ffffff;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.28);
+        animation: popupFade 0.35s ease;
+        font-family: Arial, sans-serif;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 16px;
+        right: 18px;
+        font-size: 34px;
+        line-height: 1;
+        color: #5c6470;
+        cursor: pointer;
+        z-index: 5;
+      }
+
+      .popup-inner {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        min-height: 430px;
+      }
+
+      .popup-left {
+        background: #f8f8f8;
+        padding: 28px 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+      }
+
+      .popup-left img {
+        width: 150px;
+        height: 105px;
+        object-fit: cover;
+        border-radius: 22px;
+        border: 5px solid #fff;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .img-one {
+        transform: rotate(-8deg) translateX(-12px);
+      }
+
+      .img-two {
+        transform: rotate(7deg) translateX(8px);
+      }
+
+      .img-three {
+        transform: rotate(-10deg) translateX(-6px);
+      }
+
+      .popup-right {
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+      }
+
+      .top-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 28px 34px 18px;
+      }
+
+      .popup-logo {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1f2937;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .popup-heading {
+        padding: 0 34px 22px;
+      }
+
+      .popup-heading h2 {
+        margin: 0;
+        font-size: 30px;
+        line-height: 1.25;
+        color: #000;
+        font-weight: 800;
+        max-width: 560px;
+      }
+
+      .price-band {
+        background: #f7a600;
+        color: #fff;
+        padding: 18px 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .seat-label {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .price-wrap {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+
+      .old-price {
+        font-size: 24px;
+        font-weight: 700;
+        text-decoration: line-through;
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .new-price {
+        font-size: 58px;
+        line-height: 1;
+        font-weight: 800;
+        color: #fff;
+      }
+
+      .gst-text {
+        font-size: 18px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.96);
+      }
+
+      .popup-details {
+        padding: 28px 34px 32px;
+      }
+
+      .contact-row {
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 18px;
+        line-height: 1.6;
+      }
+
+      .address-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 8px;
+      }
+
+      .address-text {
+        font-size: 17px;
+        line-height: 1.7;
+        color: #374151;
+        max-width: 700px;
+      }
+
+      @keyframes popupFade {
+        from {
+          opacity: 0;
+          transform: scale(0.92);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @media (max-width: 900px) {
+        .popup-inner {
+          grid-template-columns: 1fr;
+        }
+
+        .popup-left {
+          flex-direction: row;
+          flex-wrap: wrap;
+          padding: 24px 18px 12px;
+          gap: 14px;
+        }
+
+        .popup-left img {
+          width: 110px;
+          height: 82px;
+          border-radius: 16px;
+        }
+
+        .img-one,
+        .img-two,
+        .img-three {
+          transform: none;
+        }
+
+        .popup-heading h2 {
+          font-size: 26px;
+        }
+
+        .new-price {
+          font-size: 46px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .popup-overlay {
+          padding: 14px;
+        }
+
+        .popup-box {
+          border-radius: 14px;
+        }
+
+        .close-btn {
+          top: 12px;
+          right: 14px;
+          font-size: 28px;
+        }
+
+        .top-strip {
+          padding: 22px 20px 12px;
+        }
+
+        .popup-heading {
+          padding: 0 20px 18px;
+        }
+
+        .popup-heading h2 {
+          font-size: 22px;
+          max-width: 100%;
+          padding-right: 18px;
+        }
+
+        .price-band {
+          padding: 16px 20px;
+        }
+
+        .seat-label {
+          font-size: 14px;
+        }
+
+        .old-price {
+          font-size: 18px;
+        }
+
+        .new-price {
+          font-size: 36px;
+        }
+
+        .gst-text {
+          font-size: 15px;
+        }
+
+        .popup-details {
+          padding: 20px;
+        }
+
+        .contact-row {
+          font-size: 17px;
+        }
+
+        .address-title {
+          font-size: 14px;
+        }
+
+        .address-text {
+          font-size: 15px;
+          line-height: 1.6;
+        }
+
+        .popup-left {
+          justify-content: center;
+        }
+
+        .popup-left img {
+          width: 92px;
+          height: 72px;
+        }
+      }
+    </style>
   </head>
 
   <body>
     <div id="root"></div>
 
+    <div id="promoPopup" class="popup-overlay">
+      <div class="popup-box">
+        <span class="close-btn" onclick="closePopup()">×</span>
+
+        <div class="popup-inner">
+          <div class="popup-left">
+            <img
+              class="img-one"
+              src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80"
+              alt="Coworking room"
+            />
+            <img
+              class="img-two"
+              src="https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=800&q=80"
+              alt="Private office"
+            />
+            <img
+              class="img-three"
+              src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80"
+              alt="Workspace interior"
+            />
+          </div>
+
+          <div class="popup-right">
+            <div class="top-strip">
+              <div class="popup-logo">Cowork Space</div>
+            </div>
+
+            <div class="popup-heading">
+              <h2>Looking for Premium Coworking Space in Hitech City?</h2>
+            </div>
+
+            <div class="price-band">
+              <div class="seat-label">Dedicated Seat</div>
+
+              <div class="price-wrap">
+                <span class="old-price">₹8,500/-</span>
+                <span class="new-price">₹6,500/-</span>
+                <span class="gst-text">+ GST Onwards</span>
+              </div>
+            </div>
+
+            <div class="popup-details">
+              <div class="contact-row">
+                For more details: +91 90000 00000, +91 90000 11111
+              </div>
+
+              <div class="address-title">Address:</div>
+              <div class="address-text">
+                Hitech City, Hyderabad, Telangana
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script type="module" src="/src/main.jsx"></script>
+
+    <script>
+      window.onload = function () {
+        document.getElementById("promoPopup").style.display = "flex";
+      };
+
+      function closePopup() {
+        document.getElementById("promoPopup").style.display = "none";
+      }
+    </script>
   </body>
 </html>

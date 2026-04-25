@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../Styles/Companies.css";
@@ -5,97 +6,82 @@ import "../Styles/Companies.css";
 const companyOptions = [
   {
     id: 1,
-    title: "Startup",
-    subtitle: "Upto 20 Employees",
-    desc: "Perfect for early-stage companies in Hyderabad seeking a professional address, plug-and-play setup, and zero long-term lock-in.",
-    features: ["Private Cabins", "Meeting Rooms", "High-Speed Wi-Fi", "Reception Support"],
-    icon: "🚀",
-    badge: "Starter",
+    size: "Small",
+    title: "For Small Teams",
+    subtitle: "1 – 20 Employees",
+    desc: "Flexible workspaces for startups and lean teams that need speed, simplicity, and a professional setup in Hyderabad.",
+    features: ["Private Cabins", "Meeting Access", "Wi-Fi & Power Backup"],
   },
   {
     id: 2,
-    title: "Growth",
+    size: "Medium",
+    title: "For Growing Companies",
     subtitle: "20 – 75 Employees",
-    desc: "Dedicated floors in Hyderabad's prime business districts with custom branding, managed services, and room to scale fast.",
-    features: ["Dedicated Floor", "Custom Branding", "HR Concierge", "Pantry & Café"],
-    icon: "📈",
-    badge: "Most Popular",
+    desc: "Managed office solutions for growing teams that need more seats, better branding, and room to scale comfortably.",
+    features: ["Dedicated Zones", "Custom Branding", "Managed Support"],
     featured: true,
   },
   {
     id: 3,
-    title: "Scale",
-    subtitle: "75 – 200 Employees",
-    desc: "Full-floor managed campuses across HITEC City & Gachibowli with SLA-backed uptime and bespoke interior fitouts for established companies.",
-    features: ["Full-Floor Access", "Executive Lounges", "Bespoke Fitouts", "Dedicated Manager"],
-    icon: "🏢",
-    badge: "Scale-Up",
+    size: "Large",
+    title: "For Enterprise Teams",
+    subtitle: "75 – 200+ Employees",
+    desc: "Full-floor and managed office setups for enterprise companies looking for privacy, custom layouts, and operational support.",
+    features: ["Full-Floor Access", "Enterprise Fitouts", "Dedicated Manager"],
   },
-];
-
-const clientLogos = [
-  { name: "FIS Solutions", logo: "/logo1.jpg" },
-  { name: "L&T Technology Services", logo: "/logo2.jpg" },
-  { name: "Mahindra Logistics", logo: "/logo3.png" },
-  { name: "MakeMyTrip", logo: "/logo4.svg" },
-  { name: "Moglix", logo: "/logo5.png" },
-  { name: "Persistent", logo: "/logo6.png" },
-  { name: "ShareChat", logo: "/logo7.png" },
-  { name: "Philips", logo: "/logo8.png" },
 ];
 
 const CompaniesSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section id="workspace-companies-section" className="tcs-section">
-      <div className="tcs-container">
-
-        {/* ── Section Header ── */}
-        <div className="tcs-header">
-          <span className="tcs-eyebrow">✦ Hyderabad's Premium Workspace Partner ✦</span>
-          <h2 className="tcs-heading">Office Space for Every Company Stage</h2>
-          <p className="tcs-subheading">
-            Fully managed, ready-to-move workspaces across Hyderabad's top business districts —
-            HITEC City, Gachibowli &amp; Banjara Hills.
+    <section id="workspace-companies-section" className="ncs-section">
+      <div className="ncs-container">
+        <div className="ncs-header">
+          <span className="ncs-eyebrow">Hyderabad enterprise workspace solutions</span>
+          <h2 className="ncs-heading">Office Space for Every Team Size</h2>
+          <p className="ncs-subheading">
+            Simple workspace solutions for startups, growing companies, and enterprise teams across Hyderabad.
           </p>
         </div>
 
-        {/* ── 3 Cards ── */}
-        <div className="tcs-cards-grid">
-          {companyOptions.map((item, i) => (
+        <div className="ncs-grid">
+          {companyOptions.map((item) => (
             <div
               key={item.id}
-              className={`tcs-card ${item.featured ? "tcs-card--featured" : ""}`}
-              style={{ animationDelay: `${i * 0.12}s` }}
+              className={`ncs-item ${item.featured ? "ncs-item--featured" : ""}`}
             >
-              {item.featured && <div className="tcs-ribbon">⭐ Most Popular</div>}
-
-              <div className="tcs-card-head">
-                <span className="tcs-badge">{item.badge}</span>
-                <span className="tcs-icon">{item.icon}</span>
+              <div className="ncs-topline">
+                <span className="ncs-size">{item.size}</span>
+                {item.featured && <span className="ncs-tag">Recommended</span>}
               </div>
 
-              <h3 className="tcs-card-title">{item.title}</h3>
-              <p className="tcs-card-sub">{item.subtitle}</p>
-              <p className="tcs-card-desc">{item.desc}</p>
+              <h3 className="ncs-title">{item.title}</h3>
+              <p className="ncs-subtitle">{item.subtitle}</p>
+              <p className="ncs-desc">{item.desc}</p>
 
-              <ul className="tcs-features">
-                {item.features.map((f) => (
-                  <li key={f}><span className="tcs-bullet">✦</span>{f}</li>
+              <div className="ncs-features">
+                {item.features.map((feature) => (
+                  <span key={feature} className="ncs-feature">
+                    {feature}
+                  </span>
                 ))}
-              </ul>
+              </div>
 
-              <div className="tcs-card-footer">
+              <div className="ncs-actions">
                 <button
-                  className="tcs-btn-primary"
+                  className="ncs-btn ncs-btn--primary"
                   onClick={() => navigate(`/speciall-contact/${item.id}`)}
                 >
-                  Get a Quote →
+                  Get a Quote
                 </button>
                 <button
-                  className="tcs-btn-ghost"
-                  onClick={() => navigate(`/speciall-contact/${item.id}`, { state: { tour: true } })}
+                  className="ncs-btn ncs-btn--secondary"
+                  onClick={() =>
+                    navigate(`/speciall-contact/${item.id}`, {
+                      state: { tour: true },
+                    })
+                  }
                 >
                   Book a Tour
                 </button>
@@ -103,22 +89,6 @@ const CompaniesSection = () => {
             </div>
           ))}
         </div>
-
-        {/* ── Clients Marquee ── */}
-        <div className="tcs-clients-wrap">
-          <p className="tcs-clients-label">Trusted by leading companies in Hyderabad</p>
-          <div className="tcs-marquee">
-            <div className="tcs-marquee-track">
-              {[...clientLogos, ...clientLogos].map((c, i) => (
-                <div className="tcs-client" key={`${c.name}-${i}`}>
-                  <img src={c.logo} alt={c.name} />
-                  <span>{c.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
       </div>
     </section>
   );
