@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../Services/Axios";
-import "../Styles/Chatbot.css";
+// import "./Chatbot.css";
 
 function Chatbot() {
   const [open, setOpen] = useState(false);

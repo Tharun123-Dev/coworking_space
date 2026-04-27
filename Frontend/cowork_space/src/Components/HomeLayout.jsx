@@ -15,6 +15,7 @@ import Testimonials from "../Pages/Testimonials";
 import HydCards from "../Pages/HyderabadWorkspaces.jsx";
 import Compaines from "../Pages/Companies.jsx"
 import Hyderabad from "../Improved/Hyderabad.jsx"
+import WhatsAppFloat from "../Pages/WhatsAppFloat.jsx";
 
 function HomeLayout() {
   const [selected, setSelected] = useState(null);
@@ -37,6 +38,7 @@ function HomeLayout() {
       {/* <AISeats /> */}
       <Reviews />
           <AddReview />
+          <WhatsAppFloat/>
       <Testimonials/>
   
       

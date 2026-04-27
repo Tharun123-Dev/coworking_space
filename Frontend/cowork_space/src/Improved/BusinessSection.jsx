@@ -10,13 +10,11 @@ const offers = [
     type: "Private Office Suite",
     originalPrice: 18000,
     icon: "🏢",
-    image: "/cowork.jpg",
+    image:
+      "https://pplx-res.cloudinary.com/image/upload/pplx_search_images/5b47d45fcb981eadd8e8f563e41a7fc10260c724.jpg",
     seats: 6,
     floor: "12th Floor",
     amenities: ["1Gbps WiFi", "Meeting Room", "24/7 Access", "Parking"],
-    claimedBy: "Rahul S.",
-    claimedAgo: "2 hrs ago",
-    status: "available",
   },
   {
     id: 2,
@@ -25,13 +23,11 @@ const offers = [
     type: "Dedicated Desk",
     originalPrice: 8500,
     icon: "💻",
-    image: "/cowork.jpg",
+    image:
+      "https://pplx-res.cloudinary.com/image/upload/pplx_search_images/f7ba941c41143e11f1a839090404afd410a9e870.jpg",
     seats: 2,
     floor: "5th Floor",
     amenities: ["Fiber WiFi", "Cafeteria", "Power Backup", "Locker"],
-    claimedBy: null,
-    claimedAgo: null,
-    status: "available",
   },
   {
     id: 3,
@@ -40,13 +36,11 @@ const offers = [
     type: "Team Cabin",
     originalPrice: 25000,
     icon: "🏗️",
-    image: "/cowork.jpg",
+    image:
+      "https://pplx-res.cloudinary.com/image/upload/pplx_search_images/02cd5b2e519627b90a4ee5bef2b958af7835d3cb.jpg",
     seats: 10,
     floor: "8th Floor",
     amenities: ["Dedicated Server", "Board Room", "AC", "Receptionist"],
-    claimedBy: "Priya K.",
-    claimedAgo: "5 hrs ago",
-    status: "claimed",
   },
   {
     id: 4,
@@ -55,13 +49,11 @@ const offers = [
     type: "Hot Desk",
     originalPrice: 5000,
     icon: "🚀",
-    image: "/cowork.jpg",
+    image:
+      "https://pplx-res.cloudinary.com/image/upload/pplx_search_images/2f1c40b63b64780c519d9ab2ad2b13869a325692.jpg",
     seats: 1,
     floor: "3rd Floor",
-    amenities: ["WiFi", "Café Access", "Printer", "24/7"],
-    claimedBy: null,
-    claimedAgo: null,
-    status: "available",
+    amenities: ["WiFi", "Café Access", "AC","Printer", "24/7"],
   },
 ];
 
@@ -69,7 +61,7 @@ function useCountdown(hours = 11, mins = 47, secs = 33) {
   const [time, setTime] = useState({ h: hours, m: mins, s: secs });
 
   useEffect(() => {
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       setTime((prev) => {
         let { h, m, s } = prev;
 
@@ -81,7 +73,7 @@ function useCountdown(hours = 11, mins = 47, secs = 33) {
       });
     }, 1000);
 
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   }, []);
 
   return time;
@@ -92,20 +84,14 @@ const LimitedOfferSection = ({ openModal }) => {
   const sectionRef = useRef(null);
   const audioRef = useRef(null);
 
-  const [claimedIds] = useState(
-    offers.filter((o) => o.status === "claimed").map((o) => o.id)
-  );
-
   const [audioReady, setAudioReady] = useState(false);
   const [isInsideSection, setIsInsideSection] = useState(false);
-
-  const availableCount = offers.filter((o) => !claimedIds.includes(o.id)).length;
 
   const handleClaim = (id) => {
     if (openModal) {
       openModal("offer_" + id);
     } else {
-      alert("Lead submitted! Our team will contact you within 12 hrs. You are in the queue. 🎉");
+      alert("Lead submitted! Our team will contact you within 12 hrs. 🎉");
     }
   };
 
@@ -127,9 +113,9 @@ const LimitedOfferSection = ({ openModal }) => {
     audio.currentTime = 0;
     audio.volume = 0.4;
 
-    const p = audio.play();
-    if (p && typeof p.catch === "function") {
-      p.catch(() => {});
+    const promise = audio.play();
+    if (promise && typeof promise.catch === "function") {
+      promise.catch(() => {});
     }
   }, [audioReady]);
 
@@ -139,15 +125,17 @@ const LimitedOfferSection = ({ openModal }) => {
       if (!audio) return;
 
       audio.volume = 0;
-      const p = audio.play();
+      const promise = audio.play();
 
-      if (p && typeof p.then === "function") {
-        p.then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-          audio.volume = 0.4;
-          setAudioReady(true);
-        }).catch(() => {});
+      if (promise && typeof promise.then === "function") {
+        promise
+          .then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = 0.4;
+            setAudioReady(true);
+          })
+          .catch(() => {});
       } else {
         setAudioReady(true);
       }
@@ -177,22 +165,19 @@ const LimitedOfferSection = ({ openModal }) => {
           stopAudio();
         }
       },
-      {
-        threshold: 0.55,
-      }
+      { threshold: 0.55 }
     );
 
     observer.observe(section);
 
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, [stopAudio]);
 
   useEffect(() => {
     if (isInsideSection && audioReady) {
       playAudio();
     }
+
     if (!isInsideSection) {
       stopAudio();
     }
@@ -202,12 +187,7 @@ const LimitedOfferSection = ({ openModal }) => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleEnded = () => {};
-
-    audio.addEventListener("ended", handleEnded);
-
     return () => {
-      audio.removeEventListener("ended", handleEnded);
       audio.pause();
       audio.currentTime = 0;
     };
@@ -234,81 +214,53 @@ const LimitedOfferSection = ({ openModal }) => {
           <div className="offer-eyebrow">
             <span className="eyebrow-fire">🔥</span>
             <span>Limited Time Offer</span>
-            <span className="eyebrow-badge">FIFO</span>
           </div>
         </Reveal>
 
         <Reveal>
           <h2 className="offer-title">
-            <span className="offer-title-top">One Space.</span>
+            <span className="offer-title-top">Exclusive Space.</span>
             <span className="offer-title-mid">
               50% <em>Off.</em>
             </span>
-            <span className="offer-title-bot">First Come, First Served.</span>
+            <span className="offer-title-bot">Grab Your Workspace Today.</span>
           </h2>
         </Reveal>
 
         <Reveal>
           <p className="offer-subtitle">
-            Each building has exactly <strong>1 exclusive offer slot</strong>. The first person to submit
-            their lead gets 50% off for their first month — no negotiations, no exceptions.
-            Miss it and it's gone.
+            Secure your workspace at half the price for the first month.
+            These premium office spaces are available for a limited time only.
           </p>
         </Reveal>
 
         <Reveal>
-          <div className="offer-meta-row">
+          <div
+            className="offer-meta-row"
+            style={{ justifyContent: "center" }}
+          >
             <div className="countdown-box">
-              <span className="countdown-label">Offer Resets In</span>
+              <span className="countdown-label">Offer Expires In</span>
+
               <div className="countdown-digits">
                 <div className="digit-block">
                   <span className="digit">{pad(time.h)}</span>
                   <span className="digit-lbl">HRS</span>
                 </div>
+
                 <span className="digit-sep">:</span>
+
                 <div className="digit-block">
                   <span className="digit">{pad(time.m)}</span>
                   <span className="digit-lbl">MIN</span>
                 </div>
+
                 <span className="digit-sep">:</span>
+
                 <div className="digit-block">
                   <span className="digit digit-urgent">{pad(time.s)}</span>
                   <span className="digit-lbl">SEC</span>
                 </div>
-              </div>
-            </div>
-
-            <div className="availability-box">
-              <div className="avail-top">
-                <span className="avail-label">Slots Available</span>
-                <span className="avail-count">
-                  {availableCount} / {offers.length}
-                </span>
-              </div>
-
-              <div className="avail-bar">
-                {offers.map((o) => (
-                  <div
-                    key={o.id}
-                    className={`avail-seg ${claimedIds.includes(o.id) ? "seg-claimed" : "seg-free"}`}
-                    title={o.area}
-                  ></div>
-                ))}
-              </div>
-
-              <p className="avail-hint">
-                <span className="avail-dot free"></span> Available &nbsp;
-                <span className="avail-dot claimed"></span> Claimed
-              </p>
-            </div>
-
-            <div className="fifo-box">
-              <div className="fifo-icon">⚡</div>
-              <div>
-                <p className="fifo-title">How It Works</p>
-                <p className="fifo-rule">
-                  Submit lead → Get verified → First in line gets 50% off Month 1
-                </p>
               </div>
             </div>
           </div>
@@ -317,17 +269,15 @@ const LimitedOfferSection = ({ openModal }) => {
 
       <div className="offer-grid">
         {offers.map((offer, index) => {
-          const isClaimed = claimedIds.includes(offer.id);
           const discountPrice = Math.round(offer.originalPrice / 2);
 
           return (
             <div
               key={offer.id}
-              className={`offer-card ${isClaimed ? "offer-card--claimed" : "offer-card--available"}`}
+              className="offer-card offer-card--available"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              {!isClaimed && <div className="card-ribbon">50% OFF</div>}
-              {isClaimed && <div className="card-ribbon card-ribbon--claimed">CLAIMED</div>}
+              <div className="card-ribbon">50% OFF</div>
 
               <div className="offer-card-img">
                 <img src={offer.image} alt={offer.building} />
@@ -337,18 +287,6 @@ const LimitedOfferSection = ({ openModal }) => {
                   <span>{offer.icon}</span>
                   {offer.area}
                 </div>
-
-                {isClaimed && (
-                  <div className="claimed-shield">
-                    <span>🔒</span>
-                    <p>Claimed</p>
-                    {offer.claimedBy && (
-                      <small>
-                        by {offer.claimedBy} · {offer.claimedAgo}
-                      </small>
-                    )}
-                  </div>
-                )}
               </div>
 
               <div className="offer-card-body">
@@ -400,81 +338,38 @@ const LimitedOfferSection = ({ openModal }) => {
 
                 <div className="offer-price-row">
                   <div className="offer-price">
-                    <span className="price-original">₹{offer.originalPrice.toLocaleString()}</span>
+                    <span className="price-original">
+                      ₹{offer.originalPrice.toLocaleString()}
+                    </span>
                     <span className="price-slash">/mo</span>
                   </div>
 
-                  {!isClaimed ? (
-                    <div className="price-now">
-                      <span className="price-tag">You Pay</span>
-                      <span className="price-discounted">
-                        ₹{discountPrice.toLocaleString()}
-                        <small>/mo</small>
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="price-taken">
-                      <span>Offer Taken</span>
-                    </div>
-                  )}
+                  <div className="price-now">
+                    <span className="price-tag">You Pay</span>
+                    <span className="price-discounted">
+                      ₹{discountPrice.toLocaleString()}
+                      <small>/mo</small>
+                    </span>
+                  </div>
                 </div>
 
-                {!isClaimed && (
-                  <div className="offer-urgency">
-                    <span className="urgency-pulse"></span>
-                    <span>Only 1 slot · Be first to claim</span>
-                  </div>
-                )}
+                <div className="offer-urgency">
+                  <span className="urgency-pulse"></span>
+                  <span>Limited offer available now</span>
+                </div>
 
-                {!isClaimed ? (
-                  <button
-                    className="offer-claim-btn"
-                    onClick={() => handleClaim(offer.id)}
-                  >
-                    <span>Claim 50% Off Now</span>
-                    <span className="claim-arrow">→</span>
-                  </button>
-                ) : (
-                  <button className="offer-claim-btn offer-claim-btn--disabled" disabled>
-                    <span>🔒 Slot Claimed</span>
-                  </button>
-                )}
+                <button
+                  className="offer-claim-btn"
+                  onClick={() => handleClaim(offer.id)}
+                >
+                  <span>Claim 50% Off Now</span>
+                  <span className="claim-arrow">→</span>
+                </button>
               </div>
             </div>
           );
         })}
       </div>
-
-      <Reveal>
-        <div className="offer-bottom-banner">
-          <div className="bottom-banner-left">
-            <span className="bottom-banner-icon">📋</span>
-            <div>
-              <p className="bottom-banner-title">How FIFO Works</p>
-              <p className="bottom-banner-desc">
-                Leads are time-stamped the moment you submit. First verified lead per building wins the
-                50% discount for Month 1. No exceptions. No extensions.
-              </p>
-            </div>
-          </div>
-
-          <div className="bottom-banner-steps">
-            {[
-              { step: "01", label: "Submit Lead" },
-              { step: "02", label: "Get Verified" },
-              { step: "03", label: "First = 50% Off" },
-            ].map((s, i) => (
-              <React.Fragment key={s.step}>
-                <div className="step-item">
-                  <span className="step-num">{s.step}</span>
-                  <span className="step-label">{s.label}</span>
-                </div>
-                {i < 2 && <span className="step-arrow">→</span>}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-      </Reveal>
     </section>
   );
 };

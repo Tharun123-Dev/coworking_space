@@ -9,305 +9,471 @@
     <style>
       * {
         box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
 
       body {
-        margin: 0;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: #f0f4f8;
       }
 
+      /* ─── OVERLAY ─── */
       .popup-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.62);
+        background: rgba(10, 10, 30, 0.75);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
         display: none;
         justify-content: center;
         align-items: center;
-        padding: 20px;
+        padding: 16px;
         z-index: 9999;
+        animation: overlayIn 0.28s ease;
       }
 
+      @keyframes overlayIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+
+      /* ─── BOX ─── */
       .popup-box {
         position: relative;
         width: 100%;
-        max-width: 980px;
-        background: #ffffff;
-        border-radius: 18px;
+        max-width: 900px;
+        background: #fff;
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.28);
-        animation: popupFade 0.35s ease;
-        font-family: Arial, sans-serif;
+        box-shadow:
+          0 2px 4px rgba(0,0,0,0.04),
+          0 8px 20px rgba(0,0,0,0.10),
+          0 24px 56px rgba(0,0,0,0.18),
+          0 48px 90px rgba(0,0,0,0.13);
+        animation: popupIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
+      @keyframes popupIn {
+        from { opacity: 0; transform: scale(0.9) translateY(24px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+      }
+
+      /* ─── CLOSE BUTTON ─── */
       .close-btn {
         position: absolute;
-        top: 16px;
-        right: 18px;
-        font-size: 34px;
-        line-height: 1;
-        color: #5c6470;
+        top: 12px;
+        right: 12px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ffffff 0%, #f1f3f6 100%);
+        border: 1.5px solid rgba(0,0,0,0.10);
+        box-shadow:
+          0 2px 6px rgba(0,0,0,0.10),
+          0 5px 16px rgba(0,0,0,0.08),
+          inset 0 1px 0 rgba(255,255,255,0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        z-index: 5;
+        z-index: 10;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        flex-shrink: 0;
       }
 
+      .close-btn:hover {
+        transform: scale(1.12) rotate(90deg);
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe4e4 100%);
+        border-color: rgba(220,60,60,0.30);
+        box-shadow:
+          0 4px 12px rgba(220,60,60,0.20),
+          0 8px 22px rgba(220,60,60,0.10),
+          inset 0 1px 0 rgba(255,255,255,0.9);
+      }
+
+      .close-btn:active {
+        transform: scale(0.95) rotate(90deg);
+      }
+
+      .close-btn svg {
+        width: 14px;
+        height: 14px;
+        stroke: #5c6470;
+        stroke-width: 2.4;
+        stroke-linecap: round;
+        transition: stroke 0.18s ease;
+        flex-shrink: 0;
+      }
+
+      .close-btn:hover svg {
+        stroke: #dc3c3c;
+      }
+
+      /* ─── DESKTOP LAYOUT ─── */
       .popup-inner {
         display: grid;
-        grid-template-columns: 280px 1fr;
-        min-height: 430px;
+        grid-template-columns: 230px 1fr;
       }
 
+      /* ─── LEFT PANEL ─── */
       .popup-left {
-        background: #f8f8f8;
-        padding: 28px 18px;
+        background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 28px 14px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 18px;
+        gap: 14px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .popup-left::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse at 30% 20%, rgba(247,166,0,0.18) 0%, transparent 60%),
+          radial-gradient(ellipse at 80% 80%, rgba(101,110,254,0.20) 0%, transparent 60%);
+        pointer-events: none;
       }
 
       .popup-left img {
-        width: 150px;
-        height: 105px;
+        width: 136px;
+        height: 96px;
         object-fit: cover;
-        border-radius: 22px;
-        border: 5px solid #fff;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-radius: 14px;
+        border: 2.5px solid rgba(255,255,255,0.16);
+        box-shadow:
+          0 4px 10px rgba(0,0,0,0.30),
+          0 10px 26px rgba(0,0,0,0.20);
+        position: relative;
+        z-index: 1;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
       }
 
-      .img-one {
-        transform: rotate(-8deg) translateX(-12px);
+      .popup-left img:hover {
+        transform: scale(1.06) rotate(0deg) !important;
+        box-shadow: 0 8px 26px rgba(0,0,0,0.45);
+        z-index: 2;
       }
 
-      .img-two {
-        transform: rotate(7deg) translateX(8px);
-      }
+      .img-one   { transform: rotate(-7deg) translateX(-8px); }
+      .img-two   { transform: rotate(6deg)  translateX(6px);  }
+      .img-three { transform: rotate(-8deg) translateX(-4px); }
 
-      .img-three {
-        transform: rotate(-10deg) translateX(-6px);
-      }
-
+      /* ─── RIGHT PANEL ─── */
       .popup-right {
         display: flex;
         flex-direction: column;
-        background: #ffffff;
+        background: #fff;
       }
 
+      /* ─── TOP STRIP ─── */
       .top-strip {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 28px 34px 18px;
+        padding: 18px 28px 10px;
       }
 
       .popup-logo {
-        font-size: 15px;
-        font-weight: 700;
+        font-size: 12px;
+        font-weight: 800;
         color: #1f2937;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 7px;
       }
 
+      .popup-logo::before {
+        content: '';
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f7a600, #ff6b35);
+        box-shadow: 0 0 7px rgba(247,166,0,0.55);
+        flex-shrink: 0;
+      }
+
+      /* ─── HEADING ─── */
       .popup-heading {
-        padding: 0 34px 22px;
+        padding: 0 28px 14px;
       }
 
       .popup-heading h2 {
-        margin: 0;
-        font-size: 30px;
-        line-height: 1.25;
+        font-size: 22px;
+        line-height: 1.28;
         color: #000;
         font-weight: 800;
-        max-width: 560px;
+        letter-spacing: -0.2px;
+        padding-right: 30px;
       }
 
+      .popup-heading h2 span {
+        background: linear-gradient(90deg, #f7a600 0%, #ff6b35 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* ─── PRICE BAND ─── */
       .price-band {
-        background: #f7a600;
-        color: #fff;
-        padding: 18px 34px;
+        background: linear-gradient(100deg, #f7a600 0%, #ff8c00 55%, #ff6b35 100%);
+        padding: 14px 28px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
+        gap: 12px;
         flex-wrap: wrap;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,0.22),
+          inset 0 -1px 0 rgba(0,0,0,0.07);
+      }
+
+      .price-band::after {
+        content: '';
+        position: absolute;
+        right: -20px;
+        top: -20px;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.07);
+        pointer-events: none;
+      }
+
+      .seat-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
 
       .seat-label {
-        font-size: 16px;
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.92);
+        letter-spacing: 0.04em;
+      }
+
+      .seat-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.20);
+        border: 1px solid rgba(255,255,255,0.28);
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        width: fit-content;
       }
 
       .price-wrap {
         display: flex;
-        align-items: center;
-        gap: 18px;
+        align-items: baseline;
+        gap: 10px;
         flex-wrap: wrap;
       }
 
       .old-price {
-        font-size: 24px;
+        font-size: 18px;
         font-weight: 700;
         text-decoration: line-through;
-        color: rgba(255, 255, 255, 0.92);
+        color: rgba(255,255,255,0.60);
       }
 
       .new-price {
-        font-size: 58px;
+        font-size: 42px;
         line-height: 1;
-        font-weight: 800;
+        font-weight: 900;
         color: #fff;
+        letter-spacing: -1px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.15);
       }
 
       .gst-text {
-        font-size: 18px;
+        font-size: 13px;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.96);
+        color: rgba(255,255,255,0.85);
+        align-self: flex-end;
+        padding-bottom: 4px;
       }
 
+      /* ─── DETAILS ─── */
       .popup-details {
-        padding: 28px 34px 32px;
+        padding: 16px 28px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
       }
 
-      .contact-row {
-        font-size: 20px;
+      .info-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .info-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .info-icon.orange {
+        background: linear-gradient(135deg, #f7a600 0%, #ff6b35 100%);
+        box-shadow: 0 3px 10px rgba(247,166,0,0.32);
+      }
+
+      .info-icon.navy {
+        background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+        box-shadow: 0 3px 10px rgba(15,52,96,0.28);
+      }
+
+      .info-icon svg {
+        width: 18px;
+        height: 18px;
+        fill: #fff;
+      }
+
+      .info-text {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .info-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: #9ca3af;
+      }
+
+      .info-value {
+        font-size: 14px;
         font-weight: 700;
         color: #111827;
-        margin-bottom: 18px;
-        line-height: 1.6;
+        line-height: 1.4;
       }
 
-      .address-title {
-        font-size: 15px;
+      .divider {
+        height: 1px;
+        background: linear-gradient(90deg, #ebebeb 0%, transparent 100%);
+      }
+
+      /* ─── CTA ─── */
+      .cta-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px 24px;
+        background: linear-gradient(100deg, #f7a600 0%, #ff6b35 100%);
+        color: #fff;
+        font-size: 14px;
         font-weight: 700;
-        color: #111827;
-        margin-bottom: 8px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        letter-spacing: 0.04em;
+        box-shadow:
+          0 3px 10px rgba(247,166,0,0.32),
+          0 7px 20px rgba(255,107,53,0.18);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        text-decoration: none;
+        width: fit-content;
       }
 
-      .address-text {
-        font-size: 17px;
-        line-height: 1.7;
-        color: #374151;
-        max-width: 700px;
+      .cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 5px 16px rgba(247,166,0,0.42),
+          0 10px 28px rgba(255,107,53,0.26);
       }
 
-      @keyframes popupFade {
-        from {
-          opacity: 0;
-          transform: scale(0.92);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
+      .cta-btn:active { transform: translateY(0); }
+
+      .cta-btn svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
       }
 
-      @media (max-width: 900px) {
-        .popup-inner {
-          grid-template-columns: 1fr;
-        }
+      /* ══════════════════════════════════════════
+         TABLET  ≤ 780px
+      ══════════════════════════════════════════ */
+      @media (max-width: 780px) {
+        .popup-inner { grid-template-columns: 1fr; }
 
         .popup-left {
           flex-direction: row;
-          flex-wrap: wrap;
-          padding: 24px 18px 12px;
-          gap: 14px;
+          flex-wrap: nowrap;
+          justify-content: center;
+          padding: 18px 16px 14px;
+          gap: 12px;
         }
 
-        .popup-left img {
-          width: 110px;
-          height: 82px;
-          border-radius: 16px;
-        }
-
-        .img-one,
-        .img-two,
-        .img-three {
-          transform: none;
-        }
-
-        .popup-heading h2 {
-          font-size: 26px;
-        }
-
-        .new-price {
-          font-size: 46px;
-        }
+        .popup-left img { width: 96px; height: 70px; border-radius: 12px; }
+        .img-one, .img-two, .img-three { transform: none; }
+        .popup-heading h2 { font-size: 20px; }
+        .new-price { font-size: 36px; }
       }
 
-      @media (max-width: 600px) {
-        .popup-overlay {
-          padding: 14px;
-        }
+      /* ══════════════════════════════════════════
+         MOBILE  ≤ 520px
+      ══════════════════════════════════════════ */
+      @media (max-width: 520px) {
+        .popup-overlay { padding: 10px; }
+        .popup-box { border-radius: 16px; }
+        .popup-left { padding: 14px 12px 10px; gap: 8px; }
+        .popup-left img { width: 80px; height: 60px; border-radius: 10px; }
+        .top-strip { padding: 14px 16px 8px; }
+        .popup-heading { padding: 0 16px 10px; }
+        .popup-heading h2 { font-size: 16px; padding-right: 28px; line-height: 1.3; }
+        .price-band { padding: 11px 16px; gap: 8px; }
+        .old-price  { font-size: 14px; }
+        .new-price  { font-size: 28px; }
+        .gst-text   { font-size: 11px; }
+        .seat-label { font-size: 11px; }
+        .seat-badge { font-size: 9px; padding: 2px 8px; }
+        .popup-details { padding: 12px 16px 16px; gap: 10px; }
+        .info-icon { width: 32px; height: 32px; border-radius: 8px; }
+        .info-icon svg { width: 15px; height: 15px; }
+        .info-value { font-size: 12px; }
+        .info-label { font-size: 9px; }
+        .cta-btn { font-size: 13px; padding: 10px 18px; border-radius: 9px; }
+        .cta-btn svg { width: 14px; height: 14px; }
+      }
 
-        .popup-box {
-          border-radius: 14px;
-        }
-
-        .close-btn {
-          top: 12px;
-          right: 14px;
-          font-size: 28px;
-        }
-
-        .top-strip {
-          padding: 22px 20px 12px;
-        }
-
-        .popup-heading {
-          padding: 0 20px 18px;
-        }
-
-        .popup-heading h2 {
-          font-size: 22px;
-          max-width: 100%;
-          padding-right: 18px;
-        }
-
-        .price-band {
-          padding: 16px 20px;
-        }
-
-        .seat-label {
-          font-size: 14px;
-        }
-
-        .old-price {
-          font-size: 18px;
-        }
-
-        .new-price {
-          font-size: 36px;
-        }
-
-        .gst-text {
-          font-size: 15px;
-        }
-
-        .popup-details {
-          padding: 20px;
-        }
-
-        .contact-row {
-          font-size: 17px;
-        }
-
-        .address-title {
-          font-size: 14px;
-        }
-
-        .address-text {
-          font-size: 15px;
-          line-height: 1.6;
-        }
-
-        .popup-left {
-          justify-content: center;
-        }
-
-        .popup-left img {
-          width: 92px;
-          height: 72px;
-        }
+      /* ══════════════════════════════════════════
+         SMALL MOBILE  ≤ 380px
+      ══════════════════════════════════════════ */
+      @media (max-width: 380px) {
+        .popup-overlay { padding: 8px; }
+        .popup-box { border-radius: 14px; }
+        .popup-left { padding: 12px 10px 8px; gap: 6px; }
+        .popup-left img { width: 70px; height: 52px; border-radius: 8px; }
+        .top-strip { padding: 12px 14px 6px; }
+        .popup-logo { font-size: 10px; }
+        .popup-heading { padding: 0 14px 8px; }
+        .popup-heading h2 { font-size: 14px; }
+        .price-band { padding: 10px 14px; }
+        .new-price  { font-size: 24px; }
+        .old-price  { font-size: 12px; }
+        .gst-text   { font-size: 10px; }
+        .popup-details { padding: 10px 14px 14px; gap: 8px; }
+        .info-value { font-size: 11px; }
+        .cta-btn { font-size: 12px; padding: 9px 14px; }
+        .close-btn { width: 30px; height: 30px; top: 10px; right: 10px; }
+        .close-btn svg { width: 12px; height: 12px; }
       }
     </style>
   </head>
@@ -317,39 +483,43 @@
 
     <div id="promoPopup" class="popup-overlay">
       <div class="popup-box">
-        <span class="close-btn" onclick="closePopup()">×</span>
+
+        <button class="close-btn" onclick="closePopup()" aria-label="Close popup">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
 
         <div class="popup-inner">
+
           <div class="popup-left">
-            <img
-              class="img-one"
+            <img class="img-one"
               src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80"
-              alt="Coworking room"
-            />
-            <img
-              class="img-two"
+              alt="Coworking room" />
+            <img class="img-two"
               src="https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=800&q=80"
-              alt="Private office"
-            />
-            <img
-              class="img-three"
+              alt="Private office" />
+            <img class="img-three"
               src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80"
-              alt="Workspace interior"
-            />
+              alt="Workspace interior" />
           </div>
 
           <div class="popup-right">
+
             <div class="top-strip">
               <div class="popup-logo">Cowork Space</div>
             </div>
 
             <div class="popup-heading">
-              <h2>Looking for Premium Coworking Space in Hitech City?</h2>
+              <h2>Looking for Premium Coworking Space in <span>Hitech City?</span></h2>
             </div>
 
             <div class="price-band">
-              <div class="seat-label">Dedicated Seat</div>
-
+              <div class="seat-info">
+                <div class="seat-label">Dedicated Seat</div>
+                <div class="seat-badge">Limited Offer</div>
+              </div>
               <div class="price-wrap">
                 <span class="old-price">₹8,500/-</span>
                 <span class="new-price">₹6,500/-</span>
@@ -358,14 +528,40 @@
             </div>
 
             <div class="popup-details">
-              <div class="contact-row">
-                For more details: +91 90000 00000, +91 90000 11111
+
+              <div class="info-row">
+                <div class="info-icon orange">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/>
+                  </svg>
+                </div>
+                <div class="info-text">
+                  <span class="info-label">Call Us</span>
+                  <span class="info-value">+91 90000 00000 &nbsp;|&nbsp; +91 90000 11111</span>
+                </div>
               </div>
 
-              <div class="address-title">Address:</div>
-              <div class="address-text">
-                Hitech City, Hyderabad, Telangana
+              <div class="divider"></div>
+
+              <div class="info-row">
+                <div class="info-icon navy">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  </svg>
+                </div>
+                <div class="info-text">
+                  <span class="info-label">Address</span>
+                  <span class="info-value">Hitech City, Hyderabad, Telangana</span>
+                </div>
               </div>
+
+              <a href="tel:+919000000000" class="cta-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/>
+                </svg>
+                Book a Tour Now
+              </a>
+
             </div>
           </div>
         </div>
@@ -381,8 +577,19 @@
       };
 
       function closePopup() {
-        document.getElementById("promoPopup").style.display = "none";
+        const overlay = document.getElementById("promoPopup");
+        overlay.style.transition = "opacity 0.22s ease";
+        overlay.style.opacity = "0";
+        setTimeout(() => {
+          overlay.style.display = "none";
+          overlay.style.opacity = "";
+          overlay.style.transition = "";
+        }, 220);
       }
+
+      document.getElementById("promoPopup").addEventListener("click", function (e) {
+        if (e.target === this) closePopup();
+      });
     </script>
   </body>
 </html>

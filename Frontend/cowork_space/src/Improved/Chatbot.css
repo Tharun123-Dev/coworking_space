@@ -15,13 +15,12 @@
 }
 
 
-/* ================= FLOAT BUTTON ================= */
 .chatbot-btn {
   position: fixed;
   right: 26px;
-  bottom: 90px;
-  width: 60px;
-  height: 60px;
+  bottom: 75px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   border: none;
@@ -50,7 +49,7 @@
 }
 
 
-/* ================= OVERLAY ================= */
+
 .chatbot-overlay {
   position: fixed;
   inset: 0;
@@ -69,7 +68,7 @@
 }
 
 
-/* ================= PANEL ================= */
+
 .chatbot-panel {
   position: fixed;
   top: 0;
@@ -91,7 +90,7 @@
 }
 
 
-/* ================= HEADER ================= */
+
 .chatbot-header {
   display: flex;
   align-items: center;
@@ -125,7 +124,7 @@
 }
 
 
-/* ================= MESSAGES ================= */
+
 .chatbot-messages {
   flex: 1;
   overflow-y: auto;
@@ -163,7 +162,7 @@
 }
 
 
-/* ================= INPUT ================= */
+
 .chatbot-input {
   display: flex;
   gap: 10px;
@@ -214,7 +213,7 @@
 }
 
 
-/* ================= SCROLLBAR ================= */
+
 .chatbot-messages::-webkit-scrollbar {
   width: 6px;
 }
@@ -233,7 +232,6 @@
 }
 
 
-/* ================= MOBILE ================= */
 @media (max-width: 600px) {
   .chatbot-btn {
     right: 18px;
