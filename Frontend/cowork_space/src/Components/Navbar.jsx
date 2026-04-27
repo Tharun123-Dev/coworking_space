@@ -140,16 +140,16 @@ export default function Navbar() {
               Spaces
             </button>
 
-            <button className={styles.link} onClick={() => navigate("/RightSpace")}>
+            {/* <button className={styles.link} onClick={() => navigate("/RightSpace")}>
               Suite &amp; Scale
-            </button>
+            </button> */}
 
             <button className={styles.link} onClick={() => navigate("/amenities")}>
               Amenities
             </button>
 
             {/* Gallery */}
-            <div className={styles.dropWrap} onMouseEnter={enterGal} onMouseLeave={leaveGal}>
+            {/* <div className={styles.dropWrap} onMouseEnter={enterGal} onMouseLeave={leaveGal}>
               <button className={`${styles.link} ${styles.linkDrop} ${galOpen ? styles.linkActive : ""}`}>
                 Gallery
                 <svg className={`${styles.chevron} ${galOpen ? styles.chevUp : ""}`} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8"><polyline points="6 9 12 15 18 9"/></svg>
@@ -164,7 +164,7 @@ export default function Navbar() {
                   ))}
                 </div>
               )}
-            </div>
+            </div> */}
 
           </nav>
 
@@ -201,7 +201,7 @@ export default function Navbar() {
               <>
                 <div className={styles.avatar}>{(username||"U").charAt(0).toUpperCase()}</div>
                 <span className={styles.hiText}>Hi, {username||"User"}</span>
-                <button className={styles.ghostBtn} onClick={() => navigate("/my-orders")}>Orders</button>
+                <button className={styles.ghostBtn} onClick={() => navigate("/my-orders")}>MY Orders</button>
                 <button className={styles.ghostBtn} onClick={handleLogout}>Logout</button>
               </>
             ) : (
@@ -289,7 +289,7 @@ export default function Navbar() {
 
           <div className={styles.mRow} onClick={() => go("/RightSpace")}>
             <span className={styles.mRowIco}>📈</span>
-            <span className={styles.mRowTxt}>Suite &amp; Scale</span>
+            {/* <span className={styles.mRowTxt}>Suite &amp; Scale</span> */}
             <span className={styles.mChev}>›</span>
           </div>
 
@@ -300,7 +300,7 @@ export default function Navbar() {
           </div>
 
           {/* Gallery accordion */}
-          <div>
+          {/* <div>
             <div className={`${styles.mRow} ${mGalOpen ? styles.mRowOpen : ""}`} onClick={() => setMGalOpen((o)=>!o)}>
               <span className={styles.mRowIco}>🖼️</span>
               <span className={styles.mRowTxt}>Gallery</span>
@@ -316,7 +316,7 @@ export default function Navbar() {
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
         </div>
 
