@@ -89,10 +89,10 @@ const SIDEBAR_GROUPS = [
     ]
   },
   {
-    id:"activity-group", label:"Activity", icon:IC.activity,
-    children:[
-      { id:"recent-activity", label:"Recent Activity", icon:IC.activity, section:"activity" },
-    ]
+    // id:"activity-group", label:"Activity", icon:IC.activity,
+    // children:[
+    //   { id:"recent-activity", label:"Recent Activity", icon:IC.activity, section:"activity" },
+    // ]
   },
 ];
 
