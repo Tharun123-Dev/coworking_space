@@ -17,10 +17,10 @@
 
 .chatbot-btn {
   position: fixed;
-  right: 26px;
-  bottom: 75px;
-  width: 40px;
-  height: 40px;
+  right: 28px;
+  bottom: 77px;
+  width: -50px;
+  height: -50px;
   display: grid;
   place-items: center;
   border: none;

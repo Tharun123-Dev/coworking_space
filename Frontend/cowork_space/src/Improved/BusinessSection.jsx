@@ -288,7 +288,6 @@ const LimitedOfferSection = ({ openModal }) => {
                   {offer.area}
                 </div>
               </div>
-
               <div className="offer-card-body">
                 <p className="offer-card-type">{offer.type}</p>
                 <h3 className="offer-card-title">{offer.building}</h3>

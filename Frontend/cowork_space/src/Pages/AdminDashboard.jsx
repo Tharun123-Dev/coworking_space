@@ -39,6 +39,8 @@ const IC = {
   arrowUp:    "M18 15l-6-6-6 6",
   arrowDown:  "M6 9l6 6 6-6",
   dotsV:      "M12 5h.01 M12 12h.01 M12 19h.01",
+  logout:     "M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4 M16 17l5-5-5-5 M21 12H9",
+  building:   "M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18 M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2 M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2 M10 6h4 M10 10h4 M10 14h4 M10 18h4",
 };
 
 /* ─── Sidebar groups ─── */
@@ -54,17 +56,17 @@ const SIDEBAR_GROUPS = [
   {
     id:"workspaces-group", label:"Workspaces", icon:IC.workspace,
     children:[
-      { id:"workspaces", label:"Workspaces", icon:IC.workspace, section:"workspaces" },
-      { id:"categories", label:"Categories", icon:IC.category,  section:"categories" },
+      { id:"workspaces", label:"Workspaces",   icon:IC.workspace, section:"workspaces" },
+      { id:"categories", label:"Categories",   icon:IC.category,  section:"categories" },
     ]
   },
   {
     id:"leads-group", label:"Leads", icon:IC.leads,
     children:[
-      { id:"leads",       label:"View Leads",        icon:IC.leads,      path:"/admin-leads" },
-      { id:"offerleads",  label:"Offer Leads",       icon:IC.offers,     path:"/admin-leadss" },
-      { id:"enterprise",  label:"Modern Leads",  icon:IC.enterprise, path:"/admin-Enterprise" },
-      { id:"ownerlead",   label:"Owner Leads",       icon:IC.tag,        path:"/owner-special-leads" },
+      { id:"leads",      label:"View Leads",   icon:IC.leads,      path:"/admin-leads" },
+      { id:"offerleads", label:"Offer Leads",  icon:IC.offers,     path:"/admin-leadss" },
+      { id:"enterprise", label:"Modern Leads", icon:IC.enterprise, path:"/admin-Enterprise" },
+      { id:"ownerlead",  label:"Owner Leads",  icon:IC.tag,        path:"/owner-special-leads" },
     ]
   },
   {
@@ -83,32 +85,67 @@ const SIDEBAR_GROUPS = [
   {
     id:"support-group", label:"Support", icon:IC.support,
     children:[
-      { id:"tickets", label:"Support Tickets", icon:IC.tickets, path:"/admin-tickets" },
+      { id:"tickets", label:"Support Tickets", icon:IC.tickets, section:"tickets" },
+    ]
+  },
+  {
+    id:"activity-group", label:"Activity", icon:IC.activity,
+    children:[
+      { id:"recent-activity", label:"Recent Activity", icon:IC.activity, section:"activity" },
     ]
   },
 ];
 
-/* ─── Weekly booking chart data ─── */
 const CHART_DATA = [
-  { day: "Mon", bookings: 18, revenue: 42 },
-  { day: "Tue", bookings: 27, revenue: 63 },
-  { day: "Wed", bookings: 22, revenue: 51 },
-  { day: "Thu", bookings: 35, revenue: 82 },
-  { day: "Fri", bookings: 31, revenue: 74 },
-  { day: "Sat", bookings: 14, revenue: 33 },
-  { day: "Sun", bookings: 9,  revenue: 21 },
+  { day:"Mon", bookings:18, revenue:42 },
+  { day:"Tue", bookings:27, revenue:63 },
+  { day:"Wed", bookings:22, revenue:51 },
+  { day:"Thu", bookings:35, revenue:82 },
+  { day:"Fri", bookings:31, revenue:74 },
+  { day:"Sat", bookings:14, revenue:33 },
+  { day:"Sun", bookings:9,  revenue:21 },
 ];
 
-/* ─── Animated Bar Chart ─── */
+const DONUT_SEGS = [
+  { label:"Day Pass",   pct:32, color:"#f59e0b" },
+  { label:"Meeting",    pct:28, color:"#10b981" },
+  { label:"Fixed Seat", pct:22, color:"#6366f1" },
+  { label:"Cabin",      pct:18, color:"#f43f5e" },
+];
+
+const MOCK_TICKETS = [
+  { id:"#T-201", subject:"AC not working in Cabin 3",     status:"open",        priority:"high",   user:"Aarav M.",  time:"10m ago" },
+  { id:"#T-202", subject:"WiFi disconnecting frequently", status:"in_progress", priority:"medium", user:"Priya S.",  time:"25m ago" },
+  { id:"#T-203", subject:"Invoice discrepancy - May",     status:"open",        priority:"high",   user:"Kiran D.",  time:"1h ago"  },
+  { id:"#T-204", subject:"Parking slot not assigned",     status:"resolved",    priority:"low",    user:"Sneha R.",  time:"3h ago"  },
+  { id:"#T-205", subject:"Meeting room double booked",    status:"in_progress", priority:"medium", user:"Rahul K.",  time:"5h ago"  },
+  { id:"#T-206", subject:"Printer paper jam",             status:"resolved",    priority:"low",    user:"Meera T.",  time:"1d ago"  },
+];
+
+const RECENT_ACTIVITIES = [
+  { id:1,  type:"booking",   icon:IC.bookings,  title:"New booking confirmed",         desc:"Workspace 'Horizon Hub' booked by Aarav M. for 3 days",        time:"2 min ago",   color:"#f59e0b", badge:"Booking"  },
+  { id:2,  type:"lead",      icon:IC.leads,     title:"New lead assigned",              desc:"Lead #4821 from Priya S. assigned to sales team",              time:"8 min ago",   color:"#6366f1", badge:"Lead"     },
+  { id:3,  type:"ticket",    icon:IC.tickets,   title:"Support ticket resolved",        desc:"Ticket #T-204 'Parking slot not assigned' marked resolved",    time:"15 min ago",  color:"#10b981", badge:"Ticket"   },
+  { id:4,  type:"workspace", icon:IC.workspace, title:"New workspace added",            desc:"'TechNest Madhapur' workspace added by admin",                 time:"34 min ago",  color:"#f43f5e", badge:"Space"    },
+  { id:5,  type:"user",      icon:IC.users,     title:"New user registered",            desc:"Kiran D. created an account and verified email",               time:"1 hr ago",    color:"#6366f1", badge:"User"     },
+  { id:6,  type:"payment",   icon:IC.bookings,  title:"Payment received",               desc:"₹12,500 received for Booking #1042 via Razorpay",             time:"1.5 hr ago",  color:"#10b981", badge:"Payment"  },
+  { id:7,  type:"owner",     icon:IC.owners,    title:"Owner account created",          desc:"New owner 'Rahul K.' onboarded for Gachibowli branch",        time:"2 hr ago",    color:"#f59e0b", badge:"Owner"    },
+  { id:8,  type:"category",  icon:IC.category,  title:"Category updated",               desc:"'Meeting Rooms' pricing updated - hourly ₹350 → ₹420",       time:"3 hr ago",    color:"#6366f1", badge:"Category" },
+  { id:9,  type:"lead",      icon:IC.leads,     title:"Enterprise lead converted",      desc:"Swiggy Technologies converted from lead to enterprise client",  time:"4 hr ago",    color:"#f59e0b", badge:"Lead"     },
+  { id:10, type:"ticket",    icon:IC.tickets,   title:"High priority ticket opened",    desc:"Ticket #T-203 'Invoice discrepancy' marked high priority",     time:"5 hr ago",    color:"#f43f5e", badge:"Ticket"   },
+  { id:11, type:"booking",   icon:IC.bookings,  title:"Booking cancelled",              desc:"Booking #1039 cancelled - refund of ₹4,200 initiated",        time:"6 hr ago",    color:"#f43f5e", badge:"Booking"  },
+  { id:12, type:"workspace", icon:IC.workspace, title:"Workspace availability updated", desc:"'Hitech Hub' marked unavailable for maintenance",              time:"8 hr ago",    color:"#f59e0b", badge:"Space"    },
+  { id:13, type:"user",      icon:IC.users,     title:"User profile updated",           desc:"Sneha R. updated contact info and billing address",            time:"10 hr ago",   color:"#6366f1", badge:"User"     },
+  { id:14, type:"payment",   icon:IC.bookings,  title:"Refund processed",               desc:"₹2,800 refund processed for Booking #1035",                   time:"Yesterday",   color:"#f43f5e", badge:"Payment"  },
+  { id:15, type:"owner",     icon:IC.owners,    title:"Owner slot released",            desc:"Meera T. released slots for Financial District space",         time:"Yesterday",   color:"#10b981", badge:"Owner"    },
+];
+
+/* ─── Weekly Bar Chart ─── */
 function WeeklyChart({ data }) {
   const [animate, setAnimate] = useState(false);
   const maxB = Math.max(...data.map(d => d.bookings));
   const maxR = Math.max(...data.map(d => d.revenue));
-
-  useEffect(() => {
-    const t = setTimeout(() => setAnimate(true), 100);
-    return () => clearTimeout(t);
-  }, []);
+  useEffect(() => { const t = setTimeout(() => setAnimate(true), 200); return () => clearTimeout(t); }, []);
 
   return (
     <div className={styles.chartWrap}>
@@ -118,63 +155,40 @@ function WeeklyChart({ data }) {
           <p className={styles.chartSub}>Bookings &amp; Revenue this week</p>
         </div>
         <div className={styles.chartLegend}>
-          <span className={styles.legendDot} style={{ background: "#C9A84C" }} />
+          <span className={styles.legendDot} style={{ background:"#f59e0b" }} />
           <span className={styles.legendTxt}>Bookings</span>
-          <span className={styles.legendDot} style={{ background: "#4A90D9" }} />
+          <span className={styles.legendDot} style={{ background:"#6366f1" }} />
           <span className={styles.legendTxt}>Revenue (k)</span>
         </div>
       </div>
-
       <div className={styles.chartBody}>
         {data.map((d, i) => (
           <div key={i} className={styles.chartCol}>
             <div className={styles.chartBars}>
-              {/* Revenue bar (back) */}
               <div className={styles.barTrack}>
-                <div
-                  className={styles.barFill}
-                  style={{
-                    height: animate ? `${(d.revenue / maxR) * 100}%` : "0%",
-                    background: "linear-gradient(180deg, #4A90D9 0%, rgba(74,144,217,0.3) 100%)",
-                    transitionDelay: `${i * 60}ms`,
-                  }}
-                />
+                <div className={styles.barFill} style={{
+                  height: animate ? `${(d.revenue / maxR) * 100}%` : "0%",
+                  background:"linear-gradient(180deg,#6366f1 0%,rgba(99,102,241,0.15) 100%)",
+                  transitionDelay:`${i * 60}ms`,
+                }} />
               </div>
-              {/* Bookings bar (front) */}
               <div className={styles.barTrack}>
-                <div
-                  className={styles.barFill}
-                  style={{
-                    height: animate ? `${(d.bookings / maxB) * 100}%` : "0%",
-                    background: "linear-gradient(180deg, #C9A84C 0%, rgba(201,168,76,0.3) 100%)",
-                    transitionDelay: `${i * 60 + 30}ms`,
-                  }}
-                />
+                <div className={styles.barFill} style={{
+                  height: animate ? `${(d.bookings / maxB) * 100}%` : "0%",
+                  background:"linear-gradient(180deg,#f59e0b 0%,rgba(245,158,11,0.15) 100%)",
+                  transitionDelay:`${i * 60 + 30}ms`,
+                }} />
               </div>
             </div>
             <span className={styles.chartDay}>{d.day}</span>
           </div>
         ))}
       </div>
-
-      {/* Y-axis labels */}
-      <div className={styles.chartYLabels}>
-        {[100, 75, 50, 25, 0].map(v => (
-          <span key={v} className={styles.yLabel}>{v}%</span>
-        ))}
-      </div>
     </div>
   );
 }
 
-/* ─── Donut chart ─── */
-const DONUT_SEGS = [
-  { label:"Day Pass",   pct:32, color:"#C9A84C" },
-  { label:"Meeting",    pct:28, color:"#4A90D9" },
-  { label:"Fixed Seat", pct:22, color:"#4CAF82" },
-  { label:"Cabin",      pct:18, color:"#9B7FD4" },
-];
-
+/* ─── Donut Chart ─── */
 function DonutChart({ data }) {
   const r = 52, cx = 64, cy = 64, circ = 2 * Math.PI * r;
   let offset = 0;
@@ -194,14 +208,14 @@ function DonutChart({ data }) {
           offset += dash;
           return el;
         })}
-        <circle cx={cx} cy={cy} r={40} fill="#1A1A1A" />
-        <text x="64" y="60" textAnchor="middle" fill="#F0F0F0" fontSize="13" fontWeight="700">Types</text>
-        <text x="64" y="76" textAnchor="middle" fill="#A0A0A0" fontSize="10">{data.length} cats</text>
+        <circle cx={cx} cy={cy} r={40} fill="var(--card)" />
+        <text x="64" y="60" textAnchor="middle" fill="var(--text)" fontSize="11" fontWeight="700">Space</text>
+        <text x="64" y="75" textAnchor="middle" fill="var(--muted)" fontSize="9">Mix</text>
       </svg>
       <div className={styles.donutLegend}>
         {data.map((d, i) => (
           <div key={i} className={styles.donutItem}>
-            <span className={styles.donutDot} style={{ background: d.color }} />
+            <span className={styles.donutDot} style={{ background:d.color }} />
             <span className={styles.donutLabel}>{d.label}</span>
             <span className={styles.donutPct}>{d.pct}%</span>
           </div>
@@ -211,7 +225,7 @@ function DonutChart({ data }) {
   );
 }
 
-/* ─── Spark bar ─── */
+/* ─── Spark Bar ─── */
 const mkSpark = (n, mx) => Array.from({ length: n }, () => Math.floor(Math.random() * mx + 4));
 function SparkBar({ data, color }) {
   const max = Math.max(...data);
@@ -219,21 +233,11 @@ function SparkBar({ data, color }) {
     <div className={styles.spark}>
       {data.map((v, i) => (
         <div key={i} className={styles.sparkBar}
-          style={{ height:`${(v/max)*100}%`, background: color,
-            opacity: 0.45 + (i / data.length) * 0.55 }} />
+          style={{ height:`${(v/max)*100}%`, background:color, opacity:0.25 + (i / data.length) * 0.75 }} />
       ))}
     </div>
   );
 }
-
-const MOCK_TICKETS = [
-  { id:"#T-201", subject:"AC not working in Cabin 3",      status:"open",        priority:"high",   user:"Aarav M.",  time:"10m ago" },
-  { id:"#T-202", subject:"WiFi disconnecting frequently", status:"in_progress", priority:"medium", user:"Priya S.",  time:"25m ago" },
-  { id:"#T-203", subject:"Invoice discrepancy - May",     status:"open",        priority:"high",   user:"Kiran D.",  time:"1h ago"  },
-  { id:"#T-204", subject:"Parking slot not assigned",     status:"resolved",    priority:"low",    user:"Sneha R.",  time:"3h ago"  },
-  { id:"#T-205", subject:"Meeting room double booked",    status:"in_progress", priority:"medium", user:"Rahul K.",  time:"5h ago"  },
-  { id:"#T-206", subject:"Printer paper jam",             status:"resolved",    priority:"low",    user:"Meera T.",  time:"1d ago"  },
-];
 
 /* ════════════════════════════════════════
    MAIN COMPONENT
@@ -241,29 +245,23 @@ const MOCK_TICKETS = [
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
-  const [owners,      setOwners]      = useState([]);
-  const [workspaces,  setWorkspaces]  = useState([]);
-  const [categories,  setCategories]  = useState([]);
+  const [owners,     setOwners]     = useState([]);
+  const [workspaces, setWorkspaces] = useState([]);
+  const [categories, setCategories] = useState([]);
 
-  // Updated form with is_available
-  const [form,     setForm]    = useState({ 
-    name:"", city:"", location:"", price:"", image:"", description:"", 
-    is_available: true 
-  });
-  const [editId,   setEditId]  = useState(null);
-  const [catForm,  setCatForm] = useState({ 
-    name:"", category:"", description:"", image:"", hourly_price:"", daily_price:"", monthly_price:"", 
-    is_available:true, owner:"" 
-  });
+  const [form,    setForm]    = useState({ name:"", city:"", location:"", price:"", image:"", description:"", is_available:true });
+  const [editId,  setEditId]  = useState(null);
+  const [catForm, setCatForm] = useState({ name:"", category:"", description:"", image:"", hourly_price:"", daily_price:"", monthly_price:"", is_available:true, owner:"" });
 
   const [section,       setSection]       = useState("overview");
-  const [sideOpen,     setSideOpen]     = useState(true);
-  const [mobOpen,      setMobOpen]      = useState(false);
-  const [openGroup,    setOpenGroup]    = useState("management");
-  const [searchQ,      setSearchQ]      = useState("");
-  const [toast,        setToast]        = useState(null);
-  const [ticketFilter, setTicketFilter] = useState("all");
-  const [notifOpen,    setNotifOpen]    = useState(false);
+  const [sideOpen,      setSideOpen]      = useState(true);
+  const [mobOpen,       setMobOpen]       = useState(false);
+  const [openGroup,     setOpenGroup]     = useState(null);
+  const [searchQ,       setSearchQ]       = useState("");
+  const [toast,         setToast]         = useState(null);
+  const [ticketFilter,  setTicketFilter]  = useState("all");
+  const [notifOpen,     setNotifOpen]     = useState(false);
+  const [actFilter,     setActFilter]     = useState("all");
   const notifRef = useRef(null);
 
   const [isMobile, setIsMobile] = useState(false);
@@ -275,10 +273,9 @@ export default function AdminDashboard() {
   }, []);
 
   const SPARKS = {
-    ws:   mkSpark(10, 8),
-    cat:  mkSpark(10, 6),
-    avl:  mkSpark(10, 5),
-    own:  mkSpark(10, 4),
+    ws:  mkSpark(10, 8),
+    cat: mkSpark(10, 6),
+    own: mkSpark(10, 4),
   };
 
   useEffect(() => {
@@ -301,34 +298,20 @@ export default function AdminDashboard() {
   };
 
   const handleSubmit = () => {
-    if (!form.name || !form.city || !form.price) { 
-      showToast("Fill required fields", "error"); 
-      return; 
-    }
+    if (!form.name || !form.city || !form.price) { showToast("Fill required fields", "error"); return; }
     const req = editId
       ? axiosInstance.put(`workspaces/update/${editId}/`, form)
       : axiosInstance.post("workspaces/add/", form);
     req.then(() => {
       showToast(editId ? "Updated successfully" : "Workspace added");
       setEditId(null);
-      setForm({ 
-        name:"", city:"", location:"", price:"", image:"", description:"", 
-        is_available: true 
-      });
+      setForm({ name:"", city:"", location:"", price:"", image:"", description:"", is_available:true });
       fetchWS();
     }).catch(() => showToast("Operation failed", "error"));
   };
 
   const handleEdit = item => {
-    setForm({
-      name: item.name,
-      city: item.city,
-      location: item.location || "",
-      price: item.price,
-      image: item.image || "",
-      description: item.description || "",
-      is_available: item.is_available || true
-    });
+    setForm({ name:item.name, city:item.city, location:item.location||"", price:item.price, image:item.image||"", description:item.description||"", is_available:item.is_available ?? true });
     setEditId(item.id);
     setSection("workspaces");
     window.scrollTo({ top:0, behavior:"smooth" });
@@ -336,136 +319,108 @@ export default function AdminDashboard() {
 
   const handleDelete = id => {
     if (!window.confirm("Delete this workspace?")) return;
-    axiosInstance.delete(`workspaces/delete/${id}/`).then(() => { 
-      showToast("Deleted"); 
-      fetchWS(); 
-    });
+    axiosInstance.delete(`workspaces/delete/${id}/`).then(() => { showToast("Deleted"); fetchWS(); });
   };
 
   const handleAddCat = () => {
     axiosInstance.post("workspaces/categories/add/", catForm)
       .then(() => {
         showToast("Category added");
-        setCatForm({ 
-          name:"", category:"", description:"", image:"", hourly_price:"", daily_price:"", monthly_price:"", 
-          is_available:true, owner:"" 
-        });
+        setCatForm({ name:"", category:"", description:"", image:"", hourly_price:"", daily_price:"", monthly_price:"", is_available:true, owner:"" });
         fetchCat();
       }).catch(() => showToast("Failed to add", "error"));
   };
 
   const handleDeleteCat = id => {
     if (!window.confirm("Delete this category?")) return;
-    axiosInstance.delete(`workspaces/categories/delete/${id}/`).then(() => { 
-      showToast("Deleted"); 
-      fetchCat(); 
-    });
+    axiosInstance.delete(`workspaces/categories/delete/${id}/`).then(() => { showToast("Deleted"); fetchCat(); });
   };
 
   const toggleGroup = id => setOpenGroup(prev => prev === id ? null : id);
-
   const goNav = item => {
     if (item.path)    { navigate(item.path); setMobOpen(false); return; }
     if (item.section) { setSection(item.section); setMobOpen(false); }
   };
-
   const closeMob = () => setMobOpen(false);
-
   const handleMobileMenuToggle = () => {
-    if (isMobile) {
-      setMobOpen(p => !p);
-    } else {
-      setSideOpen(p => !p);
-    }
+    if (isMobile) setMobOpen(p => !p);
+    else setSideOpen(p => !p);
   };
 
   const filteredWS = workspaces.filter(w =>
     w.name?.toLowerCase().includes(searchQ.toLowerCase()) ||
     w.city?.toLowerCase().includes(searchQ.toLowerCase())
   );
+  const filteredTickets = ticketFilter === "all" ? MOCK_TICKETS : MOCK_TICKETS.filter(t => t.status === ticketFilter);
+  const filteredActivity = actFilter === "all" ? RECENT_ACTIVITIES : RECENT_ACTIVITIES.filter(a => a.type === actFilter);
 
-  const filteredTickets = ticketFilter === "all"
-    ? MOCK_TICKETS
-    : MOCK_TICKETS.filter(t => t.status === ticketFilter);
-
+  /* All stats navigate to /Enterprise */
   const STATS = [
-    { label:"Workspaces",        value:workspaces.length,                     color:"#C9A84C", spark:SPARKS.ws,  trend:"+12%", up:true,  icon:IC.workspace },
-    { label:"Categories",        value:categories.length,                      color:"#9B7FD4", spark:SPARKS.cat, trend:"+8%",  up:true,  icon:IC.category  },
-    { label:"Available Spaces",  value:workspaces.filter(w=>w.is_available).length, color:"#4CAF82", spark:SPARKS.avl, trend:"-3%",  up:false, icon:IC.check     },
-    { label:"Total Owners",      value:owners.length,                          color:"#E6A23C", spark:SPARKS.own, trend:"+5%",  up:true,  icon:IC.owners    },
+    { label:"Total Workspaces", value:workspaces.length,  color:"#f59e0b", spark:SPARKS.ws,  trend:"+12%", up:true, icon:IC.workspace },
+    { label:"Categories",       value:categories.length,  color:"#6366f1", spark:SPARKS.cat, trend:"+8%",  up:true, icon:IC.category  },
+    { label:"Total Owners",     value:owners.length,      color:"#10b981", spark:SPARKS.own, trend:"+3%",  up:true, icon:IC.owners    },
   ];
 
-  const sideWidth = sideOpen ? 240 : 64;
+  const sideWidth = sideOpen ? 240 : 68;
 
   const sectionTitle = () => {
-    if (section === "overview")   return "Dashboard Overview";
-    if (section === "workspaces") return "Workspace Management";
-    if (section === "categories") return "Category Management";
-    if (section === "tickets")    return "Support Tickets";
-    return "Dashboard";
+    const map = { overview:"Dashboard Overview", workspaces:"Workspace Management", categories:"Category Management", tickets:"Support Tickets", activity:"Recent Activity" };
+    return map[section] || "Dashboard";
   };
 
   const MOCK_NOTIF = [
-    { icon:IC.workspace,  text:"New workspace 'Horizon Hub' added",  time:"2m ago",  color:"#C9A84C" },
-    { icon:IC.leads,      text:"Lead #4821 assigned to Ravi",         time:"11m ago", color:"#4A90D9" },
-    { icon:IC.tickets,    text:"Ticket #209 marked resolved",         time:"34m ago", color:"#4CAF82" },
-    { icon:IC.bookings,   text:"Booking #1042 confirmed",             time:"1h ago",  color:"#9B7FD4" },
+    { icon:IC.workspace, text:"New workspace 'Horizon Hub' added",  time:"2m ago",  color:"#f59e0b" },
+    { icon:IC.leads,     text:"Lead #4821 assigned to Ravi",         time:"11m ago", color:"#6366f1" },
+    { icon:IC.tickets,   text:"Ticket #209 marked resolved",         time:"34m ago", color:"#10b981" },
+    { icon:IC.bookings,  text:"Booking #1042 confirmed",             time:"1h ago",  color:"#f43f5e" },
   ];
+
+  const activityTypes = ["all","booking","lead","ticket","workspace","user","payment","owner","category"];
 
   return (
     <div className={styles.root}>
 
-      {/* Mobile overlay */}
-      {mobOpen && <div className={styles.overlay} onClick={closeMob} />}
+      {mobOpen && <div className={styles.mobOverlay} onClick={closeMob} />}
 
       {/* ══════ SIDEBAR ══════ */}
-      <aside
-        className={`${styles.sidebar} ${sideOpen ? styles.sidebarOpen : styles.sidebarCollapsed} ${mobOpen ? styles.sidebarMob : ""}`}
-      >
-        {/* Logo */}
+      <aside className={`${styles.sidebar} ${sideOpen ? styles.sidebarOpen : styles.sidebarCollapsed} ${mobOpen ? styles.sidebarMob : ""}`}>
         <div className={styles.logo}>
-          <div className={styles.logoMark}>WN</div>
+          <div className={styles.logoMark}>
+            <Icon d={IC.building} size={18} />
+          </div>
           {(sideOpen || mobOpen) && (
-            <span className={styles.logoText}>
-              Work<span className={styles.logoGold}>Nest</span>
-            </span>
+            <span className={styles.logoText}>Work<span className={styles.logoAccent}>Nest</span></span>
           )}
           {isMobile && mobOpen && (
-            <button className={styles.sideCloseBtn} onClick={closeMob} title="Close menu">
-              <Icon d={IC.close} size={15} />
+            <button className={styles.sideCloseBtn} onClick={closeMob}>
+              <Icon d={IC.close} size={14} />
             </button>
           )}
         </div>
 
         <div className={styles.divider} />
 
-        {/* Nav */}
         <nav className={styles.nav}>
           {SIDEBAR_GROUPS.map(group => {
             if (!group.children) {
               return (
-                <button
-                  key={group.id}
+                <button key={group.id}
                   className={`${styles.navItem} ${section === group.section ? styles.navItemActive : ""}`}
                   onClick={() => { setSection(group.section); closeMob(); }}
-                  title={!sideOpen && !mobOpen ? group.label : ""}
-                >
+                  title={!sideOpen && !mobOpen ? group.label : ""}>
                   <span className={styles.navIco}><Icon d={group.icon} size={15} /></span>
                   {(sideOpen || mobOpen) && <span className={styles.navLabel}>{group.label}</span>}
                 </button>
               );
             }
-
             const isOpen   = openGroup === group.id;
             const isActive = group.children.some(c => c.section === section);
-
             return (
               <div key={group.id}>
                 <button
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
                   onClick={() => (sideOpen || mobOpen) && toggleGroup(group.id)}
-                  title={!sideOpen && !mobOpen ? group.label : ""}
-                >
+                  title={!sideOpen && !mobOpen ? group.label : ""}>
                   <span className={styles.navIco}><Icon d={group.icon} size={15} /></span>
                   {(sideOpen || mobOpen) && (
                     <>
@@ -476,15 +431,12 @@ export default function AdminDashboard() {
                     </>
                   )}
                 </button>
-
                 {(sideOpen || mobOpen) && isOpen && (
                   <div className={styles.navChildren}>
                     {group.children.map(child => (
-                      <button
-                        key={child.id}
+                      <button key={child.id}
                         className={`${styles.navChild} ${section === (child.section || child.id) ? styles.navChildActive : ""}`}
-                        onClick={() => goNav(child)}
-                      >
+                        onClick={() => goNav(child)}>
                         <span className={styles.childDot} />
                         <span>{child.label}</span>
                       </button>
@@ -501,7 +453,7 @@ export default function AdminDashboard() {
           {(sideOpen || mobOpen) && (
             <div className={styles.sideUser}>
               <div className={styles.sideAvatar}>A</div>
-              <div>
+              <div className={styles.sideUserInfo}>
                 <p className={styles.sideName}>Admin</p>
                 <p className={styles.sideRole}>Super Admin</p>
               </div>
@@ -516,45 +468,38 @@ export default function AdminDashboard() {
 
         {/* Topbar */}
         <header className={styles.topbar}>
-          <button
-            className={`${styles.menuBtn} ${isMobile ? styles.menuBtnMobile : ""}`}
-            onClick={handleMobileMenuToggle}
-            title={isMobile ? "Open menu" : (sideOpen ? "Collapse sidebar" : "Expand sidebar")}
-          >
-            <Icon d={isMobile ? IC.dotsV : (sideOpen ? IC.menu : IC.menu)} size={isMobile ? 18 : 17} />
-          </button>
-
-          <div className={styles.topTitle}>
-            <span className={styles.topSub}>Admin Panel</span>
-            <span className={styles.topSection}>{sectionTitle()}</span>
+          <div className={styles.topLeft}>
+            <button className={styles.menuBtn} onClick={handleMobileMenuToggle}>
+              <Icon d={IC.menu} size={18} />
+            </button>
+            <div className={styles.topTitle}>
+              <span className={styles.topSub}>Admin Panel</span>
+              <span className={styles.topSection}>{sectionTitle()}</span>
+            </div>
           </div>
 
           <div className={styles.topRight}>
-            <button className={styles.actBtn} onClick={() => navigate("/recent-activity")}>
+            <button className={styles.actBtn} onClick={() => setSection("activity")}>
               <span className={styles.livePulse} />
               <Icon d={IC.activity} size={14} />
               <span className={styles.actBtnTxt}>Recent Activity</span>
             </button>
 
             <div className={styles.notifWrap} ref={notifRef}>
-              <button
-                className={`${styles.iconBtn} ${notifOpen ? styles.iconBtnActive : ""}`}
-                onClick={() => setNotifOpen(p => !p)}
-                title="Notifications"
-              >
+              <button className={`${styles.iconBtn} ${notifOpen ? styles.iconBtnActive : ""}`}
+                onClick={() => setNotifOpen(p => !p)}>
                 <Icon d={IC.bell} size={15} />
-                <span className={styles.notifBadge}>3</span>
+                <span className={styles.notifBadge}>4</span>
               </button>
-
               {notifOpen && (
                 <div className={styles.notifPanel}>
                   <div className={styles.notifHead}>
                     <span>Notifications</span>
-                    <span className={styles.notifCount}>3 new</span>
+                    <span className={styles.notifCount}>4 new</span>
                   </div>
                   {MOCK_NOTIF.map((a, i) => (
                     <div key={i} className={styles.notifItem}>
-                      <span className={styles.notifIco} style={{ color: a.color }}>
+                      <span className={styles.notifIco} style={{ color:a.color, background:`${a.color}15` }}>
                         <Icon d={a.icon} size={12} />
                       </span>
                       <div>
@@ -563,9 +508,8 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))}
-                  <button className={styles.notifAll}
-                    onClick={() => { setNotifOpen(false); navigate("/recent-activity"); }}>
-                    View all →
+                  <button className={styles.notifAll} onClick={() => { setNotifOpen(false); setSection("activity"); }}>
+                    View all activity →
                   </button>
                 </div>
               )}
@@ -573,52 +517,81 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <div className={styles.breadcrumb}>
-          {section !== "overview" && (
-            <>
-              <span className={styles.breadSep}>›</span>
-              <span className={styles.breadCur}>{sectionTitle()}</span>
-            </>
-          )}
-        </div>
-
         <main className={styles.content}>
 
           {/* ════ OVERVIEW ════ */}
           {section === "overview" && (
             <div className={styles.overview}>
+              {/* <div className={styles.pageHead}>
+                <h1 className={styles.pageTitle}>Good morning, Admin 👋</h1>
+                <p className={styles.pageSub}>Here's what's happening at WorkNest today.</p>
+              </div> */}
 
+              {/* Stats Grid — 3 cards, all go to /Enterprise */}
               <div className={styles.statsGrid}>
                 {STATS.map((s, i) => (
-                  <div key={i} className={styles.statCard} style={{ "--ac": s.color }}>
+                  <button key={i} className={styles.statCard}
+                    style={{ "--ac": s.color }}
+                    onClick={() => navigate("/Enterprise")}>
                     <div className={styles.statTop}>
-                      <div className={styles.statIco}><Icon d={s.icon} size={17} /></div>
+                      <div className={styles.statIco} style={{ background:`${s.color}18`, color:s.color }}>
+                        <Icon d={s.icon} size={18} />
+                      </div>
                       <span className={`${styles.trend} ${s.up ? styles.trendUp : styles.trendDn}`}>
                         <Icon d={s.up ? IC.arrowUp : IC.arrowDown} size={10} />
                         {s.trend}
                       </span>
                     </div>
-                    <div className={styles.statVal}>{s.value}</div>
+                    <div className={styles.statVal} style={{ color:s.color }}>{s.value}</div>
                     <div className={styles.statLbl}>{s.label}</div>
                     <SparkBar data={s.spark} color={s.color} />
-                  </div>
+                    <div className={styles.statClick}>Click to explore →</div>
+                  </button>
                 ))}
               </div>
 
-              <div className={styles.chartPanel}>
-                <WeeklyChart data={CHART_DATA} />
-              </div>
-
-              <div className={styles.panel}>
-                <div className={styles.panelHead}>
-                  <h3 className={styles.panelTitle}>Space Mix</h3>
-                  <span className={styles.panelSub}>By category type</span>
+              {/* Charts Row */}
+              <div className={styles.chartsRow}>
+                <div className={styles.chartPanel}>
+                  <WeeklyChart data={CHART_DATA} />
                 </div>
-                <div className={styles.donutSection}>
+                <div className={styles.donutPanel}>
+                  <div className={styles.panelHead}>
+                    <h3 className={styles.panelTitle}>Space Mix</h3>
+                    <span className={styles.panelSub}>By category type</span>
+                  </div>
                   <DonutChart data={DONUT_SEGS} />
                 </div>
               </div>
 
+              {/* Quick Tickets preview */}
+              <div className={styles.quickPanel}>
+                <div className={styles.quickHead}>
+                  <div>
+                    <h3 className={styles.panelTitle}>Recent Support Tickets</h3>
+                    <p className={styles.panelSub}>Latest issues raised by users</p>
+                  </div>
+                  <button className={styles.viewAllBtn} onClick={() => setSection("tickets")}>
+                    View All →
+                  </button>
+                </div>
+                <div className={styles.ticketList}>
+                  {MOCK_TICKETS.slice(0, 4).map((t, i) => (
+                    <div key={i} className={styles.ticketRow}>
+                      <span className={styles.ticketId}>{t.id}</span>
+                      <div className={styles.ticketMain}>
+                        <span className={styles.ticketSubject}>{t.subject}</span>
+                        <span className={styles.ticketUser}><Icon d={IC.users} size={10} />{t.user}</span>
+                      </div>
+                      <span className={`${styles.pri} ${t.priority === "high" ? styles.priHigh : t.priority === "medium" ? styles.priMed : styles.priLow}`}>{t.priority}</span>
+                      <span className={`${styles.statusBadge} ${t.status === "open" ? styles.stOpen : t.status === "in_progress" ? styles.stProg : styles.stDone}`}>
+                        {t.status === "open" ? "Open" : t.status === "in_progress" ? "In Progress" : "Resolved"}
+                      </span>
+                      <span className={styles.ticketTime}><Icon d={IC.clock} size={10} />{t.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -626,7 +599,9 @@ export default function AdminDashboard() {
           {section === "workspaces" && (
             <div className={styles.section}>
               <div className={styles.secHead}>
-                <div className={styles.secIco}><Icon d={IC.workspace} size={18} /></div>
+                <div className={styles.secIco} style={{ background:"#f59e0b18", color:"#f59e0b" }}>
+                  <Icon d={IC.workspace} size={18} />
+                </div>
                 <div>
                   <h2 className={styles.secTitle}>Workspace Management</h2>
                   <p className={styles.secSub}>Add, edit and delete workspace records.</p>
@@ -636,49 +611,36 @@ export default function AdminDashboard() {
 
               <div className={styles.formCard}>
                 <div className={styles.formHead}>
-                  <Icon d={editId ? IC.edit : IC.add} size={13} />
+                  <span className={styles.formHeadIco}><Icon d={editId ? IC.edit : IC.add} size={13} /></span>
                   <span>{editId ? `Editing Workspace #${editId}` : "Add New Workspace"}</span>
                 </div>
                 <div className={styles.formGrid}>
                   {[
                     { ph:"Workspace Name *", key:"name" },
-                    { ph:"City *",            key:"city" },
-                    { ph:"Location",          key:"location" },
-                    { ph:"Price (₹) *",       key:"price" },
-                    { ph:"Description",       key:"description" },
-                    { ph:"Image URL",         key:"image" },
+                    { ph:"City *",           key:"city" },
+                    { ph:"Location / Area",  key:"location" },
+                    { ph:"Price (₹) *",      key:"price" },
+                    { ph:"Description",      key:"description" },
+                    { ph:"Image URL",        key:"image" },
                   ].map(f => (
                     <input key={f.key} className={styles.inp} placeholder={f.ph}
                       value={form[f.key]} onChange={e => setForm({ ...form, [f.key]:e.target.value })} />
                   ))}
-                  
-                  {/* ✅ AVAILABILITY DROPDOWN - SAME AS PREVIOUS */}
-                  <select 
-                    className={styles.selectField}
+                  <select className={styles.selectField}
                     value={form.is_available ? "available" : "unavailable"}
-                    onChange={(e) => setForm({
-                      ...form,
-                      is_available: e.target.value === "available"
-                    })}
-                  >
+                    onChange={e => setForm({ ...form, is_available: e.target.value === "available" })}>
                     <option value="available">✅ Available</option>
                     <option value="unavailable">❌ Unavailable</option>
                   </select>
                 </div>
                 <div className={styles.formActs}>
-                  <button className={styles.btnGold} onClick={handleSubmit}>
+                  <button className={styles.btnPrimary} onClick={handleSubmit}>
                     <Icon d={editId ? IC.edit : IC.add} size={13} />
                     {editId ? " Update Workspace" : " Add Workspace"}
                   </button>
                   {editId && (
                     <button className={styles.btnGhost}
-                      onClick={() => { 
-                        setEditId(null); 
-                        setForm({ 
-                          name:"", city:"", location:"", price:"", image:"", description:"", 
-                          is_available: true 
-                        }); 
-                      }}>
+                      onClick={() => { setEditId(null); setForm({ name:"", city:"", location:"", price:"", image:"", description:"", is_available:true }); }}>
                       Cancel
                     </button>
                   )}
@@ -688,7 +650,7 @@ export default function AdminDashboard() {
               <div className={styles.tableBar}>
                 <div className={styles.tableSearch}>
                   <Icon d={IC.search} size={13} />
-                  <input className={styles.searchInp} placeholder="Search..."
+                  <input className={styles.searchInp} placeholder="Search workspaces..."
                     value={searchQ} onChange={e => setSearchQ(e.target.value)} />
                 </div>
                 <span className={styles.tableCount}>{filteredWS.length} records</span>
@@ -698,14 +660,7 @@ export default function AdminDashboard() {
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Name</th>
-                      <th>City</th>
-                      <th>Location</th>
-                      <th>Price</th>
-                      {/* ✅ ADDED STATUS COLUMN */}
-                      <th>Status</th>
-                      <th>Actions</th>
+                      <th>#</th><th>Name</th><th>City</th><th>Location</th><th>Price</th><th>Status</th><th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -715,19 +670,12 @@ export default function AdminDashboard() {
                         <td className={styles.tdBold}>{item.name}</td>
                         <td>{item.city}</td>
                         <td className={styles.tdMuted}>{item.location || "—"}</td>
-                        <td className={styles.tdGold}>₹{item.price}</td>
-                        
-                        {/* ✅ STATUS BADGE - SAME AS PREVIOUS */}
+                        <td className={styles.tdAccent}>₹{item.price}</td>
                         <td>
-                          <span
-                            className={`${styles.status} ${
-                              item.is_available ? styles.available : styles.unavailable
-                            }`}
-                          >
+                          <span className={`${styles.statusBadge} ${item.is_available ? styles.stDone : styles.stOpen}`}>
                             {item.is_available ? "Available" : "Unavailable"}
                           </span>
                         </td>
-                        
                         <td>
                           <div className={styles.actCell}>
                             <button className={styles.editBtn} onClick={() => handleEdit(item)}>
@@ -753,7 +701,9 @@ export default function AdminDashboard() {
           {section === "categories" && (
             <div className={styles.section}>
               <div className={styles.secHead}>
-                <div className={styles.secIco}><Icon d={IC.category} size={18} /></div>
+                <div className={styles.secIco} style={{ background:"#6366f118", color:"#6366f1" }}>
+                  <Icon d={IC.category} size={18} />
+                </div>
                 <div>
                   <h2 className={styles.secTitle}>Workspace Categories</h2>
                   <p className={styles.secSub}>Create and manage categories and pricing tiers.</p>
@@ -763,10 +713,11 @@ export default function AdminDashboard() {
 
               <div className={styles.formCard}>
                 <div className={styles.formHead}>
-                  <Icon d={IC.add} size={13} /><span>Add New Category</span>
+                  <span className={styles.formHeadIco}><Icon d={IC.add} size={13} /></span>
+                  <span>Add New Category</span>
                 </div>
                 <div className={styles.formGrid}>
-                  <input className={styles.inp} placeholder="Category Name"
+                  <input className={styles.inp} placeholder="Category Name *"
                     value={catForm.name} onChange={e => setCatForm({ ...catForm, name:e.target.value })} />
                   <select className={styles.inp} value={catForm.owner || ""}
                     onChange={e => setCatForm({ ...catForm, owner:e.target.value })}>
@@ -775,7 +726,7 @@ export default function AdminDashboard() {
                   </select>
                   <select className={styles.inp} value={catForm.category}
                     onChange={e => setCatForm({ ...catForm, category:e.target.value })}>
-                    <option value="">Select Category Type</option>
+                    <option value="">Select Category Type *</option>
                     <option value="day_pass">Day Pass</option>
                     <option value="meeting">Meeting Rooms</option>
                     <option value="fixed">Fixed Seats</option>
@@ -793,30 +744,47 @@ export default function AdminDashboard() {
                     value={catForm.monthly_price} onChange={e => setCatForm({ ...catForm, monthly_price:e.target.value })} />
                   <select className={styles.inp} value={String(catForm.is_available)}
                     onChange={e => setCatForm({ ...catForm, is_available:e.target.value === "true" })}>
-                    <option value="true">Available</option>
-                    <option value="false">Not Available</option>
+                    <option value="true">✅ Available</option>
+                    <option value="false">❌ Not Available</option>
                   </select>
                 </div>
                 <div className={styles.formActs}>
-                  <button className={styles.btnGold} onClick={handleAddCat}>
+                  <button className={styles.btnPrimary} onClick={handleAddCat}>
                     <Icon d={IC.add} size={13} /> Add Category
                   </button>
                 </div>
               </div>
 
               <div className={styles.catGrid}>
+                {categories.length === 0 && (
+                  <div className={styles.emptyState}>
+                    <div className={styles.emptyIcon}><Icon d={IC.category} size={32} /></div>
+                    <p className={styles.emptyTitle}>No categories yet</p>
+                    <p className={styles.emptySub}>Add your first workspace category above.</p>
+                  </div>
+                )}
                 {categories.map(item => (
                   <div key={item.id} className={styles.catCard}>
+                    {item.image && (
+                      <div className={styles.catImgWrap}>
+                        <img src={item.image} alt={item.name} className={styles.catImg} />
+                      </div>
+                    )}
                     <div className={styles.catTop}>
                       <div>
                         <h4 className={styles.catName}>{item.name}</h4>
-                        <span className={styles.catType}>{item.category}</span>
+                        <span className={styles.catType}>{item.category?.replace("_"," ") || "—"}</span>
                       </div>
-                      <span className={`${styles.badge} ${item.is_available ? styles.badgeOn : styles.badgeOff}`}>
+                      <span className={`${styles.statusBadge} ${item.is_available ? styles.stDone : styles.stOpen}`}>
                         {item.is_available ? "Available" : "Off"}
                       </span>
                     </div>
-                    <p className={styles.catDesc}>{item.description || "No description."}</p>
+                    {item.owner_name && (
+                      <div className={styles.catOwner}>
+                        <Icon d={IC.users} size={11} /> {item.owner_name}
+                      </div>
+                    )}
+                    <p className={styles.catDesc}>{item.description || "No description provided."}</p>
                     <div className={styles.catPrices}>
                       {[["Hourly", item.hourly_price], ["Daily", item.daily_price], ["Monthly", item.monthly_price]].map(([lbl, val]) => (
                         <div key={lbl} className={styles.priceBox}>
@@ -825,12 +793,11 @@ export default function AdminDashboard() {
                         </div>
                       ))}
                     </div>
-                    <button className={styles.delBtn} style={{ marginTop:12 }} onClick={() => handleDeleteCat(item.id)}>
-                      <Icon d={IC.trash} size={11} /> Delete
+                    <button className={styles.delBtn} style={{ marginTop:12, width:"100%" }} onClick={() => handleDeleteCat(item.id)}>
+                      <Icon d={IC.trash} size={11} /> Delete Category
                     </button>
                   </div>
                 ))}
-                {categories.length === 0 && <p className={styles.empty}>No categories yet.</p>}
               </div>
             </div>
           )}
@@ -839,7 +806,7 @@ export default function AdminDashboard() {
           {section === "tickets" && (
             <div className={styles.section}>
               <div className={styles.secHead}>
-                <div className={`${styles.secIco} ${styles.secIcoPurple}`}>
+                <div className={styles.secIco} style={{ background:"#f43f5e18", color:"#f43f5e" }}>
                   <Icon d={IC.tickets} size={18} />
                 </div>
                 <div>
@@ -847,20 +814,14 @@ export default function AdminDashboard() {
                   <p className={styles.secSub}>Manage and resolve user support requests.</p>
                 </div>
                 <div className={styles.ticketSummary}>
-                  <span className={`${styles.countPill} ${styles.pillRed}`}>
-                    {MOCK_TICKETS.filter(t => t.status === "open").length} Open
-                  </span>
-                  <span className={`${styles.countPill} ${styles.pillOrange}`}>
-                    {MOCK_TICKETS.filter(t => t.status === "in_progress").length} In Prog
-                  </span>
-                  <span className={`${styles.countPill} ${styles.pillGreen}`}>
-                    {MOCK_TICKETS.filter(t => t.status === "resolved").length} Done
-                  </span>
+                  <span className={`${styles.countPill} ${styles.pillRed}`}>{MOCK_TICKETS.filter(t=>t.status==="open").length} Open</span>
+                  <span className={`${styles.countPill} ${styles.pillOrange}`}>{MOCK_TICKETS.filter(t=>t.status==="in_progress").length} In Prog</span>
+                  <span className={`${styles.countPill} ${styles.pillGreen}`}>{MOCK_TICKETS.filter(t=>t.status==="resolved").length} Done</span>
                 </div>
               </div>
 
               <div className={styles.filterRow}>
-                {["all", "open", "in_progress", "resolved"].map(f => (
+                {["all","open","in_progress","resolved"].map(f => (
                   <button key={f}
                     className={`${styles.filterPill} ${ticketFilter === f ? styles.filterActive : ""}`}
                     onClick={() => setTicketFilter(f)}>
@@ -877,10 +838,8 @@ export default function AdminDashboard() {
                       <span className={styles.ticketSubject}>{t.subject}</span>
                       <span className={styles.ticketUser}><Icon d={IC.users} size={10} />{t.user}</span>
                     </div>
-                    <span className={`${styles.pri} ${t.priority === "high" ? styles.priHigh : t.priority === "medium" ? styles.priMed : styles.priLow}`}>
-                      {t.priority}
-                    </span>
-                    <span className={`${styles.status} ${t.status === "open" ? styles.stOpen : t.status === "in_progress" ? styles.stProg : styles.stDone}`}>
+                    <span className={`${styles.pri} ${t.priority === "high" ? styles.priHigh : t.priority === "medium" ? styles.priMed : styles.priLow}`}>{t.priority}</span>
+                    <span className={`${styles.statusBadge} ${t.status === "open" ? styles.stOpen : t.status === "in_progress" ? styles.stProg : styles.stDone}`}>
                       {t.status === "open" ? "Open" : t.status === "in_progress" ? "In Progress" : "Resolved"}
                     </span>
                     <span className={styles.ticketTime}><Icon d={IC.clock} size={10} />{t.time}</span>
@@ -893,13 +852,68 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* ════ RECENT ACTIVITY ════ */}
+          {section === "activity" && (
+            <div className={styles.section}>
+              <div className={styles.secHead}>
+                <div className={styles.secIco} style={{ background:"#10b98118", color:"#10b981" }}>
+                  <Icon d={IC.activity} size={18} />
+                </div>
+                <div>
+                  <h2 className={styles.secTitle}>Recent Activity</h2>
+                  <p className={styles.secSub}>All events and actions across the platform.</p>
+                </div>
+                <span className={styles.countPill}>{RECENT_ACTIVITIES.length} Events</span>
+              </div>
+
+              <div className={styles.activityFilterRow}>
+                {activityTypes.map(type => (
+                  <button key={type}
+                    className={`${styles.filterPill} ${actFilter === type ? styles.filterActive : ""}`}
+                    onClick={() => setActFilter(type)}>
+                    {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1)}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.activityFeed}>
+                {filteredActivity.map((act, i) => (
+                  <div key={act.id} className={styles.activityItem}>
+                    <div className={styles.activityLine}>
+                      {i < filteredActivity.length - 1 && <div className={styles.activityConnector} />}
+                    </div>
+                    <div className={styles.activityDot} style={{ background:`${act.color}18`, color:act.color, border:`2px solid ${act.color}35` }}>
+                      <Icon d={act.icon} size={14} />
+                    </div>
+                    <div className={styles.activityCard}>
+                      <div className={styles.activityCardTop}>
+                        <div>
+                          <h4 className={styles.activityTitle}>{act.title}</h4>
+                          <p className={styles.activityDesc}>{act.desc}</p>
+                        </div>
+                        <div className={styles.activityMeta}>
+                          <span className={styles.activityBadge} style={{ background:`${act.color}15`, color:act.color }}>
+                            {act.badge}
+                          </span>
+                          <span className={styles.activityTime}>
+                            <Icon d={IC.clock} size={10} /> {act.time}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </main>
       </div>
 
       {/* Toast */}
       {toast && (
         <div className={`${styles.toast} ${toast.type === "error" ? styles.toastErr : ""}`}>
-          <span>{toast.type === "error" ? "✕" : "✓"}</span>
+          <span className={styles.toastIcon}>{toast.type === "error" ? "✕" : "✓"}</span>
           {toast.msg}
         </div>
       )}
