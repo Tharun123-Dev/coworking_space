@@ -236,9 +236,9 @@
   .chatbot-btn {
     right: 18px;
     bottom: 75px;
-    width: 54px;
-    height: 54px;
-    font-size: 20px;
+    width: 1px;
+    height: 1px;
+    font-size: 2px;
   }
 
   .chatbot-panel {

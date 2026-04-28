@@ -83,13 +83,23 @@ export default function Navbar() {
     navigate("/");
     closeDrawer();
   };
-  
 
+  const LOCATIONS = [
+  "Hitech City",
+  "Madhapur",
+  "Gachibowli",
+  "Kondapur",
+  "Financial District",
+];
+const goToLocation = (loc) => {
+  navigate(`/Enterprise?location=${encodeURIComponent(loc)}`);
+  closeDrawer(); // auto close
+};
   const enterWs  = () => { clearTimeout(wsTimer.current);  setWsOpen(true);  };
   const leaveWs  = () => { wsTimer.current  = setTimeout(() => setWsOpen(false), 160); };
   const enterGal = () => { clearTimeout(galTimer.current); setGalOpen(true);  };
   const leaveGal = () => { galTimer.current = setTimeout(() => setGalOpen(false), 160); };
-
+  const [mLocOpen, setMLocOpen] = useState(false);
   return (
     <>
       {/* ════════════════════ NAVBAR ════════════════════ */}
@@ -144,6 +154,23 @@ export default function Navbar() {
             {/* <button className={styles.link} onClick={() => navigate("/RightSpace")}>
               Suite &amp; Scale
             </button> */}
+            <div className={styles.dropWrap}>
+  <button className={`${styles.link} ${styles.linkDrop}`}>
+    Locations
+  </button>
+
+  <div className={styles.galDrop}>
+    {LOCATIONS.map((loc) => (
+      <div
+        key={loc}
+        className={styles.galItem}
+        onClick={() => goToLocation(loc)}
+      >
+        {loc}
+      </div>
+    ))}
+  </div>
+</div>
 
             <button className={styles.link} onClick={() => navigate("/amenities")}>
               Amenities
@@ -225,132 +252,165 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* ════════════════════ MOBILE DRAWER ════════════════════ */}
-      <div className={`${styles.backdrop} ${drawerOpen ? styles.backdropOn : ""}`} onClick={closeDrawer} />
 
-      <div className={`${styles.drawer} ${drawerOpen ? styles.drawerOn : ""}`}>
 
-        {/* Drawer top bar */}
-        <div className={styles.drawerTop}>
-          <div className={styles.logo} style={{cursor:"pointer"}} onClick={() => { go("/"); scrollToTop(); }}>
-            <span className={styles.logoW}>C</span>
-            <span className={styles.logoRest}>oWork</span>
-          </div>
-          <button className={styles.closeBtn} onClick={closeDrawer}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
-        </div>
+     {/* ════════════════════ MOBILE DRAWER ════════════════════ */}
+<div className={`${styles.backdrop} ${drawerOpen ? styles.backdropOn : ""}`} onClick={closeDrawer} />
 
-        {/* Logged-in user strip */}
-        {token && username && (
-          <div className={styles.mStrip}>
-            <div className={styles.mStripAva}>{username.charAt(0).toUpperCase()}</div>
-            <div>
-              <p className={styles.mStripGreet}>Welcome back</p>
-              <p className={styles.mStripName}>{username}</p>
-            </div>
-          </div>
-        )}
+<div className={`${styles.drawer} ${drawerOpen ? styles.drawerOn : ""}`}>
 
-        <hr className={styles.hr} />
+  {/* Top bar */}
+  <div className={styles.drawerTop}>
+    <div className={styles.logo} style={{cursor:"pointer"}} onClick={() => { go("/"); scrollToTop(); }}>
+      <span className={styles.logoW}>C</span>
+      <span className={styles.logoRest}>oWork</span>
+    </div>
+    <button className={styles.closeBtn} onClick={closeDrawer}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
 
-        {/* Nav rows */}
-        <div className={styles.mNavList}>
-
-          <div className={styles.mRow} onClick={() => { go("/"); scrollToTop(); }}>
-            <span className={styles.mRowIco}>⌂</span>
-            <span className={styles.mRowTxt}>Home</span>
-            <span className={styles.mChev}>›</span>
-          </div>
-
-          {/* Workspaces accordion */}
-          <div>
-            <div className={`${styles.mRow} ${mWsOpen ? styles.mRowOpen : ""}`} onClick={() => setMWsOpen((o)=>!o)}>
-              <span className={styles.mRowIco}>🏙️</span>
-              <span className={styles.mRowTxt}>Booking</span>
-              <svg className={`${styles.mCaret} ${mWsOpen ? styles.mCaretOpen : ""}`} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            {mWsOpen && (
-              <div className={styles.mSub}>
-                {WORKSPACE_TYPES.map((ws) => (
-                  <div key={ws.label} className={styles.mSubRow} onClick={() => goToType(ws.label)}>
-                    <span className={styles.mSubIco}>{ws.icon}</span>
-                    <span>{ws.label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className={styles.mRow} onClick={scrollToCompanies}>
-            <span className={styles.mRowIco}>🏢</span>
-            <span className={styles.mRowTxt}>Spaces</span>
-            <span className={styles.mChev}>›</span>
-          </div>
-
-          <div className={styles.mRow} onClick={() => go("/RightSpace")}>
-            <span className={styles.mRowIco}>📈</span>
-            {/* <span className={styles.mRowTxt}>Suite &amp; Scale</span> */}
-            <span className={styles.mChev}>›</span>
-          </div>
-
-          <div className={styles.mRow} onClick={() => go("/amenities")}>
-            <span className={styles.mRowIco}>✦</span>
-            <span className={styles.mRowTxt}>Amenities</span>
-            <span className={styles.mChev}>›</span>
-          </div>
-
-          {/* Gallery accordion */}
-          {/* <div>
-            <div className={`${styles.mRow} ${mGalOpen ? styles.mRowOpen : ""}`} onClick={() => setMGalOpen((o)=>!o)}>
-              <span className={styles.mRowIco}>🖼️</span>
-              <span className={styles.mRowTxt}>Gallery</span>
-              <svg className={`${styles.mCaret} ${mGalOpen ? styles.mCaretOpen : ""}`} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            {mGalOpen && (
-              <div className={styles.mSub}>
-                {GALLERY_LINKS.map((g) => (
-                  <div key={g.label} className={styles.mSubRow} onClick={() => go(g.path)}>
-                    <span className={styles.mSubDot} />
-                    <span>{g.label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div> */}
-
-        </div>
-
-        <hr className={styles.hr} />
-
-        {/* Drawer footer */}
-        <div className={styles.drawerFoot}>
-          {token ? (
-            <>
-              <div className={styles.mProfileRow} onClick={() => isAdmin==="true" ? go("/admin-dashboard") : alert("Profile coming soon")}>
-                <span>{isAdmin==="true" ? "⚙️ Admin Dashboard" : "👤 My Profile"}</span>
-                <span>›</span>
-              </div>
-              <button className={styles.mOrderBtn} onClick={() => { navigate("/my-orders"); closeDrawer(); }}>My Orders</button>
-              <button className={styles.mLogoutBtn} onClick={handleLogout}>Logout</button>
-            </>
-          ) : (
-            <>
-              <p className={styles.mLoginHdr}>Continue as</p>
-              <div className={styles.mTiles}>
-                {[{l:"User",i:"👤",t:"user"},{l:"Owner",i:"🏢",t:"owner"},{l:"Admin",i:"⚙️",t:"admin"}].map((r)=>(
-                  <div key={r.t} className={styles.mTile} onClick={() => go(`/auth?type=${r.t}`)}>
-                    <span className={styles.mTileIco}>{r.i}</span>
-                    <span>{r.l}</span>
-                  </div>
-                ))}
-              </div>
-              <button className={styles.mStartBtn} onClick={() => go("/auth")}>Get Started →</button>
-            </>
-          )}
-        </div>
-
+  {/* User strip */}
+  {token && username && (
+    <div className={styles.mStrip}>
+      <div className={styles.mStripAva}>{username.charAt(0).toUpperCase()}</div>
+      <div>
+        <p className={styles.mStripGreet}>Welcome back</p>
+        <p className={styles.mStripName}>{username}</p>
       </div>
+    </div>
+  )}
+
+  <hr className={styles.hr} />
+
+  {/* NAV LIST */}
+  <div className={styles.mNavList}>
+
+    {/* Home */}
+    <div className={styles.mRow} onClick={() => { go("/"); scrollToTop(); }}>
+      <span className={styles.mRowIco}>⌂</span>
+      <span className={styles.mRowTxt}>Home</span>
+      <span className={styles.mChev}>›</span>
+    </div>
+
+    {/* Booking */}
+    <div>
+      <div className={`${styles.mRow} ${mWsOpen ? styles.mRowOpen : ""}`} onClick={() => setMWsOpen((o)=>!o)}>
+        <span className={styles.mRowIco}>🏙️</span>
+        <span className={styles.mRowTxt}>Booking</span>
+        <svg className={`${styles.mCaret} ${mWsOpen ? styles.mCaretOpen : ""}`} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      {mWsOpen && (
+        <div className={styles.mSub}>
+          {WORKSPACE_TYPES.map((ws) => (
+            <div key={ws.label} className={styles.mSubRow} onClick={() => goToType(ws.label)}>
+              <span className={styles.mSubIco}>{ws.icon}</span>
+              <span>{ws.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* Spaces */}
+    <div className={styles.mRow} onClick={scrollToCompanies}>
+      <span className={styles.mRowIco}>🏢</span>
+      <span className={styles.mRowTxt}>Spaces</span>
+      <span className={styles.mChev}>›</span>
+    </div>
+
+    {/* ✅ LOCATIONS (NEW FIXED SECTION) */}
+    <div>
+      <div
+        className={`${styles.mRow} ${mLocOpen ? styles.mRowOpen : ""}`}
+        onClick={() => setMLocOpen((prev) => !prev)}
+      >
+        <span className={styles.mRowIco}>📍</span>
+        <span className={styles.mRowTxt}>Locations</span>
+
+        <svg
+          className={`${styles.mCaret} ${mLocOpen ? styles.mCaretOpen : ""}`}
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      {mLocOpen && (
+        <div className={styles.mSub}>
+          {["Hitech City","Madhapur","Gachibowli","Kondapur","Financial District"].map((loc) => (
+            <div
+              key={loc}
+              className={styles.mSubRow}
+              onClick={() => goToLocation(loc)}
+            >
+              <span className={styles.mSubIco}>📍</span>
+              <span>{loc}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* Amenities */}
+    <div className={styles.mRow} onClick={() => go("/amenities")}>
+      <span className={styles.mRowIco}>✦</span>
+      <span className={styles.mRowTxt}>Amenities</span>
+      <span className={styles.mChev}>›</span>
+    </div>
+
+  </div>
+
+  <hr className={styles.hr} />
+
+  {/* Footer */}
+  <div className={styles.drawerFoot}>
+    {token ? (
+      <>
+        <div className={styles.mProfileRow} onClick={() => isAdmin==="true" ? go("/admin-dashboard") : alert("Profile coming soon")}>
+          <span>{isAdmin==="true" ? "⚙️ Admin Dashboard" : "👤 My Profile"}</span>
+          <span>›</span>
+        </div>
+
+        <button className={styles.mOrderBtn} onClick={() => { navigate("/my-orders"); closeDrawer(); }}>
+          My Orders
+        </button>
+
+        <button className={styles.mLogoutBtn} onClick={handleLogout}>
+          Logout
+        </button>
+      </>
+    ) : (
+      <>
+        <p className={styles.mLoginHdr}>Continue as</p>
+
+        <div className={styles.mTiles}>
+          {[{l:"User",i:"👤",t:"user"},{l:"Owner",i:"🏢",t:"owner"},{l:"Admin",i:"⚙️",t:"admin"}].map((r)=>(
+            <div key={r.t} className={styles.mTile} onClick={() => go(`/auth?type=${r.t}`)}>
+              <span className={styles.mTileIco}>{r.i}</span>
+              <span>{r.l}</span>
+            </div>
+          ))}
+        </div>
+
+        <button className={styles.mStartBtn} onClick={() => go("/auth")}>
+          Get Started →
+        </button>
+      </>
+    )}
+  </div>
+
+</div>
     </>
   );
 }

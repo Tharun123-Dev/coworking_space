@@ -220,10 +220,10 @@
 /* ================= MOBILE ================= */
 @media (max-width: 600px) {
   .review-btn {
-    right: 16px;
-    bottom: 16px;
-    width: 54px;
-    height: 54px;
+    right: 14px;
+    bottom: 60px;
+    width: 45px;
+    height: 45px;
     font-size: 20px;
   }
 

@@ -72,7 +72,7 @@ const SIDEBAR_GROUPS = [
   {
     id:"business-group", label:"Business", icon:IC.enterprise,
     children:[
-      { id:"entbiz",      label:"Enterprise",    icon:IC.enterprise, path:"/enterprise-business" },
+      { id:"entbiz",      label:"Hyderabad Leads",    icon:IC.enterprise, path:"/admin-dashboards" },
       { id:"companylead", label:"Company Leads", icon:IC.leads,      path:"/company-special-leads" },
     ]
   },
@@ -89,10 +89,10 @@ const SIDEBAR_GROUPS = [
     ]
   },
   {
-    // id:"activity-group", label:"Activity", icon:IC.activity,
-    // children:[
-    //   { id:"recent-activity", label:"Recent Activity", icon:IC.activity, section:"activity" },
-    // ]
+    id:"activity-group", label:"Activity", icon:IC.activity,
+    children:[
+      { id:"bookings", label:"Recent-Activity", icon:IC.bookings, path:"/recent-activity" },
+    ]
   },
 ];
 
@@ -853,59 +853,105 @@ export default function AdminDashboard() {
           )}
 
           {/* ════ RECENT ACTIVITY ════ */}
-          {section === "activity" && (
-            <div className={styles.section}>
-              <div className={styles.secHead}>
-                <div className={styles.secIco} style={{ background:"#10b98118", color:"#10b981" }}>
-                  <Icon d={IC.activity} size={18} />
-                </div>
-                <div>
-                  <h2 className={styles.secTitle}>Recent Activity</h2>
-                  <p className={styles.secSub}>All events and actions across the platform.</p>
-                </div>
-                <span className={styles.countPill}>{RECENT_ACTIVITIES.length} Events</span>
+       {/* RECENT ACTIVITY */}
+{section === "activity" && (
+  <div className={styles.section}>
+    <div className={styles.secHead}>
+      <div
+        className={styles.secIco}
+        style={{ background: "#10b98118", color: "#10b981" }}
+      >
+        <Icon d={IC.activity} size={18} />
+      </div>
+
+      <div>
+        <h2 className={styles.secTitle}>Recent Activity</h2>
+        <p className={styles.secSub}>
+          All events and actions across the platform.
+        </p>
+      </div>
+
+      <span className={styles.countPill}>{filteredActivity.length} Events</span>
+    </div>
+
+    <div className={styles.activityFilterRow}>
+      {activityTypes.map((type) => (
+        <button
+          key={type}
+          className={`${styles.filterPill} ${
+            actFilter === type ? styles.filterActive : ""
+          }`}
+          onClick={() => setActFilter(type)}
+        >
+          {type === "all"
+            ? "All"
+            : type.charAt(0).toUpperCase() + type.slice(1)}
+        </button>
+      ))}
+    </div>
+
+    <div className={styles.activityFeed}>
+      {filteredActivity.length > 0 ? (
+        filteredActivity.map((act, i) => (
+          <div key={act.id} className={styles.activityItem}>
+            <div className={styles.activityLine}>
+              <div
+                className={styles.activityDot}
+                style={{
+                  background: `${act.color}18`,
+                  color: act.color,
+                  border: `2px solid ${act.color}35`,
+                }}
+              >
+                <Icon d={act.icon} size={14} />
               </div>
 
-              <div className={styles.activityFilterRow}>
-                {activityTypes.map(type => (
-                  <button key={type}
-                    className={`${styles.filterPill} ${actFilter === type ? styles.filterActive : ""}`}
-                    onClick={() => setActFilter(type)}>
-                    {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1)}
-                  </button>
-                ))}
+              {i !== filteredActivity.length - 1 && (
+                <div className={styles.activityConnector} />
+              )}
+            </div>
+
+            <div className={styles.activityCard}>
+              <div className={styles.activityCardTop}>
+                <div className={styles.activityTextBlock}>
+                  <h4 className={styles.activityTitle}>{act.title}</h4>
+                  <p className={styles.activityDesc}>{act.desc}</p>
+                </div>
+
+                <span
+                  className={styles.activityBadge}
+                  style={{
+                    background: `${act.color}15`,
+                    color: act.color,
+                  }}
+                >
+                  {act.badge}
+                </span>
               </div>
 
-              <div className={styles.activityFeed}>
-                {filteredActivity.map((act, i) => (
-                  <div key={act.id} className={styles.activityItem}>
-                    <div className={styles.activityLine}>
-                      {i < filteredActivity.length - 1 && <div className={styles.activityConnector} />}
-                    </div>
-                    <div className={styles.activityDot} style={{ background:`${act.color}18`, color:act.color, border:`2px solid ${act.color}35` }}>
-                      <Icon d={act.icon} size={14} />
-                    </div>
-                    <div className={styles.activityCard}>
-                      <div className={styles.activityCardTop}>
-                        <div>
-                          <h4 className={styles.activityTitle}>{act.title}</h4>
-                          <p className={styles.activityDesc}>{act.desc}</p>
-                        </div>
-                        <div className={styles.activityMeta}>
-                          <span className={styles.activityBadge} style={{ background:`${act.color}15`, color:act.color }}>
-                            {act.badge}
-                          </span>
-                          <span className={styles.activityTime}>
-                            <Icon d={IC.clock} size={10} /> {act.time}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className={styles.activityMeta}>
+                <span className={styles.activityTime}>
+                  <Icon d={IC.clock} size={10} />
+                  {act.time}
+                </span>
               </div>
             </div>
-          )}
+          </div>
+        ))
+      ) : (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>
+            <Icon d={IC.activity} size={28} />
+          </div>
+          <p className={styles.emptyTitle}>No activity found</p>
+          <p className={styles.emptySub}>
+            Try changing the filter to view more recent events.
+          </p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
         </main>
       </div>

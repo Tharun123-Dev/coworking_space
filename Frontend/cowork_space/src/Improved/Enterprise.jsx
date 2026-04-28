@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/HyderabadWorkspaces.module.css";
 
@@ -74,6 +74,7 @@ const AMENITY_ICONS = {
 
 function HyderabadWorkspaces() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -101,11 +102,22 @@ function HyderabadWorkspaces() {
   const [calMonthOffset, setCalMonthOffset] = useState(0);
   const [calLoading, setCalLoading] = useState(false);
 
+  const params = new URLSearchParams(location.search);
+  const queryLocation = params.get("location");
+  const showOnlySelectedLocation = !!queryLocation;
+
   useEffect(() => {
     axiosInstance.get("workspaces/")
       .then((res) => { setWorkspaces(res.data); setFilteredData(res.data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const loc = params.get("location");
+    if (loc) {
+      setSelectedLocation(loc);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const filtered = workspaces.filter((item) => {
@@ -282,11 +294,10 @@ function HyderabadWorkspaces() {
     <div className={styles.page}>
       <div className={styles.container}>
 
-        {/* ── Locations filter ── */}
         <div className={styles.filterBlock}>
           <h3 className={styles.filterLabel}>Locations</h3>
           <div className={styles.pillRow}>
-            {LOCATIONS.map((loc) => (
+            {(showOnlySelectedLocation ? [selectedLocation] : LOCATIONS).map((loc) => (
               <button
                 key={loc}
                 type="button"
@@ -299,7 +310,6 @@ function HyderabadWorkspaces() {
           </div>
         </div>
 
-        {/* ── Workspace type filter ── */}
         <div className={styles.filterBlock}>
           <h3 className={styles.filterLabel}>Workspaces</h3>
           <div className={styles.pillRow}>
@@ -316,7 +326,6 @@ function HyderabadWorkspaces() {
           </div>
         </div>
 
-        {/* ── Cards list ── */}
         <div className={styles.cardList}>
           {filteredData.length === 0 ? (
             <div className={styles.empty}>
@@ -326,12 +335,10 @@ function HyderabadWorkspaces() {
           ) : (
             filteredData.slice(0, visibleCount).map((item) => (
               <div key={item.id} className={styles.card}>
-                {/* Image */}
                 <div className={styles.cardImgWrap}>
                   <img src={item.image} alt={item.name} className={styles.cardImg} />
                 </div>
 
-                {/* Content */}
                 <div className={styles.cardContent}>
                   <h2 className={styles.cardName}>{item.name}</h2>
 
@@ -339,7 +346,6 @@ function HyderabadWorkspaces() {
                     {item.location}{item.area ? `, ${item.area}` : ""}{item.city ? `, ${item.city}` : ""}
                   </p>
 
-                  {/* Amenities */}
                   <div className={styles.amenRow}>
                     <span className={styles.amenItem}>
                       <span className={styles.amenIcon}>{AMENITY_ICONS["24hr"]}</span>
@@ -363,7 +369,6 @@ function HyderabadWorkspaces() {
                     </span>
                   </div>
 
-                  {/* Price */}
                   <div className={styles.priceRow}>
                     <span className={styles.priceSymbol}>₹</span>
                     <span className={styles.priceNum}>{(item.price || 6500).toLocaleString("en-IN")}</span>
@@ -371,7 +376,6 @@ function HyderabadWorkspaces() {
                   </div>
                   <p className={styles.priceSub}>Base Price seat per month</p>
 
-                  {/* Actions */}
                   <div className={styles.cardActions}>
                     <button type="button" className={styles.btnBook} onClick={() => handleBookNow(item)}>
                       <span className={styles.btnIcon}>{AMENITY_ICONS.bookNow}</span>
@@ -388,7 +392,6 @@ function HyderabadWorkspaces() {
           )}
         </div>
 
-        {/* ── Load More ── */}
         {visibleCount < filteredData.length && (
           <div className={styles.loadMoreWrap}>
             <button
@@ -409,7 +412,6 @@ function HyderabadWorkspaces() {
 
       </div>
 
-      {/* ── Know More Modal ── */}
       {showModal && selectedWorkspace && (
         <div className={styles.overlay} onClick={closeModal}>
           <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
@@ -514,7 +516,6 @@ function HyderabadWorkspaces() {
         </div>
       )}
 
-      {/* ── Booking Modal ── */}
       {showBookingModal && selectedWorkspace && (
         <div className={styles.overlay} onClick={() => setShowBookingModal(false)}>
           <div className={styles.panel} onClick={(e) => e.stopPropagation()}>

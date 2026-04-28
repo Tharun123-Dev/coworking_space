@@ -35,8 +35,10 @@ import CompanyOwnerleads from "./Pages/CompanyOwnerleads";
 import BusinessEnterpriseContact from "./Improved/BusinessEnterpriseContact";
 import AdminBusinessEnterprise from "./Improved/AdminBusinessEnterprise";
 import AdminTickets from "./Pages/AdminTickets";
+
 import RecentActivity from "./Pages/RecentActivity";
 import AdminLayout from "./Components/AdminLayout";
+import AdminDashboards from "./Improved/AdminHyd";
 // import SlotBookingPage from "./Pages/Slotbookingpage";
 
 function App() {
@@ -80,6 +82,9 @@ function App() {
     <Route path="/enterprise-business" element={<AdminBusinessEnterprise />} />
     <Route path="/company-special-leads" element={<CompanyAdminleads />} />
     <Route path="/owner-special-leads" element={<AdminSpecialLeads />} />
+    <Route path="/admin-dashboards" element={<AdminDashboards />} />
+     <Route path="/recent-activity" element={<RecentActivity />} />
+
   </Route>
 
 
@@ -90,6 +95,7 @@ function App() {
     <Route path="/owner-bookings" element={<OwnerBookings />} />
     <Route path="/owner-leads" element={<OwnerLeads />} />
     <Route path="/company-leads" element={<CompanyOwnerleads />} />
+
   </Route>
 
 </Routes>

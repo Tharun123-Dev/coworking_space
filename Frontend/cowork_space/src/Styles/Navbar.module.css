@@ -54,7 +54,65 @@
   align-items: center;
   gap: 0;
 }
- 
+
+/* Wrapper */
+.dropWrap {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown container */
+.galDrop {
+  position: absolute;
+  top: 110%;
+  left: -10px !important;
+  min-width: 200px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 8px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.25s ease;
+  z-index: 999;
+}
+
+/* Show on hover */
+.dropWrap:hover .galDrop {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Each item */
+.galItem {
+  padding: 10px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.galItem:hover {
+  background: #f5f5f5;
+  color: #f59e0b; /* your theme color */
+  padding-left: 5px;
+}
+ .linkDrop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chevron {
+  transition: transform 0.3s ease;
+}
+
+.dropWrap:hover .chevron {
+  transform: rotate(180deg);
+}
 /* Spacer pushes everything after it to the right */
 .spacer { flex: 1; }
  
