@@ -775,14 +775,14 @@ await axiosInstance.post("cart/create/", {
                       Book Now
                     </button>
 
-                    <button
+                    {/* <button
                       type="button"
                       className={styles.btnCall}
                       onClick={() => handleBookForMonth(item)}
                     >
                       <span className={styles.btnIcon}>{AMENITY_ICONS.month}</span>
                       Book for Month
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>
