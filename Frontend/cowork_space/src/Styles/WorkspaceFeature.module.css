@@ -18,7 +18,7 @@
   color: #3b9eff;
   letter-spacing: 0.5px;
 }
-
+ 
 /* ── PAGE ── */
 .specialPage {
   background: #ffffff;
@@ -28,19 +28,19 @@
   padding: 44px 24px 50px;
   font-family: 'Segoe UI', sans-serif;
 }
-
+ 
 .wrapper {
   display: flex;
-  align-items: flex-start;
+  align-items: center; /* ✅ vertically centers form relative to left panel */
   justify-content: space-between;
   gap: 52px;
   max-width: 1080px;
   width: 100%;
 }
-
+ 
 /* ── LEFT ── */
 .leftPanel { flex: 1; max-width: 520px; }
-
+ 
 .tag {
   display: inline-block;
   font-size: 12px;
@@ -53,7 +53,7 @@
   padding: 4px 12px;
   border-radius: 20px;
 }
-
+ 
 .leftPanel h1 {
   font-size: 32px;
   font-weight: 800;
@@ -61,7 +61,7 @@
   line-height: 1.22;
   margin: 0 0 10px 0;
 }
-
+ 
 /* Typing line */
 .typingLine {
   display: flex;
@@ -83,17 +83,17 @@
   animation: blink 0.75s step-end infinite;
 }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
+ 
 .description {
   font-size: 15px;
   color: #555;
   line-height: 1.65;
   margin-bottom: 22px;
 }
-
+ 
 /* ── FEATURE LIST ── */
 .featureList { list-style: none; padding: 0; margin: 0; }
-
+ 
 .featureItem {
   display: flex;
   align-items: flex-start;
@@ -102,7 +102,7 @@
   border-bottom: 1px solid #f0f0f0;
 }
 .featureItem:last-child { border-bottom: none; }
-
+ 
 .featureIcon {
   width: 34px; height: 34px;
   border-radius: 8px;
@@ -116,7 +116,7 @@
 .bgAmber  { background: #fff5e0; }
 .bgTeal   { background: #e0f8f2; }
 .bgRed    { background: #fff0f0; }
-
+ 
 .featureText {
   display: flex;
   flex-direction: column;
@@ -132,7 +132,7 @@
   color: #777;
   line-height: 1.45;
 }
-
+ 
 /* ── FORM ── */
 .formCard {
   flex: 0 0 350px;
@@ -143,12 +143,11 @@
   flex-direction: column;
   gap: 12px;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
-  position: sticky;
-  top: 24px;
+  /* ✅ removed position:sticky — now centered by parent align-items:center */
 }
-
+ 
 .formGroup { display: flex; flex-direction: column; width: 100%; }
-
+ 
 .input, .textarea {
   width: 100%;
   padding: 12px 15px;
@@ -165,7 +164,7 @@
 .input::placeholder, .textarea::placeholder { color: #aaa; }
 .input:focus, .textarea:focus { border-color: #3b9eff; }
 .textarea { resize: vertical; min-height: 96px; }
-
+ 
 .submitBtn {
   width: 100%;
   padding: 13px;
@@ -183,12 +182,12 @@
 }
 .submitBtn:hover:not(:disabled) { background: #e09518; transform: translateY(-1px); }
 .submitBtn:disabled { background: #f5c97a; cursor: not-allowed; }
-
+ 
 /* ── RESPONSIVE ── */
 @media (max-width: 860px) {
   .wrapper { flex-direction: column; gap: 34px; align-items: stretch; }
   .leftPanel { max-width: 100%; }
-  .formCard { flex: unset; width: 100%; position: static; }
+  .formCard { flex: unset; width: 100%; }
   .leftPanel h1 { font-size: 26px; }
   .typedText { min-width: 180px; }
 }

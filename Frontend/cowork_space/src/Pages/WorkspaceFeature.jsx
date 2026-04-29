@@ -4,50 +4,50 @@ import axiosInstance from "../Services/Axios";
 import styles from "../Styles/WorkspaceFeature.module.css";
 
 const PHRASES = [
-  "Flexible Hot Desks",
-  "Private Cabins",
-  "Fully Furnished Offices",
-  "Meeting & Conference Rooms",
-  "Virtual Office Plans",
-  "Coworking Day Passes",
+  "Custom Layout & Design",
+  "Branded Private Offices",
+  "Tailored Meeting Rooms",
+  "Flexible Seat Configuration",
+  "Personalised Amenity Packages",
+  "Dedicated Team Zones",
 ];
 
 const FEATURES = [
   {
-    icon: "📍",
-    bg: "bgBlue",
-    title: "Prime Business Address",
-    sub: "Establish credibility with a prestigious city-center address",
-  },
-  {
-    icon: "🤝",
-    bg: "bgGreen",
-    title: "Community & Networking",
-    sub: "Weekly events and startup connections",
-  },
-  {
-    icon: "🎁",
+    icon: "🎨",
     bg: "bgPurple",
-    title: "Partner Discounts",
-    sub: "Save on tools, legal & business services",
+    title: "Custom Interior Design",
+    sub: "Craft your office aesthetic — from furniture to flooring",
   },
   {
-    icon: "✈️",
-    bg: "bgAmber",
-    title: "Travel Benefits",
-    sub: "Airport lounge access & travel comfort",
+    icon: "🏷️",
+    bg: "bgBlue",
+    title: "Brand Identity Integration",
+    sub: "Your logo, colors, and culture embedded in every corner",
   },
   {
-    icon: "🏢",
+    icon: "🪑",
+    bg: "bgGreen",
+    title: "Flexible Seating Plans",
+    sub: "Hot desks, dedicated desks, or private cabins — your call",
+  },
+  {
+    icon: "📡",
     bg: "bgTeal",
-    title: "Reception Support",
-    sub: "Professional staff & mail handling",
+    title: "Tech & Connectivity Setup",
+    sub: "Custom IT infrastructure, server rooms, and high-speed internet",
   },
   {
-    icon: "🔒",
+    icon: "🔐",
     bg: "bgRed",
-    title: "24/7 Secure Access",
-    sub: "Full-time access with security",
+    title: "Private & Secure Access",
+    sub: "Biometric entry, CCTV, and dedicated secure zones",
+  },
+  {
+    icon: "📦",
+    bg: "bgAmber",
+    title: "All-Inclusive Packages",
+    sub: "Housekeeping, pantry, power backup — bundled your way",
   },
 ];
 
@@ -134,7 +134,7 @@ function SpecialContact() {
         message: "",
       });
 
-      navigate("/request-sent");
+     
     } catch (error) {
       console.error(error);
       alert("Something went wrong ❌");
@@ -158,12 +158,12 @@ function SpecialContact() {
       {/* MAIN */}
       <section className={styles.specialPage}>
         <div className={styles.wrapper}>
-          
+
           {/* LEFT CONTENT */}
           <div className={styles.leftPanel}>
-            <span className={styles.tag}>Modern Office Spaces</span>
+            <span className={styles.tag}>Customise Your Workspace</span>
 
-            <h1>Your Smartest Workspace Decision Starts Here</h1>
+            <h1>Build the Office That Works Exactly the Way You Do</h1>
 
             <div className={styles.typingLine}>
               <span className={styles.tick}>✓</span>
@@ -172,7 +172,8 @@ function SpecialContact() {
             </div>
 
             <p className={styles.description}>
-              Join professionals who scale faster using premium coworking spaces.
+              No two businesses are alike. Design your perfect workspace — from layout and branding to
+              amenities and tech — fully tailored to your team's needs.
             </p>
 
             <ul className={styles.featureList}>
@@ -192,7 +193,7 @@ function SpecialContact() {
 
           {/* FORM */}
           <form className={styles.formCard} onSubmit={handleSubmit}>
-            
+
             <input
               name="name"
               placeholder="Full Name *"
@@ -212,7 +213,7 @@ function SpecialContact() {
 
             <input
               name="company"
-              placeholder="Company"
+              placeholder="Type eg.Company..."
               value={form.company}
               onChange={handleChange}
               className={styles.input}
@@ -228,7 +229,7 @@ function SpecialContact() {
 
             <textarea
               name="message"
-              placeholder="Your requirement..."
+              placeholder="Describe your workspace requirement..."
               value={form.message}
               onChange={handleChange}
               className={styles.textarea}
@@ -239,7 +240,7 @@ function SpecialContact() {
               className={styles.submitBtn}
               disabled={loading}
             >
-              {loading ? "Submitting..." : "Get a Free Callback"}
+              {loading ? "Submitting..." : "Get a Free Consultation"}
             </button>
           </form>
         </div>

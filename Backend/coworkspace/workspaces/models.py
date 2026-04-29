@@ -1,6 +1,51 @@
 from django.db import models
 from django.contrib.auth.models import User
+class Amenity(models.Model):
+    ICON_CHOICES = [
+        ("wifi", "WiFi 📶"),
+        ("coffee", "Coffee ☕"),
+        ("24hr", "24 Hour ⏰"),
+        ("security", "Security 🛡️"),
+        ("parking", "Parking 🅿️"),
+        ("meeting", "Meeting 🏢"),
+        ("games", "Games 🎮"),
+        ("pantry", "Pantry 🍽️"),
+        ("cleaning", "Cleaning 🧹"),
+        ("support", "Support 💬"),
+        ("ac", "AC ❄️"),
+        ("printer", "Printer 🖨️"),
+        ("locker", "Locker 🔐"),
+        ("lounge", "Lounge 🛋️"),
+        ("elevator", "Elevator 🛗"),
+        ("reception", "Reception 🧑‍💼"),
+        ("conference", "Conference 📊"),
+        ("snacks", "Snacks 🍪"),
+        ("water", "Water 🚰"),
+        ("charging", "Charging 🔌"),
+        ("cctv", "CCTV 📹"),
+    ]
 
+    name = models.CharField(max_length=100)
+
+    # ✅ dropdown + manual support
+    icon = models.CharField(
+        max_length=50,
+        choices=ICON_CHOICES,
+        blank=True
+    )
+
+    # ✅ manual icon (optional)
+    custom_icon = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
+
+    def get_icon(self):
+        return self.custom_icon if self.custom_icon else self.icon
+
+    def __str__(self):
+        return self.name
 
 class Workspace(models.Model):
     owner = models.ForeignKey(
@@ -16,6 +61,7 @@ class Workspace(models.Model):
     location = models.CharField(max_length=200)
    
     price = models.IntegerField()
+    amenities = models.ManyToManyField(Amenity, blank=True)
     description = models.TextField()
     image = models.URLField()
 
@@ -100,7 +146,22 @@ class WorkspaceSlot(models.Model):
 
     def is_full(self):
         return self.booked_count >= self.capacity
-    
+
+class MonthlySlot(models.Model):
+    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    month = models.IntegerField()   # 1-12
+    year = models.IntegerField()
+
+    capacity = models.IntegerField(default=50)
+    booked = models.IntegerField(default=0)
+
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    is_full = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.workspace.name} - {self.month}/{self.year}"
 
     
 

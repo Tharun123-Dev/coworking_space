@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../Styles/Companies.css";
@@ -7,27 +6,24 @@ const companyOptions = [
   {
     id: 1,
     size: "Small",
-    title: "For Small Teams",
     subtitle: "1 – 20 Employees",
-    desc: "Flexible workspaces for startups and lean teams that need speed, simplicity, and a professional setup in Hyderabad.",
     features: ["Private Cabins", "Meeting Access", "Wi-Fi & Power Backup"],
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
   },
   {
     id: 2,
     size: "Medium",
-    title: "For Growing Companies",
     subtitle: "20 – 75 Employees",
-    desc: "Managed office solutions for growing teams that need more seats, better branding, and room to scale comfortably.",
     features: ["Dedicated Zones", "Custom Branding", "Managed Support"],
+    image: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=600&q=80",
     featured: true,
   },
   {
     id: 3,
     size: "Large",
-    title: "For Enterprise Teams",
     subtitle: "75 – 200+ Employees",
-    desc: "Full-floor and managed office setups for enterprise companies looking for privacy, custom layouts, and operational support.",
     features: ["Full-Floor Access", "Enterprise Fitouts", "Dedicated Manager"],
+    image: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80",
   },
 ];
 
@@ -35,60 +31,58 @@ const CompaniesSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section id="workspace-companies-section" className="ncs-section">
-      <div className="ncs-container">
-        <div className="ncs-header">
-          <span className="ncs-eyebrow">Hyderabad enterprise workspace solutions</span>
-          <h2 className="ncs-heading">Office Space for Every Team Size</h2>
-          <p className="ncs-subheading">
-            Simple workspace solutions for startups, growing companies, and enterprise teams across Hyderabad.
-          </p>
-        </div>
+    <section className="cs-section">
+      <div className="cs-header">
+        <span className="cs-eyebrow">Workspace Solutions · Hyderabad</span>
+        <h2 className="cs-title">Office Space for Every Team Size</h2>
+      </div>
 
-        <div className="ncs-grid">
-          {companyOptions.map((item) => (
-            <div
-              key={item.id}
-              className={`ncs-item ${item.featured ? "ncs-item--featured" : ""}`}
-            >
-              <div className="ncs-topline">
-                <span className="ncs-size">{item.size}</span>
-                {item.featured && <span className="ncs-tag">Recommended</span>}
+      <div className="cs-grid">
+        {companyOptions.map((item) => (
+          <div
+            key={item.id}
+            className={`cs-card ${item.featured ? "cs-card--featured" : ""}`}
+            style={{ backgroundImage: `url(${item.image})` }}
+          >
+            <div className="cs-overlay" />
+            <div className="cs-card-body">
+              <div>
+                {item.featured && <span className="cs-badge">Popular</span>}
+                <h3 className="cs-size">{item.size}</h3>
+                <p className="cs-sub">{item.subtitle}</p>
               </div>
-
-              <h3 className="ncs-title">{item.title}</h3>
-              <p className="ncs-subtitle">{item.subtitle}</p>
-              <p className="ncs-desc">{item.desc}</p>
-
-              <div className="ncs-features">
-                {item.features.map((feature) => (
-                  <span key={feature} className="ncs-feature">
-                    {feature}
-                  </span>
-                ))}
-              </div>
-
-              <div className="ncs-actions">
+              <div>
+                <ul className="cs-features">
+                  {item.features.map((f) => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
                 <button
-                  className="ncs-btn ncs-btn--primary"
-                  onClick={() => navigate(`/speciall-contact/${item.id}`)}
-                >
-                  Get a Quote
-                </button>
-                <button
-                  className="ncs-btn ncs-btn--secondary"
+                  className="cs-btn-quote"
                   onClick={() =>
                     navigate(`/speciall-contact/${item.id}`, {
-                      state: { tour: true },
+                      state: { workspaceSize: item.size },
                     })
                   }
                 >
-                  Book a Tour
+                  Get a Quote →
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="cs-tour">
+        <span>Want to see it in person?</span>
+        <button
+          className="cs-btn-tour"
+          onClick={() =>
+            navigate("/speciall-contact/tour", { state: { tour: true } })
+          }
+        >
+          Book a Tour
+        </button>
       </div>
     </section>
   );

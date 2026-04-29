@@ -66,6 +66,34 @@ function Auth() {
     return true;
   };
 
+  // ✅ Helper: after login, redirect back to original page with full state preserved
+  const redirectAfterLogin = (role) => {
+    if (role === "admin") {
+      navigate("/admin-dashboard", { replace: true });
+      return;
+    }
+    if (role === "owner") {
+      navigate("/owner-dashboard", { replace: true });
+      return;
+    }
+
+    // ✅ For regular users: go back to where they came from (e.g. HyderabadWorkspaces)
+    // and forward openBooking + workspaceId state so the booking modal auto-opens
+    const fromState = location.state;
+    const fromPath =
+      fromState?.from?.pathname
+        ? fromState.from.pathname + (fromState.from.search || "")
+        : "/";
+
+    navigate(fromPath, {
+      replace: true,
+      state: {
+        openBooking: fromState?.openBooking || false,
+        workspaceId: fromState?.workspaceId || null,
+      },
+    });
+  };
+
   const handleGuestLogin = async (role) => {
     const map = {
       admin: { username: "Fis", password: "Fis123" },
@@ -80,9 +108,8 @@ function Auth() {
       localStorage.setItem("role", res.data.role);
       showPopup("success", "Guest Login Successful");
       setTimeout(() => {
-        if (res.data.role === "admin") navigate("/admin-dashboard");
-        else if (res.data.role === "owner") navigate("/owner-dashboard");
-        else navigate("/");
+        // ✅ Guest login also respects the redirect-back flow
+        redirectAfterLogin(res.data.role);
       }, 700);
     } catch {
       showPopup("error", "Guest login failed");
@@ -113,10 +140,8 @@ function Auth() {
         localStorage.setItem("remember_me", rememberMe ? "true" : "false");
         showPopup("success", "Login successful");
         setTimeout(() => {
-          const role = res.data.role;
-          if (role === "admin") navigate("/admin-dashboard");
-          else if (role === "owner") navigate("/owner-dashboard");
-          else navigate("/");
+          // ✅ FIXED: now redirects back with booking state preserved
+          redirectAfterLogin(res.data.role);
         }, 800);
       } else {
         await axiosInstance.post("register/", {

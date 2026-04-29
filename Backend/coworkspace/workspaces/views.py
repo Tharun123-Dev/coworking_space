@@ -6,12 +6,13 @@ from rest_framework.permissions import IsAdminUser
 from workspaces.models import ActivityLog
 from django.shortcuts import get_object_or_404
 from .models import Workspace
-from .serializers import WorkspaceSerializer, WorkspaceCategorySerializer, WorkspaceCategory
+from .serializers import WorkspaceSerializer, WorkspaceCategorySerializer, WorkspaceCategory, AmenitySerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Workspace,WorkspaceSlot
+from .models import Workspace,WorkspaceSlot,MonthlySlot
+from bookings.models import Booking
 
 
 # 🔥 ADMIN + OWNER PERMISSION
@@ -37,20 +38,22 @@ class IsAdminOrOwner(BasePermission):
 def get_workspaces(request):
 
     city = request.GET.get("city")
-
-    # 🔥 owner dashboard filter
     owner_only = request.GET.get("owner")
 
+    # ✅ BASE QUERY (OPTIMIZED FOR AMENITIES)
+    workspaces = Workspace.objects.all().prefetch_related("amenities")
+
+    # ✅ OWNER FILTER
     if owner_only and request.user.is_authenticated:
-        workspaces = Workspace.objects.filter(owner=request.user)
+        workspaces = workspaces.filter(owner=request.user)
 
-    else:
-        if city:
-            workspaces = Workspace.objects.filter(city__icontains=city)
-        else:
-            workspaces = Workspace.objects.all()
+    # ✅ CITY FILTER
+    if city:
+        workspaces = workspaces.filter(city__icontains=city)
 
+    # ✅ SERIALIZE
     serializer = WorkspaceSerializer(workspaces, many=True)
+
     return Response(serializer.data)
 
 
@@ -70,23 +73,25 @@ def get_categories(request):
     serializer = WorkspaceCategorySerializer(data, many=True)
     return Response(serializer.data)
 
-
-from workspaces.models import ActivityLog
-
 @api_view(['POST'])
 @permission_classes([IsAdminOrOwner])
 def add_workspace(request):
 
     data = request.data.copy()
 
+    # ✅ GET AMENITIES FROM REQUEST
+    amenities_ids = data.pop("amenities", [])
+
     serializer = WorkspaceSerializer(data=data)
 
     if serializer.is_valid():
-        workspace = serializer.save(owner=request.user)   # ✅ store object
+        workspace = serializer.save(owner=request.user)
 
-        # ===========================
-        # ✅ ADD ACTIVITY LOG HERE
-        # ===========================
+        # ✅ SET AMENITIES
+        if amenities_ids:
+            workspace.amenities.set(amenities_ids)
+
+        # ✅ LOG
         ActivityLog.objects.create(
             user=request.user,
             action="CREATE",
@@ -94,9 +99,8 @@ def add_workspace(request):
             message=f"{request.user.username} added workspace {workspace.name}"
         )
 
-        return Response(serializer.data)
+        return Response(WorkspaceSerializer(workspace).data)
 
-    print(serializer.errors)
     return Response(serializer.errors, status=400)
 # ===========================
 # UPDATE WORKSPACE
@@ -112,17 +116,24 @@ def update_workspace(request, id):
     except Workspace.DoesNotExist:
         return Response({"error": "Workspace not found"}, status=404)
 
-    # ADMIN can edit all
     if not request.user.is_superuser:
         if workspace.owner != request.user:
             return Response({"error": "Not allowed"}, status=403)
 
-    serializer = WorkspaceSerializer(workspace, data=request.data)
+    data = request.data.copy()
+
+    # ✅ GET AMENITIES
+    amenities_ids = data.pop("amenities", [])
+
+    serializer = WorkspaceSerializer(workspace, data=data)
 
     if serializer.is_valid():
         updated_workspace = serializer.save(owner=workspace.owner)
 
-        # ✅ ADD LOG HERE (BEFORE RETURN)
+        # ✅ UPDATE AMENITIES
+        if amenities_ids is not None:
+            updated_workspace.amenities.set(amenities_ids)
+
         ActivityLog.objects.create(
             user=request.user,
             action="UPDATE",
@@ -130,9 +141,61 @@ def update_workspace(request, id):
             message=f"{request.user.username} updated workspace {updated_workspace.name}"
         )
 
-        return Response(serializer.data)
+        return Response(WorkspaceSerializer(updated_workspace).data)
 
     return Response(serializer.errors, status=400)
+
+from .models import Amenity
+@api_view(['GET'])
+def get_amenities(request):
+    amenities = Amenity.objects.all()
+    serializer = AmenitySerializer(amenities, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+def add_amenity(request):
+    serializer = AmenitySerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Amenity
+
+@api_view(['DELETE'])
+def delete_amenity(request, id):
+    try:
+        amenity = Amenity.objects.get(id=id)
+        amenity.delete()
+        return Response({"message": "Deleted"})
+    except Amenity.DoesNotExist:
+        return Response({"error": "Not found"}, status=404)
+    
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Amenity
+from .serializers import AmenitySerializer
+
+@api_view(['PUT'])
+def update_amenity(request, id):
+    try:
+        amenity = Amenity.objects.get(id=id)
+    except Amenity.DoesNotExist:
+        return Response({"error": "Amenity not found"}, status=404)
+
+    serializer = AmenitySerializer(amenity, data=request.data)
+    
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    
+    return Response(serializer.errors, status=400)
+
 
 @api_view(['PUT'])
 @permission_classes([IsAdminOrOwner])
@@ -341,12 +404,15 @@ def create_slot(request):
 
     workspace_id = request.data.get("workspace_id")
     date = request.data.get("date")
-    start_time = int(request.data.get("start_time"))
-    end_time = int(request.data.get("end_time"))
-    interval = int(request.data.get("interval", 1))
-    capacity = int(request.data.get("capacity", 50))
-    price = int(request.data.get("price", 0))
     slot_type = request.data.get("slot_type", "hour")
+
+    # ✅ SAFE COMMON FIELDS
+    try:
+        interval = int(request.data.get("interval", 1))
+        capacity = int(request.data.get("capacity", 50))
+        price = int(request.data.get("price", 0))
+    except:
+        return Response({"error": "Invalid numeric values"}, status=400)
 
     workspace = get_object_or_404(Workspace, id=workspace_id)
 
@@ -356,8 +422,26 @@ def create_slot(request):
 
     created_slots = []
 
-    # ✅ HOURLY SLOT GENERATION
+    # =========================
+    # ✅ HOURLY SLOT
+    # =========================
     if slot_type == "hour":
+
+        start_time = request.data.get("start_time")
+        end_time = request.data.get("end_time")
+
+        if start_time is None or end_time is None:
+            return Response(
+                {"error": "start_time and end_time required"},
+                status=400
+            )
+
+        try:
+            start_time = int(start_time)
+            end_time = int(end_time)
+        except:
+            return Response({"error": "Invalid time format"}, status=400)
+
         current = start_time
 
         while current < end_time:
@@ -373,8 +457,11 @@ def create_slot(request):
             created_slots.append(slot.id)
             current += interval
 
+    # =========================
     # ✅ FULL DAY SLOT
+    # =========================
     elif slot_type == "day":
+
         slot = WorkspaceSlot.objects.create(
             workspace=workspace,
             date=date,
@@ -384,11 +471,13 @@ def create_slot(request):
         )
         created_slots.append(slot.id)
 
+    else:
+        return Response({"error": "Invalid slot_type"}, status=400)
+
     return Response({
         "message": "Slots created successfully",
         "slots_created": len(created_slots)
     })
-
 
 @api_view(['GET'])
 def get_workspace_slots(request, workspace_id):
@@ -527,3 +616,137 @@ def workspace_month_status(request, workspace_id):
         data[current_date] = "full" if all_full else "available"
 
     return Response(data)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_month_slots(request):
+    workspace_id = request.data.get("workspace_id")
+    months = request.data.get("months", [])
+    year = request.data.get("year")
+    capacity = request.data.get("capacity")
+    price = request.data.get("price")
+
+    for month in months:
+        MonthlySlot.objects.create(
+            workspace_id=workspace_id,
+            month=month,
+            year=year,
+            capacity=capacity,
+            price=price,
+            created_by=request.user   # ✅ NOW WORKS
+        )
+
+    return Response({"message": "Monthly slots created"})
+# views.py
+@api_view(["GET"])
+def get_month_slots(request, workspace_id):
+    slots = MonthlySlot.objects.filter(workspace_id=workspace_id)
+
+    data = [
+        {
+            "id": s.id,
+            "month": s.month,
+            "year": s.year,
+            "price": s.price,
+            "capacity": s.capacity,
+            "booked": s.booked,
+            "is_full": s.is_full,
+        }
+        for s in slots
+    ]
+
+    return Response(data)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_monthly_slots(request):
+    slots = MonthlySlot.objects.filter(
+        workspace__owner=request.user
+    ).select_related("workspace")
+
+    data = [
+        {
+            "id": s.id,
+            "workspace_id": s.workspace.id,
+            "workspace_name": s.workspace.name,
+            "city": s.workspace.city,   # ✅ ADD THIS
+            "location": s.workspace.location,  # ✅ OPTIONAL (better UI)
+            "month": s.month,
+            "year": s.year,
+            "price": s.price,
+            "capacity": s.capacity,
+            "booked": s.booked,
+            "is_full": s.is_full,
+        }
+        for s in slots
+    ]
+
+    return Response(data)
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_monthly_slot(request, slot_id):
+    slot = MonthlySlot.objects.get(id=slot_id, created_by=request.user)
+
+    slot.capacity = request.data.get("capacity", slot.capacity)
+    slot.price = request.data.get("price", slot.price)
+
+    slot.save()
+
+    return Response({"message": "Updated"})
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_monthly_slot(request, slot_id):
+    slot = MonthlySlot.objects.get(id=slot_id, created_by=request.user)
+    slot.delete()
+    return Response({"message": "Deleted"})
+
+from django.db import transaction
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_month_booking(request):
+    slot_ids = request.data.get("slot_ids")   # LIST
+    seats = int(request.data.get("seats", 1))
+    payment_id = request.data.get("payment_id")
+
+    if not slot_ids or not isinstance(slot_ids, list):
+        return Response({"error": "slot_ids must be list"}, status=400)
+
+    total_price = 0
+    slots = []
+
+    # VALIDATE ALL FIRST
+    for slot_id in slot_ids:
+        slot = MonthlySlot.objects.get(id=slot_id)
+
+        if slot.booked + seats > slot.capacity:
+            return Response({
+                "error": f"{slot.month}/{slot.year} full"
+            }, status=400)
+
+        total_price += slot.price * seats
+        slots.append(slot)
+
+    # UPDATE ALL
+    for slot in slots:
+        slot.booked += seats
+
+        if slot.booked >= slot.capacity:
+            slot.is_full = True
+
+        slot.save()
+
+        Booking.objects.create(
+            user=request.user,
+            workspace=slot.workspace,
+            seats=seats,
+            total_price=slot.price * seats,
+            payment_id=payment_id,
+            booking_type="month",
+            status="confirmed",
+            month=slot.month,
+            year=slot.year
+        )
+
+    return Response({
+        "message": "Multi-month booking successful",
+        "total_price": total_price
+    })

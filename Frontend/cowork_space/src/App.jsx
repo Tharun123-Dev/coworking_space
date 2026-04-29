@@ -39,6 +39,7 @@ import AdminTickets from "./Pages/AdminTickets";
 import RecentActivity from "./Pages/RecentActivity";
 import AdminLayout from "./Components/AdminLayout";
 import AdminDashboards from "./Improved/AdminHyd";
+import AdminAmenities from "./Pages/AdminAmenities";
 // import SlotBookingPage from "./Pages/Slotbookingpage";
 
 function App() {
@@ -57,7 +58,7 @@ function App() {
     <Route path="/cart" element={<Cart />} />
     <Route path="/booking" element={<Booking />} />
     <Route path="/details/:id" element={<Details />} />
-    <Route path="/amenities" element={<Amenities />} />
+    {/* <Route path="/amenities" element={<Amenities />} /> */}
     <Route path="/Enterprise" element={<Enterprise />} />
     <Route path="/RightSpace" element={<RightSpace />} />
     <Route path="/workspaces/:type" element={<WorkspaceGallery />} />
@@ -84,7 +85,7 @@ function App() {
     <Route path="/owner-special-leads" element={<AdminSpecialLeads />} />
     <Route path="/admin-dashboards" element={<AdminDashboards />} />
      <Route path="/recent-activity" element={<RecentActivity />} />
-
+    <Route path="/amenities" element={<AdminAmenities/>} />
   </Route>
 
 

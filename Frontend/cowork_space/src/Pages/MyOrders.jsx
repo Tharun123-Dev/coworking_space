@@ -400,10 +400,12 @@ const pendingOrdersForCancel = useMemo(() => {
                           />
                         </td>
                         <td>{item.workspace}</td>
-                        <td>{item.location}</td>
+                        <td>{item.city}</td>
                         <td>{item.date}</td>
-                        <td>
-  {item.slot_type === "Hourly"
+<td>
+  {item.booking_type === "month"
+    ? "📅 Monthly Booking"
+    : item.slot_type === "Hourly"
     ? item.slot_time
     : "Full Day"}
 </td>

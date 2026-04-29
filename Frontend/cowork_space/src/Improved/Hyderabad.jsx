@@ -9,48 +9,56 @@ const workspaces = [
     label: "Hot Desk",
     tagline: "We Allow People to Feel Focused and Comfortable",
     image: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1400&q=85",
+    amenities: ["High-Speed Wi-Fi", "Ergonomic Chair", "Locker Access", "Cafeteria", "24/7 Access"],
   },
   {
     id: "dedicated-desk",
     label: "Dedicated Desk",
     tagline: "Your Permanent Desk, Your Personal Space",
     image: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?w=1400&q=85",
+    amenities: ["Reserved Desk", "Personal Storage", "Mail Handling", "Printing Access", "Meeting Room Credits"],
   },
   {
     id: "private-office",
     label: "Private Office Space",
     tagline: "Fully Branded Private Floors for Your Team",
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85",
+    amenities: ["Custom Branding", "Dedicated Floor", "IT Infrastructure", "Reception Support", "Concierge Service"],
   },
   {
     id: "private-cabin",
     label: "Private Cabin",
     tagline: "Focused, Enclosed Cabins for Deep Work",
     image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=1400&q=85",
+    amenities: ["Soundproofing", "Private Entry", "AC Control", "Whiteboards", "Power Backup"],
   },
   {
     id: "meeting-room",
     label: "Meeting Room",
     tagline: "Premium AV-Equipped Rooms for Every Occasion",
     image: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=1400&q=85",
+    amenities: ["4K Display", "Video Conferencing", "Whiteboard", "Seating up to 12", "Tea & Coffee"],
   },
   {
     id: "board-room",
     label: "Board Room",
     tagline: "Flagship Boardrooms for High-Stakes Decisions",
     image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?w=1400&q=85",
+    amenities: ["Executive Seating", "Dual Screens", "Catering Service", "Soundproofed Walls", "Secretarial Support"],
   },
   {
     id: "podcast",
     label: "Podcast",
     tagline: "Studio-Grade Recording and Streaming Space",
     image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=1400&q=85",
+    amenities: ["Pro Microphones", "Acoustic Treatment", "Live Streaming", "Video Recording", "Editing Suite"],
   },
   {
     id: "virtual-office",
     label: "Virtual Office",
     tagline: "Prestigious Address. Zero Overhead. Pure Freedom.",
     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=1400&q=85",
+    amenities: ["Business Address", "Mail Forwarding", "Call Answering", "GST Registration", "On-Demand Desk Access"],
   },
 ];
 
@@ -303,6 +311,14 @@ export default function WorkspaceSection() {
             <div className="ws-bar-left">
               <span className="ws-bar-type">{current.label}</span>
               <span className="ws-bar-tagline">{current.tagline}</span>
+              {/* ── Amenities ── */}
+              <div className="ws-amenities">
+                {current.amenities.map((item) => (
+                  <span key={item} className="ws-amenity-tag">
+                    ✓ {item}
+                  </span>
+                ))}
+              </div>
             </div>
             <button
               className="ws-bar-btn"

@@ -43,10 +43,12 @@ export default function Testimonials() {
     (active + 2) % n,
   ];
 
+  const prevTestimonial = () => setActive(p => (p - 1 + n) % n);
+  const nextTestimonial = () => setActive(p => (p + 1) % n);
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
-
         <div className={styles.top}>
           <p className={styles.badge}>Testimonial</p>
           <h2 className={styles.heading}>Do more than just work. Create. Innovate.</h2>
@@ -67,17 +69,32 @@ export default function Testimonials() {
           })}
         </div>
 
-        <div className={styles.dots}>
-          {testimonials.map((_, i) => (
-            <button
-              key={i}
-              className={`${styles.dot} ${i === active ? styles.dotActive : ""}`}
-              onClick={() => setActive(i)}
-              aria-label={`Testimonial ${i + 1}`}
-            />
-          ))}
+        <div className={styles.controls}>
+          <button 
+            className={styles.arrowLeft} 
+            onClick={prevTestimonial}
+            aria-label="Previous testimonial"
+          >
+            ‹
+          </button>
+          <div className={styles.dots}>
+            {testimonials.map((_, i) => (
+              <button
+                key={i}
+                className={`${styles.dot} ${i === active ? styles.dotActive : ""}`}
+                onClick={() => setActive(i)}
+                aria-label={`Testimonial ${i + 1}`}
+              />
+            ))}
+          </div>
+          <button 
+            className={styles.arrowRight} 
+            onClick={nextTestimonial}
+            aria-label="Next testimonial"
+          >
+            ›
+          </button>
         </div>
-
       </div>
     </section>
   );

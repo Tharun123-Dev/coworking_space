@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import workspace_month_status,update_slot,delete_slot,owner_slots,create_slot, get_workspace_slots,toggle_workspace,delete_activity,clear_all_activities,recent_activities,get_workspaces,add_workspace,update_workspace,delete_workspace,get_categories, add_category, delete_category, update_category
+from .views import get_month_slots,create_month_booking,update_monthly_slot,delete_monthly_slot,create_month_slots,get_monthly_slots,update_amenity,delete_amenity,add_amenity,get_amenities,workspace_month_status,update_slot,delete_slot,owner_slots,create_slot, get_workspace_slots,toggle_workspace,delete_activity,clear_all_activities,recent_activities,get_workspaces,add_workspace,update_workspace,delete_workspace,get_categories, add_category, delete_category, update_category
 
 urlpatterns = [
     path('', get_workspaces),
@@ -8,6 +8,11 @@ urlpatterns = [
     path('delete/<int:id>/', delete_workspace),
     path('categories/', get_categories),
     path('toggle/<int:id>/',toggle_workspace),
+    path('amenities/', get_amenities),
+    # path("amenities/", get_amenities),
+path("amenities/add/", add_amenity),
+path("amenities/delete/<int:id>/", delete_amenity),
+path("amenities/update/<int:id>/", update_amenity),
 
     # 🔹 ADMIN ACTIONS
     path('categories/add/', add_category),
@@ -22,4 +27,14 @@ path("slots/owner/", owner_slots),
 path("slot/update/<int:id>/", update_slot),
 path("slot/delete/<int:id>/", delete_slot),
 path("workspaces/slot/<int:workspace_id>/month/", workspace_month_status),
+path("month-slots/create/", create_month_slots),
+
+path("month-booking/", create_month_booking),
+# urls.py
+
+path("monthly-slots/", get_monthly_slots),
+   # all
+path("month-slots/<int:workspace_id>/", get_month_slots),  # specific
+path("monthly-slot/update/<int:slot_id>/", update_monthly_slot),
+path("monthly-slot/delete/<int:slot_id>/", delete_monthly_slot),
 ]

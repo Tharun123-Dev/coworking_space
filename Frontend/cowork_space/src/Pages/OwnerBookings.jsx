@@ -355,6 +355,7 @@ export default function OwnerBookings() {
                   <tr>
                     <th>Workspace</th>
                     <th>Customer</th>
+                    <th>City</th>
                     <th>Date</th>
                     <th>Slot</th>
                     <th>Amount</th>
@@ -394,6 +395,7 @@ export default function OwnerBookings() {
                         </td>
 
                         <td className="ob-user-cell">{item.user}</td>
+                        <td>{item.city}</td>
                         <td>{item.date}</td>
                         <td>
                           <div className="ob-dur-chip">

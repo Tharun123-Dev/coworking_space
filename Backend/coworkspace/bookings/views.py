@@ -21,83 +21,264 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from workspaces.models import WorkspaceSlot
 from .models import Booking
+from workspaces.models import MonthlySlot
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from workspaces.models import WorkspaceSlot, MonthlySlot
+from .models import Booking
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+
+from workspaces.models import WorkspaceSlot, MonthlySlot
+from .models import Booking
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_booking(request):
     try:
-        slot_id = request.data.get("slot_id")
-        seats = int(request.data.get("seats", 1))
+        user = request.user
+        print("REQUEST DATA:", request.data)
 
-        if not slot_id:
-            return Response({"error": "slot_id required"}, status=400)
+        slot_id = request.data.get("slot_id")
+        monthly_slot_ids = request.data.get("monthly_slot_ids", [])
+        booking_type = request.data.get("booking_type", "day")
+
+        # ✅ SAFE SEATS
+        try:
+            seats = int(request.data.get("seats", 1))
+        except:
+            return Response({"error": "Invalid seats"}, status=400)
 
         if seats < 1:
             return Response({"error": "Seats must be at least 1"}, status=400)
 
-        slot = get_object_or_404(WorkspaceSlot, id=slot_id)
+        # =========================
+        # ✅ DAY BOOKING
+        # =========================
+        if booking_type == "day":
 
-        available = slot.capacity - slot.booked_count
+            if not slot_id:
+                return Response({"error": "slot_id required"}, status=400)
 
-        if seats > available:
-            return Response({"error": f"Only {available} seats left"}, status=400)
+            slot = get_object_or_404(WorkspaceSlot, id=slot_id)
 
-        workspace = slot.workspace
-        user = request.user
+            available = slot.capacity - slot.booked_count
+            if seats > available:
+                return Response(
+                    {"error": f"Only {available} seats left"},
+                    status=400
+                )
 
-        booking = Booking.objects.create(
-            user=user,
-            slot=slot,
-            workspace=workspace,
-            owner=workspace.owner,
-            date=slot.date,
-            seats=seats,
-            total_price=slot.price * seats,
-            payment_status="VERIFIED",
-            status="confirmed"
-        )
+            booking = Booking.objects.create(
+                user=user,
+                slot=slot,
+                workspace=slot.workspace,
+                owner=slot.workspace.owner,
+                date=slot.date,   # ✅ already exists
+                seats=seats,
+                total_price=slot.price * seats,
+                payment_status="VERIFIED",
+                status="confirmed"
+            )
 
-        slot.booked_count += seats
-        slot.save()
+            slot.booked_count += seats
+            slot.save()
+
+        # =========================
+        # ✅ MONTH BOOKING
+        # =========================
+        elif booking_type == "month":
+
+            if not monthly_slot_ids:
+                return Response({"error": "monthly_slot_ids required"}, status=400)
+
+            try:
+                monthly_slot_ids = [int(mid) for mid in monthly_slot_ids]
+            except:
+                return Response({"error": "Invalid monthly_slot_ids"}, status=400)
+
+            total_price = 0
+            workspace = None
+
+            for mid in monthly_slot_ids:
+                mslot = get_object_or_404(MonthlySlot, id=mid)
+
+                if workspace is None:
+                    workspace = mslot.workspace
+
+                available = mslot.capacity - mslot.booked
+                if seats > available:
+                    return Response(
+                        {
+                            "error": f"{mslot.month}/{mslot.year} only {available} seats left"
+                        },
+                        status=400
+                    )
+
+                total_price += mslot.price * seats
+
+            # 🔥 FIX: ADD DATE (MANDATORY)
+            booking = Booking.objects.create(
+                user=user,
+                workspace=workspace,
+                owner=workspace.owner,
+                date=timezone.now().date(),   # ✅ FIXED HERE
+                seats=seats,
+                total_price=total_price,
+                payment_status="VERIFIED",
+                status="confirmed",
+                booking_type="month"
+            )
+
+            # update all slots
+            for mid in monthly_slot_ids:
+                mslot = MonthlySlot.objects.get(id=mid)
+                mslot.booked += seats
+                mslot.save()
+
+        else:
+            return Response({"error": "Invalid booking type"}, status=400)
 
         return Response({
             "message": "Booking successful",
             "booking_id": booking.id
         }, status=201)
 
-    except ValueError:
-        return Response({"error": "Invalid seats value"}, status=400)
-
     except Exception as e:
+        print("🔥 ERROR:", str(e))
         return Response({"error": str(e)}, status=500)
 # ===============================
-# ADD TO CART
-# ===============================
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+import json
+
+from .models import Cart, CartItem
+from workspaces.models import WorkspaceSlot, MonthlySlot
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_to_cart(request):
-    user = request.user
-    workspace_id = request.data.get('workspace_id')
-    duration = request.data.get('duration', 1)
+    try:
+        user = request.user
+        data = request.data
 
-    workspace = Workspace.objects.get(id=workspace_id)
+        print("REQUEST DATA:", data) 
 
-    cart, created = Cart.objects.get_or_create(user=user)
+        slot_id = data.get("slot_id")
+        monthly_slot_ids = data.get("monthly_slot_ids", [])
+        booking_type = data.get("booking_type", "day")
 
-    CartItem.objects.create(
-        cart=cart,
-        workspace=workspace,
-        duration=duration
-    )
+        # ✅ SAFE SEATS
+        try:
+            seats = int(data.get("seats", 1))
+        except:
+            return Response({"error": "Invalid seats"}, status=400)
 
-    return Response({"message": "Added to cart"})
+        if seats < 1:
+            return Response({"error": "Seats must be at least 1"}, status=400)
 
+        # ======================
+        # ✅ DAY BOOKING
+        # ======================
+        if booking_type == "day":
 
-# ===============================
-# GET CART
-# ===============================
+            if not slot_id:
+                return Response({"error": "slot_id required"}, status=400)
 
+            slot = WorkspaceSlot.objects.filter(id=slot_id).first()
+            if not slot:
+                return Response({"error": "Invalid slot"}, status=404)
 
+            available = slot.capacity - slot.booked_count
+            if seats > available:
+                return Response({"error": f"Only {available} seats left"}, status=400)
+
+            booking = Booking.objects.create(
+                user=user,
+                slot=slot,
+                workspace=slot.workspace,
+                owner=slot.workspace.owner,
+                date=slot.date,
+                seats=seats,
+                total_price=slot.price * seats,
+                payment_status="VERIFIED",
+                status="confirmed"
+            )
+
+            slot.booked_count += seats
+            slot.save()
+
+        # ======================
+        # ✅ MONTH BOOKING
+        # ======================
+        elif booking_type == "month":
+
+            if not monthly_slot_ids:
+                return Response({"error": "monthly_slot_ids required"}, status=400)
+
+            try:
+                monthly_slot_ids = [int(mid) for mid in monthly_slot_ids]
+            except:
+                return Response({"error": "Invalid monthly_slot_ids"}, status=400)
+
+            workspace = None
+            total_price = 0
+
+            for mid in monthly_slot_ids:
+                mslot = MonthlySlot.objects.filter(id=mid).first()
+
+                if not mslot:
+                    return Response({"error": f"Monthly slot {mid} not found"}, status=404)
+
+                if workspace is None:
+                    workspace = mslot.workspace
+
+                available = mslot.capacity - mslot.booked
+
+                if seats > available:
+                    return Response({
+                        "error": f"{mslot.month}/{mslot.year} only {available} seats left"
+                    }, status=400)
+
+                total_price += mslot.price * seats
+
+            booking = Booking.objects.create(
+                user=user,
+                workspace=workspace,
+                owner=workspace.owner,
+                seats=seats,
+                total_price=total_price,
+                payment_status="VERIFIED",
+                status="confirmed",
+                booking_type="month"
+            )
+
+            for mid in monthly_slot_ids:
+                mslot = MonthlySlot.objects.get(id=mid)
+                mslot.booked += seats
+                mslot.save()
+
+        else:
+            return Response({"error": "Invalid booking type"}, status=400)
+
+        return Response({
+            "message": "Booking created successfully",
+            "booking_id": booking.id
+        }, status=201)
+
+    except Exception as e:
+        print("🔥 ERROR:", str(e))   # 👈 CHECK THIS IN TERMINAL
+        return Response({"error": str(e)}, status=500)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -159,51 +340,77 @@ def clear_cart(request):
 # ===============================
 # ADMIN ALL BOOKINGS
 # ===============================
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Booking
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Booking
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_bookings(request):
 
     bookings = Booking.objects.all().order_by("-id")
-
     data = []
 
     for b in bookings:
         slot = getattr(b, "slot", None)
 
-        slot_type = "Full Day"
-        slot_time = "Full Day"
+        # =========================
+        # ✅ FORCE CORRECT TYPE
+        # =========================
+        booking_type = (b.booking_type or "").lower()
 
-        if slot:
-            if slot.slot_type == "hour":
-                slot_type = "Hourly"
-                slot_time = f"{slot.start_time} - {slot.end_time}"
-            else:
-                slot_type = "Full Day"
+        # =========================
+        # ✅ SLOT LOGIC (FINAL FIX)
+        # =========================
+        if booking_type == "month":
+            slot_type = "Monthly"
+            slot_time = "Monthly Booking"
+
+        elif slot and slot.slot_type == "hour":
+            slot_type = "Hourly"
+            slot_time = f"{slot.start_time} - {slot.end_time}"
+
+        else:
+            slot_type = "Full Day"
+            slot_time = "Full Day"
 
         data.append({
             "id": b.id,
 
+            # 👤 USERS
             "owner": b.owner.username if b.owner else "",
             "user": b.user.username if b.user else "",
 
-            "workspace": b.workspace.name,
-            "location": b.workspace.location,
+            # 🏢 WORKSPACE
+            "workspace": b.workspace.name if b.workspace else "",
+            "location": getattr(b.workspace, "location", ""),
+            "city": getattr(b.workspace, "city", ""),
 
-            # ✅ REPLACE duration with SLOT
+            # 🕒 SLOT INFO
             "slot_type": slot_type,
             "slot_time": slot_time,
+            "booking_type": booking_type,   # 🔥 FIXED LOWERCASE
 
+            # 📅 BOOKING
             "date": b.date,
             "price": b.total_price,
             "status": b.status,
 
+            # 💳 PAYMENT
             "payment_status": getattr(b, "payment_status", "PAID"),
             "refund_amount": getattr(b, "refund_amount", 0),
 
+            # 🖼 IMAGE SAFE
             "image": (
                 b.workspace.image.url
-                if hasattr(b.workspace.image, "url")
-                else b.workspace.image
+                if b.workspace and hasattr(b.workspace.image, "url")
+                else getattr(b.workspace, "image", "")
             )
         })
 
@@ -212,59 +419,38 @@ from rest_framework.response import Response
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def owner_bookings(request):
+    try:
+        bookings = Booking.objects.filter(
+            owner=request.user   # 🔥 THIS IS KEY FIX
+        ).select_related("workspace").order_by("-id")
 
-    bookings = Booking.objects.filter(
-        owner=request.user
-    ).order_by("-id")
+        data = []
 
-    data = []
-    for b in bookings:
-        workspace = b.workspace
-        slot = b.slot
+        for b in bookings:
+            data.append({
+                "id": b.id,
+                "user": b.user.username if b.user else "",
+                "workspace": b.workspace.name if b.workspace else "",
+                "location": b.workspace.location if b.workspace else "",
+                "image": b.workspace.image if b.workspace else "",
+                 "city": b.workspace.city if b.workspace else "",   
 
-        # ✅ SLOT INFO
-        slot_type = "Full Day"
-        slot_time = "Full Day"
+                "date": getattr(b, "date", ""),   # day booking
+                "slot_type": getattr(b, "booking_type", "day"),
 
-        if slot:
-            if slot.slot_type == "hour":
-                slot_type = "Hourly"
-                slot_time = f"{slot.start_time} - {slot.end_time}"
-            else:
-                slot_type = "Full Day"
-                slot_time = "Full Day"
+                "slot_time": (
+                    f"{b.slot.start_time} - {b.slot.end_time}"
+                    if hasattr(b, "slot") and b.slot else "Monthly"
+                ),
 
-        data.append({
-            "id": b.id,
+                "total_price": b.total_price,
+                "status": b.status,
+            })
 
-            # ✅ USER INFO (IMPORTANT)
-            "user": b.user.username,
+        return Response(data)
 
-            # ✅ WORKSPACE
-            "workspace": workspace.name if workspace else "",
-            "location": workspace.location if workspace else "",
-
-            # ✅ SLOT
-            "slot_type": slot_type,
-            "slot_time": slot_time,
-
-            # ✅ DATE + PRICE
-            "date": b.date,
-            "total_price": b.total_price,
-
-            # ✅ STATUS
-            "status": b.status,
-            "payment_status": b.payment_status,
-
-            # ✅ IMAGE
-               "image": (
-                b.workspace.image.url
-                if hasattr(b.workspace.image, "url")
-                else b.workspace.image
-            ),
-        })
-
-    return Response(data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 # ===============================
 # CONFIRM BOOKING (OWNER)
 # ===============================
@@ -385,7 +571,7 @@ def admin_bookings(request):
         "workspace",
         "workspace__owner",
         "user",
-        "slot"   # ✅ important if slot exists
+        "slot"
     ).order_by("-id")
 
     data = []
@@ -393,33 +579,43 @@ def admin_bookings(request):
     for b in bookings:
         slot = getattr(b, "slot", None)
 
-        slot_type = "Full Day"
-        slot_time = "Full Day"
+        # ✅ FIX: normalize booking_type
+        booking_type = (b.booking_type or "").lower()
 
-        if slot:
-            if getattr(slot, "slot_type", "") == "hour":
-                slot_type = "Hourly"
-                slot_time = f"{slot.start_time} - {slot.end_time}"
-            else:
-                slot_type = "Full Day"
+        # =========================
+        # ✅ CORRECT SLOT LOGIC
+        # =========================
+        if booking_type == "month":
+            slot_type = "Monthly"
+            slot_time = "Monthly Booking"
+
+        elif slot and getattr(slot, "slot_type", "") == "hour":
+            slot_type = "Hourly"
+            slot_time = f"{slot.start_time} - {slot.end_time}"
+
+        else:
+            slot_type = "Full Day"
+            slot_time = "Full Day"
 
         data.append({
             "id": b.id,
-            
+
             "owner": b.workspace.owner.username if b.workspace and b.workspace.owner else "",
             "user": b.user.username if b.user else "",
             "workspace": b.workspace.name if b.workspace else "",
             "location": b.workspace.location if b.workspace else "",
+            "city": getattr(b.workspace, "city", ""),
+
             "date": b.date,
 
-            # ✅ FIXED (instead of duration)
+            # ✅ FIXED OUTPUT
             "slot_type": slot_type,
             "slot_time": slot_time,
+            "booking_type": booking_type,   # 🔥 IMPORTANT
 
             "price": b.total_price,
             "status": b.status,
 
-            # ✅ SAME IMAGE (unchanged as you requested)
             "image": (
                 b.workspace.image.url
                 if hasattr(b.workspace.image, "url")
@@ -429,9 +625,6 @@ def admin_bookings(request):
 
     return Response(data)
 
-
-# ===============================
-# USER MY ORDERS
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_orders(request):
@@ -443,17 +636,23 @@ def my_orders(request):
         workspace = b.workspace
         slot = b.slot
 
-        # ✅ SLOT TYPE
-        slot_type = "Full Day"
-        slot_time = "Full Day"
+        # =========================
+        # ✅ SLOT LOGIC FIX
+        # =========================
+        if b.booking_type == "month":
+            slot_type = "Monthly"
+            slot_time = "Monthly Booking"
 
-        if slot:
+        elif slot:
             if slot.slot_type == "hour":
                 slot_type = "Hourly"
                 slot_time = f"{slot.start_time} - {slot.end_time}"
             else:
                 slot_type = "Full Day"
                 slot_time = "Full Day"
+        else:
+            slot_type = "Full Day"
+            slot_time = "Full Day"
 
         data.append({
             "id": b.id,
@@ -464,9 +663,10 @@ def my_orders(request):
             "city": getattr(workspace, "city", ""),
             "area": getattr(workspace, "area", ""),
 
-            # ✅ SLOT INFO (IMPORTANT)
+            # ✅ SLOT INFO
             "slot_type": slot_type,
             "slot_time": slot_time,
+            "booking_type": b.booking_type,   # 🔥 ADD THIS
 
             # ✅ DATE
             "date": b.date,
@@ -480,12 +680,12 @@ def my_orders(request):
             "payment_status": getattr(b, "payment_status", "PAID"),
             "refund_amount": getattr(b, "refund_amount", 0),
 
-           # ✅ SAFE IMAGE FIX
-    "image": (
-        b.workspace.image.url
-        if hasattr(b.workspace.image, "url")
-        else b.workspace.image
-    )
+            # ✅ IMAGE FIX
+            "image": (
+                workspace.image.url
+                if hasattr(workspace.image, "url")
+                else workspace.image
+            ) if workspace else ""
         })
 
     return Response(data)

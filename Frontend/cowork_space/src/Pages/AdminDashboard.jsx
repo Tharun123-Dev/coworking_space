@@ -65,7 +65,7 @@ const SIDEBAR_GROUPS = [
     children:[
       { id:"leads",      label:"View Leads",   icon:IC.leads,      path:"/admin-leads" },
       { id:"offerleads", label:"Offer Leads",  icon:IC.offers,     path:"/admin-leadss" },
-      { id:"enterprise", label:"Modern Leads", icon:IC.enterprise, path:"/admin-Enterprise" },
+      { id:"enterprise", label:"Customise Leads", icon:IC.enterprise, path:"/admin-Enterprise" },
       { id:"ownerlead",  label:"Owner Leads",  icon:IC.tag,        path:"/owner-special-leads" },
     ]
   },
@@ -92,6 +92,12 @@ const SIDEBAR_GROUPS = [
     id:"activity-group", label:"Activity", icon:IC.activity,
     children:[
       { id:"bookings", label:"Recent-Activity", icon:IC.bookings, path:"/recent-activity" },
+    ]
+  },
+    {
+    id:"amenities-group", label:"Amenities", icon:IC.amenities,
+    children:[
+      { id:"bookings", label:"Amenities", icon:IC.bookings, path:"/amenities" },
     ]
   },
 ];

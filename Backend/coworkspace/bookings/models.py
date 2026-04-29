@@ -64,6 +64,7 @@ class Booking(models.Model):
     )
 
     date = models.DateField()
+    booking_type=models.CharField(max_length=10, default="day")
    
 
     total_price = models.IntegerField(default=0)

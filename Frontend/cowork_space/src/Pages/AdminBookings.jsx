@@ -67,11 +67,18 @@ const getStatusClass = (status) => {
     return ["1Gbps WiFi", "24/7 Access", "AC", "Backup Power", "Parking"];
   }, [selectedBooking]);
 
-  const bookingPriceLabel = useMemo(() => {
+const bookingPriceLabel = useMemo(() => {
   if (!selectedBooking) return "";
-  return selectedBooking.slot_type === "Hourly"
-    ? "Hourly Booking"
-    : "Full Day Booking";
+
+  if (selectedBooking.booking_type === "month") {
+    return "Monthly Booking";
+  }
+
+  if (selectedBooking.slot_type === "Hourly") {
+    return "Hourly Booking";
+  }
+
+  return "Full Day Booking";
 }, [selectedBooking]);
 
   return (
@@ -162,6 +169,7 @@ const getStatusClass = (status) => {
                   <th>User</th>
                   <th>Workspace</th>
                   <th>Location</th>
+                  <th>City</th>
                   <th>Date</th>
                   <th>Slot</th>
                   <th>Price</th>
@@ -190,12 +198,21 @@ const getStatusClass = (status) => {
                     <td>{item.user || "-"}</td>
                     <td><strong className="ws-name">{item.workspace || "-"}</strong></td>
                     <td><span className="location-chip">📍 {item.location || "-"}</span></td>
+                    <td>{item.city || "-"}</td>
                     <td>{item.date || "-"}</td>
                     <td>
   <div className="duration-chip">
-    <strong>{item.slot_type}</strong>
+    <strong>
+      {item.booking_type === "month"
+        ? "Monthly"
+        : item.slot_type}
+    </strong>
     <br />
-    <small>{item.slot_time}</small>
+    <small>
+      {item.booking_type === "month"
+        ? "Monthly Booking"
+        : item.slot_time}
+    </small>
   </div>
 </td>
                     <td><span className="price-text">₹{item.price}</span></td>
@@ -234,7 +251,10 @@ const getStatusClass = (status) => {
                       { label: "Date",     value: item.date || "-"     },
                      {
   label: "Slot",
-  value: `${item.slot_type} (${item.slot_time})`
+  value:
+  item.booking_type === "month"
+    ? "Monthly Booking"
+    : `${item.slot_type} (${item.slot_time})`
 },
                     ].map(r => (
                       <div key={r.label} className="mobile-card-row">

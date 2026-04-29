@@ -71,11 +71,18 @@ export default function Navbar() {
   };
 
   /* clicking a type → HyderabadWorkspaces with ?type= so it can pre-filter */
-  const goToType = (typeLabel) => {
-    navigate(`/Enterprise?type=${encodeURIComponent(typeLabel)}`);
-    setWsOpen(false);
-    closeDrawer();
-  };
+const goToType = (typeLabel) => {
+  navigate(`/Enterprise?type=${encodeURIComponent(typeLabel)}`);
+  setWsOpen(false);
+  closeDrawer();
+};
+
+const goToLocation = (loc) => {
+  navigate(`/Enterprise?location=${encodeURIComponent(loc)}`);
+  setGalOpen(false);
+  setMLocOpen(false);
+  closeDrawer();
+};
 
   const handleLogout = () => {
     ["access","refresh","is_admin","username"].forEach((k) => localStorage.removeItem(k));
@@ -91,10 +98,11 @@ export default function Navbar() {
   "Kondapur",
   "Financial District",
 ];
-const goToLocation = (loc) => {
-  navigate(`/Enterprise?location=${encodeURIComponent(loc)}`);
-  closeDrawer(); // auto close
-};
+// const goToLocation = (loc) => {
+//   navigate(`/Enterprise?location=${encodeURIComponent(loc)}`);
+//   closeDrawer(); // auto close
+// };
+
   const enterWs  = () => { clearTimeout(wsTimer.current);  setWsOpen(true);  };
   const leaveWs  = () => { wsTimer.current  = setTimeout(() => setWsOpen(false), 160); };
   const enterGal = () => { clearTimeout(galTimer.current); setGalOpen(true);  };
@@ -172,9 +180,9 @@ const goToLocation = (loc) => {
   </div>
 </div>
 
-            <button className={styles.link} onClick={() => navigate("/amenities")}>
+            {/* <button className={styles.link} onClick={() => navigate("/amenities")}>
               Amenities
-            </button>
+            </button> */}
 
             {/* Gallery */}
             {/* <div className={styles.dropWrap} onMouseEnter={enterGal} onMouseLeave={leaveGal}>
@@ -365,7 +373,7 @@ const goToLocation = (loc) => {
     {/* Amenities */}
     <div className={styles.mRow} onClick={() => go("/amenities")}>
       <span className={styles.mRowIco}>✦</span>
-      <span className={styles.mRowTxt}>Amenities</span>
+      {/* <span className={styles.mRowTxt}>Amenities</span> */}
       <span className={styles.mChev}>›</span>
     </div>
 
