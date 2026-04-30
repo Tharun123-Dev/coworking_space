@@ -66,7 +66,7 @@ function Auth() {
     return true;
   };
 
-  // ✅ Helper: after login, redirect back to original page with full state preserved
+  // ✅ FIXED: Preserve ALL booking state including bookingMode
   const redirectAfterLogin = (role) => {
     if (role === "admin") {
       navigate("/admin-dashboard", { replace: true });
@@ -77,8 +77,7 @@ function Auth() {
       return;
     }
 
-    // ✅ For regular users: go back to where they came from (e.g. HyderabadWorkspaces)
-    // and forward openBooking + workspaceId state so the booking modal auto-opens
+    // ✅ Preserve COMPLETE booking state: openBooking, workspaceId, AND bookingMode
     const fromState = location.state;
     const fromPath =
       fromState?.from?.pathname
@@ -90,6 +89,7 @@ function Auth() {
       state: {
         openBooking: fromState?.openBooking || false,
         workspaceId: fromState?.workspaceId || null,
+        bookingMode: fromState?.bookingMode || "day", // ✅ CRITICAL FIX
       },
     });
   };
@@ -108,7 +108,6 @@ function Auth() {
       localStorage.setItem("role", res.data.role);
       showPopup("success", "Guest Login Successful");
       setTimeout(() => {
-        // ✅ Guest login also respects the redirect-back flow
         redirectAfterLogin(res.data.role);
       }, 700);
     } catch {
@@ -140,7 +139,6 @@ function Auth() {
         localStorage.setItem("remember_me", rememberMe ? "true" : "false");
         showPopup("success", "Login successful");
         setTimeout(() => {
-          // ✅ FIXED: now redirects back with booking state preserved
           redirectAfterLogin(res.data.role);
         }, 800);
       } else {
@@ -168,7 +166,6 @@ function Auth() {
 
   return (
     <section className={styles.authPage}>
-      {/* Popup */}
       {popup.show && (
         <div className={`${styles.popup} ${popup.type === "success" ? styles.popupSuccess : styles.popupError}`}>
           <span className={styles.popupIcon}>{popup.type === "success" ? "✓" : "✕"}</span>
@@ -177,8 +174,6 @@ function Auth() {
       )}
 
       <div className={styles.authWrapper}>
-
-        {/* ── LEFT PANEL ── */}
         <div className={styles.leftPanel}>
           <div className={styles.brandMark}>
             <div className={styles.brandLogo}>CW</div>
@@ -206,9 +201,7 @@ function Auth() {
           </div>
         </div>
 
-        {/* ── RIGHT PANEL ── */}
         <div className={styles.rightPanel}>
-          {/* Tab toggle */}
           <div className={styles.tabRow}>
             <button
               className={`${styles.tab} ${isLogin ? styles.tabActive : ""}`}
@@ -226,7 +219,6 @@ function Auth() {
             {isLogin ? "Enter your credentials to continue" : "Fill in the details below"}
           </p>
 
-          {/* Form fields */}
           <div className={styles.fields}>
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Username</label>
@@ -315,16 +307,13 @@ function Auth() {
             )}
           </div>
 
-          {/* Primary CTA */}
           <button onClick={handleSubmit} className={styles.submitBtn} disabled={loading}>
             {loading ? <span className={styles.spinner} /> : null}
             {loading ? "Please wait…" : isLogin ? "Login" : "Create Account"}
           </button>
 
-          {/* Divider */}
           <div className={styles.divider}><span>or try a guest account</span></div>
 
-          {/* Guest buttons */}
           <div className={styles.guestRow}>
             {["admin", "owner", "user"].map((role) => (
               <button
@@ -338,7 +327,6 @@ function Auth() {
             ))}
           </div>
 
-          {/* Switch link */}
           {roleType === "user" && (
             <p className={styles.switchText} onClick={() => { setIsLogin(!isLogin); resetForm(); }}>
               {isLogin ? "Don't have an account? " : "Already have an account? "}
@@ -346,7 +334,6 @@ function Auth() {
             </p>
           )}
         </div>
-
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/Home.module.css";
 import Reveal from "../Pages/Reveal";
@@ -10,6 +11,7 @@ function HomePage() {
   const [formOpen, setFormOpen] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const canvasRef = useRef(null);
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: "",
@@ -18,6 +20,20 @@ function HomePage() {
     city: "",
     message: ""
   });
+
+  const scrollToCompanies = () => {
+    const el = document.getElementById("workspace-companies-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/");
+      setTimeout(() => {
+        document
+          .getElementById("workspace-companies-section")
+          ?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -131,7 +147,6 @@ function HomePage() {
     <div className={styles.home}>
       {/* ========== HERO SECTION ========== */}
       <section className={styles.hero}>
-
         {/* Video Background */}
         <div className={styles.videoBg}>
           <video autoPlay muted loop playsInline className={styles.videoIframe}>
@@ -156,7 +171,6 @@ function HomePage() {
 
         {/* Hero content */}
         <div className={styles.heroContent}>
-
           {/* LEFT - Text + Stats */}
           <div className={styles.heroLeft}>
             <Reveal>
@@ -176,8 +190,8 @@ function HomePage() {
               </h1>
 
               <p className={styles.heroSubtitle}>
-                Premium workspaces across Gachibowli, Hitec City, Madhapur &amp; more.
-                Flexible day passes, dedicated desks &amp; private offices for startups &amp; enterprises.
+                Premium workspaces across Gachibowli, Hitec City, Madhapur & more.
+                Flexible day passes, dedicated desks & private offices for startups & enterprises.
               </p>
 
               <div className={styles.heroDivider}>
@@ -202,14 +216,14 @@ function HomePage() {
               </div>
 
               <div className={styles.ctaRow}>
-                <a href="#hyd" className={styles.exploreBtn}>
+                <button onClick={scrollToCompanies} className={styles.exploreBtn}>
                   <span className={styles.btnShine}></span>
-                  <span>Explore Hyderabad Spaces</span>
+                  <span>Explore More</span>
                   <span className={styles.btnArrow}>→</span>
-                </a>
-                <a href="#hyd" className={styles.ghostBtn}>
-                  <span>View All Spaces</span>
-                </a>
+                </button>
+                <button onClick={scrollToCompanies} className={styles.ghostBtn}>
+                  <span>View More Spaces</span>
+                </button>
               </div>
 
               <div className={styles.trustBadges}>
@@ -225,7 +239,6 @@ function HomePage() {
           {/* RIGHT - Form */}
           <Reveal>
             <div className={styles.formWrapper}>
-
               <button
                 className={styles.formToggle}
                 onClick={() => setFormOpen(!formOpen)}
@@ -236,7 +249,6 @@ function HomePage() {
               </button>
 
               <div className={`${styles.heroForm} ${formOpen ? styles.formVisible : ""}`}>
-
                 {/* Decorative corner lines */}
                 <span className={`${styles.corner} ${styles.cornerTL}`}></span>
                 <span className={`${styles.corner} ${styles.cornerTR}`}></span>
@@ -252,7 +264,7 @@ function HomePage() {
                   </div>
                   <div>
                     <h3>Find Your Perfect Space</h3>
-                    <p>Premium offices in Gachibowli, Hitec City &amp; more</p>
+                    <p>Premium offices in Gachibowli, Hitec City & more</p>
                   </div>
                 </div>
 
@@ -403,7 +415,7 @@ function HomePage() {
 
                     <p className={styles.formFootNote}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                      Your details are safe &amp; never shared
+                      Your details are safe & never shared
                     </p>
                   </form>
                 )}

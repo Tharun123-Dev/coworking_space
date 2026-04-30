@@ -8,14 +8,16 @@ const companyOptions = [
     size: "Small",
     subtitle: "1 – 20 Employees",
     features: ["Private Cabins", "Meeting Access", "Wi-Fi & Power Backup"],
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
+    image:
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
   },
   {
     id: 2,
     size: "Medium",
     subtitle: "20 – 75 Employees",
     features: ["Dedicated Zones", "Custom Branding", "Managed Support"],
-    image: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=600&q=80",
+    image:
+      "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=600&q=80",
     featured: true,
   },
   {
@@ -23,15 +25,31 @@ const companyOptions = [
     size: "Large",
     subtitle: "75 – 200+ Employees",
     features: ["Full-Floor Access", "Enterprise Fitouts", "Dedicated Manager"],
-    image: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80",
+    image:
+      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80",
   },
 ];
 
 const CompaniesSection = () => {
   const navigate = useNavigate();
 
+  const scrollToCompanies = () => {
+    const el = document.getElementById("workspace-companies-section");
+
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/");
+      setTimeout(() => {
+        document
+          .getElementById("workspace-companies-section")
+          ?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }
+  };
+
   return (
-    <section className="cs-section">
+    <section id="workspace-companies-section" className="cs-section">
       <div className="cs-header">
         <span className="cs-eyebrow">Workspace Solutions · Hyderabad</span>
         <h2 className="cs-title">Office Space for Every Team Size</h2>
@@ -51,12 +69,14 @@ const CompaniesSection = () => {
                 <h3 className="cs-size">{item.size}</h3>
                 <p className="cs-sub">{item.subtitle}</p>
               </div>
+
               <div>
                 <ul className="cs-features">
                   {item.features.map((f) => (
                     <li key={f}>{f}</li>
                   ))}
                 </ul>
+
                 <button
                   className="cs-btn-quote"
                   onClick={() =>
@@ -75,14 +95,18 @@ const CompaniesSection = () => {
 
       <div className="cs-tour">
         <span>Want to see it in person?</span>
-        <button
-          className="cs-btn-tour"
-          onClick={() =>
-            navigate("/speciall-contact/tour", { state: { tour: true } })
-          }
-        >
-          Book a Tour
-        </button>
+        <div className="cs-tour-actions">
+          <button
+            className="cs-btn-tour"
+            onClick={() =>
+              navigate("/speciall-contact/tour", { state: { tour: true } })
+            }
+          >
+            Book a Tour
+          </button>
+
+       
+        </div>
       </div>
     </section>
   );

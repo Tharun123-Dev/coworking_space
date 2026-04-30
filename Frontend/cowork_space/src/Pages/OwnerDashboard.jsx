@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/OwnerDashboard.module.css";
 import { useNavigate } from "react-router-dom";
@@ -54,17 +54,20 @@ const MONTH_OPTIONS = [
 const NAV_ITEMS = [
   { key: "overview", icon: "⊞", label: "Overview" },
   { key: "workspaces", icon: "🏢", label: "Workspaces" },
+
   { key: "slots", icon: "⏰", label: "Slot Management" },
   { key: "monthlySlots", icon: "📅", label: "Monthly Slots" },
   { key: "bookings", icon: "📋", label: "My Bookings", route: "/owner-bookings" },
   { key: "ownerLeads", icon: "📌", label: "Owner Leads", route: "/owner-leads" },
   { key: "companyLeads", icon: "🏷️", label: "Company Leads", route: "/company-leads" },
+    { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
 ];
 
 function OwnerDashboard() {
   const navigate = useNavigate();
 
   const [workspaces, setWorkspaces] = useState([]);
+  const [allWorkspaces, setAllWorkspaces] = useState([]);
   const [slots, setSlots] = useState([]);
   const [monthlySlots, setMonthlySlots] = useState([]);
   const [editMonthId, setEditMonthId] = useState(null);
@@ -94,7 +97,6 @@ function OwnerDashboard() {
     price: "",
     image: "",
     description: "",
-    is_available: true,
     amenities: [],
   });
 
@@ -111,6 +113,8 @@ function OwnerDashboard() {
   });
 
   const [editSlotId, setEditSlotId] = useState(null);
+  const [workspaceSearch, setWorkspaceSearch] = useState("");
+  const [suggestSearch, setSuggestSearch] = useState("");
 
   const fetchAmenities = () =>
     axiosInstance
@@ -121,11 +125,14 @@ function OwnerDashboard() {
   const fetchWorkspaces = () =>
     axiosInstance
       .get("workspaces/?owner=true")
-      .then((res) => {
-        console.log("UPDATED WORKSPACES =>", res.data);
-        setWorkspaces(Array.isArray(res.data) ? res.data : []);
-      })
+      .then((res) => setWorkspaces(Array.isArray(res.data) ? res.data : []))
       .catch((err) => console.error("Workspace fetch error:", err));
+
+  const fetchAllWorkspaces = () =>
+    axiosInstance
+      .get("workspaces/")
+      .then((res) => setAllWorkspaces(Array.isArray(res.data) ? res.data : []))
+      .catch((err) => console.error("All workspaces fetch error:", err));
 
   const fetchRevenue = () =>
     axiosInstance
@@ -139,15 +146,15 @@ function OwnerDashboard() {
       .then((res) => setSlots(res.data))
       .catch((err) => console.error("Slot fetch error:", err));
 
-  const fetchMonthlySlots = () => {
+  const fetchMonthlySlots = () =>
     axiosInstance
       .get("workspaces/monthly-slots/")
       .then((res) => setMonthlySlots(Array.isArray(res.data) ? res.data : []))
       .catch((err) => console.error("Monthly slots fetch error:", err));
-  };
 
   useEffect(() => {
     fetchWorkspaces();
+    fetchAllWorkspaces();
     fetchRevenue();
     fetchSlots();
     fetchAmenities();
@@ -162,7 +169,6 @@ function OwnerDashboard() {
       price: "",
       image: "",
       description: "",
-      is_available: true,
       amenities: [],
     });
     setEditId(null);
@@ -217,6 +223,7 @@ function OwnerDashboard() {
 
     const payload = {
       ...form,
+      price: Number(form.price),
       amenities: form.amenities.map(Number),
     };
 
@@ -227,6 +234,7 @@ function OwnerDashboard() {
           alert("Workspace Updated ✅");
           resetWorkspaceForm();
           fetchWorkspaces();
+          fetchAllWorkspaces();
         })
         .catch((err) => {
           console.error(err?.response?.data || err);
@@ -239,6 +247,7 @@ function OwnerDashboard() {
           alert("Workspace Added ✅");
           resetWorkspaceForm();
           fetchWorkspaces();
+          fetchAllWorkspaces();
         })
         .catch((err) => {
           console.error(err?.response?.data || err);
@@ -255,7 +264,6 @@ function OwnerDashboard() {
       price: item.price || "",
       image: item.image || "",
       description: item.description || "",
-      is_available: item.is_available ?? true,
       amenities: Array.isArray(item.amenities)
         ? item.amenities.map((a) => (typeof a === "object" ? a.id : a))
         : [],
@@ -270,7 +278,10 @@ function OwnerDashboard() {
 
     axiosInstance
       .delete(`workspaces/delete/${id}/`)
-      .then(() => fetchWorkspaces())
+      .then(() => {
+        fetchWorkspaces();
+        fetchAllWorkspaces();
+      })
       .catch((err) => {
         console.error(err?.response?.data || err);
         alert("Delete failed");
@@ -451,6 +462,37 @@ function OwnerDashboard() {
     setActiveSection(item.key);
   };
 
+  const myWorkspaceIds = useMemo(
+    () => new Set(workspaces.map((w) => w.id)),
+    [workspaces]
+  );
+
+  const suggestedWorkspaces = useMemo(() => {
+    return allWorkspaces.filter((w) => !myWorkspaceIds.has(w.id));
+  }, [allWorkspaces, myWorkspaceIds]);
+
+  const filteredMyWorkspaces = useMemo(() => {
+    const q = workspaceSearch.toLowerCase().trim();
+    if (!q) return workspaces;
+    return workspaces.filter(
+      (w) =>
+        w.name?.toLowerCase().includes(q) ||
+        w.city?.toLowerCase().includes(q) ||
+        w.location?.toLowerCase().includes(q)
+    );
+  }, [workspaces, workspaceSearch]);
+
+  const filteredSuggestedWorkspaces = useMemo(() => {
+    const q = suggestSearch.toLowerCase().trim();
+    if (!q) return suggestedWorkspaces;
+    return suggestedWorkspaces.filter(
+      (w) =>
+        w.name?.toLowerCase().includes(q) ||
+        w.city?.toLowerCase().includes(q) ||
+        w.location?.toLowerCase().includes(q)
+    );
+  }, [suggestedWorkspaces, suggestSearch]);
+
   const renderOverview = () => (
     <div className={styles.overviewGrid}>
       <div className={`${styles.statCard} ${styles.gold}`}>
@@ -502,6 +544,10 @@ function OwnerDashboard() {
         <p>
           {monthlySlots.length} monthly slot
           {monthlySlots.length !== 1 ? "s" : ""} created
+        </p>
+        <p>
+          {suggestedWorkspaces.length} suggestion workspace
+          {suggestedWorkspaces.length !== 1 ? "s" : ""} available
         </p>
       </div>
     </div>
@@ -652,6 +698,15 @@ function OwnerDashboard() {
         </div>
       </div>
 
+      <div className={styles.tableTopBar}>
+        <input
+          className={styles.searchInput}
+          placeholder="Search my workspaces..."
+          value={workspaceSearch}
+          onChange={(e) => setWorkspaceSearch(e.target.value)}
+        />
+      </div>
+
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -667,7 +722,7 @@ function OwnerDashboard() {
           </thead>
 
           <tbody>
-            {workspaces.map((w, i) => (
+            {filteredMyWorkspaces.map((w, i) => (
               <tr key={w.id}>
                 <td>{i + 1}</td>
                 <td>
@@ -738,8 +793,211 @@ function OwnerDashboard() {
           </tbody>
         </table>
 
-        {workspaces.length === 0 && (
+        {filteredMyWorkspaces.length === 0 && (
           <div className={styles.empty}>No workspaces yet. Add one above!</div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderSuggestedWorkspaces = () => (
+    <div className={styles.sectionBody}>
+      <div className={styles.formCard}>
+        <h3 className={styles.formTitle}>Suggested Workspaces</h3>
+        <p style={{ marginTop: "-4px", color: "#667085", marginBottom: "14px" }}>
+          View workspaces added by other owners. This is only for reference view.
+          Your slot management stays only for your own workspaces.
+        </p>
+
+        <div className={styles.tableTopBar}>
+          <input
+            className={styles.searchInput}
+            placeholder="Search suggested workspaces..."
+            value={suggestSearch}
+            onChange={(e) => setSuggestSearch(e.target.value)}
+          />
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "18px",
+            marginBottom: "24px",
+          }}
+        >
+          {filteredSuggestedWorkspaces.map((w) => (
+            <div
+              key={w.id}
+              style={{
+                background: "#fff",
+                border: "1px solid #e6eaf0",
+                borderRadius: "18px",
+                overflow: "hidden",
+                boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
+              }}
+            >
+              <div
+                style={{
+                  height: "160px",
+                  background: "#eef2f7",
+                  overflow: "hidden",
+                }}
+              >
+                {w.image ? (
+                  <img
+                    src={w.image}
+                    alt={w.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      height: "100%",
+                      display: "grid",
+                      placeItems: "center",
+                      fontSize: "40px",
+                    }}
+                  >
+                    🏢
+                  </div>
+                )}
+              </div>
+
+              <div style={{ padding: "16px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: "10px",
+                    alignItems: "flex-start",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <h4 style={{ margin: 0, fontSize: "18px", color: "#1e293b" }}>
+                    {w.name}
+                  </h4>
+                </div>
+
+                <p style={{ margin: "0 0 6px", color: "#475467", fontWeight: 600 }}>
+                  {w.city}
+                </p>
+                <p style={{ margin: "0 0 10px", color: "#667085", fontSize: "14px" }}>
+                  {w.location || "No location provided"}
+                </p>
+                <p style={{ margin: "0 0 12px", color: "#111827", fontWeight: 700, fontSize: "15px" }}>
+                  ₹{parseFloat(w.price || 0).toLocaleString()}
+                </p>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {Array.isArray(w.amenities) && w.amenities.length > 0 ? (
+                    w.amenities.slice(0, 4).map((amenity, idx) => (
+                      <span
+                        key={typeof amenity === "object" ? amenity.id || idx : idx}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          padding: "4px 10px",
+                          background: "#f5f7fb",
+                          border: "1px solid #dbe2ea",
+                          borderRadius: "999px",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: "#243447",
+                        }}
+                      >
+                        <span>{getAmenityIcon(amenity)}</span>
+                        <span>{getAmenityLabel(amenity)}</span>
+                      </span>
+                    ))
+                  ) : (
+                    <span style={{ color: "#999" }}>No amenities</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>City</th>
+              <th>Location</th>
+              <th>Price</th>
+              <th>Amenities</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredSuggestedWorkspaces.map((w, i) => (
+              <tr key={w.id}>
+                <td>{i + 1}</td>
+                <td>
+                  <strong>{w.name}</strong>
+                </td>
+                <td>{w.city}</td>
+                <td>{w.location || "—"}</td>
+                <td className={styles.priceCell}>
+                  ₹{parseFloat(w.price || 0).toLocaleString()}
+                </td>
+                <td>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "6px",
+                      maxWidth: "280px",
+                    }}
+                  >
+                    {Array.isArray(w.amenities) && w.amenities.length > 0 ? (
+                      w.amenities.map((amenity, idx) => (
+                        <span
+                          key={
+                            typeof amenity === "object"
+                              ? amenity.id || idx
+                              : idx
+                          }
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "5px",
+                            padding: "4px 10px",
+                            background: "#f5f7fb",
+                            border: "1px solid #dbe2ea",
+                            borderRadius: "999px",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            color: "#243447",
+                          }}
+                        >
+                          <span>{getAmenityIcon(amenity)}</span>
+                          <span>{getAmenityLabel(amenity)}</span>
+                        </span>
+                      ))
+                    ) : (
+                      <span style={{ color: "#999" }}>No amenities</span>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {filteredSuggestedWorkspaces.length === 0 && (
+          <div className={styles.empty}>
+            No suggested workspaces available from other owners.
+          </div>
         )}
       </div>
     </div>
@@ -1030,9 +1288,7 @@ function OwnerDashboard() {
               <tr key={s.id}>
                 <td>{s.workspace_name}</td>
                 <td>{s.city}</td>
-                <td>
-                  {MONTH_OPTIONS[Number(s.month) - 1] || s.month}
-                </td>
+                <td>{MONTH_OPTIONS[Number(s.month) - 1] || s.month}</td>
                 <td>{s.year}</td>
                 <td>{s.capacity}</td>
                 <td>{s.booked}</td>
@@ -1074,6 +1330,11 @@ function OwnerDashboard() {
       icon: "🏢",
       title: "Workspace Management",
       sub: "Add, edit, and manage your listings",
+    },
+    suggestedWorkspaces: {
+      icon: "🧭",
+      title: "Suggested Workspaces",
+      sub: "View workspaces added by other owners",
     },
     slots: {
       icon: "⏰",
@@ -1132,7 +1393,11 @@ function OwnerDashboard() {
             <div className={styles.sidebarStats}>
               <div>
                 <strong>{workspaces.length}</strong>
-                <span>Spaces</span>
+                <span>My Spaces</span>
+              </div>
+              <div>
+                <strong>{suggestedWorkspaces.length}</strong>
+                <span>Suggestions</span>
               </div>
               <div>
                 <strong>{slots.length}</strong>
@@ -1164,6 +1429,7 @@ function OwnerDashboard() {
         <div className={styles.content}>
           {activeSection === "overview" && renderOverview()}
           {activeSection === "workspaces" && renderWorkspaces()}
+          {activeSection === "suggestedWorkspaces" && renderSuggestedWorkspaces()}
           {activeSection === "slots" && renderSlots()}
           {activeSection === "monthlySlots" && renderMonthlySlots()}
         </div>

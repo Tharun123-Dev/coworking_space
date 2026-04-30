@@ -38,7 +38,6 @@ from django.utils import timezone
 from workspaces.models import WorkspaceSlot, MonthlySlot
 from .models import Booking
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_booking(request):
@@ -46,26 +45,24 @@ def create_booking(request):
         user = request.user
         print("REQUEST DATA:", request.data)
 
-        slot_id = request.data.get("slot_id")
-        monthly_slot_ids = request.data.get("monthly_slot_ids", [])
         booking_type = request.data.get("booking_type", "day")
-
-        # ✅ SAFE SEATS
-        try:
-            seats = int(request.data.get("seats", 1))
-        except:
-            return Response({"error": "Invalid seats"}, status=400)
-
-        if seats < 1:
-            return Response({"error": "Seats must be at least 1"}, status=400)
 
         # =========================
         # ✅ DAY BOOKING
         # =========================
         if booking_type == "day":
 
+            slot_id = request.data.get("slot_id")
             if not slot_id:
                 return Response({"error": "slot_id required"}, status=400)
+
+            try:
+                seats = int(request.data.get("seats", 1))
+            except:
+                return Response({"error": "Invalid seats"}, status=400)
+
+            if seats < 1:
+                return Response({"error": "Seats must be at least 1"}, status=400)
 
             slot = get_object_or_404(WorkspaceSlot, id=slot_id)
 
@@ -81,7 +78,7 @@ def create_booking(request):
                 slot=slot,
                 workspace=slot.workspace,
                 owner=slot.workspace.owner,
-                date=slot.date,   # ✅ already exists
+                date=slot.date,
                 seats=seats,
                 total_price=slot.price * seats,
                 payment_status="VERIFIED",
@@ -96,51 +93,67 @@ def create_booking(request):
         # =========================
         elif booking_type == "month":
 
-            if not monthly_slot_ids:
-                return Response({"error": "monthly_slot_ids required"}, status=400)
+            monthly_slots = request.data.get("monthly_slots", [])
 
-            try:
-                monthly_slot_ids = [int(mid) for mid in monthly_slot_ids]
-            except:
-                return Response({"error": "Invalid monthly_slot_ids"}, status=400)
+            if not monthly_slots:
+                return Response({"error": "monthly_slots required"}, status=400)
+
+            if not isinstance(monthly_slots, list):
+                return Response({"error": "monthly_slots must be a list"}, status=400)
 
             total_price = 0
             workspace = None
+            validated_slots = []  # store (mslot, seats) to update after validation
 
-            for mid in monthly_slot_ids:
+            for slot_obj in monthly_slots:
+                # --- validate each slot object ---
+                try:
+                    mid = int(slot_obj.get("monthly_slot_id"))
+                except (TypeError, ValueError):
+                    return Response({"error": "Invalid monthly_slot_id"}, status=400)
+
+                try:
+                    slot_seats = int(slot_obj.get("seats", 1))
+                except (TypeError, ValueError):
+                    return Response({"error": f"Invalid seats for slot {mid}"}, status=400)
+
+                if slot_seats < 1:
+                    return Response({"error": f"Seats must be at least 1 for slot {mid}"}, status=400)
+
                 mslot = get_object_or_404(MonthlySlot, id=mid)
 
                 if workspace is None:
                     workspace = mslot.workspace
 
                 available = mslot.capacity - mslot.booked
-                if seats > available:
+                if slot_seats > available:
                     return Response(
-                        {
-                            "error": f"{mslot.month}/{mslot.year} only {available} seats left"
-                        },
+                        {"error": f"{mslot.month}/{mslot.year} only {available} seats left"},
                         status=400
                     )
 
-                total_price += mslot.price * seats
+                total_price += mslot.price * slot_seats
+                validated_slots.append((mslot, slot_seats))
 
-            # 🔥 FIX: ADD DATE (MANDATORY)
+            if workspace is None:
+                return Response({"error": "Could not determine workspace"}, status=400)
+
+            # --- create booking ---
             booking = Booking.objects.create(
                 user=user,
                 workspace=workspace,
                 owner=workspace.owner,
-                date=timezone.now().date(),   # ✅ FIXED HERE
-                seats=seats,
+                date=timezone.now().date(),
+                seats=sum(s for _, s in validated_slots),  # total seats across all slots
                 total_price=total_price,
                 payment_status="VERIFIED",
                 status="confirmed",
                 booking_type="month"
             )
 
-            # update all slots
-            for mid in monthly_slot_ids:
-                mslot = MonthlySlot.objects.get(id=mid)
-                mslot.booked += seats
+            # --- update booked count for each slot ---
+            for mslot, slot_seats in validated_slots:
+                mslot.booked += slot_seats
                 mslot.save()
 
         else:
