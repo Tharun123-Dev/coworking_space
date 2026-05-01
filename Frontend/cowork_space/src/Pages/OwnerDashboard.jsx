@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/OwnerDashboard.module.css";
-import { useNavigate } from "react-router-dom";
 
 const AMENITY_ICONS = {
   wifi: "📶",
@@ -54,14 +54,29 @@ const MONTH_OPTIONS = [
 const NAV_ITEMS = [
   { key: "overview", icon: "⊞", label: "Overview" },
   { key: "workspaces", icon: "🏢", label: "Workspaces" },
-
   { key: "slots", icon: "⏰", label: "Slot Management" },
   { key: "monthlySlots", icon: "📅", label: "Monthly Slots" },
-  { key: "bookings", icon: "📋", label: "My Bookings", route: "/owner-bookings" },
-  { key: "ownerLeads", icon: "📌", label: "Owner Leads", route: "/owner-leads" },
-  { key: "companyLeads", icon: "🏷️", label: "Company Leads", route: "/company-leads" },
-    { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
+  { key: "bookings", icon: "📋", label: "My Bookings" },
+  // { key: "ownerLeads", icon: "📌", label: "Manager Leads", route: "/owner-leads" },
+  { key: "companyLeads", icon: "🏷️", label: "Company Leads" },
+  { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
 ];
+
+const LS_KEY = "ownerBookingStates";
+
+const loadStates = () => {
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY)) || {};
+  } catch {
+    return {};
+  }
+};
+
+const saveState = (id, patch) => {
+  const all = loadStates();
+  all[id] = { ...(all[id] || {}), ...patch };
+  localStorage.setItem(LS_KEY, JSON.stringify(all));
+};
 
 function OwnerDashboard() {
   const navigate = useNavigate();
@@ -70,11 +85,23 @@ function OwnerDashboard() {
   const [allWorkspaces, setAllWorkspaces] = useState([]);
   const [slots, setSlots] = useState([]);
   const [monthlySlots, setMonthlySlots] = useState([]);
-  const [editMonthId, setEditMonthId] = useState(null);
+  const [companyLeads, setCompanyLeads] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [requests, setRequests] = useState([]);
 
+  const [editMonthId, setEditMonthId] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [amenitiesList, setAmenitiesList] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
+  const [localStates, setLocalStates] = useState(loadStates);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [bookingActiveTab, setBookingActiveTab] = useState("overview");
+  const [toastMsg, setToastMsg] = useState("");
+  const [animatingId, setAnimatingId] = useState(null);
+  const [busyMap, setBusyMap] = useState({});
+
   const [revenue, setRevenue] = useState({
     total_revenue: 0,
     confirmed_revenue: 0,
@@ -116,6 +143,22 @@ function OwnerDashboard() {
   const [workspaceSearch, setWorkspaceSearch] = useState("");
   const [suggestSearch, setSuggestSearch] = useState("");
 
+  const setBusy = (id, value) => {
+    setBusyMap((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const isBusy = (id) => !!busyMap[id];
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3000);
+  };
+
+  const pulse = (id) => {
+    setAnimatingId(id);
+    setTimeout(() => setAnimatingId(null), 600);
+  };
+
   const fetchAmenities = () =>
     axiosInstance
       .get("workspaces/amenities/")
@@ -143,7 +186,7 @@ function OwnerDashboard() {
   const fetchSlots = () =>
     axiosInstance
       .get("workspaces/slots/owner/")
-      .then((res) => setSlots(res.data))
+      .then((res) => setSlots(Array.isArray(res.data) ? res.data : []))
       .catch((err) => console.error("Slot fetch error:", err));
 
   const fetchMonthlySlots = () =>
@@ -152,6 +195,31 @@ function OwnerDashboard() {
       .then((res) => setMonthlySlots(Array.isArray(res.data) ? res.data : []))
       .catch((err) => console.error("Monthly slots fetch error:", err));
 
+  const fetchCompanyLeads = () =>
+    axiosInstance
+      .get("leads/company/owner/")
+      .then((res) => setCompanyLeads(Array.isArray(res.data) ? res.data : []))
+      .catch((err) => console.error("Company leads fetch error:", err));
+
+  const fetchBookings = useCallback(() => {
+    setLoadingBookings(true);
+    axiosInstance
+      .get("cart/owner/bookings/")
+      .then((res) => setBookings(Array.isArray(res.data) ? res.data : []))
+      .catch((err) => {
+        console.error("Bookings fetch error:", err);
+        setBookings([]);
+      })
+      .finally(() => setLoadingBookings(false));
+  }, []);
+
+  const fetchCancelRequests = useCallback(() => {
+    axiosInstance
+      .get("cart/booking/owner/cancel-requests/")
+      .then((res) => setRequests(Array.isArray(res.data) ? res.data : []))
+      .catch((err) => console.error("Failed to fetch cancel requests:", err));
+  }, []);
+
   useEffect(() => {
     fetchWorkspaces();
     fetchAllWorkspaces();
@@ -159,7 +227,38 @@ function OwnerDashboard() {
     fetchSlots();
     fetchAmenities();
     fetchMonthlySlots();
+    fetchCompanyLeads();
+    fetchBookings();
+    fetchCancelRequests();
+  }, [fetchBookings, fetchCancelRequests]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 640) {
+        setMobileSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const mergedBookings = useMemo(() => {
+    return bookings.map((b) => {
+      const ls = localStates[b.id] || {};
+      return { ...b, ...ls };
+    });
+  }, [bookings, localStates]);
+
+  const bookingStats = useMemo(
+    () => ({
+      total: mergedBookings.length,
+      confirmed: mergedBookings.filter((b) => b.status === "confirmed").length,
+      pending: mergedBookings.filter((b) => b.status === "pending").length,
+      cancelled: mergedBookings.filter((b) => b.status === "cancelled").length,
+    }),
+    [mergedBookings]
+  );
 
   const resetWorkspaceForm = () => {
     setForm({
@@ -183,6 +282,19 @@ function OwnerDashboard() {
       price: "",
     });
     setEditMonthId(null);
+  };
+
+  const resetSlotForm = () => {
+    setSlotForm({
+      workspace_id: "",
+      date: "",
+      slot_type: "hour",
+      start_time: 9,
+      end_time: 18,
+      capacity: 50,
+      price: "",
+    });
+    setEditSlotId(null);
   };
 
   const getAmenityLabel = (amenity) => {
@@ -213,6 +325,58 @@ function OwnerDashboard() {
     if (key.includes("support")) return AMENITY_ICONS.support;
 
     return "🔹";
+  };
+
+  const updateBookingState = (id, patch) => {
+    saveState(id, patch);
+
+    setLocalStates((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] || {}), ...patch },
+    }));
+
+    setBookings((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, ...patch } : b))
+    );
+
+    setSelectedBooking((prev) =>
+      prev?.id === id ? { ...prev, ...patch } : prev
+    );
+  };
+
+  const getLatestBooking = (id) => {
+    const booking = bookings.find((b) => b.id === id);
+    if (!booking) return null;
+    const ls = localStates[id] || {};
+    return { ...booking, ...ls };
+  };
+
+  const openBookingModal = (item) => {
+    const latest = getLatestBooking(item.id);
+    setSelectedBooking(latest || item);
+    setBookingActiveTab("overview");
+  };
+
+  const closeBookingModal = () => setSelectedBooking(null);
+
+  const getStatusClass = (s) => {
+    if (!s) return styles.pendingText;
+    const l = s.toLowerCase();
+    if (l === "confirmed") return styles.confirmedText;
+    if (l === "cancelled") return styles.cancelledText;
+    return styles.pendingText;
+  };
+
+  const approveCancelRequest = async (id) => {
+    try {
+      await axiosInstance.put(`cart/booking/cancel-approve/${id}/`);
+      showToast("✅ Cancel request approved & refunded");
+      fetchBookings();
+      fetchCancelRequests();
+    } catch (error) {
+      console.error("Failed to approve cancel request:", error);
+      showToast("❌ Failed to approve cancel request");
+    }
   };
 
   const handleSubmit = () => {
@@ -271,6 +435,7 @@ function OwnerDashboard() {
 
     setEditId(item.id);
     setActiveSection("workspaces");
+    setMobileSidebarOpen(false);
   };
 
   const handleDelete = (id) => {
@@ -286,19 +451,6 @@ function OwnerDashboard() {
         console.error(err?.response?.data || err);
         alert("Delete failed");
       });
-  };
-
-  const resetSlotForm = () => {
-    setSlotForm({
-      workspace_id: "",
-      date: "",
-      slot_type: "hour",
-      start_time: 9,
-      end_time: 18,
-      capacity: 50,
-      price: "",
-    });
-    setEditSlotId(null);
   };
 
   const createSlot = () => {
@@ -345,6 +497,36 @@ function OwnerDashboard() {
     }
   };
 
+  const handleEditSlot = (s) => {
+    setSlotForm({
+      workspace_id: s.workspace_id || "",
+      date: s.date || "",
+      slot_type: s.slot_type || "hour",
+      start_time: s.start_time || 9,
+      end_time: s.end_time || 18,
+      capacity: s.capacity || 50,
+      price: s.price || "",
+    });
+    setEditSlotId(s.id);
+    setActiveSection("slots");
+    setMobileSidebarOpen(false);
+  };
+
+  const deleteSlot = (id) => {
+    if (!window.confirm("Delete slot?")) return;
+
+    axiosInstance
+      .delete(`workspaces/slot/delete/${id}/`)
+      .then(() => {
+        alert("Deleted ✅");
+        fetchSlots();
+      })
+      .catch((err) => {
+        console.error(err?.response?.data || err);
+        alert("Delete slot failed");
+      });
+  };
+
   const createMonthlySlots = () => {
     if (
       !monthlyForm.workspace_id ||
@@ -378,35 +560,6 @@ function OwnerDashboard() {
       });
   };
 
-  const handleEditSlot = (s) => {
-    setSlotForm({
-      workspace_id: s.workspace_id || "",
-      date: s.date || "",
-      slot_type: s.slot_type || "hour",
-      start_time: s.start_time || 9,
-      end_time: s.end_time || 18,
-      capacity: s.capacity || 50,
-      price: s.price || "",
-    });
-    setEditSlotId(s.id);
-    setActiveSection("slots");
-  };
-
-  const deleteSlot = (id) => {
-    if (!window.confirm("Delete slot?")) return;
-
-    axiosInstance
-      .delete(`workspaces/slot/delete/${id}/`)
-      .then(() => {
-        alert("Deleted ✅");
-        fetchSlots();
-      })
-      .catch((err) => {
-        console.error(err?.response?.data || err);
-        alert("Delete slot failed");
-      });
-  };
-
   const handleEditMonth = (slot) => {
     setMonthlyForm({
       workspace_id: String(slot.workspace_id || ""),
@@ -418,6 +571,7 @@ function OwnerDashboard() {
 
     setEditMonthId(slot.id);
     setActiveSection("monthlySlots");
+    setMobileSidebarOpen(false);
   };
 
   const updateMonthlySlot = () => {
@@ -454,12 +608,24 @@ function OwnerDashboard() {
       });
   };
 
+  const updateCompanyLeadStatus = (id, status) => {
+    axiosInstance
+      .put(`leads/company/status/${id}/`, { status })
+      .then(() => fetchCompanyLeads())
+      .catch((err) => {
+        console.error(err?.response?.data || err);
+        alert("Status update failed");
+      });
+  };
+
   const handleNav = (item) => {
     if (item.route) {
       navigate(item.route);
+      setMobileSidebarOpen(false);
       return;
     }
     setActiveSection(item.key);
+    setMobileSidebarOpen(false);
   };
 
   const myWorkspaceIds = useMemo(
@@ -538,16 +704,18 @@ function OwnerDashboard() {
         <p>
           {workspaces.length} workspace{workspaces.length !== 1 ? "s" : ""} listed
         </p>
-        <p>
-          {slots.length} slot{slots.length !== 1 ? "s" : ""} created
-        </p>
+        <p>{slots.length} slot{slots.length !== 1 ? "s" : ""} created</p>
         <p>
           {monthlySlots.length} monthly slot
           {monthlySlots.length !== 1 ? "s" : ""} created
         </p>
         <p>
-          {suggestedWorkspaces.length} suggestion workspace
-          {suggestedWorkspaces.length !== 1 ? "s" : ""} available
+          {mergedBookings.length} booking
+          {mergedBookings.length !== 1 ? "s" : ""} received
+        </p>
+        <p>
+          {companyLeads.length} company lead
+          {companyLeads.length !== 1 ? "s" : ""}
         </p>
       </div>
     </div>
@@ -624,33 +792,12 @@ function OwnerDashboard() {
 
           <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
             <label>Select Amenities</label>
-
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "10px",
-                padding: "10px",
-                border: "1px solid #ddd",
-                borderRadius: "10px",
-              }}
-            >
+            <div className={styles.amenitiesBox}>
               {amenitiesList.length === 0 ? (
                 <p>No amenities found</p>
               ) : (
                 amenitiesList.map((a) => (
-                  <label
-                    key={a.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      padding: "6px 10px",
-                      border: "1px solid #ccc",
-                      borderRadius: "20px",
-                      cursor: "pointer",
-                    }}
-                  >
+                  <label key={a.id} className={styles.amenityChip}>
                     <input
                       type="checkbox"
                       value={a.id}
@@ -733,16 +880,8 @@ function OwnerDashboard() {
                 <td className={styles.priceCell}>
                   ₹{parseFloat(w.price || 0).toLocaleString()}
                 </td>
-
                 <td>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "6px",
-                      maxWidth: "280px",
-                    }}
-                  >
+                  <div className={styles.amenityList}>
                     {Array.isArray(w.amenities) && w.amenities.length > 0 ? (
                       w.amenities.map((amenity, idx) => (
                         <span
@@ -751,29 +890,17 @@ function OwnerDashboard() {
                               ? amenity.id || idx
                               : idx
                           }
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            padding: "4px 10px",
-                            background: "#f5f7fb",
-                            border: "1px solid #dbe2ea",
-                            borderRadius: "999px",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                            color: "#243447",
-                          }}
+                          className={styles.amenityTag}
                         >
                           <span>{getAmenityIcon(amenity)}</span>
                           <span>{getAmenityLabel(amenity)}</span>
                         </span>
                       ))
                     ) : (
-                      <span style={{ color: "#999" }}>No amenities</span>
+                      <span className={styles.noData}>No amenities</span>
                     )}
                   </div>
                 </td>
-
                 <td>
                   <button
                     onClick={() => handleEdit(w)}
@@ -804,125 +931,19 @@ function OwnerDashboard() {
     <div className={styles.sectionBody}>
       <div className={styles.formCard}>
         <h3 className={styles.formTitle}>Suggested Workspaces</h3>
-        <p style={{ marginTop: "-4px", color: "#667085", marginBottom: "14px" }}>
-          View workspaces added by other owners. This is only for reference view.
-          Your slot management stays only for your own workspaces.
+        <p className={styles.helperText}>
+          View workspaces added by other managers. This is only for reference.
+          Your slot management applies only to your own workspaces.
         </p>
+      </div>
 
-        <div className={styles.tableTopBar}>
-          <input
-            className={styles.searchInput}
-            placeholder="Search suggested workspaces..."
-            value={suggestSearch}
-            onChange={(e) => setSuggestSearch(e.target.value)}
-          />
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: "18px",
-            marginBottom: "24px",
-          }}
-        >
-          {filteredSuggestedWorkspaces.map((w) => (
-            <div
-              key={w.id}
-              style={{
-                background: "#fff",
-                border: "1px solid #e6eaf0",
-                borderRadius: "18px",
-                overflow: "hidden",
-                boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
-              }}
-            >
-              <div
-                style={{
-                  height: "160px",
-                  background: "#eef2f7",
-                  overflow: "hidden",
-                }}
-              >
-                {w.image ? (
-                  <img
-                    src={w.image}
-                    alt={w.name}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      height: "100%",
-                      display: "grid",
-                      placeItems: "center",
-                      fontSize: "40px",
-                    }}
-                  >
-                    🏢
-                  </div>
-                )}
-              </div>
-
-              <div style={{ padding: "16px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "10px",
-                    alignItems: "flex-start",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <h4 style={{ margin: 0, fontSize: "18px", color: "#1e293b" }}>
-                    {w.name}
-                  </h4>
-                </div>
-
-                <p style={{ margin: "0 0 6px", color: "#475467", fontWeight: 600 }}>
-                  {w.city}
-                </p>
-                <p style={{ margin: "0 0 10px", color: "#667085", fontSize: "14px" }}>
-                  {w.location || "No location provided"}
-                </p>
-                <p style={{ margin: "0 0 12px", color: "#111827", fontWeight: 700, fontSize: "15px" }}>
-                  ₹{parseFloat(w.price || 0).toLocaleString()}
-                </p>
-
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                  {Array.isArray(w.amenities) && w.amenities.length > 0 ? (
-                    w.amenities.slice(0, 4).map((amenity, idx) => (
-                      <span
-                        key={typeof amenity === "object" ? amenity.id || idx : idx}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          padding: "4px 10px",
-                          background: "#f5f7fb",
-                          border: "1px solid #dbe2ea",
-                          borderRadius: "999px",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "#243447",
-                        }}
-                      >
-                        <span>{getAmenityIcon(amenity)}</span>
-                        <span>{getAmenityLabel(amenity)}</span>
-                      </span>
-                    ))
-                  ) : (
-                    <span style={{ color: "#999" }}>No amenities</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className={styles.tableTopBar}>
+        <input
+          className={styles.searchInput}
+          placeholder="Search suggested workspaces..."
+          value={suggestSearch}
+          onChange={(e) => setSuggestSearch(e.target.value)}
+        />
       </div>
 
       <div className={styles.tableWrap}>
@@ -951,14 +972,7 @@ function OwnerDashboard() {
                   ₹{parseFloat(w.price || 0).toLocaleString()}
                 </td>
                 <td>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "6px",
-                      maxWidth: "280px",
-                    }}
-                  >
+                  <div className={styles.amenityList}>
                     {Array.isArray(w.amenities) && w.amenities.length > 0 ? (
                       w.amenities.map((amenity, idx) => (
                         <span
@@ -967,25 +981,14 @@ function OwnerDashboard() {
                               ? amenity.id || idx
                               : idx
                           }
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            padding: "4px 10px",
-                            background: "#f5f7fb",
-                            border: "1px solid #dbe2ea",
-                            borderRadius: "999px",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                            color: "#243447",
-                          }}
+                          className={styles.amenityTag}
                         >
                           <span>{getAmenityIcon(amenity)}</span>
                           <span>{getAmenityLabel(amenity)}</span>
                         </span>
                       ))
                     ) : (
-                      <span style={{ color: "#999" }}>No amenities</span>
+                      <span className={styles.noData}>No amenities</span>
                     )}
                   </div>
                 </td>
@@ -996,7 +999,7 @@ function OwnerDashboard() {
 
         {filteredSuggestedWorkspaces.length === 0 && (
           <div className={styles.empty}>
-            No suggested workspaces available from other owners.
+            No suggested workspaces available from other managers.
           </div>
         )}
       </div>
@@ -1209,7 +1212,7 @@ function OwnerDashboard() {
             <select
               multiple
               value={monthlyForm.months}
-              style={{ height: "140px" }}
+              className={styles.monthSelect}
               onChange={(e) => {
                 const selected = Array.from(
                   e.target.selectedOptions,
@@ -1300,7 +1303,6 @@ function OwnerDashboard() {
                   >
                     Edit
                   </button>
-
                   <button
                     className={styles.deleteBtn}
                     onClick={() => deleteMonthlySlot(s.id)}
@@ -1320,6 +1322,384 @@ function OwnerDashboard() {
     </div>
   );
 
+  const renderBookings = () => (
+    <div className={styles.sectionBody}>
+      {toastMsg && <div className={styles.toast}>{toastMsg}</div>}
+
+      <div className={styles.overviewGrid}>
+        <div className={`${styles.statCard} ${styles.gold}`}>
+          <span className={styles.statIcon}>📋</span>
+          <div>
+            <p className={styles.statValue}>{bookingStats.total}</p>
+            <p className={styles.statLabel}>Total</p>
+          </div>
+        </div>
+
+        <div className={`${styles.statCard} ${styles.green}`}>
+          <span className={styles.statIcon}>✅</span>
+          <div>
+            <p className={styles.statValue}>{bookingStats.confirmed}</p>
+            <p className={styles.statLabel}>Confirmed</p>
+          </div>
+        </div>
+
+        <div className={`${styles.statCard} ${styles.amber}`}>
+          <span className={styles.statIcon}>⏳</span>
+          <div>
+            <p className={styles.statValue}>{bookingStats.pending}</p>
+            <p className={styles.statLabel}>Pending</p>
+          </div>
+        </div>
+
+        <div className={`${styles.statCard} ${styles.red}`}>
+          <span className={styles.statIcon}>❌</span>
+          <div>
+            <p className={styles.statValue}>{bookingStats.cancelled}</p>
+            <p className={styles.statLabel}>Cancelled</p>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.tableWrap}>
+        {loadingBookings ? (
+          <div className={styles.empty}>Loading bookings…</div>
+        ) : mergedBookings.length === 0 ? (
+          <div className={styles.empty}>
+            <div>📋</div>
+            <p>No bookings yet</p>
+          </div>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Workspace</th>
+                <th>Customer</th>
+                <th>City</th>
+                <th>Date</th>
+                <th>Slot</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {mergedBookings.map((item) => {
+                const isConfirmed = item.status === "confirmed";
+                const isCancelled = item.status === "cancelled";
+                const isPulsing = animatingId === item.id;
+
+                return (
+                  <tr
+                    key={item.id}
+                    className={isPulsing ? styles.rowPulse : ""}
+                  >
+                    <td>
+                      <div
+                        className={styles.bookingWorkspace}
+                        onClick={() => openBookingModal(item)}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.workspace}
+                          className={styles.bookingThumb}
+                        />
+                        <span className={styles.bookingWorkspaceTitle}>
+                          {item.workspace}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td>{item.user}</td>
+                    <td>{item.city}</td>
+                    <td>{item.date}</td>
+                    <td>
+                      <div>
+                        <strong>{item.slot_type}</strong>
+                        <br />
+                        <small>{item.slot_time}</small>
+                      </div>
+                    </td>
+                    <td className={styles.priceCell}>
+                      ₹{Number(item.total_price || 0).toLocaleString()}
+                    </td>
+                    <td>
+                      <span className={styles.statusPill}>
+                        {item.status || "pending"}
+                      </span>
+                    </td>
+                    <td>
+                      <div className={styles.bookingActionBox}>
+                        {isConfirmed && (
+                          <span className={styles.statusPill}>✓ Confirmed</span>
+                        )}
+                        {isCancelled && (
+                          <span className={styles.statusPill}>✕ Cancelled</span>
+                        )}
+                        {!isConfirmed && !isCancelled && (
+                          <span className={styles.statusPill}>Pending</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {requests.length > 0 && (
+        <div className={styles.tableWrap}>
+          <div className={styles.cancelRequestHead}>
+            <h3>Pending Cancel Requests</h3>
+            <span className={styles.statusPill}>{requests.length}</span>
+          </div>
+
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Workspace</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Reason</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.workspace}</td>
+                  <td>{r.user}</td>
+                  <td>
+                    <strong>₹{r.amount}</strong>
+                  </td>
+                  <td>{r.reason}</td>
+                  <td>
+                    {r.status === "PENDING" ? (
+                      <button
+                        className={styles.submitBtn}
+                        onClick={() => approveCancelRequest(r.id)}
+                      >
+                        Accept & Refund
+                      </button>
+                    ) : (
+                      <span className={styles.statusPill}>Approved</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {selectedBooking && (
+        <div className={styles.modalOverlay} onClick={closeBookingModal}>
+          <div
+            className={styles.bookingModal}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeBookingModal}
+              aria-label="Close"
+              className={styles.modalCloseBtn}
+            >
+              ✕
+            </button>
+
+            <div className={styles.modalHero}>
+              <img
+                src={selectedBooking.image}
+                alt={selectedBooking.workspace}
+                className={styles.modalHeroImage}
+              />
+              <div className={styles.modalHeroOverlay} />
+              <div className={styles.modalHeroContent}>
+                <span className={styles.heroTag}>Premium Workspace</span>
+                <h2>{selectedBooking.workspace}</h2>
+                <p>
+                  Booked by <strong>{selectedBooking.user}</strong> on{" "}
+                  {selectedBooking.date}
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.modalTabs}>
+                {["overview", "features", "pricing"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setBookingActiveTab(tab)}
+                    className={`${styles.modalTabBtn} ${
+                      bookingActiveTab === tab ? styles.modalTabActive : ""
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </div>
+
+              {bookingActiveTab === "overview" && (
+                <>
+                  <div className={styles.overviewMetaGrid}>
+                    {[
+                      ["Customer", selectedBooking.user],
+                      ["Date", selectedBooking.date],
+                      [
+                        "Slot",
+                        `${selectedBooking.slot_type} ${selectedBooking.slot_time || ""}`,
+                      ],
+                      ["City", selectedBooking.city],
+                      ["Status", selectedBooking.status || "pending"],
+                    ].map(([label, val]) => (
+                      <div key={label} className={styles.metaCard}>
+                        <span>{label}</span>
+                        <strong
+                          className={
+                            label === "Status" ? getStatusClass(val) : ""
+                          }
+                        >
+                          {val}
+                        </strong>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={styles.bookingSummaryBox}>
+                    <h4>Booking Summary</h4>
+                    <p>
+                      This booking is for <strong>{selectedBooking.workspace}</strong>.
+                      Review the customer request and schedule details directly
+                      inside the dashboard.
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {bookingActiveTab === "features" && (
+                <div className={styles.featureGrid}>
+                  {[
+                    ["📶", "High-Speed WiFi", "Stable internet for work and meetings."],
+                    ["🪑", "Modern Setup", "Comfortable desk and seating support."],
+                    ["❄️", "Fully Air Conditioned", "Comfortable environment all day."],
+                    ["☕", "Refreshments", "Tea, coffee and basic pantry access."],
+                  ].map(([icon, title, desc]) => (
+                    <div key={title} className={styles.featureCard}>
+                      <div className={styles.featureIcon}>{icon}</div>
+                      <h4>{title}</h4>
+                      <p>{desc}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {bookingActiveTab === "pricing" && (
+                <div className={styles.pricingCard}>
+                  <span>Booking Amount</span>
+                  <h2>₹{selectedBooking.total_price}</h2>
+                  <p>
+                    For {selectedBooking.slot_type} {selectedBooking.slot_time} on{" "}
+                    {selectedBooking.date}
+                  </p>
+
+                  <div className={styles.pricingList}>
+                    <div>Workspace reserved for selected slot</div>
+                    <div>Booking tracked inside dashboard</div>
+                    <div>Direct manager visibility</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.modalFooter}>
+              <div>
+                <strong>₹{selectedBooking.total_price}</strong>
+                <small>Total Booking Value</small>
+              </div>
+              <div>
+                {selectedBooking.status === "confirmed" && (
+                  <span className={styles.statusPill}>Booking Confirmed</span>
+                )}
+                {selectedBooking.status === "cancelled" && (
+                  <span className={styles.statusPill}>Booking Cancelled</span>
+                )}
+                {selectedBooking.status !== "confirmed" &&
+                  selectedBooking.status !== "cancelled" && (
+                    <span className={styles.statusPill}>Pending Booking</span>
+                  )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderCompanyLeads = () => (
+    <div className={styles.sectionBody}>
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Team Size</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Company</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {companyLeads.map((item) => (
+              <tr key={item.id}>
+                <td>{item.team_size}</td>
+                <td>
+                  <strong>{item.name}</strong>
+                </td>
+                <td>
+                  <a href={`tel:${item.phone}`} className={styles.phoneLink}>
+                    {item.phone}
+                  </a>
+                </td>
+                <td>
+                  <a href={`mailto:${item.email}`} className={styles.emailLink}>
+                    {item.email}
+                  </a>
+                </td>
+                <td>{item.company}</td>
+                <td>
+                  <span className={styles.statusPill}>{item.status}</span>
+                </td>
+                <td>
+                  <select
+                    value={item.status}
+                    onChange={(e) =>
+                      updateCompanyLeadStatus(item.id, e.target.value)
+                    }
+                    className={styles.statusSelect}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {companyLeads.length === 0 && (
+          <div className={styles.empty}>
+            <p>No company leads yet</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   const sectionTitles = {
     overview: {
       icon: "⊞",
@@ -1331,11 +1711,6 @@ function OwnerDashboard() {
       title: "Workspace Management",
       sub: "Add, edit, and manage your listings",
     },
-    suggestedWorkspaces: {
-      icon: "🧭",
-      title: "Suggested Workspaces",
-      sub: "View workspaces added by other owners",
-    },
     slots: {
       icon: "⏰",
       title: "Slot Management",
@@ -1346,27 +1721,48 @@ function OwnerDashboard() {
       title: "Monthly Slots",
       sub: "Create, update, and manage monthly slot pricing",
     },
+    bookings: {
+      icon: "📋",
+      title: "My Bookings",
+      sub: "View all booking requests and cancellation requests here",
+    },
+    companyLeads: {
+      icon: "🏷️",
+      title: "Company Leads",
+      sub: "Manage company inquiries and update their status",
+    },
+    suggestedWorkspaces: {
+      icon: "🧭",
+      title: "Suggested Workspaces",
+      sub: "View workspaces added by other managers",
+    },
   };
 
   const current = sectionTitles[activeSection];
 
   return (
     <div className={styles.shell}>
+      {mobileSidebarOpen && (
+        <div
+          className={styles.mobileOverlay}
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       <aside
         className={`${styles.sidebar} ${
           sidebarCollapsed ? styles.collapsed : ""
-        }`}
+        } ${mobileSidebarOpen ? styles.mobileOpen : ""}`}
       >
         <div className={styles.sidebarHeader}>
           <div className={styles.logo}>
-            {sidebarCollapsed ? "O" : "Owner Panel"}
+            {sidebarCollapsed ? "M" : "Manager Panel"}
           </div>
-
           <button
             className={styles.collapseBtn}
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onClick={() => setSidebarCollapsed((prev) => !prev)}
           >
-            {sidebarCollapsed ? "›" : "‹"}
+            {sidebarCollapsed ? "→" : "←"}
           </button>
         </div>
 
@@ -1396,8 +1792,12 @@ function OwnerDashboard() {
                 <span>My Spaces</span>
               </div>
               <div>
-                <strong>{suggestedWorkspaces.length}</strong>
-                <span>Suggestions</span>
+                <strong>{mergedBookings.length}</strong>
+                <span>Bookings</span>
+              </div>
+              <div>
+                <strong>{companyLeads.length}</strong>
+                <span>Leads</span>
               </div>
               <div>
                 <strong>{slots.length}</strong>
@@ -1408,17 +1808,25 @@ function OwnerDashboard() {
         )}
       </aside>
 
-      <main className={styles.main}>
+      <main
+        className={`${styles.main} ${
+          sidebarCollapsed ? styles.mainCollapsed : ""
+        }`}
+      >
         <header className={styles.mainHeader}>
-          {current && (
-            <div className={styles.pageHeading}>
-              <span className={styles.headIcon}>{current.icon}</span>
-              <div>
-                <h1>{current.title}</h1>
-                <p>{current.sub}</p>
-              </div>
+          <div className={styles.pageHeading}>
+            <button
+              className={styles.mobileMenuBtn}
+              onClick={() => setMobileSidebarOpen(true)}
+            >
+              ☰
+            </button>
+            <span className={styles.headIcon}>{current?.icon}</span>
+            <div>
+              <h1>{current?.title}</h1>
+              <p>{current?.sub}</p>
             </div>
-          )}
+          </div>
 
           <div className={styles.headerRevenue}>
             <span>Total Revenue</span>
@@ -1429,9 +1837,12 @@ function OwnerDashboard() {
         <div className={styles.content}>
           {activeSection === "overview" && renderOverview()}
           {activeSection === "workspaces" && renderWorkspaces()}
-          {activeSection === "suggestedWorkspaces" && renderSuggestedWorkspaces()}
           {activeSection === "slots" && renderSlots()}
           {activeSection === "monthlySlots" && renderMonthlySlots()}
+          {activeSection === "bookings" && renderBookings()}
+          {activeSection === "companyLeads" && renderCompanyLeads()}
+          {activeSection === "suggestedWorkspaces" &&
+            renderSuggestedWorkspaces()}
         </div>
       </main>
     </div>

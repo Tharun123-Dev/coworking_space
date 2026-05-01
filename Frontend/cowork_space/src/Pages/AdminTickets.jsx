@@ -15,15 +15,32 @@ function AdminTickets() {
     try {
       setLoading(true);
       const res = await axiosInstance.get("/leads/tickets/admin/");
-      setTickets(res.data);
+      const data = Array.isArray(res.data) ? res.data : [];
+
+      // Normalize ticket fields with fallbacks
+      const normalizedTickets = data.map((t) => ({
+        ...t,
+        username: t.username || t.user_name || t.name || "-",
+        phone: t.phone || t.mobile || t.contact || "-",
+        workspace: t.workspace || t.workspace_name || "-",
+        special_category: t.special_category || "-",
+        location: t.location || "-",
+        booking_status: t.booking_status || "-",
+        issue_type: t.issue_type || t.issue || "-",
+        priority: t.priority || "low",
+        status: t.status || "open",
+        admin_note: t.admin_note || "",
+      }));
+
+      setTickets(normalizedTickets);
 
       const initialNotes = {};
-      res.data.forEach((ticket) => {
+      normalizedTickets.forEach((ticket) => {
         initialNotes[ticket.id] = ticket.admin_note || "";
       });
       setNotes(initialNotes);
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching tickets:", error);
     } finally {
       setLoading(false);
     }
@@ -49,7 +66,7 @@ function AdminTickets() {
       });
       fetchTickets();
     } catch (error) {
-      console.log(error);
+      console.log("Error updating ticket:", error);
     } finally {
       setUpdatingId(null);
     }
@@ -57,11 +74,12 @@ function AdminTickets() {
 
   const filteredTickets = useMemo(() => {
     return tickets.filter((t) => {
-      const matchesStatus =
-        statusFilter === "all" ? true : t.status === statusFilter;
+      const matchesStatus = statusFilter === "all" ? true : t.status === statusFilter;
 
       const matchesPriority =
-        priorityFilter === "all" ? true : t.priority?.toLowerCase() === priorityFilter;
+        priorityFilter === "all"
+          ? true
+          : (t.priority || "low").toLowerCase() === priorityFilter;
 
       const search = searchTerm.toLowerCase();
       const matchesSearch =
@@ -201,12 +219,12 @@ function AdminTickets() {
                       <td>{t.booking_status || "-"}</td>
                       <td>{t.issue_type}</td>
                       <td>
-                        <span className={`priority-badge priority-${t.priority?.toLowerCase()}`}>
+                        <span className={`priority-badge priority-${(t.priority || "low").toLowerCase()}`}>
                           {t.priority}
                         </span>
                       </td>
                       <td>
-                        <span className={`status-badge status-${t.status?.toLowerCase()}`}>
+                        <span className={`status-badge status-${t.status?.toLowerCase() || "open"}`}>
                           {t.status}
                         </span>
                       </td>
@@ -219,7 +237,7 @@ function AdminTickets() {
                       </td>
                       <td>
                         <select
-                          value={t.status}
+                          value={t.status || "open"}
                           disabled={updatingId === t.id}
                           onChange={(e) => updateTicket(t.id, e.target.value)}
                         >
@@ -243,7 +261,7 @@ function AdminTickets() {
                       <h4>{t.username}</h4>
                       <p>{t.phone}</p>
                     </div>
-                    <span className={`status-badge status-${t.status?.toLowerCase()}`}>
+                    <span className={`status-badge status-${t.status?.toLowerCase() || "open"}`}>
                       {t.status}
                     </span>
                   </div>
@@ -268,7 +286,7 @@ function AdminTickets() {
                     <div>
                       <span>Priority</span>
                       <p>
-                        <span className={`priority-badge priority-${t.priority?.toLowerCase()}`}>
+                        <span className={`priority-badge priority-${(t.priority || "low").toLowerCase()}`}>
                           {t.priority}
                         </span>
                       </p>
@@ -286,7 +304,7 @@ function AdminTickets() {
 
                   <div className="ticket-card-actions">
                     <select
-                      value={t.status}
+                      value={t.status || "open"}
                       disabled={updatingId === t.id}
                       onChange={(e) => updateTicket(t.id, e.target.value)}
                     >

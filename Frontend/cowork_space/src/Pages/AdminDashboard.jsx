@@ -1,7 +1,18 @@
 import { useEffect, useState, useRef } from "react";
 import axiosInstance from "../Services/Axios";
 import { useNavigate } from "react-router-dom";
+import AdminUsers from "./AdminUsers";
+import CreateOwner from "./CreateOwner";
+import AdminLeadss from "../Improved/AdminLeadss";
+import AdminCompanyLeads from "../Pages/CompanyAdminleads"; 
+import AdminBookings from "./AdminBookings";
+import AdminTickets from "./AdminTickets";
+import AdminDashboardEnterprise from "../Improved/AdminEnterprise"; 
+import AdminDashboards from "../Improved/AdminHyd";
+import AdminLeads from "./Leads";
 import styles from "../Styles/AdminDashboard.module.css";
+import AdminAmenities from "./AdminAmenities";
+import RecentActivity from "./RecentActivity";
 
 /* ─── SVG Icon ─── */
 const Icon = ({ d, size = 16 }) => (
@@ -54,60 +65,80 @@ const IC = {
 
 /* ─── Sidebar groups ─── */
 const SIDEBAR_GROUPS = [
-  { id: "dashboard", label: "Dashboard", icon: IC.dashboard, section: "overview", children: null },
   {
-    id: "management", label: "Management", icon: IC.users,
-    children: [
-      { id: "manage-users", label: "Manage Users", icon: IC.users, path: "/admin-users" },
-      { id: "manage-owners", label: "Manage Owners", icon: IC.owners, path: "/create-owner" },
-    ]
+    id: "dashboard",
+    label: "Dashboard",
+    icon: IC.dashboard,
+    section: "overview",
+    children: null,
   },
   {
-    id: "workspaces-group", label: "Workspaces", icon: IC.workspace,
+    id: "management",
+    label: "Management",
+    icon: IC.users,
+    children: [
+      { id: "manage-users", label: "Manage Users", icon: IC.users, section: "users" },
+      { id: "manage-owners", label: "Manage Owners", icon: IC.owners, section: "owners" },
+    ],
+  },
+  {
+    id: "workspaces-group",
+    label: "Workspaces",
+    icon: IC.workspace,
     children: [
       { id: "workspaces", label: "Workspaces", icon: IC.workspace, section: "workspaces" },
-      { id: "categories", label: "Categories", icon: IC.category, section: "categories" },
-    ]
+    ],
   },
   {
-    id: "leads-group", label: "Leads", icon: IC.leads,
+    id: "leads-group",
+    label: "Leads",
+    icon: IC.leads,
     children: [
-      { id: "leads", label: "View Leads", icon: IC.leads, path: "/admin-leads" },
-      { id: "offerleads", label: "Offer Leads", icon: IC.offers, path: "/admin-leadss" },
-      { id: "enterprise", label: "Customise Leads", icon: IC.enterprise, path: "/admin-Enterprise" },
-      { id: "ownerlead", label: "Owner Leads", icon: IC.tag, path: "/owner-special-leads" },
-    ]
+      { id: "view-leads", label: "View Leads", icon: IC.leads, section: "leads" },
+      { id: "offerleads", label: "Offer Leads", icon: IC.offers, section: "offerleads" },
+      { id: "enterprise", label: "Customise Leads", icon: IC.enterprise, section: "enterprise" },
+    ],
   },
   {
-    id: "business-group", label: "Business", icon: IC.enterprise,
+    id: "business-group",
+    label: "Business",
+    icon: IC.enterprise,
     children: [
-      { id: "entbiz", label: "Hyderabad Leads", icon: IC.enterprise, path: "/admin-dashboards" },
-      { id: "companylead", label: "Company Leads", icon: IC.leads, path: "/company-special-leads" },
-    ]
+      { id: "entbiz", label: "Hyderabad Leads", icon: IC.enterprise, section: "hyderabad-leads" },
+      { id: "company-leads", label: "Company Leads", icon: IC.leads, section: "company-leads" },
+    ],
   },
   {
-    id: "bookings-group", label: "Bookings", icon: IC.bookings,
+    id: "bookings-group",
+    label: "Bookings",
+    icon: IC.bookings,
     children: [
-      { id: "bookings", label: "All Bookings", icon: IC.bookings, path: "/admin-bookings" },
-    ]
+      { id: "bookings", label: "All Bookings", icon: IC.bookings, section: "bookings" },
+    ],
   },
   {
-    id: "support-group", label: "Support", icon: IC.support,
+    id: "support-group",
+    label: "Support",
+    icon: IC.support,
     children: [
-      { id: "tickets", label: "Support Tickets", icon: IC.tickets, section: "tickets" },
-    ]
+      { id: "support", label: "Support Desk", icon: IC.tickets, section: "tickets" },
+    ],
   },
   {
-    id: "activity-group", label: "Activity", icon: IC.activity,
+    id: "activity-group",
+    label: "Activity",
+    icon: IC.activity,
     children: [
-      { id: "bookings-activity", label: "Recent-Activity", icon: IC.bookings, path: "/recent-activity" },
-    ]
+      { id: "recent-activity", label: "Recent Activity", icon: IC.activity, section: "activity" },
+    ],
   },
   {
-    id: "amenities-group", label: "Amenities", icon: IC.amenities,
+    id: "amenities-group",
+    label: "Amenities",
+    icon: IC.amenities,
     children: [
-      { id: "amenities", label: "Amenities", icon: IC.bookings, path: "/amenities" },
-    ]
+      { id: "amenities", label: "Amenities Management", icon: IC.amenities, section: "amenities" },
+    ],
   },
 ];
 
@@ -179,6 +210,7 @@ function WeeklyChart({ data }) {
           <span className={styles.legendTxt}>Revenue (k)</span>
         </div>
       </div>
+
       <div className={styles.chartBody}>
         {data.map((d, i) => (
           <div key={i} className={styles.chartCol}>
@@ -213,7 +245,10 @@ function WeeklyChart({ data }) {
 }
 
 function DonutChart({ data }) {
-  const r = 52, cx = 64, cy = 64, circ = 2 * Math.PI * r;
+  const r = 52;
+  const cx = 64;
+  const cy = 64;
+  const circ = 2 * Math.PI * r;
   let offset = 0;
 
   return (
@@ -239,9 +274,14 @@ function DonutChart({ data }) {
           return el;
         })}
         <circle cx={cx} cy={cy} r={40} fill="var(--card-bg)" />
-        <text x="64" y="60" textAnchor="middle" fill="#1E1A08" fontSize="11" fontWeight="700">Space</text>
-        <text x="64" y="75" textAnchor="middle" fill="#A89A6A" fontSize="9">Mix</text>
+        <text x="64" y="60" textAnchor="middle" fill="#1E1A08" fontSize="11" fontWeight="700">
+          Space
+        </text>
+        <text x="64" y="75" textAnchor="middle" fill="#A89A6A" fontSize="9">
+          Mix
+        </text>
       </svg>
+
       <div className={styles.donutLegend}>
         {data.map((d, i) => (
           <div key={i} className={styles.donutItem}>
@@ -255,7 +295,8 @@ function DonutChart({ data }) {
   );
 }
 
-const mkSpark = (n, mx) => Array.from({ length: n }, () => Math.floor(Math.random() * mx + 4));
+const mkSpark = (n, mx) =>
+  Array.from({ length: n }, () => Math.floor(Math.random() * mx + 4));
 
 function SparkBar({ data, color }) {
   const max = Math.max(...data);
@@ -265,7 +306,11 @@ function SparkBar({ data, color }) {
         <div
           key={i}
           className={styles.sparkBar}
-          style={{ height: `${(v / max) * 100}%`, background: color, opacity: 0.25 + (i / data.length) * 0.75 }}
+          style={{
+            height: `${(v / max) * 100}%`,
+            background: color,
+            opacity: 0.25 + (i / data.length) * 0.75,
+          }}
         />
       ))}
     </div>
@@ -279,9 +324,29 @@ export default function AdminDashboard() {
   const [workspaces, setWorkspaces] = useState([]);
   const [categories, setCategories] = useState([]);
 
-  const [form, setForm] = useState({ name: "", city: "", location: "", price: "", image: "", description: "", is_available: true });
+  const [form, setForm] = useState({
+    name: "",
+    city: "",
+    location: "",
+    price: "",
+    image: "",
+    description: "",
+    is_available: true,
+  });
+
   const [editId, setEditId] = useState(null);
-  const [catForm, setCatForm] = useState({ name: "", category: "", description: "", image: "", hourly_price: "", daily_price: "", monthly_price: "", is_available: true, owner: "" });
+
+  const [catForm, setCatForm] = useState({
+    name: "",
+    category: "",
+    description: "",
+    image: "",
+    hourly_price: "",
+    daily_price: "",
+    monthly_price: "",
+    is_available: true,
+    owner: "",
+  });
 
   const [section, setSection] = useState("overview");
   const [sideOpen, setSideOpen] = useState(true);
@@ -292,7 +357,9 @@ export default function AdminDashboard() {
   const [ticketFilter, setTicketFilter] = useState("all");
   const [notifOpen, setNotifOpen] = useState(false);
   const [actFilter, setActFilter] = useState("all");
+  const [activityDropOpen, setActivityDropOpen] = useState(false); // ← NEW
   const notifRef = useRef(null);
+  const activityRef = useRef(null); // ← NEW
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -309,18 +376,36 @@ export default function AdminDashboard() {
     own: mkSpark(10, 4),
   };
 
-  const fetchWS = () => axiosInstance.get("workspaces/").then((r) => setWorkspaces(r.data)).catch(() => {});
-  const fetchCat = () => axiosInstance.get("workspaces/categories/").then((r) => setCategories(r.data)).catch(() => {});
+  const fetchWS = () =>
+    axiosInstance
+      .get("workspaces/")
+      .then((r) => setWorkspaces(r.data))
+      .catch(() => {});
+
+  const fetchCat = () =>
+    axiosInstance
+      .get("workspaces/categories/")
+      .then((r) => setCategories(r.data))
+      .catch(() => {});
 
   useEffect(() => {
-    axiosInstance.get("owners/").then((r) => setOwners(r.data)).catch(() => {});
+    axiosInstance
+      .get("owners/")
+      .then((r) => setOwners(r.data))
+      .catch(() => {});
     fetchWS();
     fetchCat();
   }, []);
 
   useEffect(() => {
     const h = (e) => {
-      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+      // ← NEW: close activity dropdown on outside click
+      if (activityRef.current && !activityRef.current.contains(e.target)) {
+        setActivityDropOpen(false);
+      }
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
@@ -341,12 +426,14 @@ export default function AdminDashboard() {
       ? axiosInstance.put(`workspaces/update/${editId}/`, form)
       : axiosInstance.post("workspaces/add/", form);
 
-    req.then(() => {
-      showToast(editId ? "Updated successfully" : "Workspace added");
-      setEditId(null);
-      setForm({ name: "", city: "", location: "", price: "", image: "", description: "", is_available: true });
-      fetchWS();
-    }).catch(() => showToast("Operation failed", "error"));
+    req
+      .then(() => {
+        showToast(editId ? "Updated successfully" : "Workspace added");
+        setEditId(null);
+        setForm({ name: "", city: "", location: "", price: "", image: "", description: "", is_available: true });
+        fetchWS();
+      })
+      .catch(() => showToast("Operation failed", "error"));
   };
 
   const handleEdit = (item) => {
@@ -373,20 +460,11 @@ export default function AdminDashboard() {
   };
 
   const handleAddCat = () => {
-    axiosInstance.post("workspaces/categories/add/", catForm)
+    axiosInstance
+      .post("workspaces/categories/add/", catForm)
       .then(() => {
         showToast("Category added");
-        setCatForm({
-          name: "",
-          category: "",
-          description: "",
-          image: "",
-          hourly_price: "",
-          daily_price: "",
-          monthly_price: "",
-          is_available: true,
-          owner: "",
-        });
+        setCatForm({ name: "", category: "", description: "", image: "", hourly_price: "", daily_price: "", monthly_price: "", is_available: true, owner: "" });
         fetchCat();
       })
       .catch(() => showToast("Failed to add", "error"));
@@ -427,8 +505,11 @@ export default function AdminDashboard() {
       w.city?.toLowerCase().includes(searchQ.toLowerCase())
   );
 
-  const filteredTickets = ticketFilter === "all" ? MOCK_TICKETS : MOCK_TICKETS.filter((t) => t.status === ticketFilter);
-  const filteredActivity = actFilter === "all" ? RECENT_ACTIVITIES : RECENT_ACTIVITIES.filter((a) => a.type === actFilter);
+  const filteredTickets =
+    ticketFilter === "all" ? MOCK_TICKETS : MOCK_TICKETS.filter((t) => t.status === ticketFilter);
+
+  const filteredActivity =
+    actFilter === "all" ? RECENT_ACTIVITIES : RECENT_ACTIVITIES.filter((a) => a.type === actFilter);
 
   const STATS = [
     { label: "Total Workspaces", value: workspaces.length, color: "#f59e0b", spark: SPARKS.ws, trend: "+12%", up: true, icon: IC.workspace },
@@ -439,6 +520,7 @@ export default function AdminDashboard() {
   const sectionTitle = () => {
     const map = {
       overview: "Dashboard Overview",
+      users: "User Management",
       workspaces: "Workspace Management",
       categories: "Category Management",
       tickets: "Support Tickets",
@@ -456,20 +538,107 @@ export default function AdminDashboard() {
 
   const activityTypes = ["all", "booking", "lead", "ticket", "workspace", "user", "payment", "owner", "category"];
 
+  // ← NEW: inline styles for the activity dropdown panel
+  const activityDropdownStyle = {
+    position: "absolute",
+    top: "calc(100% + 10px)",
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "360px",
+    background: "var(--card-bg, #fff)",
+    border: "1px solid rgba(0,0,0,0.08)",
+    borderRadius: "14px",
+    boxShadow: "0 12px 40px rgba(0,0,0,0.14)",
+    zIndex: 1000,
+    overflow: "hidden",
+  };
+
+  const actDropHeadStyle = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "14px 16px 10px",
+    borderBottom: "1px solid rgba(0,0,0,0.06)",
+  };
+
+  const actDropTitleStyle = {
+    fontSize: "13px",
+    fontWeight: "700",
+    color: "var(--text-primary, #1a1a1a)",
+  };
+
+  const actDropViewAllStyle = {
+    fontSize: "12px",
+    color: "#6366f1",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "600",
+    padding: 0,
+  };
+
+  const actDropItemStyle = {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "10px",
+    padding: "11px 16px",
+    borderBottom: "1px solid rgba(0,0,0,0.04)",
+    transition: "background 0.15s",
+  };
+
+  const actDropIcoStyle = (color) => ({
+    width: "30px",
+    height: "30px",
+    borderRadius: "8px",
+    background: `${color}18`,
+    color: color,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    marginTop: "1px",
+  });
+
+  const actDropTxtStyle = {
+    fontSize: "12.5px",
+    fontWeight: "600",
+    color: "var(--text-primary, #1a1a1a)",
+    lineHeight: "1.3",
+    marginBottom: "2px",
+  };
+
+  const actDropDescStyle = {
+    fontSize: "11.5px",
+    color: "var(--text-muted, #888)",
+    lineHeight: "1.4",
+    marginBottom: "3px",
+  };
+
+  const actDropTimeStyle = {
+    fontSize: "11px",
+    color: "#aaa",
+  };
+
   return (
     <div className={styles.root}>
       {mobOpen && <div className={styles.mobOverlay} onClick={closeMob} />}
 
-      <aside className={`${styles.sidebar} ${sideOpen ? styles.sidebarOpen : styles.sidebarCollapsed} ${mobOpen ? styles.sidebarMob : ""}`}>
+      <aside
+        className={`${styles.sidebar} ${sideOpen ? styles.sidebarOpen : styles.sidebarCollapsed} ${
+          mobOpen ? styles.sidebarMob : ""
+        }`}
+      >
         <div className={styles.logo}>
           <div className={styles.logoMark}>
             <Icon d={IC.building} size={18} />
           </div>
+
           {(sideOpen || mobOpen) && (
             <span className={styles.logoText}>
               Work<span className={styles.logoAccent}>Nest</span>
             </span>
           )}
+
           {isMobile && mobOpen && (
             <button className={styles.sideCloseBtn} onClick={closeMob}>
               <Icon d={IC.close} size={14} />
@@ -486,14 +655,15 @@ export default function AdminDashboard() {
                 <button
                   key={group.id}
                   className={`${styles.navItem} ${section === group.section ? styles.navItemActive : ""}`}
-                  onClick={() => {
-                    setSection(group.section);
-                    closeMob();
-                  }}
+                  onClick={() => { setSection(group.section); closeMob(); }}
                   title={!sideOpen && !mobOpen ? group.label : ""}
                 >
-                  <span className={styles.navIco}><Icon d={group.icon} size={15} /></span>
-                  {(sideOpen || mobOpen) && <span className={styles.navLabel}>{group.label}</span>}
+                  <span className={styles.navIco}>
+                    <Icon d={group.icon} size={15} />
+                  </span>
+                  {(sideOpen || mobOpen) && (
+                    <span className={styles.navLabel}>{group.label}</span>
+                  )}
                 </button>
               );
             }
@@ -508,7 +678,10 @@ export default function AdminDashboard() {
                   onClick={() => (sideOpen || mobOpen) && toggleGroup(group.id)}
                   title={!sideOpen && !mobOpen ? group.label : ""}
                 >
-                  <span className={styles.navIco}><Icon d={group.icon} size={15} /></span>
+                  <span className={styles.navIco}>
+                    <Icon d={group.icon} size={15} />
+                  </span>
+
                   {(sideOpen || mobOpen) && (
                     <>
                       <span className={styles.navLabel}>{group.label}</span>
@@ -524,7 +697,9 @@ export default function AdminDashboard() {
                     {group.children.map((child) => (
                       <button
                         key={child.id}
-                        className={`${styles.navChild} ${section === (child.section || child.id) ? styles.navChildActive : ""}`}
+                        className={`${styles.navChild} ${
+                          section === (child.section || child.id) ? styles.navChildActive : ""
+                        }`}
                         onClick={() => goNav(child)}
                       >
                         <span className={styles.childDot} />
@@ -559,6 +734,7 @@ export default function AdminDashboard() {
             <button className={styles.menuBtn} onClick={handleMobileMenuToggle}>
               <Icon d={IC.menu} size={18} />
             </button>
+
             <div className={styles.topTitle}>
               <span className={styles.topSub}>Admin Panel</span>
               <span className={styles.topSection}>{sectionTitle()}</span>
@@ -566,11 +742,64 @@ export default function AdminDashboard() {
           </div>
 
           <div className={styles.topRight}>
-            <button className={styles.actBtn} onClick={() => setSection("activity")}>
-              <span className={styles.livePulse} />
-              <Icon d={IC.activity} size={14} />
-              <span className={styles.actBtnTxt}>Recent Activity</span>
-            </button>
+            {/* ─── UPDATED: Activity button now toggles a dropdown ─── */}
+            <div style={{ position: "relative" }} ref={activityRef}>
+              <button
+                className={styles.actBtn}
+                onClick={() => setActivityDropOpen((p) => !p)}
+              >
+                <span className={styles.livePulse} />
+                <Icon d={IC.activity} size={14} />
+                <span className={styles.actBtnTxt}>Recent Activity</span>
+              </button>
+
+              {activityDropOpen && (
+                <div style={activityDropdownStyle}>
+                  {/* Header */}
+                  <div style={actDropHeadStyle}>
+                    <span style={actDropTitleStyle}>Recent Activity</span>
+                    <button
+                      style={actDropViewAllStyle}
+                      onClick={() => {
+                        setActivityDropOpen(false);
+                        setSection("activity");
+                      }}
+                    >
+                      View all →
+                    </button>
+                  </div>
+
+                  {/* Last 5 activities */}
+                  {RECENT_ACTIVITIES.slice(0, 5).map((a) => (
+                    <div key={a.id} style={actDropItemStyle}>
+                      <div style={actDropIcoStyle(a.color)}>
+                        <Icon d={a.icon} size={13} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={actDropTxtStyle}>{a.title}</p>
+                        <p style={actDropDescStyle}>{a.desc}</p>
+                        <span style={actDropTimeStyle}>{a.time}</span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: "600",
+                          padding: "2px 7px",
+                          borderRadius: "20px",
+                          background: `${a.color}15`,
+                          color: a.color,
+                          flexShrink: 0,
+                          alignSelf: "flex-start",
+                          marginTop: "2px",
+                        }}
+                      >
+                        {a.badge}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className={styles.notifWrap} ref={notifRef}>
               <button
@@ -587,9 +816,13 @@ export default function AdminDashboard() {
                     <span>Notifications</span>
                     <span className={styles.notifCount}>4 new</span>
                   </div>
+
                   {MOCK_NOTIF.map((a, i) => (
                     <div key={i} className={styles.notifItem}>
-                      <span className={styles.notifIco} style={{ color: a.color, background: `${a.color}15` }}>
+                      <span
+                        className={styles.notifIco}
+                        style={{ color: a.color, background: `${a.color}15` }}
+                      >
                         <Icon d={a.icon} size={12} />
                       </span>
                       <div>
@@ -598,6 +831,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))}
+
                   <button
                     className={styles.notifAll}
                     onClick={() => {
@@ -633,6 +867,7 @@ export default function AdminDashboard() {
                         {s.trend}
                       </span>
                     </div>
+
                     <div className={styles.statVal} style={{ color: s.color }}>{s.value}</div>
                     <div className={styles.statLbl}>{s.label}</div>
                     <SparkBar data={s.spark} color={s.color} />
@@ -645,6 +880,7 @@ export default function AdminDashboard() {
                 <div className={styles.chartPanel}>
                   <WeeklyChart data={CHART_DATA} />
                 </div>
+
                 <div className={styles.donutPanel}>
                   <div className={styles.panelHead}>
                     <h3 className={styles.panelTitle}>Space Mix</h3>
@@ -664,23 +900,56 @@ export default function AdminDashboard() {
                     View All →
                   </button>
                 </div>
+
                 <div className={styles.ticketList}>
                   {MOCK_TICKETS.slice(0, 4).map((t, i) => (
                     <div key={i} className={styles.ticketRow}>
                       <span className={styles.ticketId}>{t.id}</span>
+
                       <div className={styles.ticketMain}>
                         <span className={styles.ticketSubject}>{t.subject}</span>
-                        <span className={styles.ticketUser}><Icon d={IC.users} size={10} />{t.user}</span>
+                        <span className={styles.ticketUser}>
+                          <Icon d={IC.users} size={10} />
+                          {t.user}
+                        </span>
                       </div>
-                      <span className={`${styles.pri} ${t.priority === "high" ? styles.priHigh : t.priority === "medium" ? styles.priMed : styles.priLow}`}>{t.priority}</span>
-                      <span className={`${styles.statusBadge} ${t.status === "open" ? styles.stOpen : t.status === "in_progress" ? styles.stProg : styles.stDone}`}>
+
+                      <span
+                        className={`${styles.pri} ${
+                          t.priority === "high" ? styles.priHigh : t.priority === "medium" ? styles.priMed : styles.priLow
+                        }`}
+                      >
+                        {t.priority}
+                      </span>
+
+                      <span
+                        className={`${styles.statusBadge} ${
+                          t.status === "open" ? styles.stOpen : t.status === "in_progress" ? styles.stProg : styles.stDone
+                        }`}
+                      >
                         {t.status === "open" ? "Open" : t.status === "in_progress" ? "In Progress" : "Resolved"}
                       </span>
-                      <span className={styles.ticketTime}><Icon d={IC.clock} size={10} />{t.time}</span>
+
+                      <span className={styles.ticketTime}>
+                        <Icon d={IC.clock} size={10} />
+                        {t.time}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
+            </div>
+          )}
+
+          {section === "users" && (
+            <div className={styles.section}>
+              <AdminUsers />
+            </div>
+          )}
+
+          {section === "owners" && (
+            <div className={styles.section}>
+              <CreateOwner />
             </div>
           )}
 
@@ -699,9 +968,12 @@ export default function AdminDashboard() {
 
               <div className={styles.formCard}>
                 <div className={styles.formHead}>
-                  <span className={styles.formHeadIco}><Icon d={editId ? IC.edit : IC.add} size={13} /></span>
+                  <span className={styles.formHeadIco}>
+                    <Icon d={editId ? IC.edit : IC.add} size={13} />
+                  </span>
                   <span>{editId ? `Editing Workspace #${editId}` : "Add New Workspace"}</span>
                 </div>
+
                 <div className={styles.formGrid}>
                   {[
                     { ph: "Workspace Name *", key: "name" },
@@ -719,6 +991,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                     />
                   ))}
+
                   <select
                     className={styles.selectField}
                     value={form.is_available ? "available" : "unavailable"}
@@ -728,11 +1001,13 @@ export default function AdminDashboard() {
                     <option value="unavailable">❌ Unavailable</option>
                   </select>
                 </div>
+
                 <div className={styles.formActs}>
                   <button className={styles.btnPrimary} onClick={handleSubmit}>
                     <Icon d={editId ? IC.edit : IC.add} size={13} />
                     {editId ? " Update Workspace" : " Add Workspace"}
                   </button>
+
                   {editId && (
                     <button
                       className={styles.btnGhost}
@@ -764,8 +1039,11 @@ export default function AdminDashboard() {
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>#</th><th>Name</th><th>City</th><th>Location</th><th>Price</th>
-                      {/* <th>Status</th> */}
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>City</th>
+                      <th>Location</th>
+                      <th>Price</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -777,11 +1055,6 @@ export default function AdminDashboard() {
                         <td>{item.city}</td>
                         <td className={styles.tdMuted}>{item.location || "—"}</td>
                         <td className={styles.tdAccent}>₹{item.price}</td>
-                        {/* <td>
-                          <span className={`${styles.statusBadge} ${item.is_available ? styles.stDone : styles.stOpen}`}>
-                            {item.is_available ? "Available" : "Unavailable"}
-                          </span>
-                        </td> */}
                         <td>
                           <div className={styles.actCell}>
                             <button className={styles.editBtn} onClick={() => handleEdit(item)}>
@@ -820,32 +1093,59 @@ export default function AdminDashboard() {
 
               <div className={styles.formCard}>
                 <div className={styles.formHead}>
-                  <span className={styles.formHeadIco}><Icon d={IC.add} size={13} /></span>
+                  <span className={styles.formHeadIco}>
+                    <Icon d={IC.add} size={13} />
+                  </span>
                   <span>Add New Category</span>
                 </div>
+
                 <div className={styles.formGrid}>
-                  <input className={styles.inp} placeholder="Category Name *" value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} />
-                  <select className={styles.inp} value={catForm.owner || ""} onChange={(e) => setCatForm({ ...catForm, owner: e.target.value })}>
+                  <input
+                    className={styles.inp}
+                    placeholder="Category Name *"
+                    value={catForm.name}
+                    onChange={(e) => setCatForm({ ...catForm, name: e.target.value })}
+                  />
+
+                  <select
+                    className={styles.inp}
+                    value={catForm.owner || ""}
+                    onChange={(e) => setCatForm({ ...catForm, owner: e.target.value })}
+                  >
                     <option value="">Assign Owner</option>
-                    {owners.map((o) => <option key={o.id} value={o.id}>{o.username}</option>)}
+                    {owners.map((o) => (
+                      <option key={o.id} value={o.id}>{o.username}</option>
+                    ))}
                   </select>
-                  <select className={styles.inp} value={catForm.category} onChange={(e) => setCatForm({ ...catForm, category: e.target.value })}>
+
+                  <select
+                    className={styles.inp}
+                    value={catForm.category}
+                    onChange={(e) => setCatForm({ ...catForm, category: e.target.value })}
+                  >
                     <option value="">Select Category Type *</option>
                     <option value="day_pass">Day Pass</option>
                     <option value="meeting">Meeting Rooms</option>
                     <option value="fixed">Fixed Seats</option>
                     <option value="cabin">Cabins</option>
                   </select>
+
                   <input className={styles.inp} placeholder="Description" value={catForm.description} onChange={(e) => setCatForm({ ...catForm, description: e.target.value })} />
                   <input className={styles.inp} placeholder="Image URL" value={catForm.image} onChange={(e) => setCatForm({ ...catForm, image: e.target.value })} />
                   <input className={styles.inp} placeholder="Hourly Price (₹)" value={catForm.hourly_price} onChange={(e) => setCatForm({ ...catForm, hourly_price: e.target.value })} />
                   <input className={styles.inp} placeholder="Daily Price (₹)" value={catForm.daily_price} onChange={(e) => setCatForm({ ...catForm, daily_price: e.target.value })} />
                   <input className={styles.inp} placeholder="Monthly Price (₹)" value={catForm.monthly_price} onChange={(e) => setCatForm({ ...catForm, monthly_price: e.target.value })} />
-                  <select className={styles.inp} value={String(catForm.is_available)} onChange={(e) => setCatForm({ ...catForm, is_available: e.target.value === "true" })}>
+
+                  <select
+                    className={styles.inp}
+                    value={String(catForm.is_available)}
+                    onChange={(e) => setCatForm({ ...catForm, is_available: e.target.value === "true" })}
+                  >
                     <option value="true">✅ Available</option>
                     <option value="false">❌ Not Available</option>
                   </select>
                 </div>
+
                 <div className={styles.formActs}>
                   <button className={styles.btnPrimary} onClick={handleAddCat}>
                     <Icon d={IC.add} size={13} /> Add Category
@@ -868,6 +1168,7 @@ export default function AdminDashboard() {
                           <img src={item.image} alt={item.name} className={styles.catImg} />
                         </div>
                       )}
+
                       <div className={styles.catTop}>
                         <div>
                           <h4 className={styles.catName}>{item.name}</h4>
@@ -877,20 +1178,24 @@ export default function AdminDashboard() {
                           {item.is_available ? "Available" : "Off"}
                         </span>
                       </div>
-                      {item.ownername && <div className={styles.catOwner}><Icon d={IC.users} size={11} /> {item.ownername}</div>}
+
+                      {item.ownername && (
+                        <div className={styles.catOwner}>
+                          <Icon d={IC.users} size={11} /> {item.ownername}
+                        </div>
+                      )}
+
                       <p className={styles.catDesc}>{item.description || "No description provided."}</p>
+
                       <div className={styles.catPrices}>
-                        {[
-                          ["Hourly", item.hourly_price],
-                          ["Daily", item.daily_price],
-                          ["Monthly", item.monthly_price],
-                        ].map(([lbl, val]) => (
+                        {[["Hourly", item.hourly_price], ["Daily", item.daily_price], ["Monthly", item.monthly_price]].map(([lbl, val]) => (
                           <div key={lbl} className={styles.priceBox}>
                             <span className={styles.priceLbl}>{lbl}</span>
                             <span className={styles.priceVal}>₹{val || 0}</span>
                           </div>
                         ))}
                       </div>
+
                       <button className={styles.delBtn} style={{ marginTop: 12, width: "100%" }} onClick={() => handleDeleteCat(item.id)}>
                         <Icon d={IC.trash} size={11} /> Delete Category
                       </button>
@@ -901,131 +1206,57 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {section === "leads" && (
+            <div className={styles.sectionWrapper}>
+              <AdminLeads />
+            </div>
+          )}
+
+          {section === "offerleads" && (
+            <div className={styles.section}>
+              <AdminLeadss />
+            </div>
+          )}
+
+          {section === "enterprise" && (
+            <div className={styles.section}>
+              <AdminDashboardEnterprise />
+            </div>
+          )}
+
+          {section === "hyderabad-leads" && (
+            <div className={styles.section}>
+              <AdminDashboards />
+            </div>
+          )}
+
+          {section === "company-leads" && (
+            <div className={styles.section}>
+              <AdminCompanyLeads />
+            </div>
+          )}
+
+          {section === "bookings" && (
+            <div className={styles.section}>
+              <AdminBookings />
+            </div>
+          )}
+
           {section === "tickets" && (
             <div className={styles.section}>
-              <div className={styles.secHead}>
-                <div className={styles.secIco} style={{ background: "#f43f5e18", color: "#f43f5e" }}>
-                  <Icon d={IC.tickets} size={18} />
-                </div>
-                <div>
-                  <h2 className={styles.secTitle}>Support Tickets</h2>
-                  <p className={styles.secSub}>Manage and resolve user support requests.</p>
-                </div>
-                <div className={styles.ticketSummary}>
-                  <span className={`${styles.countPill} ${styles.pillRed}`}>{MOCK_TICKETS.filter((t) => t.status === "open").length} Open</span>
-                  <span className={`${styles.countPill} ${styles.pillOrange}`}>{MOCK_TICKETS.filter((t) => t.status === "in_progress").length} In Prog</span>
-                  <span className={`${styles.countPill} ${styles.pillGreen}`}>{MOCK_TICKETS.filter((t) => t.status === "resolved").length} Done</span>
-                </div>
-              </div>
+              <AdminTickets />
+            </div>
+          )}
 
-              <div className={styles.filterRow}>
-                {["all", "open", "in_progress", "resolved"].map((f) => (
-                  <button
-                    key={f}
-                    className={`${styles.filterPill} ${ticketFilter === f ? styles.filterActive : ""}`}
-                    onClick={() => setTicketFilter(f)}
-                  >
-                    {f === "all" ? "All" : f === "in_progress" ? "In Progress" : f.charAt(0).toUpperCase() + f.slice(1)}
-                  </button>
-                ))}
-              </div>
-
-              <div className={styles.ticketList}>
-                {filteredTickets.map((t, i) => (
-                  <div key={i} className={styles.ticketRow}>
-                    <span className={styles.ticketId}>{t.id}</span>
-                    <div className={styles.ticketMain}>
-                      <span className={styles.ticketSubject}>{t.subject}</span>
-                      <span className={styles.ticketUser}><Icon d={IC.users} size={10} />{t.user}</span>
-                    </div>
-                    <span className={`${styles.pri} ${t.priority === "high" ? styles.priHigh : t.priority === "medium" ? styles.priMed : styles.priLow}`}>{t.priority}</span>
-                    <span className={`${styles.statusBadge} ${t.status === "open" ? styles.stOpen : t.status === "in_progress" ? styles.stProg : styles.stDone}`}>
-                      {t.status === "open" ? "Open" : t.status === "in_progress" ? "In Progress" : "Resolved"}
-                    </span>
-                    <span className={styles.ticketTime}><Icon d={IC.clock} size={10} />{t.time}</span>
-                    <button className={styles.editBtn} onClick={() => navigate(`/admin-tickets/${t.id}`)}>
-                      <Icon d={IC.edit} size={11} /> Manage
-                    </button>
-                  </div>
-                ))}
-              </div>
+          {section === "amenities" && (
+            <div className={styles.section}>
+              <AdminAmenities />
             </div>
           )}
 
           {section === "activity" && (
             <div className={styles.section}>
-              <div className={styles.secHead}>
-                <div className={styles.secIco} style={{ background: "#10b98118", color: "#10b981" }}>
-                  <Icon d={IC.activity} size={18} />
-                </div>
-                <div>
-                  <h2 className={styles.secTitle}>Recent Activity</h2>
-                  <p className={styles.secSub}>All events and actions across the platform.</p>
-                </div>
-                <span className={styles.countPill}>{filteredActivity.length} Events</span>
-              </div>
-
-              <div className={styles.activityFilterRow}>
-                {activityTypes.map((type) => (
-                  <button
-                    key={type}
-                    className={`${styles.filterPill} ${actFilter === type ? styles.filterActive : ""}`}
-                    onClick={() => setActFilter(type)}
-                  >
-                    {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1)}
-                  </button>
-                ))}
-              </div>
-
-              <div className={styles.activityFeed}>
-                {filteredActivity.length > 0 ? (
-                  filteredActivity.map((act, i) => (
-                    <div key={act.id} className={styles.activityItem}>
-                      <div className={styles.activityLine}>
-                        <div
-                          className={styles.activityDot}
-                          style={{
-                            background: `${act.color}18`,
-                            color: act.color,
-                            border: `2px solid ${act.color}35`,
-                          }}
-                        >
-                          <Icon d={act.icon} size={14} />
-                        </div>
-                        {i !== filteredActivity.length - 1 && <div className={styles.activityConnector} />}
-                      </div>
-
-                      <div className={styles.activityCard}>
-                        <div className={styles.activityCardTop}>
-                          <div className={styles.activityTextBlock}>
-                            <h4 className={styles.activityTitle}>{act.title}</h4>
-                            <p className={styles.activityDesc}>{act.desc}</p>
-                          </div>
-
-                          <span className={styles.activityBadge} style={{ background: `${act.color}15`, color: act.color }}>
-                            {act.badge}
-                          </span>
-                        </div>
-
-                        <div className={styles.activityMeta}>
-                          <span className={styles.activityTime}>
-                            <Icon d={IC.clock} size={10} />
-                            {act.time}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className={styles.emptyState}>
-                    <div className={styles.emptyIcon}>
-                      <Icon d={IC.activity} size={28} />
-                    </div>
-                    <p className={styles.emptyTitle}>No activity found</p>
-                    <p className={styles.emptySub}>Try changing the filter to view more recent events.</p>
-                  </div>
-                )}
-              </div>
+              <RecentActivity />
             </div>
           )}
         </main>

@@ -1,11 +1,17 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/SpecialContact.module.css";
 
 function SpecialContact() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Use workspaceSize from state if available, else fallback to id
+  const categoryLabel =
+    location.state?.workspaceSize ||
+    (location.state?.tour ? "Tour Request" : id);
 
   const [loading, setLoading] = useState(false);
 
@@ -14,14 +20,11 @@ function SpecialContact() {
     email: "",
     phone: "",
     company: "",
-    message: ""
+    message: "",
   });
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async () => {
@@ -29,35 +32,26 @@ function SpecialContact() {
       alert("Please fill required fields ❌");
       return;
     }
-    console.log(id);
+
     try {
       setLoading(true);
 
       await axiosInstance.post("leads/special/add/", {
-        category: id,
+        category: categoryLabel,   // ← "Small" / "Medium" / "Large" / "Tour Request"
         name: form.name,
         email: form.email,
         phone: form.phone,
         company: form.company,
-        message: form.message},
-        {headers:{
-          Authorization:`Bearer ${localStorage.getItem("access")}`
-        }
-      }
-      );
+        message: form.message,
+      });
+      // axiosInstance already attaches the token via interceptor,
+      // no need to manually pass Authorization header here
 
       alert("Request Sent Successfully ✅");
-
-      setForm({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        message: ""
-      });
-
+      setForm({ name: "", email: "", phone: "", company: "", message: "" });
       navigate("/my-orders");
     } catch (error) {
+      console.error("Lead submit error:", error.response?.data);
       alert("Something went wrong ❌");
     } finally {
       setLoading(false);

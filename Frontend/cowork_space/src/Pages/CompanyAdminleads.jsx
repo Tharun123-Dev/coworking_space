@@ -92,7 +92,7 @@ export default function AdminCompanyLeads() {
 
   /* ── design tokens ── */
   const C = {
-    page:   { minHeight:"100vh", padding: isMobile ? "14px 10px 44px" : "32px 22px 52px", marginTop: isMobile ? 54 : 72, background:"linear-gradient(160deg,#0f172a 0%,#111827 100%)", color:"#dbe4ee", fontFamily:"'Inter','Segoe UI',sans-serif" },
+    page:   { minHeight:"100vh", padding: isMobile ? "14px 10px 44px" : "32px 22px 52px", marginTop: isMobile ? 54 : 72, background:"linear-gradient(160deg,#0f172a 0%,#111827 100%)", color:"#dbe4ee", fontFamily:"'Inter','Segoe UI',sans-serif",marginTop:"-20px" },
     card:   { background:"#111f33", border:"1px solid rgba(148,163,184,0.13)", borderRadius:18, padding: isMobile ? 14 : 20 },
     input:  { height:40, background:"#0d1929", border:"1px solid rgba(148,163,184,0.22)", borderRadius:10, padding:"0 36px 0 36px", fontSize:14, color:"#dbe4ee", outline:"none", width:"100%" },
     select: (accentColor = "rgba(148,163,184,0.3)") => ({

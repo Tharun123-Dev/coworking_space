@@ -97,15 +97,15 @@
 /* ---- Base Page ---- */
 .page {
   min-height: 100vh;
-  background:
+  /* background:
     radial-gradient(ellipse 80% 60% at 20% -10%, rgba(245,217,122,0.18) 0%, transparent 60%),
     radial-gradient(ellipse 60% 50% at 85% 90%, rgba(201,150,12,0.12) 0%, transparent 55%),
-    linear-gradient(160deg, #fffdf0 0%, #fdf8e1 40%, #fffef7 100%);
+    linear-gradient(160deg, #fffdf0 0%, #fdf8e1 40%, #fffef7 100%); */
   font-family: 'DM Sans', sans-serif;
   padding: 36px 22px 64px;
   box-sizing: border-box;
   animation: pageIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-  margin-top: 50px;
+  margin-top: -20px;
 }
  
 .container {

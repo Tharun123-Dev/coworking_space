@@ -604,6 +604,7 @@
   font-family: 'DM Sans', sans-serif;
   padding: 40px 32px 60px;
   color: var(--ink);
+  margin-top: -500px;
 }
  
 /* ── Header ─────────────────────────────────────────────────── */

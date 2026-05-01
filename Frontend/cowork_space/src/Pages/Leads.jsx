@@ -103,9 +103,10 @@ function AdminLeads() {
 
         .admin-leads-page {
           min-height: 100vh;
-          background: #f8fafc;
+           background:
+   rgba(234, 229, 216, 0.18);
           padding: 32px 20px 40px;
-          margin-top: 80px;
+          margin-top: -50px;
           font-family: "Inter", "Segoe UI", sans-serif;
           color: #0f172a;
         }

@@ -4,9 +4,9 @@
 .admin-bookings {
   min-height: 100vh;
   padding: 28px 20px 48px;
-  background: linear-gradient(160deg, #f5f6f8 0%, #eaecf1 100%);
+  background: linear-gradient(160deg, #e4e4e4 );
   font-family: "Inter", "Segoe UI", sans-serif;
-  margin-top: 100px;
+  margin-top: -20px;
 }
 
 /* ═══════════════════════════════════════

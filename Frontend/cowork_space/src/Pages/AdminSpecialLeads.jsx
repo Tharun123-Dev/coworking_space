@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import axiosInstance from "../Services/Axios";
 import "../Styles/AdminSpecialLeads.css";
 
@@ -12,9 +12,22 @@ function AdminSpecialLeads() {
   const [selectedLead, setSelectedLead] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
 
+  const fetchLeads = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get("leads/special/admin/");
+      setLeads(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error("Error fetching special leads:", error);
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchLeads();
-  }, []);
+  }, [fetchLeads]);
 
   useEffect(() => {
     if (showDetails) {
@@ -27,19 +40,6 @@ function AdminSpecialLeads() {
       document.body.style.overflow = "auto";
     };
   }, [showDetails]);
-
-  const fetchLeads = () => {
-    setLoading(true);
-    axiosInstance
-      .get("leads/special/admin/")
-      .then((res) => {
-        setLeads(res.data || []);
-      })
-      .catch(() => {
-        setLeads([]);
-      })
-      .finally(() => setLoading(false));
-  };
 
   const filtered = useMemo(() => {
     let data = [...leads];
@@ -272,7 +272,10 @@ function AdminSpecialLeads() {
                       <a href={`tel:${item.phone}`} className="icon-btn">
                         Call
                       </a>
-                      <a href={`mailto:${item.email}`} className="icon-btn secondary">
+                      <a
+                        href={`mailto:${item.email}`}
+                        className="icon-btn secondary"
+                      >
                         Email
                       </a>
                       <button
@@ -362,7 +365,9 @@ function AdminSpecialLeads() {
                   <div className="lead-grid">
                     <div className="info-card full">
                       <span className="info-label">Request Message</span>
-                      <strong>{selectedLead.message || "No message available"}</strong>
+                      <strong>
+                        {selectedLead.message || "No message available"}
+                      </strong>
                     </div>
                     <div className="info-card">
                       <span className="info-label">Lead Type</span>
@@ -388,7 +393,10 @@ function AdminSpecialLeads() {
                     <div className="info-card full">
                       <span className="info-label">Quick Actions</span>
                       <div className="lead-actions">
-                        <a className="lead-action-btn" href={`tel:${selectedLead.phone}`}>
+                        <a
+                          className="lead-action-btn"
+                          href={`tel:${selectedLead.phone}`}
+                        >
                           Call Now
                         </a>
                         <a

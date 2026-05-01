@@ -84,8 +84,7 @@ function App() {
     <Route path="/company-special-leads" element={<CompanyAdminleads />} />
     <Route path="/owner-special-leads" element={<AdminSpecialLeads />} />
     <Route path="/admin-dashboards" element={<AdminDashboards />} />
-     <Route path="/recent-activity" element={<RecentActivity />} />
-    <Route path="/amenities" element={<AdminAmenities/>} />
+    
   </Route>
 
 
@@ -96,6 +95,8 @@ function App() {
     <Route path="/owner-bookings" element={<OwnerBookings />} />
     <Route path="/owner-leads" element={<OwnerLeads />} />
     <Route path="/company-leads" element={<CompanyOwnerleads />} />
+    <Route path="/recent-activity" element={<RecentActivity />} />
+    <Route path="/amenities" element={<AdminAmenities/>} />
 
   </Route>
 
