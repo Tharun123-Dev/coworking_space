@@ -635,7 +635,7 @@ export default function AdminDashboard() {
 
           {(sideOpen || mobOpen) && (
             <span className={styles.logoText}>
-              Work<span className={styles.logoAccent}>Nest</span>
+              Co<span className={styles.logoAccent}>Work</span>
             </span>
           )}
 
@@ -744,14 +744,14 @@ export default function AdminDashboard() {
           <div className={styles.topRight}>
             {/* ─── UPDATED: Activity button now toggles a dropdown ─── */}
             <div style={{ position: "relative" }} ref={activityRef}>
-              <button
+              {/* <button
                 className={styles.actBtn}
                 onClick={() => setActivityDropOpen((p) => !p)}
               >
                 <span className={styles.livePulse} />
                 <Icon d={IC.activity} size={14} />
                 <span className={styles.actBtnTxt}>Recent Activity</span>
-              </button>
+              </button> */}
 
               {activityDropOpen && (
                 <div style={activityDropdownStyle}>

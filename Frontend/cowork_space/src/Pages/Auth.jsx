@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axiosInstance from "../Services/Axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "../Styles/Auth.module.css";
@@ -15,8 +15,9 @@ function Auth() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loadingRole, setLoadingRole] = useState(null);
-
+  const [mounted, setMounted] = useState(false);
   const [popup, setPopup] = useState({ show: false, type: "", message: "" });
+  const orbs = useRef([]);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -27,6 +28,24 @@ function Auth() {
   });
 
   useEffect(() => {
+    setMounted(true);
+    const handleMouseMove = (e) => {
+      const { clientX, clientY } = e;
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      const dx = (clientX - cx) / cx;
+      const dy = (clientY - cy) / cy;
+      orbs.current.forEach((orb, i) => {
+        if (!orb) return;
+        const factor = (i + 1) * 12;
+        orb.style.transform = `translate(${dx * factor}px, ${dy * factor}px)`;
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  useEffect(() => {
     if (roleType === "owner" || roleType === "admin" || roleType === "user") {
       setIsLogin(true);
     }
@@ -34,7 +53,7 @@ function Auth() {
 
   const showPopup = (type, message) => {
     setPopup({ show: true, type, message });
-    setTimeout(() => setPopup({ show: false, type: "", message: "" }), 3000);
+    setTimeout(() => setPopup({ show: false, type: "", message: "" }), 3500);
   };
 
   const resetForm = () => {
@@ -66,30 +85,18 @@ function Auth() {
     return true;
   };
 
-  // ✅ FIXED: Preserve ALL booking state including bookingMode
   const redirectAfterLogin = (role) => {
-    if (role === "admin") {
-      navigate("/admin-dashboard", { replace: true });
-      return;
-    }
-    if (role === "owner") {
-      navigate("/owner-dashboard", { replace: true });
-      return;
-    }
-
-    // ✅ Preserve COMPLETE booking state: openBooking, workspaceId, AND bookingMode
+    if (role === "admin") { navigate("/admin-dashboard", { replace: true }); return; }
+    if (role === "owner") { navigate("/owner-dashboard", { replace: true }); return; }
     const fromState = location.state;
-    const fromPath =
-      fromState?.from?.pathname
-        ? fromState.from.pathname + (fromState.from.search || "")
-        : "/";
-
+    const fromPath = fromState?.from?.pathname
+      ? fromState.from.pathname + (fromState.from.search || "") : "/";
     navigate(fromPath, {
       replace: true,
       state: {
         openBooking: fromState?.openBooking || false,
         workspaceId: fromState?.workspaceId || null,
-        bookingMode: fromState?.bookingMode || "day", // ✅ CRITICAL FIX
+        bookingMode: fromState?.bookingMode || "day",
       },
     });
   };
@@ -106,12 +113,10 @@ function Auth() {
       localStorage.setItem("refresh", res.data.refresh || "");
       localStorage.setItem("username", res.data.username);
       localStorage.setItem("role", res.data.role);
-      showPopup("success", "Guest Login Successful");
-      setTimeout(() => {
-        redirectAfterLogin(res.data.role);
-      }, 700);
+      showPopup("success", `Welcome, ${res.data.username}!`);
+      setTimeout(() => redirectAfterLogin(res.data.role), 700);
     } catch {
-      showPopup("error", "Guest login failed");
+      showPopup("error", "Guest login failed. Try again.");
     }
   };
 
@@ -137,10 +142,8 @@ function Auth() {
         localStorage.setItem("username", res.data.username || formData.username);
         localStorage.setItem("role", res.data.role || "user");
         localStorage.setItem("remember_me", rememberMe ? "true" : "false");
-        showPopup("success", "Login successful");
-        setTimeout(() => {
-          redirectAfterLogin(res.data.role);
-        }, 800);
+        showPopup("success", `Welcome back, ${res.data.username || formData.username}!`);
+        setTimeout(() => redirectAfterLogin(res.data.role), 800);
       } else {
         await axiosInstance.post("register/", {
           username: formData.username,
@@ -148,7 +151,7 @@ function Auth() {
           phone: formData.phone,
           password: formData.password,
         });
-        showPopup("success", "Registered successfully");
+        showPopup("success", "Account created! Please login.");
         resetForm();
         setTimeout(() => setIsLogin(true), 700);
       }
@@ -164,45 +167,76 @@ function Auth() {
     }
   };
 
+  const isOwnerOrAdmin = roleType === "owner" || roleType === "admin";
+
+  const guestRoles = isOwnerOrAdmin
+    ? [roleType]
+    : ["admin", "owner", "user"];
+
   return (
-    <section className={styles.authPage}>
+    <section className={`${styles.authPage} ${mounted ? styles.mounted : ""}`}>
+      {/* Animated Background Orbs */}
+      <div className={styles.bgScene}>
+        <div ref={el => orbs.current[0] = el} className={`${styles.orb} ${styles.orb1}`} />
+        <div ref={el => orbs.current[1] = el} className={`${styles.orb} ${styles.orb2}`} />
+        <div ref={el => orbs.current[2] = el} className={`${styles.orb} ${styles.orb3}`} />
+        <div className={styles.gridLines} />
+        <div className={styles.noiseTex} />
+      </div>
+
+      {/* Toast Popup */}
       {popup.show && (
-        <div className={`${styles.popup} ${popup.type === "success" ? styles.popupSuccess : styles.popupError}`}>
-          <span className={styles.popupIcon}>{popup.type === "success" ? "✓" : "✕"}</span>
-          {popup.message}
+        <div className={`${styles.toast} ${popup.type === "success" ? styles.toastSuccess : styles.toastError}`}>
+          <span className={styles.toastIcon}>{popup.type === "success" ? "✦" : "✕"}</span>
+          <span>{popup.message}</span>
         </div>
       )}
 
-      <div className={styles.authWrapper}>
+      <div className={`${styles.card} ${!isLogin ? styles.cardExpanded : ""}`}>
+
+        {/* ─── LEFT PANEL ─── */}
         <div className={styles.leftPanel}>
-          <div className={styles.brandMark}>
-            <div className={styles.brandLogo}>CW</div>
-            <span>CoWork Space</span>
-          </div>
-          <div className={styles.leftBody}>
-            <h1 className={styles.leftTitle}>
-              {isLogin ? "Welcome\nBack." : "Start Your\nJourney."}
-            </h1>
-            <p className={styles.leftSub}>
-              {isLogin
-                ? "Sign in to manage your workspace, bookings, and more."
-                : "Create an account and explore modern workspaces."}
-            </p>
-            <div className={styles.featureList}>
-              <div className={styles.featureItem}><span>✦</span> Secure Authentication</div>
-              <div className={styles.featureItem}><span>✦</span> Manage Bookings Easily</div>
-              <div className={styles.featureItem}><span>✦</span> Real-time Activity Feed</div>
-              <div className={styles.featureItem}><span>✦</span> Works on all Devices</div>
+          <div className={styles.brand}>
+            <div className={styles.brandLogo}>
+              <span>CW</span>
+              <div className={styles.logoRing} />
             </div>
+            <span className={styles.brandName}>CoWork Space</span>
           </div>
-          <div className={styles.leftDecor} aria-hidden="true">
-            <div className={styles.decorCircle1} />
-            <div className={styles.decorCircle2} />
+
+          <div className={styles.leftContent}>
+            <h1 className={styles.leftTitle}>
+              {isLogin
+                ? <><span className={styles.titleLine1}>Welcome</span><span className={styles.titleLine2}>Back.</span></>
+                : <><span className={styles.titleLine1}>Start Your</span><span className={styles.titleLine2}>Journey.</span></>
+              }
+            </h1>
+            <p className={styles.leftDesc}>
+              {isLogin
+                ? "Sign in to manage your workspace, bookings, and team — all in one place."
+                : "Join thousands of professionals in next-gen collaborative workspaces."}
+            </p>
+
+            <ul className={styles.featureList}>
+              {["Secure & Encrypted Auth", "Smart Booking System", "Real-time Notifications", "Works on all Devices"].map((f, i) => (
+                <li key={i} className={styles.featureItem} style={{ animationDelay: `${0.6 + i * 0.1}s` }}>
+                  <span className={styles.featureDot} />
+                  {f}
+                </li>
+              ))}
+            </ul>
           </div>
+
+          <div className={styles.leftGlow} />
+          <div className={styles.leftDecorCircle1} />
+          <div className={styles.leftDecorCircle2} />
         </div>
 
+        {/* ─── RIGHT PANEL ─── */}
         <div className={styles.rightPanel}>
-          <div className={styles.tabRow}>
+
+          {/* Tab row — only show Sign Up tab for users */}
+          <div className={styles.tabs}>
             <button
               className={`${styles.tab} ${isLogin ? styles.tabActive : ""}`}
               onClick={() => { setIsLogin(true); resetForm(); }}
@@ -213,124 +247,188 @@ function Auth() {
                 onClick={() => { setIsLogin(false); resetForm(); }}
               >Sign Up</button>
             )}
+            <div
+              className={styles.tabIndicator}
+              style={roleType === "user"
+                ? { left: isLogin ? "4px" : "50%", width: "calc(50% - 4px)" }
+                : { left: "4px", width: "calc(100% - 8px)" }
+              }
+            />
           </div>
 
           <p className={styles.formSub}>
-            {isLogin ? "Enter your credentials to continue" : "Fill in the details below"}
+            {isLogin ? "Enter your credentials to continue" : "Fill in your details below"}
           </p>
 
+          {/* ─── FORM FIELDS ─── */}
           <div className={styles.fields}>
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Username</label>
-              <input
-                name="username"
-                placeholder="your_username"
-                value={formData.username}
-                onChange={handleChange}
-                className={styles.input}
-                autoComplete="username"
-              />
-            </div>
 
-            {!isLogin && (
-              <>
+            {/* Login: single column | Signup: 2-col grid */}
+            <div className={`${styles.fieldGrid} ${!isLogin ? styles.fieldGridTwo : ""}`}>
+
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Username</label>
+                <div className={styles.inputWrap}>
+                  <span className={styles.inputIcon}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                  </span>
+                  <input
+                    name="username"
+                    placeholder="your_username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    className={styles.input}
+                    autoComplete="username"
+                  />
+                </div>
+              </div>
+
+              {!isLogin && (
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className={styles.input}
-                  />
+                  <div className={styles.inputWrap}>
+                    <span className={styles.inputIcon}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+                    </span>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="you@example.com"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={styles.input}
+                    />
+                  </div>
                 </div>
+              )}
+
+              {!isLogin && (
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Phone</label>
-                  <input
-                    name="phone"
-                    placeholder="+91 00000 00000"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className={styles.input}
-                  />
+                  <div className={styles.inputWrap}>
+                    <span className={styles.inputIcon}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.27a16 16 0 0 0 6.29 6.29l1.45-1.45a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </span>
+                    <input
+                      name="phone"
+                      placeholder="+91 00000 00000"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className={styles.input}
+                    />
+                  </div>
                 </div>
-              </>
-            )}
+              )}
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Password</label>
-              <div className={styles.passwordWrap}>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={styles.input}
-                  autoComplete={isLogin ? "current-password" : "new-password"}
-                />
-                <button type="button" className={styles.eyeBtn} onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-              </div>
-            </div>
-
-            {!isLogin && (
               <div className={styles.fieldGroup}>
-                <label className={styles.label}>Confirm Password</label>
-                <div className={styles.passwordWrap}>
+                <label className={styles.label}>Password</label>
+                <div className={styles.inputWrap}>
+                  <span className={styles.inputIcon}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </span>
                   <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
                     placeholder="••••••••"
-                    value={formData.confirmPassword}
+                    value={formData.password}
                     onChange={handleChange}
                     className={styles.input}
-                    autoComplete="new-password"
+                    autoComplete={isLogin ? "current-password" : "new-password"}
                   />
-                  <button type="button" className={styles.eyeBtn} onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                    {showConfirmPassword ? "Hide" : "Show"}
+                  <button type="button" className={styles.eyeBtn} onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword
+                      ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    }
                   </button>
                 </div>
               </div>
-            )}
+
+              {!isLogin && (
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label}>Confirm Password</label>
+                  <div className={styles.inputWrap}>
+                    <span className={styles.inputIcon}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </span>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      placeholder="••••••••"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className={styles.input}
+                      autoComplete="new-password"
+                    />
+                    <button type="button" className={styles.eyeBtn} onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      {showConfirmPassword
+                        ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      }
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {isLogin && (
               <div className={styles.optionsRow}>
-                <label className={styles.rememberBox}>
-                  <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+                <label className={styles.rememberLabel}>
+                  <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className={styles.checkbox} />
+                  <span className={styles.checkmark} />
                   <span>Remember me</span>
                 </label>
-                <span className={styles.forgotLink}>Forgot password?</span>
+                <button type="button" className={styles.forgotBtn}>Forgot password?</button>
               </div>
             )}
           </div>
 
+          {/* Submit Button */}
           <button onClick={handleSubmit} className={styles.submitBtn} disabled={loading}>
-            {loading ? <span className={styles.spinner} /> : null}
-            {loading ? "Please wait…" : isLogin ? "Login" : "Create Account"}
+            <span className={styles.btnText}>
+              {loading
+                ? <><span className={styles.spinner} /> Please wait…</>
+                : isLogin ? "Sign In →" : "Create Account →"
+              }
+            </span>
+            <span className={styles.btnGlow} />
           </button>
 
-          <div className={styles.divider}><span>or try a guest account</span></div>
+          {/* Divider */}
+          <div className={styles.divider}>
+            <span className={styles.dividerLine} />
+            <span className={styles.dividerText}>or try a guest account</span>
+            <span className={styles.dividerLine} />
+          </div>
 
+          {/* Guest Buttons */}
           <div className={styles.guestRow}>
-            {["admin", "owner", "user"].map((role) => (
+            {guestRoles.map((role) => (
               <button
                 key={role}
-                className={styles.guestBtn}
+                className={`${styles.guestBtn} ${styles[`guest_${role}`]}`}
                 onClick={() => handleClick(role)}
                 disabled={loadingRole === role}
               >
-                {loadingRole === role ? "…" : role.charAt(0).toUpperCase() + role.slice(1)}
+                <span className={styles.guestIcon}>
+                  {role === "admin" ? "⚙" : role === "owner" ? "🏢" : "👤"}
+                </span>
+                <span>{loadingRole === role ? "Loading…" : role.charAt(0).toUpperCase() + role.slice(1)}</span>
               </button>
             ))}
           </div>
 
+          {/* Switch link — only for users */}
           {roleType === "user" && (
-            <p className={styles.switchText} onClick={() => { setIsLogin(!isLogin); resetForm(); }}>
+            <p className={styles.switchText}>
               {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <span>{isLogin ? "Sign Up" : "Login"}</span>
+              <button
+                type="button"
+                className={styles.switchLink}
+                onClick={() => { setIsLogin(!isLogin); resetForm(); }}
+              >
+                {isLogin ? "Sign Up" : "Login"}
+              </button>
             </p>
           )}
         </div>

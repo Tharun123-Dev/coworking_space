@@ -58,12 +58,12 @@
   color: #2C2510;
   overflow-x: hidden;
   position: relative;
-  margin-top: 80px;
+  margin-top: 110px;
 }
 
 .sidebar {
   position: fixed;
-  top: 0;
+  top: 55px;
   left: 0;
   height: 100vh;
   z-index: 200;
@@ -399,17 +399,20 @@
   pointer-events: none;
   z-index: 0;
 }
-
 .topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: fixed;   /* change from sticky to fixed */
+  top: 65px;
+  left: 5;
+  width: 85%;       /* ensure full width */
+  z-index: 1000;     /* higher so it stays above everything */
+  
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   padding: 0 28px;
-  height: 64px;
+  height: 54px;
+
   background: rgba(245,242,234,0.85);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--card-border);
@@ -1549,7 +1552,33 @@
   }
   .ticketSummary { margin-left: 0; }
 }
+  .topbar {
+  position: fixed;   /* change from sticky to fixed */
+  top: 65px;
+  left: 5;
+  width: 100%;       /* ensure full width */
+  z-index: 1000;     /* higher so it stays above everything */
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 28px;
+  height: 54px;
 
+  background: rgba(245,242,234,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--card-border);
+  box-shadow: 0 2px 20px rgba(100,80,30,0.06);
+}
+
+.topLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
 @media (max-width: 480px) {
   .statsGrid { grid-template-columns: 1fr; }
   .topRight .actBtn { display: none; }
@@ -1562,5 +1591,33 @@
   .notifPanel {
     width: min(300px, calc(100vw - 32px));
     right: -8px;
+    
   }
+  .topbar {
+  position: fixed;   /* change from sticky to fixed */
+  top: 65px;
+  left: 5;
+  width: 105%;       /* ensure full width */
+  z-index: 1000;     /* higher so it stays above everything */
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 28px;
+  height: 54px;
+
+  background: rgba(245,242,234,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--card-border);
+  box-shadow: 0 2px 20px rgba(100,80,30,0.06);
+}
+
+.topLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
 }
