@@ -51,13 +51,13 @@ function ReviewChatWidget() {
   }, []);
 
   // ================= AUTO BOT MESSAGE =================
-  useEffect(() => {
-    if (openChat && messages.length === 0) {
-      setMessages([
-        { sender: "bot", text: "Hi there 👋 How can I help you?" }
-      ]);
-    }
-  }, [openChat]);
+  // useEffect(() => {
+  //   if (openChat && messages.length === 0) {
+  //     setMessages([
+  //       { sender: "bot", text: "Hi there 👋 How can I help you?" }
+  //     ]);
+  //   }
+  // }, [openChat]);
 
   // ================= ADD REVIEW =================
   const handleSubmit = () => {
@@ -112,7 +112,7 @@ function ReviewChatWidget() {
   return (
     <>
       {/* ================= CHATBOT BUTTON ================= */}
-      <div
+      {/* <div
         className="chatbot-btn"
         onClick={() => {
           setOpenChat(!openChat);
@@ -121,15 +121,15 @@ function ReviewChatWidget() {
         }}
       >
         🤖
-      </div>
+      </div> */}
 
       {/* ================= POPUP MESSAGE ================= */}
-      {showPopup && (
+      {/* {showPopup && (
         <div className="chatbot-popup">
           <p>Hi there 👋<br />How can I help you?</p>
           <span onClick={() => setShowPopup(false)}>✖</span>
         </div>
-      )}
+      )} */}
 
       {/* ================= REVIEW BUTTON ================= */}
       <div
@@ -192,7 +192,7 @@ function ReviewChatWidget() {
       </div>
 
       {/* ================= CHATBOT PANEL ================= */}
-      <div className={`chatbot-panel ${openChat ? "open" : ""}`}>
+      {/* <div className={`chatbot-panel ${openChat ? "open" : ""}`}>
         <div className="chatbot-header">
           <h3>AI Assistant</h3>
           <span onClick={() => setOpenChat(false)}>✖</span>
@@ -214,7 +214,7 @@ function ReviewChatWidget() {
           />
           <button onClick={sendMessage}>Send</button>
         </div>
-      </div>
+      </div> */}
     </>
   );
 }

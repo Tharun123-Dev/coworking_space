@@ -814,7 +814,7 @@
 }
  
 @media (max-width: 560px) {
-  .authPage { padding: 16px 12px; align-items: flex-start; }
+  .authPage { padding: 16px 12px; align-items: flex-start; margin-top: 60px;}
   .card { border-radius: 20px; }
   .leftPanel { padding: 26px 22px 20px; }
   .titleLine1, .titleLine2 { font-size: 28px; }
