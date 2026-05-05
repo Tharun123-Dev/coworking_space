@@ -88,7 +88,7 @@ const bookingPriceLabel = useMemo(() => {
       <div className="header">
         <div>
           <p className="admin-badge">⬡ Admin Panel</p>
-          <h2>Admin Booking Tracking</h2>
+          <h2 style={{color:"black"}}>Admin Booking Tracking</h2>
           <p className="admin-subtext">
             Monitor workspace bookings, review user details, and inspect card-style workspace information.
           </p>

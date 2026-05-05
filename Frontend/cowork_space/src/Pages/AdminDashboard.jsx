@@ -82,12 +82,11 @@ const SIDEBAR_GROUPS = [
     ],
   },
   {
-    id: "workspaces-group",
+    id: "workspaces",
     label: "Workspaces",
     icon: IC.workspace,
-    children: [
-      { id: "workspaces", label: "Workspaces", icon: IC.workspace, section: "workspaces" },
-    ],
+    section: "workspaces",
+    children: null,
   },
   {
     id: "leads-group",
@@ -109,36 +108,32 @@ const SIDEBAR_GROUPS = [
     ],
   },
   {
-    id: "bookings-group",
+    id: "bookings",
     label: "Bookings",
     icon: IC.bookings,
-    children: [
-      { id: "bookings", label: "All Bookings", icon: IC.bookings, section: "bookings" },
-    ],
+    section: "bookings",
+    children: null,
   },
   {
-    id: "support-group",
+    id: "support",
     label: "Support",
     icon: IC.support,
-    children: [
-      { id: "support", label: "Support Desk", icon: IC.tickets, section: "tickets" },
-    ],
+    section: "tickets",
+    children: null,
   },
   {
-    id: "activity-group",
-    label: "Activity",
+    id: "activity",
+    label: "Recent Activity",
     icon: IC.activity,
-    children: [
-      { id: "recent-activity", label: "Recent Activity", icon: IC.activity, section: "activity" },
-    ],
+    section: "activity",
+    children: null,
   },
   {
-    id: "amenities-group",
+    id: "amenities",
     label: "Amenities",
     icon: IC.amenities,
-    children: [
-      { id: "amenities", label: "Amenities Management", icon: IC.amenities, section: "amenities" },
-    ],
+    section: "amenities",
+    children: null,
   },
 ];
 
@@ -960,7 +955,7 @@ export default function AdminDashboard() {
                   <Icon d={IC.workspace} size={18} />
                 </div>
                 <div>
-                  <h2 className={styles.secTitle}>Workspace Management</h2>
+                  <h2 className={styles.secTitle}>Workspaces</h2>
                   <p className={styles.secSub}>Add, edit and delete workspace records.</p>
                 </div>
                 <span className={styles.countPill}>{workspaces.length} Total</span>

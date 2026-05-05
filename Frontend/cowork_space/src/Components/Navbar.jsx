@@ -30,6 +30,8 @@ export default function Navbar() {
   const [mWsOpen,   setMWsOpen]   = useState(false);
   const [mGalOpen,  setMGalOpen]  = useState(false);
 
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+
   const wsTimer  = useRef(null);
   const galTimer = useRef(null);
 
@@ -49,6 +51,15 @@ export default function Navbar() {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [drawerOpen]);
+
+  useEffect(() => {
+    if (profileModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else if (!drawerOpen) {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [profileModalOpen, drawerOpen]);
 
   const closeDrawer = () => {
     setDrawerOpen(false); setMWsOpen(false); setMGalOpen(false);
@@ -70,19 +81,18 @@ export default function Navbar() {
     closeDrawer();
   };
 
-  /* clicking a type → HyderabadWorkspaces with ?type= so it can pre-filter */
-const goToType = (typeLabel) => {
-  navigate(`/Enterprise?type=${encodeURIComponent(typeLabel)}`);
-  setWsOpen(false);
-  closeDrawer();
-};
+  const goToType = (typeLabel) => {
+    navigate(`/Enterprise?type=${encodeURIComponent(typeLabel)}`);
+    setWsOpen(false);
+    closeDrawer();
+  };
 
-const goToLocation = (loc) => {
-  navigate(`/Enterprise?location=${encodeURIComponent(loc)}`);
-  setGalOpen(false);
-  setMLocOpen(false);
-  closeDrawer();
-};
+  const goToLocation = (loc) => {
+    navigate(`/Enterprise?location=${encodeURIComponent(loc)}`);
+    setGalOpen(false);
+    setMLocOpen(false);
+    closeDrawer();
+  };
 
   const handleLogout = () => {
     ["access","refresh","is_admin","username"].forEach((k) => localStorage.removeItem(k));
@@ -92,22 +102,19 @@ const goToLocation = (loc) => {
   };
 
   const LOCATIONS = [
-  "Hitech City",
-  "Madhapur",
-  "Gachibowli",
-  "Kondapur",
-  "Financial District",
-];
-// const goToLocation = (loc) => {
-//   navigate(`/Enterprise?location=${encodeURIComponent(loc)}`);
-//   closeDrawer(); // auto close
-// };
+    "Hitech City",
+    "Madhapur",
+    "Gachibowli",
+    "Kondapur",
+    "Financial District",
+  ];
 
   const enterWs  = () => { clearTimeout(wsTimer.current);  setWsOpen(true);  };
   const leaveWs  = () => { wsTimer.current  = setTimeout(() => setWsOpen(false), 160); };
   const enterGal = () => { clearTimeout(galTimer.current); setGalOpen(true);  };
   const leaveGal = () => { galTimer.current = setTimeout(() => setGalOpen(false), 160); };
   const [mLocOpen, setMLocOpen] = useState(false);
+
   return (
     <>
       {/* ════════════════════ NAVBAR ════════════════════ */}
@@ -116,13 +123,12 @@ const goToLocation = (loc) => {
 
         <div className={styles.inner}>
 
-          {/* LOGO — far left */}
+          {/* LOGO */}
           <div className={styles.logo} onClick={() => { navigate("/"); scrollToTop(); }}>
             <span className={styles.logoW}>C</span>
             <span className={styles.logoRest}>oWork</span>
           </div>
 
-          {/* SPACER pushes nav + cta to far right */}
           <div className={styles.spacer} />
 
           {/* DESKTOP NAV */}
@@ -159,62 +165,36 @@ const goToLocation = (loc) => {
               Spaces
             </button>
 
-            {/* <button className={styles.link} onClick={() => navigate("/RightSpace")}>
-              Suite &amp; Scale
-            </button> */}
             <div className={styles.dropWrap}>
-  <button className={`${styles.link} ${styles.linkDrop}`}>
-    Locations
-  </button>
-
-  <div className={styles.galDrop}>
-    {LOCATIONS.map((loc) => (
-      <div
-        key={loc}
-        className={styles.galItem}
-        onClick={() => goToLocation(loc)}
-      >
-        {loc}
-      </div>
-    ))}
-  </div>
-</div>
-
-            {/* <button className={styles.link} onClick={() => navigate("/amenities")}>
-              Amenities
-            </button> */}
-
-            {/* Gallery */}
-            {/* <div className={styles.dropWrap} onMouseEnter={enterGal} onMouseLeave={leaveGal}>
-              <button className={`${styles.link} ${styles.linkDrop} ${galOpen ? styles.linkActive : ""}`}>
-                Gallery
-                <svg className={`${styles.chevron} ${galOpen ? styles.chevUp : ""}`} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8"><polyline points="6 9 12 15 18 9"/></svg>
+              <button className={`${styles.link} ${styles.linkDrop}`}>
+                Locations
               </button>
 
-              {galOpen && (
-                <div className={styles.galDrop}>
-                  {GALLERY_LINKS.map((g) => (
-                    <div key={g.label} className={styles.galItem} onClick={() => go(g.path)}>
-                      {g.label}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div> */}
+              <div className={styles.galDrop}>
+                {LOCATIONS.map((loc) => (
+                  <div
+                    key={loc}
+                    className={styles.galItem}
+                    onClick={() => goToLocation(loc)}
+                  >
+                    {loc}
+                  </div>
+                ))}
+              </div>
+            </div>
 
           </nav>
 
           {/* RIGHT ACTIONS */}
           <div className={styles.actions}>
 
-            {/* Profile icon + role popup */}
             <div className={`${styles.roleAnchor}`}>
               <button
                 className={styles.iconBtn}
                 onClick={() => {
                   if (token) {
                     if (isAdmin === "true") navigate("/admin-dashboard");
-                    else alert("User profile coming soon 👤");
+                    else setProfileModalOpen(true);
                   } else setRoleOpen((r) => !r);
                 }}
               >
@@ -260,165 +240,216 @@ const goToLocation = (loc) => {
         </div>
       </header>
 
+      {/* ════════════════════ MOBILE DRAWER ════════════════════ */}
+      <div className={`${styles.backdrop} ${drawerOpen ? styles.backdropOn : ""}`} onClick={closeDrawer} />
 
+      <div className={`${styles.drawer} ${drawerOpen ? styles.drawerOn : ""}`}>
 
-     {/* ════════════════════ MOBILE DRAWER ════════════════════ */}
-<div className={`${styles.backdrop} ${drawerOpen ? styles.backdropOn : ""}`} onClick={closeDrawer} />
-
-<div className={`${styles.drawer} ${drawerOpen ? styles.drawerOn : ""}`}>
-
-  {/* Top bar */}
-  <div className={styles.drawerTop}>
-    <div className={styles.logo} style={{cursor:"pointer"}} onClick={() => { go("/"); scrollToTop(); }}>
-      <span className={styles.logoW}>C</span>
-      <span className={styles.logoRest}>oWork</span>
-    </div>
-    <button className={styles.closeBtn} onClick={closeDrawer}>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
-    </button>
-  </div>
-
-  {/* User strip */}
-  {token && username && (
-    <div className={styles.mStrip}>
-      <div className={styles.mStripAva}>{username.charAt(0).toUpperCase()}</div>
-      <div>
-        <p className={styles.mStripGreet}>Welcome back</p>
-        <p className={styles.mStripName}>{username}</p>
-      </div>
-    </div>
-  )}
-
-  <hr className={styles.hr} />
-
-  {/* NAV LIST */}
-  <div className={styles.mNavList}>
-
-    {/* Home */}
-    <div className={styles.mRow} onClick={() => { go("/"); scrollToTop(); }}>
-      <span className={styles.mRowIco}>⌂</span>
-      <span className={styles.mRowTxt}>Home</span>
-      <span className={styles.mChev}>›</span>
-    </div>
-
-    {/* Booking */}
-    <div>
-      <div className={`${styles.mRow} ${mWsOpen ? styles.mRowOpen : ""}`} onClick={() => setMWsOpen((o)=>!o)}>
-        <span className={styles.mRowIco}>🏙️</span>
-        <span className={styles.mRowTxt}>Booking</span>
-        <svg className={`${styles.mCaret} ${mWsOpen ? styles.mCaretOpen : ""}`} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </div>
-
-      {mWsOpen && (
-        <div className={styles.mSub}>
-          {WORKSPACE_TYPES.map((ws) => (
-            <div key={ws.label} className={styles.mSubRow} onClick={() => goToType(ws.label)}>
-              <span className={styles.mSubIco}>{ws.icon}</span>
-              <span>{ws.label}</span>
-            </div>
-          ))}
+        {/* Top bar */}
+        <div className={styles.drawerTop}>
+          <div className={styles.logo} style={{cursor:"pointer"}} onClick={() => { go("/"); scrollToTop(); }}>
+            <span className={styles.logoW}>C</span>
+            <span className={styles.logoRest}>oWork</span>
+          </div>
+          <button className={styles.closeBtn} onClick={closeDrawer}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
         </div>
-      )}
-    </div>
 
-    {/* Spaces */}
-    <div className={styles.mRow} onClick={scrollToCompanies}>
-      <span className={styles.mRowIco}>🏢</span>
-      <span className={styles.mRowTxt}>Spaces</span>
-      <span className={styles.mChev}>›</span>
-    </div>
+        {/* User strip */}
+        {token && username && (
+          <div className={styles.mStrip}>
+            <div className={styles.mStripAva}>{username.charAt(0).toUpperCase()}</div>
+            <div>
+              <p className={styles.mStripGreet}>Welcome back</p>
+              <p className={styles.mStripName}>{username}</p>
+            </div>
+          </div>
+        )}
 
-    {/* ✅ LOCATIONS (NEW FIXED SECTION) */}
-    <div>
-      <div
-        className={`${styles.mRow} ${mLocOpen ? styles.mRowOpen : ""}`}
-        onClick={() => setMLocOpen((prev) => !prev)}
-      >
-        <span className={styles.mRowIco}>📍</span>
-        <span className={styles.mRowTxt}>Locations</span>
+        <hr className={styles.hr} />
 
-        <svg
-          className={`${styles.mCaret} ${mLocOpen ? styles.mCaretOpen : ""}`}
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        >
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </div>
+        {/* NAV LIST */}
+        <div className={styles.mNavList}>
 
-      {mLocOpen && (
-        <div className={styles.mSub}>
-          {["Hitech City","Madhapur","Gachibowli","Kondapur","Financial District"].map((loc) => (
+          <div className={styles.mRow} onClick={() => { go("/"); scrollToTop(); }}>
+            <span className={styles.mRowIco}>⌂</span>
+            <span className={styles.mRowTxt}>Home</span>
+            <span className={styles.mChev}>›</span>
+          </div>
+
+          <div>
+            <div className={`${styles.mRow} ${mWsOpen ? styles.mRowOpen : ""}`} onClick={() => setMWsOpen((o)=>!o)}>
+              <span className={styles.mRowIco}>🏙️</span>
+              <span className={styles.mRowTxt}>Booking</span>
+              <svg className={`${styles.mCaret} ${mWsOpen ? styles.mCaretOpen : ""}`} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+
+            {mWsOpen && (
+              <div className={styles.mSub}>
+                {WORKSPACE_TYPES.map((ws) => (
+                  <div key={ws.label} className={styles.mSubRow} onClick={() => goToType(ws.label)}>
+                    <span className={styles.mSubIco}>{ws.icon}</span>
+                    <span>{ws.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.mRow} onClick={scrollToCompanies}>
+            <span className={styles.mRowIco}>🏢</span>
+            <span className={styles.mRowTxt}>Spaces</span>
+            <span className={styles.mChev}>›</span>
+          </div>
+
+          <div>
             <div
-              key={loc}
-              className={styles.mSubRow}
-              onClick={() => goToLocation(loc)}
+              className={`${styles.mRow} ${mLocOpen ? styles.mRowOpen : ""}`}
+              onClick={() => setMLocOpen((prev) => !prev)}
             >
-              <span className={styles.mSubIco}>📍</span>
-              <span>{loc}</span>
+              <span className={styles.mRowIco}>📍</span>
+              <span className={styles.mRowTxt}>Locations</span>
+              <svg
+                className={`${styles.mCaret} ${mLocOpen ? styles.mCaretOpen : ""}`}
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
             </div>
-          ))}
+
+            {mLocOpen && (
+              <div className={styles.mSub}>
+                {["Hitech City","Madhapur","Gachibowli","Kondapur","Financial District"].map((loc) => (
+                  <div
+                    key={loc}
+                    className={styles.mSubRow}
+                    onClick={() => goToLocation(loc)}
+                  >
+                    <span className={styles.mSubIco}>📍</span>
+                    <span>{loc}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.mRow} onClick={() => go("/amenities")}>
+          </div>
+
         </div>
+
+        <hr className={styles.hr} />
+
+        {/* Footer */}
+        <div className={styles.drawerFoot}>
+          {token ? (
+            <>
+              <div
+                className={styles.mProfileRow}
+                onClick={() =>
+                  isAdmin === "true"
+                    ? go("/admin-dashboard")
+                    : setProfileModalOpen(true)
+                }
+              >
+                <span>{isAdmin==="true" ? "⚙️ Admin Dashboard" : "👤 My Profile"}</span>
+                <span>›</span>
+              </div>
+
+              <button className={styles.mOrderBtn} onClick={() => { navigate("/my-orders"); closeDrawer(); }}>
+                My Orders
+              </button>
+
+              <button className={styles.mLogoutBtn} onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <p className={styles.mLoginHdr}>Continue as</p>
+
+              <div className={styles.mTiles}>
+                {[{l:"User",i:"👤",t:"user"},{l:"Owner",i:"🏢",t:"owner"},{l:"Admin",i:"⚙️",t:"admin"}].map((r)=>(
+                  <div key={r.t} className={styles.mTile} onClick={() => go(`/auth?type=${r.t}`)}>
+                    <span className={styles.mTileIco}>{r.i}</span>
+                    <span>{r.l}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button className={styles.mStartBtn} onClick={() => go("/auth")}>
+                Get Started →
+              </button>
+            </>
+          )}
+        </div>
+
+      </div>
+
+      {/* ════════════════════ PROFILE MODAL ════════════════════ */}
+      {profileModalOpen && (
+        <>
+          <div
+            className={styles.profileBackdrop}
+            onClick={() => setProfileModalOpen(false)}
+          />
+          <div className={styles.profileModal}>
+
+            <button
+              className={styles.profileModalClose}
+              onClick={() => setProfileModalOpen(false)}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+            </button>
+
+            {/* Animated ring loader */}
+            <div className={styles.profileLoaderWrap}>
+              <div className={styles.profileRing}>
+                <div className={styles.profileRingInner} />
+              </div>
+              <div className={styles.profileAvatarInner}>
+                {(username || "U").charAt(0).toUpperCase()}
+              </div>
+            </div>
+
+            {/* ── CHANGED TEXT BELOW ── */}
+            <h2 className={styles.profileModalTitle}>Your Space Awaits ✦</h2>
+            <p className={styles.profileModalSub}>
+              Good to see you, <strong>{username || "there"}</strong>. Your personal dashboard is being
+              tailored just for you — every booking, every preference, all in one place.
+              <br /><br />We're putting the finishing touches on it now.
+            </p>
+
+            <div className={styles.profileDots}>
+              <span className={styles.profileDot} style={{ animationDelay: "0s" }} />
+              <span className={styles.profileDot} style={{ animationDelay: "0.22s" }} />
+              <span className={styles.profileDot} style={{ animationDelay: "0.44s" }} />
+            </div>
+
+            <div className={styles.profileModalActions}>
+              <button className={styles.profileModalOrders} onClick={() => { navigate("/my-orders"); setProfileModalOpen(false); }}>
+                View My Orders
+              </button>
+              <button className={styles.profileModalDismiss} onClick={() => setProfileModalOpen(false)}>
+                Dismiss
+              </button>
+            </div>
+
+          </div>
+        </>
       )}
-    </div>
-
-    {/* Amenities */}
-    <div className={styles.mRow} onClick={() => go("/amenities")}>
-      {/* <span className={styles.mRowIco}>✦</span> */}
-      {/* <span className={styles.mRowTxt}>Amenities</span> */}
-      {/* <span className={styles.mChev}>›</span> */}
-    </div>
-
-  </div>
-
-  <hr className={styles.hr} />
-
-  {/* Footer */}
-  <div className={styles.drawerFoot}>
-    {token ? (
-      <>
-        <div className={styles.mProfileRow} onClick={() => isAdmin==="true" ? go("/admin-dashboard") : alert("Profile coming soon")}>
-          <span>{isAdmin==="true" ? "⚙️ Admin Dashboard" : "👤 My Profile"}</span>
-          <span>›</span>
-        </div>
-
-        <button className={styles.mOrderBtn} onClick={() => { navigate("/my-orders"); closeDrawer(); }}>
-          My Orders
-        </button>
-
-        <button className={styles.mLogoutBtn} onClick={handleLogout}>
-          Logout
-        </button>
-      </>
-    ) : (
-      <>
-        <p className={styles.mLoginHdr}>Continue as</p>
-
-        <div className={styles.mTiles}>
-          {[{l:"User",i:"👤",t:"user"},{l:"Owner",i:"🏢",t:"owner"},{l:"Admin",i:"⚙️",t:"admin"}].map((r)=>(
-            <div key={r.t} className={styles.mTile} onClick={() => go(`/auth?type=${r.t}`)}>
-              <span className={styles.mTileIco}>{r.i}</span>
-              <span>{r.l}</span>
-            </div>
-          ))}
-        </div>
-
-        <button className={styles.mStartBtn} onClick={() => go("/auth")}>
-          Get Started →
-        </button>
-      </>
-    )}
-  </div>
-
-</div>
     </>
   );
 }

@@ -403,7 +403,7 @@
   position: fixed;   /* change from sticky to fixed */
   top: 65px;
   left: 5;
-  width: 85%;       /* ensure full width */
+  width: 85% !important;       /* ensure full width */
   z-index: 1000;     /* higher so it stays above everything */
   
   display: flex;
@@ -1556,7 +1556,7 @@
   position: fixed;   /* change from sticky to fixed */
   top: 65px;
   left: 5;
-  width: 100%;       /* ensure full width */
+  width: 100% !important;       /* ensure full width */
   z-index: 1000;     /* higher so it stays above everything */
   
   display: flex;
@@ -1597,7 +1597,7 @@
   position: fixed;   /* change from sticky to fixed */
   top: 65px;
   left: 5;
-  width: 105%;       /* ensure full width */
+  width: 105% !important;       /* ensure full width */
   z-index: 1000;     /* higher so it stays above everything */
   
   display: flex;
