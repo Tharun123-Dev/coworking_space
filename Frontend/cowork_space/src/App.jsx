@@ -40,6 +40,7 @@ import RecentActivity from "./Pages/RecentActivity";
 import AdminLayout from "./Components/AdminLayout";
 import AdminDashboards from "./Improved/AdminHyd";
 import AdminAmenities from "./Pages/AdminAmenities";
+import ForgotPassword from "./Pages/ForgotPassword";
 // import SlotBookingPage from "./Pages/Slotbookingpage";
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
 
   {/* USER ROUTES */}
   <Route element={<MainLayout />}>
+
     <Route path="/" element={<HomeLayout />} />
     <Route path="/contact" element={<Contact />} />
     <Route path="/view" element={<View />} />
@@ -58,6 +60,7 @@ function App() {
     <Route path="/cart" element={<Cart />} />
     <Route path="/booking" element={<Booking />} />
     <Route path="/details/:id" element={<Details />} />
+      <Route path="/forgot-password" element={<ForgotPassword/>} />
     {/* <Route path="/amenities" element={<Amenities />} /> */}
     <Route path="/Enterprise" element={<Enterprise />} />
     <Route path="/RightSpace" element={<RightSpace />} />
@@ -97,8 +100,9 @@ function App() {
     <Route path="/company-leads" element={<CompanyOwnerleads />} />
     <Route path="/recent-activity" element={<RecentActivity />} />
     <Route path="/amenities" element={<AdminAmenities/>} />
-
+    
   </Route>
+  
 
 </Routes>
 

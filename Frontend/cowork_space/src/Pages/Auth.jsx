@@ -378,7 +378,13 @@ function Auth() {
                   <span className={styles.checkmark} />
                   <span>Remember me</span>
                 </label>
-                <button type="button" className={styles.forgotBtn}>Forgot password?</button>
+          <button
+  type="button"
+  className={styles.forgotBtn}
+  onClick={() => navigate("/forgot-password")}
+>
+  Forgot password?
+</button>
               </div>
             )}
           </div>

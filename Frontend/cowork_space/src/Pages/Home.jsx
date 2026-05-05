@@ -10,6 +10,8 @@ function HomePage() {
   const [activeCount, setActiveCount] = useState({ spaces: 0, cities: 0, users: 0 });
   const [formOpen, setFormOpen] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const canvasRef = useRef(null);
   const navigate = useNavigate();
 
@@ -35,29 +37,112 @@ function HomePage() {
     }
   };
 
+  const validate = (fieldName, value) => {
+    const newErrors = { ...errors };
+
+    switch (fieldName) {
+      case "name":
+        if (!value.trim()) {
+          newErrors.name = "Full name is required";
+        } else if (value.trim().length < 2) {
+          newErrors.name = "Name must be at least 2 characters";
+        } else if (!/^[a-zA-Z\s'-]+$/.test(value.trim())) {
+          newErrors.name = "Name can only contain letters, spaces, hyphens, and apostrophes";
+        } else {
+          delete newErrors.name;
+        }
+        break;
+
+      case "email":
+        if (!value.trim()) {
+          newErrors.email = "Email address is required";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+          newErrors.email = "Please enter a valid email address";
+        } else {
+          delete newErrors.email;
+        }
+        break;
+
+      case "phone":
+        if (value.trim() && !/^[+]?[\d\s\-().]{7,15}$/.test(value.trim())) {
+          newErrors.phone = "Please enter a valid phone number";
+        } else {
+          delete newErrors.phone;
+        }
+        break;
+
+      case "message":
+        if (value.trim() && value.trim().length > 500) {
+          newErrors.message = "Message must be under 500 characters";
+        } else {
+          delete newErrors.message;
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    return newErrors;
+  };
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+
+    if (touched[name]) {
+      const newErrors = validate(name, value);
+      setErrors(newErrors);
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched({ ...touched, [name]: true });
+    const newErrors = validate(name, value);
+    setErrors(newErrors);
+    setFocusedField(null);
+  };
+
+  const handleFocus = (name) => {
+    setFocusedField(name);
+  };
+
+  const validateAll = () => {
+    let allErrors = {};
+    allErrors = validate("name", form.name);
+    allErrors = { ...allErrors, ...validate("email", form.email) };
+    if (form.phone) allErrors = { ...allErrors, ...validate("phone", form.phone) };
+    if (form.message) allErrors = { ...allErrors, ...validate("message", form.message) };
+
+    setErrors(allErrors);
+    setTouched({ name: true, email: true, phone: true, city: true, message: true });
+    return Object.keys(allErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email) {
-      alert("Name & Email required");
+
+    if (!validateAll()) {
       return;
     }
+
     setIsSubmitting(true);
     try {
       await axiosInstance.post("leads/add/", form);
       setIsSubmitting(false);
       setFormSubmitted(true);
       setForm({ name: "", email: "", phone: "", city: "", message: "" });
-      setTimeout(() => setFormSubmitted(false), 5000);
+      setErrors({});
+      setTouched({});
+      setTimeout(() => setFormSubmitted(false), 6000);
     } catch (err) {
       setIsSubmitting(false);
       if (err.response?.data?.email) {
-        alert("Email already exists");
+        setErrors({ email: "This email is already registered" });
+        setTouched({ ...touched, email: true });
       } else {
-        alert("Update You shortly!");
+        alert("We'll update you shortly!");
       }
     }
   };
@@ -118,7 +203,6 @@ function HomePage() {
         ctx.fillStyle = `rgba(212,175,55,${p.alpha})`;
         ctx.fill();
       });
-      // draw connections
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -142,6 +226,12 @@ function HomePage() {
       window.removeEventListener("resize", resize);
     };
   }, []);
+
+  const getFieldState = (name) => {
+    if (errors[name] && touched[name]) return "error";
+    if (!errors[name] && touched[name] && form[name]) return "valid";
+    return "default";
+  };
 
   return (
     <div className={styles.home}>
@@ -305,8 +395,8 @@ function HomePage() {
                 {!formSubmitted && !isSubmitting && (
                   <form onSubmit={handleSubmit} noValidate>
                     <div className={styles.inputGroup}>
-                      <label htmlFor="name">Full Name</label>
-                      <div className={`${styles.inputWrap} ${focusedField === "name" ? styles.inputFocused : ""}`}>
+                      <label htmlFor="name">Full Name <span className={styles.required}>*</span></label>
+                      <div className={`${styles.inputWrap} ${focusedField === "name" ? styles.inputFocused : ""} ${getFieldState("name") === "error" ? styles.inputError : ""} ${getFieldState("name") === "valid" ? styles.inputValid : ""}`}>
                         <span className={styles.inputIcon}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         </span>
@@ -316,17 +406,21 @@ function HomePage() {
                           placeholder="Enter your name"
                           value={form.name}
                           onChange={handleChange}
-                          onFocus={() => setFocusedField("name")}
-                          onBlur={() => setFocusedField(null)}
+                          onFocus={() => handleFocus("name")}
+                          onBlur={handleBlur}
                           required
                         />
-                        {form.name && <span className={styles.inputCheck}>✓</span>}
+                        {getFieldState("name") === "valid" && <span className={styles.inputCheck}>✓</span>}
+                        {getFieldState("name") === "error" && <span className={styles.inputErrorIcon}>✕</span>}
                       </div>
+                      {errors.name && touched.name && (
+                        <span className={styles.errorMsg}>{errors.name}</span>
+                      )}
                     </div>
 
                     <div className={styles.inputGroup}>
-                      <label htmlFor="email">Email Address</label>
-                      <div className={`${styles.inputWrap} ${focusedField === "email" ? styles.inputFocused : ""}`}>
+                      <label htmlFor="email">Email Address <span className={styles.required}>*</span></label>
+                      <div className={`${styles.inputWrap} ${focusedField === "email" ? styles.inputFocused : ""} ${getFieldState("email") === "error" ? styles.inputError : ""} ${getFieldState("email") === "valid" ? styles.inputValid : ""}`}>
                         <span className={styles.inputIcon}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                         </span>
@@ -337,18 +431,22 @@ function HomePage() {
                           placeholder="your@email.com"
                           value={form.email}
                           onChange={handleChange}
-                          onFocus={() => setFocusedField("email")}
-                          onBlur={() => setFocusedField(null)}
+                          onFocus={() => handleFocus("email")}
+                          onBlur={handleBlur}
                           required
                         />
-                        {form.email && <span className={styles.inputCheck}>✓</span>}
+                        {getFieldState("email") === "valid" && <span className={styles.inputCheck}>✓</span>}
+                        {getFieldState("email") === "error" && <span className={styles.inputErrorIcon}>✕</span>}
                       </div>
+                      {errors.email && touched.email && (
+                        <span className={styles.errorMsg}>{errors.email}</span>
+                      )}
                     </div>
 
                     <div className={styles.inputRow}>
                       <div className={styles.inputGroup}>
                         <label htmlFor="phone">Phone</label>
-                        <div className={`${styles.inputWrap} ${focusedField === "phone" ? styles.inputFocused : ""}`}>
+                        <div className={`${styles.inputWrap} ${focusedField === "phone" ? styles.inputFocused : ""} ${getFieldState("phone") === "error" ? styles.inputError : ""} ${getFieldState("phone") === "valid" ? styles.inputValid : ""}`}>
                           <span className={styles.inputIcon}>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                           </span>
@@ -359,10 +457,15 @@ function HomePage() {
                             placeholder="+91 9876543210"
                             value={form.phone}
                             onChange={handleChange}
-                            onFocus={() => setFocusedField("phone")}
-                            onBlur={() => setFocusedField(null)}
+                            onFocus={() => handleFocus("phone")}
+                            onBlur={handleBlur}
                           />
+                          {getFieldState("phone") === "valid" && <span className={styles.inputCheck}>✓</span>}
+                          {getFieldState("phone") === "error" && <span className={styles.inputErrorIcon}>✕</span>}
                         </div>
+                        {errors.phone && touched.phone && (
+                          <span className={styles.errorMsg}>{errors.phone}</span>
+                        )}
                       </div>
 
                       <div className={styles.inputGroup}>
@@ -376,8 +479,8 @@ function HomePage() {
                             name="city"
                             value={form.city}
                             onChange={handleChange}
-                            onFocus={() => setFocusedField("city")}
-                            onBlur={() => setFocusedField(null)}
+                            onFocus={() => handleFocus("city")}
+                            onBlur={handleBlur}
                           >
                             <option value="">Select Area</option>
                             <option value="Gachibowli">Gachibowli</option>
@@ -393,18 +496,24 @@ function HomePage() {
 
                     <div className={styles.inputGroup}>
                       <label htmlFor="message">Requirements</label>
-                      <div className={`${styles.inputWrap} ${styles.textareaWrap} ${focusedField === "message" ? styles.inputFocused : ""}`}>
+                      <div className={`${styles.inputWrap} ${styles.textareaWrap} ${focusedField === "message" ? styles.inputFocused : ""} ${getFieldState("message") === "error" ? styles.inputError : ""}`}>
                         <textarea
                           id="message"
                           name="message"
                           value={form.message}
                           placeholder="Day pass? Dedicated desk? Team office? Let us know..."
                           onChange={handleChange}
-                          onFocus={() => setFocusedField("message")}
-                          onBlur={() => setFocusedField(null)}
+                          onFocus={() => handleFocus("message")}
+                          onBlur={handleBlur}
                           rows="3"
                         />
                       </div>
+                      {errors.message && touched.message && (
+                        <span className={styles.errorMsg}>{errors.message}</span>
+                      )}
+                      {form.message && (
+                        <span className={styles.charCount}>{form.message.length}/500</span>
+                      )}
                     </div>
 
                     <button type="submit" className={styles.submitBtn}>

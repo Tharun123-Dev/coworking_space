@@ -372,9 +372,9 @@ const goToLocation = (loc) => {
 
     {/* Amenities */}
     <div className={styles.mRow} onClick={() => go("/amenities")}>
-      <span className={styles.mRowIco}>✦</span>
+      {/* <span className={styles.mRowIco}>✦</span> */}
       {/* <span className={styles.mRowTxt}>Amenities</span> */}
-      <span className={styles.mChev}>›</span>
+      {/* <span className={styles.mChev}>›</span> */}
     </div>
 
   </div>
