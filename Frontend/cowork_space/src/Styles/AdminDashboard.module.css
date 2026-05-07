@@ -81,7 +81,45 @@
     linear-gradient(180deg, #12103A 0%, #0E0C30 100%);
   box-shadow: 4px 0 32px rgba(0,0,0,0.35), inset -1px 0 0 var(--sb-border);
 }
+.approvedBadge {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
 
+.pendingBadge {
+  background: #fef3c7;
+  color: #b45309;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.approveBtn {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rejectBtn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
 .sidebar::-webkit-scrollbar { display: none; }
 
 .sidebarOpen { width: 240px; }

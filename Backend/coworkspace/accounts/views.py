@@ -75,6 +75,7 @@ def login_view(request):
             "username": user.username,
             "is_admin": user.is_superuser,
             "role": profile.role,
+              "location": profile.location
         })
 
     return Response({
@@ -92,6 +93,7 @@ def create_owner(request):
     username = request.data.get("username")
     email = request.data.get("email")
     password = request.data.get("password")
+    location = request.data.get("location")  # ✅ ADD THIS
 
     if not username or not email or not password:
         return Response({"error": "All fields required"}, status=400)
@@ -106,9 +108,10 @@ def create_owner(request):
         password=password
     )
 
-    # ✅ SET OWNER ROLE
+    # ✅ SET OWNER ROLE + LOCATION
     profile = Profile.objects.get(user=user)
     profile.role = "owner"
+    profile.location = location   # ✅ ADD THIS LINE
     profile.save()
 
     print("USER CREATED")
@@ -122,18 +125,17 @@ def create_owner(request):
     except Exception as e:
         print("EMAIL ERROR:", str(e))
 
-    # ✅ ADD ACTIVITY LOG (IMPORTANT)
+    # ✅ ADD ACTIVITY LOG
     ActivityLog.objects.create(
-        user=request.user,  # admin who created owner
+        user=request.user,
         action="CREATE",
         model_name="Owner",
-        message=f"{request.user.username} created new owner {username}"
+        message=f"{request.user.username} created new owner {username} in {location}"  # optional improvement
     )
 
     return Response({
         "message": "Owner created successfully"
     })
-    
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def get_owners(request):
@@ -145,7 +147,10 @@ def get_owners(request):
         data.append({
             "id": o.user.id,
             "username": o.user.username,
-            "email": o.user.email
+            "email": o.user.email,
+
+            # ✅ ADD THIS
+            "location": o.location
         })
 
     return Response(data)

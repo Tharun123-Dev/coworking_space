@@ -15,14 +15,39 @@ class AmenitySerializer(serializers.ModelSerializer):
         return obj.custom_icon if obj.custom_icon else obj.icon
     
 class WorkspaceSerializer(serializers.ModelSerializer):
-    amenities = AmenitySerializer(many=True, read_only=True)  # ✅ MUST
+    amenities = AmenitySerializer(many=True, read_only=True)
+
+    # ✅ ADD THIS
+    owner_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Workspace
-        fields = "__all__"
+        fields = "__all__"   # owner_name automatically included
+
+    def get_owner_name(self, obj):
+        if obj.owner:
+            return obj.owner.get_full_name() or obj.owner.username
+        return None
 
 class WorkspaceCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkspaceCategory
+        fields = "__all__"
+
+from rest_framework import serializers
+from .models import OfferWorkspace
+
+class OfferWorkspaceSerializer(
+    serializers.ModelSerializer
+):
+
+    owner_name = serializers.CharField(
+        source="owner.username",
+        read_only=True
+    )
+
+    class Meta:
+        model = OfferWorkspace
+
         fields = "__all__"
 

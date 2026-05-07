@@ -16,8 +16,45 @@ from .models import BusinessEnterpriseLead,SupportTicket
 from bookings.models import Booking
 from datetime import datetime
 from workspaces.models import ActivityLog
+from workspaces.models import OfferWorkspace
+@api_view(["POST"])
+def createe_lead(request):
 
+    data = request.data
 
+    Leadss.objects.create(
+
+        name=data.get("name"),
+
+        email=data.get("email"),
+
+        phone=data.get("phone"),
+
+        team_size=data.get(
+            "team_size"
+        ),
+
+        message=data.get(
+            "message"
+        ),
+
+        workspace_type=data.get(
+            "workspace_type"
+        ),
+
+        preferred_location=data.get(
+            "preferred_location"
+        ),
+
+        offer_workspace=data.get(
+            "offer_workspace"
+        ),
+    )
+
+    return Response({
+        "message":
+        "Lead created successfully"
+    })
 
 @api_view(['POST'])
 def create_lead(request):
@@ -323,8 +360,18 @@ from rest_framework.response import Response
 from .models import CompanyLead
 
 
+from accounts.models import Profile
+
 @api_view(['POST'])
 def create_company_lead(request):
+
+    location = request.data.get("location")
+
+    # ✅ FIND OWNER BASED ON LOCATION
+    owner_profile = Profile.objects.filter(
+        role="owner",
+        location=location
+    ).first()
 
     lead = CompanyLead.objects.create(
         team_size=request.data.get("team_size"),
@@ -333,16 +380,16 @@ def create_company_lead(request):
         phone=request.data.get("phone"),
         company=request.data.get("company"),
         message=request.data.get("message"),
+        location=location,   # ✅ ADD THIS
+        owner=owner_profile.user if owner_profile else None  # ✅ AUTO ASSIGN
     )
 
-    # ===========================
-    # ✅ ADD ACTIVITY LOG
-    # ===========================
+    # ✅ ACTIVITY LOG
     ActivityLog.objects.create(
         user=request.user if request.user.is_authenticated else None,
         action="CREATE",
         model_name="CompanyLead",
-        message=f"{lead.name} submitted company lead ({lead.company})"
+        message=f"{lead.name} submitted company lead ({lead.company}) in {location}"
     )
 
     return Response({"message": "Lead created"})
@@ -369,14 +416,16 @@ def admin_company_leads(request):
             "company": l.company,
             "message": l.message,
             "status": l.status,
-            "owner": l.owner.username if l.owner else None,
-            "owner_name":l.owner.username if l.owner else None,
+
+            # ✅ ADD THIS (MAIN FIX)
+            "location": l.location,
+
+            # owner info
+            "owner": l.owner.id if l.owner else None,
+            "owner_name": l.owner.username if l.owner else None,
         })
 
     return Response(data)
-
-from django.contrib.auth.models import User
-
 
 @api_view(['PUT'])
 @permission_classes([IsAdminUser])
@@ -536,8 +585,9 @@ def user_tickets(request):
         location = "-"
         booking_status = "-"
         date = "-"
+        image = None   # ✅ IMPORTANT
 
-        # booking ticket
+        # ───── BOOKING TICKET ─────
         if t.booking_id:
             booking = Booking.objects.filter(id=t.booking_id).first()
 
@@ -547,7 +597,14 @@ def user_tickets(request):
                 booking_status = booking.status
                 date = booking.date.strftime("%d %b %Y")
 
-        # special request ticket
+                # ✅ SAFE IMAGE HANDLING
+                image = (
+                    booking.workspace.image.url
+                    if hasattr(booking.workspace.image, "url")
+                    else booking.workspace.image
+                )
+
+        # ───── SPECIAL REQUEST TICKET ─────
         elif t.special_id:
             special = SpecialLead.objects.filter(id=t.special_id).first()
 
@@ -557,9 +614,16 @@ def user_tickets(request):
                 booking_status = special.status
                 date = special.created_at.strftime("%d %b %Y")
 
+                # ✅ SAFE IMAGE
+                image = (
+                    special.category.image.url
+                    if hasattr(special.category.image, "url")
+                    else special.category.image
+                )
+
+        # ───── FINAL RESPONSE ─────
         data.append({
             "id": t.id,
-            
             "workspace": workspace,
             "location": location,
             "booking_status": booking_status,
@@ -567,6 +631,9 @@ def user_tickets(request):
             "issue_type": t.issue_type,
             "ticket_status": t.status,
             "admin_note": t.admin_note,
+
+            # ✅ FIXED IMAGE
+            "image": image
         })
 
     return Response(data)
@@ -599,49 +666,286 @@ def update_ticket(request,id):
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import ModernLead
-
-# CREATE
-@api_view(["POST"])
-def create_modern_lead(request):
-    data = request.data
-
-    ModernLead.objects.create(
-        name=data.get("name"),
-        email=data.get("email"),
-        phone=data.get("phone"),
-        company=data.get("company"),
-        message=data.get("message"),
-    )
-
-    return Response({"message": "Lead saved successfully"})
-
 @api_view(["GET"])
-def get_modern_leads(request):
-    leads = ModernLead.objects.all().order_by("-id")
+@permission_classes([IsAuthenticated])
+def owner_customisation_leads(request):
+
+    owner_location = request.user.profile.location
+
+    leads = ModernLead.objects.filter(
+        preferred_location=owner_location
+    ).order_by("-id")
 
     data = []
+
     for l in leads:
+
         data.append({
             "id": l.id,
+
             "name": l.name,
+
             "email": l.email,
+
             "phone": l.phone,
+
             "company": l.company,
+
+            "preferred_location":
+                l.preferred_location,
+
             "message": l.message,
+
+            "status": l.status,
+
             "date": l.created_at,
         })
 
     return Response(data)
 
-# views.py
-
 @api_view(["PUT"])
-def update_lead_status(request, id):
+@permission_classes([IsAuthenticated])
+def update_customisation_lead_status(
+    request,
+    id
+):
+
     try:
+
         lead = ModernLead.objects.get(id=id)
-        lead.status = request.data.get("status")
+
+        lead.status = request.data.get(
+            "status"
+        )
+
         lead.save()
 
-        return Response({"message": "Status updated"})
+        return Response({
+            "message":
+            "Status updated successfully"
+        })
+
     except ModernLead.DoesNotExist:
-        return Response({"error": "Lead not found"}, status=404)
+
+        return Response(
+            {"error": "Lead not found"},
+            status=404
+        )
+    
+
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def admin_customisation_leads(request):
+
+    leads = ModernLead.objects.all().order_by("-id")
+
+    data = []
+
+    from accounts.models import Profile
+
+    for l in leads:
+
+        owner_name = "-"
+        city = "-"
+
+        profile = Profile.objects.filter(
+            location__iexact=
+            l.preferred_location
+        ).first()
+
+        if profile:
+            owner_name = (
+                profile.user.username
+            )
+
+            city = profile.location
+
+        data.append({
+            "id": l.id,
+
+            "name": l.name,
+
+            "email": l.email,
+
+            "phone": l.phone,
+
+            "company": l.company,
+
+            "preferred_location":
+                l.preferred_location,
+
+            "message": l.message,
+
+            "status": l.status,
+
+            "date": l.created_at,
+
+            "owner_name": owner_name,
+
+            "city": city,
+        })
+
+    return Response(data)
+
+from rest_framework.decorators import (
+    api_view,
+    permission_classes
+)
+
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser
+)
+
+from rest_framework.response import Response
+
+from .models import ModernLead
+@api_view(["POST"])
+def create_modern_lead(request):
+
+    data = request.data
+
+    ModernLead.objects.create(
+        name=data.get("name"),
+
+        email=data.get("email"),
+
+        phone=data.get("phone"),
+
+        company=data.get("company"),
+
+        preferred_location=data.get(
+            "preferred_location"
+        ),
+
+        message=data.get("message"),
+    )
+
+    return Response({
+        "message":
+        "Lead saved successfully"
+    })
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def owner_offer_leads(request):
+
+    owner_location = (
+        request.user.profile.location
+    )
+
+    leads = Leadss.objects.filter(
+        preferred_location=
+        owner_location
+    ).order_by("-id")
+
+    data = []
+
+    for l in leads:
+
+        data.append({
+
+            "id": l.id,
+
+            "name": l.name,
+
+            "phone": l.phone,
+
+            "email": l.email,
+
+            "team_size":
+                l.team_size,
+
+            "offer_workspace":
+                l.offer_workspace,
+
+            "preferred_location":
+                l.preferred_location,
+
+            "status":
+                l.status,
+        })
+
+    return Response(data)
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_offer_lead_status(
+    request,
+    id
+):
+
+    lead = Leadss.objects.get(id=id)
+
+    lead.status = request.data.get(
+        "status"
+    )
+
+    lead.save()
+
+    return Response({
+        "message":
+        "Status updated"
+    })
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def admin_offer_workspace_leads(
+    request,
+    id
+):
+
+    workspace = OfferWorkspace.objects.get(
+        id=id
+    )
+
+    leads = Leadss.objects.filter(
+        preferred_location=
+        workspace.area
+    ).order_by("-id")
+
+    data = []
+
+    from accounts.models import Profile
+
+    for l in leads:
+
+        owner_name = "-"
+
+        profile = Profile.objects.filter(
+            location__iexact=
+            l.preferred_location
+        ).first()
+
+        if profile:
+            owner_name = (
+                profile.user.username
+            )
+
+        data.append({
+
+            "id": l.id,
+
+            "owner_name":
+                owner_name,
+
+            "workspace_type":
+                l.workspace_type,
+
+            "offer_workspace":
+                l.offer_workspace,
+
+            "preferred_location":
+                l.preferred_location,
+
+            "name": l.name,
+
+            "phone": l.phone,
+
+            "email": l.email,
+
+            "team_size":
+                l.team_size,
+
+            "status":
+                l.status,
+        })
+
+    return Response(data)

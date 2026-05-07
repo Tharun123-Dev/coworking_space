@@ -104,8 +104,8 @@ function Auth() {
   const handleGuestLogin = async (role) => {
     const map = {
       admin: { username: "Fis", password: "Fis123" },
-      owner: { username: "nani", password: "nani123" },
-      user:  { username: "tharun", password: "tharun123" },
+      owner: { username: "owner1", password: "owner1" },
+      user:  { username: "Tharun", password: "Tharun123" },
     };
     try {
       const res = await axiosInstance.post("login/", map[role]);
@@ -113,6 +113,7 @@ function Auth() {
       localStorage.setItem("refresh", res.data.refresh || "");
       localStorage.setItem("username", res.data.username);
       localStorage.setItem("role", res.data.role);
+      localStorage.setItem("user_location", res.data.location);
       showPopup("success", `Welcome, ${res.data.username}!`);
       setTimeout(() => redirectAfterLogin(res.data.role), 700);
     } catch {
@@ -141,6 +142,7 @@ function Auth() {
         localStorage.setItem("refresh", res.data.refresh || "");
         localStorage.setItem("username", res.data.username || formData.username);
         localStorage.setItem("role", res.data.role || "user");
+          localStorage.setItem("user_location", res.data.location);
         localStorage.setItem("remember_me", rememberMe ? "true" : "false");
         showPopup("success", `Welcome back, ${res.data.username || formData.username}!`);
         setTimeout(() => redirectAfterLogin(res.data.role), 800);

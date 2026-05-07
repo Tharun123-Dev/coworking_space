@@ -1,248 +1,322 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "../Services/Axios";
-import "./AdminEnterprise.css";
+import styles from "./AdminEnterprise.module.css";
 
-const STATUS_OPTIONS = ["new", "contacted", "closed"];
+function CustomisationAdminDashboard() {
+  const [customisationLeads, setCustomisationLeads] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedOwner, setSelectedOwner] = useState("All");
+  const [selectedLocation, setSelectedLocation] = useState("All");
+  const [selectedStatus, setSelectedStatus] = useState("All");
 
-const STATUS_LABELS = {
-  new: "New",
-  contacted: "Contacted",
-  closed: "Closed",
-};
-
-const AVATAR_COLORS = ["#D97706","#B45309","#92400E","#78350F","#F59E0B","#FBBF24"];
-
-function avatarColor(name = "") {
-  let sum = 0;
-  for (let c of name) sum += c.charCodeAt(0);
-  return AVATAR_COLORS[sum % AVATAR_COLORS.length];
-}
-
-function AdminLeads() {
-  const [leads, setLeads] = useState([]);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [updating, setUpdating] = useState({});
-
-  const fetchLeads = async () => {
-    try {
-      const res = await axiosInstance.get("leads/modern-lead/all/");
-      setLeads(res.data);
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
+  const fetchCustomisationLeads = () => {
+    axiosInstance
+      .get("leads/modern-leads/admin/")
+      .then((res) => {
+        setCustomisationLeads(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch((err) => {
+        console.error("Customisation leads error:", err);
+      });
   };
 
-  useEffect(() => { fetchLeads(); }, []);
+  useEffect(() => {
+    fetchCustomisationLeads();
+  }, []);
 
-  const updateStatus = async (id, status) => {
-    setUpdating((prev) => ({ ...prev, [id]: true }));
-    try {
-      await axiosInstance.put(`leads/modern-lead/update/${id}/`, { status });
-      // optimistic update — no refetch needed
-      setLeads((prev) =>
-        prev.map((l) => (l.id === id ? { ...l, status } : l))
-      );
-    } catch (err) {
-      console.error("Update error:", err);
-      fetchLeads(); // rollback on error
-    } finally {
-      setUpdating((prev) => ({ ...prev, [id]: false }));
-    }
+  /* ── Stat Counts ── */
+  const stats = useMemo(() => {
+    const total = customisationLeads.length;
+    const newLeads = customisationLeads.filter(
+      (l) => (l.status || "").toLowerCase() === "new"
+    ).length;
+    const contacted = customisationLeads.filter(
+      (l) => (l.status || "").toLowerCase() === "contacted"
+    ).length;
+    const closed = customisationLeads.filter(
+      (l) => (l.status || "").toLowerCase() === "closed"
+    ).length;
+    return { total, new: newLeads, contacted, closed };
+  }, [customisationLeads]);
+
+  /* ── Filter Options ── */
+  const ownerOptions = useMemo(() => {
+    const names = [
+      ...new Set(customisationLeads.map((l) => l.owner_name).filter(Boolean)),
+    ].sort();
+    return ["All", ...names];
+  }, [customisationLeads]);
+
+  const locationOptions = useMemo(() => {
+    const locs = [
+      ...new Set(
+        customisationLeads.map((l) => l.preferred_location).filter(Boolean)
+      ),
+    ].sort();
+    return ["All", ...locs];
+  }, [customisationLeads]);
+
+  const statusOptions = useMemo(() => {
+    const statuses = [
+      ...new Set(customisationLeads.map((l) => l.status).filter(Boolean)),
+    ].sort();
+    return ["All", ...statuses];
+  }, [customisationLeads]);
+
+  /* ── Filtered Leads ── */
+  const filteredLeads = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return customisationLeads.filter((item) => {
+      const matchesSearch =
+        !q ||
+        [
+          item.name,
+          item.email,
+          item.phone,
+          item.city,
+          item.company,
+          item.owner_name,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(q);
+      const matchesOwner =
+        selectedOwner === "All" || item.owner_name === selectedOwner;
+      const matchesLocation =
+        selectedLocation === "All" ||
+        item.preferred_location === selectedLocation;
+      const matchesStatus =
+        selectedStatus === "All" || item.status === selectedStatus;
+      return matchesSearch && matchesOwner && matchesLocation && matchesStatus;
+    });
+  }, [
+    customisationLeads,
+    searchQuery,
+    selectedOwner,
+    selectedLocation,
+    selectedStatus,
+  ]);
+
+  const hasActiveFilters =
+    searchQuery ||
+    selectedOwner !== "All" ||
+    selectedLocation !== "All" ||
+    selectedStatus !== "All";
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedOwner("All");
+    setSelectedLocation("All");
+    setSelectedStatus("All");
   };
 
-  const filtered = leads.filter((l) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      l.name?.toLowerCase().includes(q) ||
-      l.email?.toLowerCase().includes(q) ||
-      l.phone?.toLowerCase().includes(q) ||
-      l.company?.toLowerCase().includes(q);
-    const matchStatus = statusFilter === "all" || l.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
-
-  const stats = {
-    total:     leads.length,
-    new:       leads.filter((l) => l.status === "new").length,
-    contacted: leads.filter((l) => l.status === "contacted").length,
-    closed:    leads.filter((l) => l.status === "closed").length,
+  const getStatusClass = (status = "") => {
+    const s = status.toLowerCase();
+    if (s === "new") return styles.pillNew;
+    if (s === "contacted") return styles.pillContacted;
+    if (s === "closed") return styles.pillClosed;
+    return styles.pillDefault;
   };
 
   return (
-    <div className="al-page">
+    <div className={styles.sectionBody}>
 
-      {/* ── HEADER ── */}
-      <div className="al-header">
-        <div className="al-header-left">
-          <div className="al-header-icon">✦</div>
+      {/* ── Header ── */}
+      <div className={styles.pageHeader}>
+        <div className={styles.headerLeft}>
+          <div className={styles.headerIcon}>🎨</div>
           <div>
-            <h1 className="al-title">Leads Dashboard</h1>
-            <p className="al-subtitle">Manage workspace enquiries and track your pipeline</p>
+            <h2 className={styles.headerTitle}>Customisation Leads</h2>
+            <p className={styles.headerSub}>
+              Admin tracking all custom workspace enquiry leads
+            </p>
           </div>
         </div>
-        <div className="al-badge">Admin Panel</div>
+        <button
+          className={styles.refreshBtn}
+          onClick={fetchCustomisationLeads}
+          title="Refresh"
+        >
+          ↻ Refresh
+        </button>
       </div>
 
-      {/* ── STATS ── */}
-      <div className="al-stats">
-        {[
-          { label: "Total Leads", value: stats.total,     key: "all",       icon: "◈" },
-          { label: "New",         value: stats.new,       key: "new",       icon: "✦" },
-          { label: "Contacted",   value: stats.contacted, key: "contacted", icon: "◉" },
-          { label: "Closed",      value: stats.closed,    key: "closed",    icon: "✔" },
-        ].map((s) => (
-          <div
-            key={s.key}
-            className={`al-stat-card ${statusFilter === s.key ? "active" : ""}`}
-            onClick={() => setStatusFilter(statusFilter === s.key ? "all" : s.key)}
-          >
-            <span className="al-stat-icon">{s.icon}</span>
-            <span className="al-stat-value">{s.value}</span>
-            <span className="al-stat-label">{s.label}</span>
-          </div>
-        ))}
+      {/* ── Stat Cards ── */}
+      <div className={styles.statsRow}>
+        <div className={`${styles.statCard} ${styles.statTotal}`}>
+          <span className={styles.statIcon}>✦</span>
+          <span className={styles.statNumber}>{stats.total}</span>
+          <span className={styles.statLabel}>Total Leads</span>
+        </div>
+        <div className={`${styles.statCard} ${styles.statNew}`}>
+          <span className={styles.statIcon}>✦</span>
+          <span className={styles.statNumber}>{stats.new}</span>
+          <span className={styles.statLabel}>New</span>
+        </div>
+        <div className={`${styles.statCard} ${styles.statContacted}`}>
+          <span className={styles.statIcon}>◉</span>
+          <span className={styles.statNumber}>{stats.contacted}</span>
+          <span className={styles.statLabel}>Contacted</span>
+        </div>
+        <div className={`${styles.statCard} ${styles.statClosed}`}>
+          <span className={styles.statIcon}>✓</span>
+          <span className={styles.statNumber}>{stats.closed}</span>
+          <span className={styles.statLabel}>Closed</span>
+        </div>
       </div>
 
-      {/* ── CONTROLS ── */}
-      <div className="al-controls">
-        <div className="al-search-wrap">
-          <span className="al-search-icon">⌕</span>
+      {/* ── Search & Filter Bar ── */}
+      <div className={styles.filterBar}>
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon}>🔍</span>
           <input
-            className="al-search"
             type="text"
+            className={styles.searchInput}
             placeholder="Search name, email, phone, company…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-          {search && (
-            <button className="al-clear" onClick={() => setSearch("")}>✕</button>
+          {searchQuery && (
+            <button
+              className={styles.clearBtn}
+              onClick={() => setSearchQuery("")}
+              title="Clear"
+            >
+              ✕
+            </button>
           )}
         </div>
-        <select
-          className="al-filter-select"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="all">All Status</option>
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-          ))}
-        </select>
+
+        <div className={styles.selectWrap}>
+          <label className={styles.selectLabel}>Owner</label>
+          <select
+            className={styles.filterSelect}
+            value={selectedOwner}
+            onChange={(e) => setSelectedOwner(e.target.value)}
+          >
+            {ownerOptions.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.selectWrap}>
+          <label className={styles.selectLabel}>Location</label>
+          <select
+            className={styles.filterSelect}
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
+          >
+            {locationOptions.map((l) => (
+              <option key={l} value={l}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.selectWrap}>
+          <label className={styles.selectLabel}>Status</label>
+          <select
+            className={styles.filterSelect}
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
+            {statusOptions.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {hasActiveFilters && (
+          <button className={styles.clearAllBtn} onClick={clearFilters}>
+            Clear All
+          </button>
+        )}
       </div>
 
-      {/* ── COUNT ── */}
-      <div className="al-count">
-        Showing <strong>{filtered.length}</strong> of <strong>{leads.length}</strong> leads
-      </div>
+      {/* ── Result Count ── */}
+      <p className={styles.resultCount}>
+        Showing <strong>{filteredLeads.length}</strong> of{" "}
+        <strong>{customisationLeads.length}</strong> leads
+      </p>
 
-      {/* ── TABLE ── */}
-      <div className="al-table-wrap">
-        <table className="al-table">
+      {/* ── Table ── */}
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
           <thead>
             <tr>
+              <th>#</th>
               <th>Name</th>
               <th>Phone</th>
               <th>Email</th>
               <th>Company</th>
-              <th>Message</th>
+              <th>Owner</th>
+              <th>City</th>
+              <th>Preferred Location</th>
               <th>Status</th>
-              <th>Contact</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.length > 0 ? (
-              filtered.map((lead) => {
-                const color = avatarColor(lead.name || "");
-                return (
-                  <tr
-                    key={lead.id}
-                    className={updating[lead.id] ? "al-row-updating" : ""}
+            {filteredLeads.map((item, index) => (
+              <tr key={item.id}>
+                <td className={styles.indexCell}>{index + 1}</td>
+                <td>
+                  <strong className={styles.leadName}>{item.name}</strong>
+                </td>
+                <td>
+                  <a href={`tel:${item.phone}`} className={styles.phoneLink}>
+                    {item.phone}
+                  </a>
+                </td>
+                <td>
+                  <a
+                    href={`mailto:${item.email}`}
+                    className={styles.emailLink}
                   >
-                    <td data-label="Name">
-                      <div className="al-name-cell">
-                        <div
-                          className="al-avatar"
-                          style={{ background: color + "18", color }}
-                        >
-                          {(lead.name || "?")[0].toUpperCase()}
-                        </div>
-                        <span className="al-name">{lead.name}</span>
-                      </div>
-                    </td>
-
-                    <td data-label="Phone">
-                      <span className="al-mono">{lead.phone}</span>
-                    </td>
-
-                    <td data-label="Email">
-                      <span className="al-mono">{lead.email || "—"}</span>
-                    </td>
-
-                    <td data-label="Company">
-                      {lead.company
-                        ? <span className="al-company">{lead.company}</span>
-                        : <span className="al-dash">—</span>}
-                    </td>
-
-                    <td data-label="Message" className="al-msg">
-                      <span title={lead.message}>{lead.message || "—"}</span>
-                    </td>
-
-                    <td data-label="Status">
-                      <span className={`al-badge-status al-status-${lead.status}`}>
-                        <span className="al-dot" />
-                        {STATUS_LABELS[lead.status] ?? lead.status}
-                      </span>
-                    </td>
-
-                    <td data-label="Contact">
-                      <div className="al-contact-btns">
-                        <a href={`tel:${lead.phone}`} className="al-call-btn">
-                          📞 Call
-                        </a>
-                        {lead.email && (
-                          <a href={`mailto:${lead.email}`} className="al-mail-btn">
-                            ✉ Mail
-                          </a>
-                        )}
-                      </div>
-                    </td>
-
-                    <td data-label="Actions">
-                      <select
-                        className="al-select"
-                        value={lead.status}
-                        disabled={updating[lead.id]}
-                        onChange={(e) => updateStatus(lead.id, e.target.value)}
-                      >
-                        {STATUS_OPTIONS.map((s) => (
-                          <option key={s} value={s}>
-                            {STATUS_LABELS[s]}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="8" className="al-empty">
-                  <div className="al-empty-inner">
-                    <span className="al-empty-icon">✦</span>
-                    <p>No leads found</p>
-                    <small>Try adjusting your search or filter</small>
-                  </div>
+                    {item.email}
+                  </a>
+                </td>
+                <td>{item.company}</td>
+                <td>{item.owner_name}</td>
+                <td>{item.city}</td>
+                <td>
+                  <span className={styles.locationPill}>
+                    {item.preferred_location}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`${styles.statusPill} ${getStatusClass(
+                      item.status
+                    )}`}
+                  >
+                    {item.status}
+                  </span>
                 </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
+
+        {filteredLeads.length === 0 && (
+          <div className={styles.empty}>
+            <span className={styles.emptyIcon}>✦</span>
+            <p className={styles.emptyTitle}>No leads found</p>
+            <p className={styles.emptySub}>
+              {hasActiveFilters
+                ? "Try adjusting your search or filter"
+                : "No customisation leads yet"}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-export default AdminLeads;
+export default CustomisationAdminDashboard;

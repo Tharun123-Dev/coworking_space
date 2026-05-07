@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/OwnerDashboard.module.css";
@@ -8,26 +8,42 @@ function OwnerCompanyLeads() {
 
   const [leads, setLeads] = useState([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
     fetchLeads();
   }, []);
 
-  const fetchLeads = () => {
-    axiosInstance
-      .get("leads/company/owner/")
-      .then((res) => setLeads(Array.isArray(res.data) ? res.data : []))
-      .catch((err) => console.error("Company leads fetch error:", err));
+  const fetchLeads = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get("leads/company/owner/");
+      setLeads(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Company leads fetch error:", err);
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateStatus = (id, status) => {
-    axiosInstance
-      .put(`leads/company/status/${id}/`, { status })
-      .then(() => fetchLeads())
-      .catch((err) => {
-        console.error("Status update error:", err);
-        alert("Status update failed");
-      });
+  const updateStatus = async (id, status) => {
+    try {
+      setUpdatingId(id);
+      await axiosInstance.put(`leads/company/status/${id}/`, { status });
+
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead.id === id ? { ...lead, status } : lead
+        )
+      );
+    } catch (err) {
+      console.error("Status update error:", err);
+      alert("Status update failed");
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const NAV_ITEMS = [
@@ -47,9 +63,33 @@ function OwnerCompanyLeads() {
     }
   };
 
+  const stats = useMemo(() => {
+    return {
+      total: leads.length,
+      pending: leads.filter((l) => l.status === "pending").length,
+      contacted: leads.filter((l) => l.status === "contacted").length,
+      closed: leads.filter((l) => l.status === "closed").length,
+    };
+  }, [leads]);
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case "contacted":
+        return styles.statusContacted;
+      case "closed":
+        return styles.statusClosed;
+      default:
+        return styles.statusPending;
+    }
+  };
+
   return (
     <div className={styles.shell}>
-      <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ""}`}>
+      <aside
+        className={`${styles.sidebar} ${
+          sidebarCollapsed ? styles.collapsed : ""
+        }`}
+      >
         <div className={styles.sidebarHeader}>
           <div className={styles.logo}>
             {sidebarCollapsed ? "M" : "Manager Panel"}
@@ -58,7 +98,7 @@ function OwnerCompanyLeads() {
           <button
             className={styles.collapseBtn}
             onClick={() => setSidebarCollapsed((prev) => !prev)}
-            title={sidebarCollapsed ? "Expand" : "Collapse"}
+            type="button"
           >
             {sidebarCollapsed ? "›" : "‹"}
           </button>
@@ -68,11 +108,11 @@ function OwnerCompanyLeads() {
           {NAV_ITEMS.map((item) => (
             <button
               key={item.key}
+              type="button"
               className={`${styles.navItem} ${
                 item.key === "companyLeads" ? styles.navActive : ""
               }`}
               onClick={() => handleNav(item)}
-              title={item.label}
             >
               <span className={styles.navIcon}>{item.icon}</span>
               {!sidebarCollapsed && (
@@ -86,20 +126,20 @@ function OwnerCompanyLeads() {
           <div className={styles.sidebarFooter}>
             <div className={styles.sidebarStats}>
               <div>
-                <strong>{leads.length}</strong>
+                <strong>{stats.total}</strong>
                 <span>Leads</span>
               </div>
               <div>
-                <strong>
-                  {leads.filter((item) => item.status === "pending").length}
-                </strong>
+                <strong>{stats.pending}</strong>
                 <span>Pending</span>
               </div>
               <div>
-                <strong>
-                  {leads.filter((item) => item.status === "contacted").length}
-                </strong>
+                <strong>{stats.contacted}</strong>
                 <span>Contacted</span>
+              </div>
+              <div>
+                <strong>{stats.closed}</strong>
+                <span>Closed</span>
               </div>
             </div>
           </div>
@@ -112,64 +152,106 @@ function OwnerCompanyLeads() {
             <span className={styles.headIcon}>🏷️</span>
             <div>
               <h1>Company Leads</h1>
-              <p>Manage company inquiries and update their status</p>
+              <p>Manage company inquiries with location details</p>
             </div>
           </div>
         </header>
 
         <div className={styles.content}>
           <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Team Size</th>
-                  <th>Name</th>
-                  <th>Phone</th>
-                  <th>Email</th>
-                  <th>Company</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {leads.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.team_size}</td>
-                    <td>
-                      <strong>{item.name}</strong>
-                    </td>
-                    <td>
-                      <a href={`tel:${item.phone}`} className={styles.phoneLink}>
-                        📞 {item.phone}
-                      </a>
-                    </td>
-                    <td>
-                      <a href={`mailto:${item.email}`} className={styles.emailLink}>
-                        📧 {item.email}
-                      </a>
-                    </td>
-                    <td>{item.company}</td>
-                    <td>
-                      <span className={styles.statusPill}>{item.status}</span>
-                    </td>
-                    <td>
-                      <select
-                        value={item.status}
-                        onChange={(e) => updateStatus(item.id, e.target.value)}
-                        className={styles.statusSelect}
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="contacted">Contacted</option>
-                        <option value="closed">Closed</option>
-                      </select>
-                    </td>
+            {loading ? (
+              <div className={styles.empty}>
+                <div className={styles.loader}></div>
+                <p>Loading leads...</p>
+              </div>
+            ) : leads.length > 0 ? (
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Team Size</th>
+                      <th>Location</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Company</th>
+                  
+                    <th>Status</th>
+                    <th>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
 
-            {leads.length === 0 && (
+                <tbody>
+                  {leads.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.team_size || "-"}</td>
+
+                      <td>
+                        <strong>{item.name || "-"}</strong>
+                      </td>
+
+                      <td>
+                        {item.phone ? (
+                          <a
+                            href={`tel:${item.phone}`}
+                            className={styles.phoneLink}
+                          >
+                            📞 {item.phone}
+                          </a>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+
+                      <td>
+                        {item.email ? (
+                          <a
+                            href={`mailto:${item.email}`}
+                            className={styles.emailLink}
+                          >
+                            📧 {item.email}
+                          </a>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+
+                      <td>{item.company || "-"}</td>
+
+                      <td>
+                        <span className={styles.locationBadge}>
+                          {item.location || "No Location"}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span
+                          className={`${styles.statusPill} ${getStatusBadgeClass(
+                            item.status
+                          )}`}
+                        >
+                          {item.status || "pending"}
+                        </span>
+                      </td>
+
+                      <td>
+                        <select
+                          value={item.status || "pending"}
+                          onChange={(e) =>
+                            updateStatus(item.id, e.target.value)
+                          }
+                          className={styles.statusSelect}
+                          disabled={updatingId === item.id}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
               <div className={styles.empty}>
                 <div>📭</div>
                 <p>No company leads yet</p>

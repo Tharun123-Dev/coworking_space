@@ -55,7 +55,7 @@ class Workspace(models.Model):
         blank=True,
         related_name="owner_workspaces"
     )
-
+    is_approved = models.BooleanField(default=False)
     name = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
     location = models.CharField(max_length=200)
@@ -163,7 +163,57 @@ class MonthlySlot(models.Model):
     def __str__(self):
         return f"{self.workspace.name} - {self.month}/{self.year}"
 
-    
+from django.db import models
+from django.contrib.auth.models import User
+
+class OfferWorkspace(models.Model):
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    area = models.CharField(
+        max_length=100
+    )
+
+    building = models.CharField(
+        max_length=200
+    )
+
+    type = models.CharField(
+        max_length=100
+    )
+
+    original_price = models.IntegerField()
+
+    offer_price = models.IntegerField()
+
+    seats = models.IntegerField()
+
+    floor = models.CharField(
+        max_length=100
+    )
+
+    image = models.TextField()
+
+    amenities = models.JSONField(
+        default=list,
+        blank=True
+    )
+
+    is_approved = models.BooleanField(
+        default=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.building 
 
 
 

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import update_lead_status,create_modern_lead, get_modern_leads,create_ticket,update_ticket,admin_tickets,user_tickets,create_lead, get_leads, get_users, create_user, delete_user, update_user,create_special_lead, owner_special_leads,update_special_lead,user_special_leads,admin_special_leads,create_company_lead,admin_company_leads,assign_owner,owner_company_leads,update_company_status,create_business_enterprise_lead,admin_business_leads,update_business_status
+from .views import admin_offer_workspace_leads,createe_lead,owner_offer_leads,update_offer_lead_status,create_modern_lead,admin_customisation_leads,update_customisation_lead_status,owner_customisation_leads,create_ticket,update_ticket,admin_tickets,user_tickets,create_lead, get_leads, get_users, create_user, delete_user, update_user,create_special_lead, owner_special_leads,update_special_lead,user_special_leads,admin_special_leads,create_company_lead,admin_company_leads,assign_owner,owner_company_leads,update_company_status,create_business_enterprise_lead,admin_business_leads,update_business_status
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import LeadViewSet
@@ -7,6 +7,10 @@ from .views import LeadViewSet
 router = DefaultRouter()
 router.register('leadss', LeadViewSet)
 urlpatterns = [
+    path(
+    "leadss/",
+    createe_lead
+),
     path('add/', create_lead),
     path("all/",get_leads),
      path('users/all/', get_users),
@@ -32,11 +36,37 @@ urlpatterns = [
     path("tickets/update/<int:id>/", update_ticket),
     # urls.py
 
+path(
+    "modern-leads/owner/",
+    owner_customisation_leads
+),
 
-    path("modern-lead/create/", create_modern_lead),
-    path("modern-lead/all/", get_modern_leads),
-path("modern-lead/update/<int:id>/", update_lead_status),
-    path('', include(router.urls)),
+path(
+    "modern-lead/status/<int:id>/",
+    update_customisation_lead_status
+),
 
+path(
+    "modern-leads/admin/",
+    admin_customisation_leads
+),
+    
+        path(
+        "modern-lead/create/",
+        create_modern_lead
+    ),
+    path(
+    "offers/leads/owner/",
+    owner_offer_leads
+),
+
+path(
+    "offers/leads/status/<int:id>/",
+    update_offer_lead_status
+),
+path(
+    "offers/admin/leads/<int:id>/",
+    admin_offer_workspace_leads
+),
 
 ]

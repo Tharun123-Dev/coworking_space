@@ -7,6 +7,7 @@ function CreateOwner() {
     username: "",
     email: "",
     password: "",
+     location: "", 
   });
 
   const [owners, setOwners] = useState([]);
@@ -60,6 +61,7 @@ function CreateOwner() {
           username: form.username,
           email: form.email,
           password: form.password,
+          location: form.location, 
         });
         alert("Owner created successfully 🎉");
       }
@@ -236,6 +238,22 @@ function CreateOwner() {
                   className={styles.input}
                 />
               </div>
+              <div className={styles.fieldGroup}>
+  <label>Location</label>
+  <select
+    name="location"
+    value={form.location}
+    onChange={handleChange}
+    className={styles.input}
+  >
+    <option value="">Select Location</option>
+    <option value="Hitech City">Hitech City</option>
+    <option value="Madhapur">Madhapur</option>
+    <option value="Gachibowli">Gachibowli</option>
+    <option value="Kondapur">Kondapur</option>
+    <option value="Financial District">Financial District</option>
+  </select>
+</div>
 
               <div className={styles.fieldGroup}>
                 <label className={styles.label}>
@@ -385,6 +403,7 @@ function CreateOwner() {
                     <th>Email</th>
                     <th>Role</th>
                     <th>Actions</th>
+                    <th>Managed by Location</th>
                   </tr>
                 </thead>
 
@@ -450,6 +469,7 @@ function CreateOwner() {
                           </button>
                         </div>
                       </td>
+                      <td>{o.location || "-"}</td>
                     </tr>
                   ))}
                 </tbody>

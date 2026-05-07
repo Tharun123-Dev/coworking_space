@@ -1,428 +1,518 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../Services/Axios";
-import "./AdminLeadss.css";
+import styles from "./AdminLeadss.module.css";
 
-const defaultForm = {
-  name: "",
-  phone: "",
-  email: "",
-  workspace_type: "",
-  status: "New",
-};
+function AdminOfferWorkspace() {
 
-const AdminLeads = () => {
-  const [leads, setLeads] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState(null);
+  const [offers, setOffers] = useState([]);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [formData, setFormData] = useState({
+    area: "",
+    building: "",
+    type: "",
+    original_price: "",
+    offer_price: "",
+    seats: "",
+    floor: "",
+    image: "",
+  });
 
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState(defaultForm);
-  const [submitting, setSubmitting] = useState(false);
+  const [editId, setEditId] = useState(null);
 
-  // FETCH LEADS
-  const fetchLeads = async (showLoader = false) => {
-    try {
-      if (showLoader) setLoading(true);
+  const fetchOffers = () => {
 
-      const res = await axiosInstance.get("/leads/leadss/");
+    axiosInstance
+      .get("workspaces/offers/admin/")
 
-      setLeads((prevLeads) => {
-        if (res.data.length > prevLeads.length && prevLeads.length > 0) {
-          alert("New Lead Received!");
-        }
-        return res.data;
+      .then((res) => {
+
+        setOffers(
+          Array.isArray(res.data)
+            ? res.data
+            : []
+        );
+      })
+
+      .catch((err) => {
+        console.error(err);
       });
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   useEffect(() => {
-    fetchLeads(true);
+    fetchOffers();
   }, []);
 
-  // UPDATE STATUS
-  const updateStatus = async (id, status) => {
-    const previousLeads = [...leads];
+  const handleSubmit = () => {
 
-    try {
-      setUpdatingId(id);
+    if (
+      !formData.area ||
+      !formData.building ||
+      !formData.type
+    ) {
+      alert("Fill all fields");
+      return;
+    }
 
-      setLeads((prev) =>
-        prev.map((lead) =>
-          lead.id === id ? { ...lead, status } : lead
+    if (editId) {
+
+      axiosInstance
+        .put(
+          `workspaces/offers/update/${editId}/`,
+          formData
         )
-      );
 
-      await axiosInstance.patch(`/leads/leadss/${id}/`, { status });
-    } catch (error) {
-      console.log(error);
-      setLeads(previousLeads);
-    } finally {
-      setUpdatingId(null);
+        .then(() => {
+
+          alert("Updated Successfully");
+
+          fetchOffers();
+
+          resetForm();
+
+        })
+
+        .catch((err) => {
+          console.error(err);
+        });
+
+    } else {
+
+      axiosInstance
+        .post(
+          "workspaces/offers/create/",
+          formData
+        )
+
+        .then(() => {
+
+          alert("Created Successfully");
+
+          fetchOffers();
+
+          resetForm();
+
+        })
+
+        .catch((err) => {
+          console.error(err);
+        });
     }
   };
 
-  // ADD LEAD
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const resetForm = () => {
 
-  const handleAddLead = async (e) => {
-    e.preventDefault();
-    try {
-      setSubmitting(true);
-      await axiosInstance.post("/leads/leadss/", formData);
-      setFormData(defaultForm);
-      setShowModal(false);
-      fetchLeads();
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // FILTERED LEADS
-  const filteredLeads = useMemo(() => {
-    return leads.filter((lead) => {
-      const matchesSearch =
-        lead.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.workspace_type?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "All" ? true : lead.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
+    setFormData({
+      area: "",
+      building: "",
+      type: "",
+      original_price: "",
+      offer_price: "",
+      seats: "",
+      floor: "",
+      image: "",
     });
-  }, [leads, searchTerm, statusFilter]);
 
-  const counts = useMemo(() => {
-    return {
-      total: leads.length,
-      new: leads.filter((l) => l.status === "New").length,
-      contacted: leads.filter((l) => l.status === "Contacted").length,
-      converted: leads.filter((l) => l.status === "Converted").length,
-    };
-  }, [leads]);
+    setEditId(null);
+  };
+
+  const handleEdit = (item) => {
+
+    setFormData({
+      area: item.area,
+      building: item.building,
+      type: item.type,
+      original_price: item.original_price,
+      offer_price: item.offer_price,
+      seats: item.seats,
+      floor: item.floor,
+      image: item.image,
+    });
+
+    setEditId(item.id);
+  };
+
+  const handleDelete = (id) => {
+
+    if (
+      !window.confirm(
+        "Delete this workspace?"
+      )
+    )
+      return;
+
+    axiosInstance
+      .delete(
+        `workspaces/offers/delete/${id}/`
+      )
+
+      .then(() => {
+
+        fetchOffers();
+
+      })
+
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  const handleApprove = (id) => {
+
+    axiosInstance
+      .put(
+        `workspaces/offers/approve/${id}/`
+      )
+
+      .then(() => {
+
+        fetchOffers();
+
+      })
+
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
   return (
-    <div className="admin-container">
-      <div className="dashboard-header">
-        <div>
-          <p className="admin-eyebrow">Lead Management</p>
-          <h2 className="admin-title">Leads Dashboard</h2>
-          <p className="admin-subtitle">
-            Track enquiries, update status, and contact leads quickly.
-          </p>
-        </div>
 
-        <div className="header-actions">
-          <button
-            className="secondary-btn"
-            onClick={() => fetchLeads(true)}
-            type="button"
-          >
-            Refresh
-          </button>
-          <button
-            className="primary-btn"
-            onClick={() => setShowModal(true)}
-            type="button"
-          >
-            + Add Lead
-          </button>
-        </div>
-      </div>
+    <div className={styles.wrapper}>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <span>Total Leads</span>
-          <strong>{counts.total}</strong>
-        </div>
-        <div className="stat-card">
-          <span>New</span>
-          <strong>{counts.new}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Contacted</span>
-          <strong>{counts.contacted}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Converted</span>
-          <strong>{counts.converted}</strong>
-        </div>
-      </div>
+      <div className={styles.formCard}>
 
-      <div className="toolbar">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search by name, phone, email, workspace..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        <h2>
+          🔥 Admin Offer Workspaces
+        </h2>
 
-        <div className="filter-box">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="All">All Status</option>
-            <option value="New">New</option>
-            <option value="Contacted">Contacted</option>
-            <option value="Interested">Interested</option>
-            <option value="Converted">Converted</option>
-          </select>
-        </div>
-      </div>
+        <div className={styles.formGrid}>
 
-      <div className="table-card">
-        <div className="table-top">
-          <h3>All Leads</h3>
-          <span>{filteredLeads.length} result(s)</span>
-        </div>
+          <div className={styles.field}>
+            <label>Location</label>
 
-        {loading ? (
-          <div className="empty-state">Loading leads...</div>
-        ) : filteredLeads.length === 0 ? (
-          <div className="empty-state">No leads found.</div>
-        ) : (
-          <>
-            <div className="table-wrapper">
-              <table className="leads-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>Workspace</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
+            <select
+              value={formData.area}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  area: e.target.value,
+                })
+              }
+            >
+              <option value="">
+                Select Location
+              </option>
 
-                <tbody>
-                  {filteredLeads.map((lead) => (
-                    <tr key={lead.id}>
-                      <td data-label="Name">{lead.name}</td>
-                      <td data-label="Phone">{lead.phone}</td>
-                      <td data-label="Email">{lead.email || "—"}</td>
-                      <td data-label="Workspace">{lead.workspace_type}</td>
-                      <td data-label="Status">
-                        <select
-                          className={`status-dropdown status-${lead.status?.toLowerCase()}`}
-                          value={lead.status}
-                          onChange={(e) =>
-                            updateStatus(lead.id, e.target.value)
-                          }
-                          disabled={updatingId === lead.id}
-                        >
-                          <option value="New">New</option>
-                          <option value="Contacted">Contacted</option>
-                          <option value="Interested">Interested</option>
-                          <option value="Converted">Converted</option>
-                        </select>
-                      </td>
-                      <td data-label="Actions">
-                        <div className="action-buttons">
-                          <a href={`tel:${lead.phone}`} className="call-btn">
-                            📞 Call
-                          </a>
+              <option value="Hitech City">
+                Hitech City
+              </option>
 
-                          {lead.email && (
-                            <a
-                              href={`https://mail.google.com/mail/?view=cm&to=${lead.email}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="email-btn"
-                            >
-                              📧 Email
-                            </a>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+              <option value="Madhapur">
+                Madhapur
+              </option>
 
-            <div className="mobile-cards">
-              {filteredLeads.map((lead) => (
-                <div className="lead-card" key={lead.id}>
-                  <div className="lead-card-top">
-                    <div>
-                      <h4>{lead.name}</h4>
-                      <p>{lead.workspace_type}</p>
-                    </div>
-                    <span className={`status-badge badge-${lead.status?.toLowerCase()}`}>
-                      {lead.status}
-                    </span>
-                  </div>
+              <option value="Gachibowli">
+                Gachibowli
+              </option>
 
-                  <div className="lead-info">
-                    <div>
-                      <span>Phone</span>
-                      <p>{lead.phone}</p>
-                    </div>
-                    <div>
-                      <span>Email</span>
-                      <p>{lead.email || "—"}</p>
-                    </div>
-                  </div>
+              <option value="Kondapur">
+                Kondapur
+              </option>
 
-                  <div className="lead-card-bottom">
-                    <select
-                      className={`status-dropdown status-${lead.status?.toLowerCase()}`}
-                      value={lead.status}
-                      onChange={(e) => updateStatus(lead.id, e.target.value)}
-                      disabled={updatingId === lead.id}
-                    >
-                      <option value="New">New</option>
-                      <option value="Contacted">Contacted</option>
-                      <option value="Interested">Interested</option>
-                      <option value="Converted">Converted</option>
-                    </select>
-
-                    <div className="action-buttons">
-                      <a href={`tel:${lead.phone}`} className="call-btn">
-                        📞 Call
-                      </a>
-
-                      {lead.email && (
-                        <a
-                          href={`https://mail.google.com/mail/?view=cm&to=${lead.email}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="email-btn"
-                        >
-                          📧 Email
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div
-            className="lead-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <div>
-                <h3>Add New Lead</h3>
-                <p>Enter lead details and save instantly.</p>
-              </div>
-              <button
-                className="close-btn"
-                type="button"
-                onClick={() => setShowModal(false)}
-              >
-                ✕
-              </button>
-            </div>
-
-            <form className="lead-form" onSubmit={handleAddLead}>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Enter full name"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Phone</label>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="Enter phone number"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="Enter email address"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Workspace Type</label>
-                  <input
-                    type="text"
-                    name="workspace_type"
-                    value={formData.workspace_type}
-                    onChange={handleInputChange}
-                    placeholder="Private cabin / Desk / Meeting room"
-                    required
-                  />
-                </div>
-
-                <div className="form-group full-width">
-                  <label>Status</label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                  >
-                    <option value="New">New</option>
-                    <option value="Contacted">Contacted</option>
-                    <option value="Interested">Interested</option>
-                    <option value="Converted">Converted</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="secondary-btn"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="primary-btn" disabled={submitting}>
-                  {submitting ? "Saving..." : "Save Lead"}
-                </button>
-              </div>
-            </form>
+            </select>
           </div>
+
+          <div className={styles.field}>
+            <label>Building</label>
+
+            <input
+              value={formData.building}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  building:
+                    e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label>Workspace Type</label>
+
+            <input
+              value={formData.type}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  type: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label>Original Price</label>
+
+            <input
+              type="number"
+              value={
+                formData.original_price
+              }
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  original_price:
+                    e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label>Offer Price</label>
+
+            <input
+              type="number"
+              value={
+                formData.offer_price
+              }
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  offer_price:
+                    e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label>Seats</label>
+
+            <input
+              type="number"
+              value={formData.seats}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  seats: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label>Floor</label>
+
+            <input
+              value={formData.floor}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  floor: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label>Image URL</label>
+
+            <input
+              value={formData.image}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  image: e.target.value,
+                })
+              }
+            />
+          </div>
+
         </div>
-      )}
+
+        <div className={styles.btnRow}>
+
+          <button
+            className={styles.addBtn}
+            onClick={handleSubmit}
+          >
+            {editId
+              ? "Update Workspace"
+              : "Add Workspace"}
+          </button>
+
+          {editId && (
+            <button
+              className={styles.cancelBtn}
+              onClick={resetForm}
+            >
+              Cancel
+            </button>
+          )}
+
+        </div>
+
+      </div>
+
+      <div className={styles.tableWrap}>
+
+        <table className={styles.table}>
+
+          <thead>
+
+            <tr>
+              <th>#</th>
+              <th>Owner</th>
+              <th>Location</th>
+              <th>Building</th>
+              <th>Type</th>
+              <th>Original</th>
+              <th>Offer</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {offers.map(
+              (item, index) => (
+
+                <tr key={item.id}>
+
+                  <td>
+                    {index + 1}
+                  </td>
+
+                  <td>
+                    {item.owner_name}
+                  </td>
+
+                  <td>
+                    {item.area}
+                  </td>
+
+                  <td>
+                    {item.building}
+                  </td>
+
+                  <td>
+                    {item.type}
+                  </td>
+
+                  <td>
+                    ₹
+                    {item.original_price}
+                  </td>
+
+                  <td>
+                    ₹
+                    {item.offer_price}
+                  </td>
+
+                  <td>
+
+                    {item.is_approved ? (
+                      <span
+                        className={
+                          styles.approved
+                        }
+                      >
+                        Approved
+                      </span>
+                    ) : (
+                      <span
+                        className={
+                          styles.pending
+                        }
+                      >
+                        Pending
+                      </span>
+                    )}
+
+                  </td>
+
+                  <td>
+
+                    <div
+                      className={
+                        styles.actionBtns
+                      }
+                    >
+
+                      <button
+                        className={
+                          styles.editBtn
+                        }
+                        onClick={() =>
+                          handleEdit(
+                            item
+                          )
+                        }
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className={
+                          styles.deleteBtn
+                        }
+                        onClick={() =>
+                          handleDelete(
+                            item.id
+                          )
+                        }
+                      >
+                        Delete
+                      </button>
+
+                      {!item.is_approved && (
+                        <button
+                          className={
+                            styles.approveBtn
+                          }
+                          onClick={() =>
+                            handleApprove(
+                              item.id
+                            )
+                          }
+                        >
+                          Approve
+                        </button>
+
+                      )}
+                            <button
+  className={
+    styles.leadsBtn
+  }
+  onClick={() =>
+    window.open(
+      `/admin-offer-leads/${item.id}`,
+      "_blank"
+    )
+  }
+>
+  View Leads
+</button>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+              )
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
     </div>
   );
-};
+}
 
-export default AdminLeads;
+export default AdminOfferWorkspace;

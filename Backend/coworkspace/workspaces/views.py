@@ -29,33 +29,49 @@ class IsAdminOrOwner(BasePermission):
             return True
 
         return False
-
-
-# ===========================
-# GET WORKSPACES (VISIBLE TO ALL)
-# ===========================
 @api_view(['GET'])
 def get_workspaces(request):
 
     city = request.GET.get("city")
     owner_only = request.GET.get("owner")
 
-    # ✅ BASE QUERY (OPTIMIZED FOR AMENITIES)
-    workspaces = Workspace.objects.all().prefetch_related("amenities")
-
-    # ✅ OWNER FILTER
+    # OWNER DASHBOARD
     if owner_only and request.user.is_authenticated:
-        workspaces = workspaces.filter(owner=request.user)
 
-    # ✅ CITY FILTER
+        workspaces = Workspace.objects.filter(
+            owner=request.user
+        ).prefetch_related("amenities")
+
+    # WEBSITE
+    else:
+
+        workspaces = Workspace.objects.filter(
+            is_approved=True
+        ).prefetch_related("amenities")
+
     if city:
-        workspaces = workspaces.filter(city__icontains=city)
+        workspaces = workspaces.filter(
+            city__icontains=city
+        )
 
-    # ✅ SERIALIZE
-    serializer = WorkspaceSerializer(workspaces, many=True)
+    serializer = WorkspaceSerializer(
+        workspaces,
+        many=True
+    )
 
     return Response(serializer.data)
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_workspaces(request):
 
+    workspaces = Workspace.objects.all().prefetch_related("amenities")
+
+    serializer = WorkspaceSerializer(
+        workspaces,
+        many=True
+    )
+
+    return Response(serializer.data)
 
 # ===========================
 # GET CATEGORIES
@@ -85,7 +101,10 @@ def add_workspace(request):
     serializer = WorkspaceSerializer(data=data)
 
     if serializer.is_valid():
-        workspace = serializer.save(owner=request.user)
+        workspace = serializer.save(
+    owner=request.user,
+    is_approved=False
+)
 
         # ✅ SET AMENITIES
         if amenities_ids:
@@ -144,6 +163,53 @@ def update_workspace(request, id):
         return Response(WorkspaceSerializer(updated_workspace).data)
 
     return Response(serializer.errors, status=400)
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def approve_workspace(request, id):
+
+    try:
+        workspace = Workspace.objects.get(id=id)
+
+    except Workspace.DoesNotExist:
+        return Response(
+            {"error": "Workspace not found"},
+            status=404
+        )
+
+    workspace.is_approved = True
+    workspace.save()
+
+    ActivityLog.objects.create(
+        user=request.user,
+        action="UPDATE",
+        model_name="Workspace",
+        message=f"{request.user.username} approved workspace {workspace.name}"
+    )
+
+    return Response({
+        "message": "Workspace approved successfully"
+    })
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def reject_workspace(request, id):
+
+    try:
+        workspace = Workspace.objects.get(id=id)
+
+    except Workspace.DoesNotExist:
+        return Response(
+            {"error": "Workspace not found"},
+            status=404
+        )
+
+    workspace.is_approved = False
+    workspace.save()
+
+    return Response({
+        "message": "Workspace rejected"
+    })
 
 from .models import Amenity
 @api_view(['GET'])
@@ -750,3 +816,189 @@ def create_month_booking(request):
         "message": "Multi-month booking successful",
         "total_price": total_price
     })
+
+from rest_framework.decorators import (
+    api_view,
+    permission_classes
+)
+
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser
+)
+
+from rest_framework.response import Response
+
+from .models import OfferWorkspace
+
+from .serializers import (
+    OfferWorkspaceSerializer
+)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_offer_workspace(request):
+
+    serializer = OfferWorkspaceSerializer(
+        data=request.data
+    )
+
+    if serializer.is_valid():
+
+        serializer.save(
+            owner=request.user
+        )
+
+        return Response({
+            "message":
+            "Offer workspace added"
+        })
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def owner_offer_workspaces(request):
+
+    offers = OfferWorkspace.objects.filter(
+        owner=request.user
+    ).order_by("-id")
+
+    serializer = OfferWorkspaceSerializer(
+        offers,
+        many=True
+    )
+
+    return Response(serializer.data)
+
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def admin_offer_workspaces(request):
+
+    data = OfferWorkspaceSerializer(
+        OfferWorkspace.objects.all().order_by("-id"),
+        many=True
+    ).data
+
+    return Response(data)
+
+@api_view(["PUT"])
+@permission_classes([IsAdminUser])
+def approve_offer_workspace(
+    request,
+    id
+):
+
+    try:
+
+        workspace = (
+            OfferWorkspace.objects.get(
+                id=id
+            )
+        )
+
+        workspace.is_approved = True
+
+        workspace.save()
+
+        return Response({
+            "message":
+            "Approved successfully"
+        })
+
+    except OfferWorkspace.DoesNotExist:
+
+        return Response(
+            {"error": "Not found"},
+            status=404
+        )
+    
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_offer_workspace(
+    request,
+    id
+):
+
+    try:
+
+        workspace = (
+            OfferWorkspace.objects.get(
+                id=id
+            )
+        )
+
+        serializer = (
+            OfferWorkspaceSerializer(
+                workspace,
+                data=request.data,
+                partial=True
+            )
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response({
+                "message":
+                "Updated successfully"
+            })
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
+    except OfferWorkspace.DoesNotExist:
+
+        return Response(
+            {"error": "Not found"},
+            status=404
+        )
+    
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_offer_workspace(
+    request,
+    id
+):
+
+    try:
+
+        workspace = (
+            OfferWorkspace.objects.get(
+                id=id
+            )
+        )
+
+        workspace.delete()
+
+        return Response({
+            "message":
+            "Deleted successfully"
+        })
+
+    except OfferWorkspace.DoesNotExist:
+
+        return Response(
+            {"error": "Not found"},
+            status=404
+        )
+    
+@api_view(["GET"])
+def public_offer_workspaces(request):
+
+    offers = OfferWorkspace.objects.filter(
+        is_approved=True
+    ).order_by("-id")
+
+    serializer = OfferWorkspaceSerializer(
+        offers,
+        many=True
+    )
+
+    return Response(serializer.data)

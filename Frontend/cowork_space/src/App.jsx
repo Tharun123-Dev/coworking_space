@@ -41,6 +41,7 @@ import AdminLayout from "./Components/AdminLayout";
 import AdminDashboards from "./Improved/AdminHyd";
 import AdminAmenities from "./Pages/AdminAmenities";
 import ForgotPassword from "./Pages/ForgotPassword";
+import AdminOfferLeads from "./Improved/AdminOfferLeads";
 // import SlotBookingPage from "./Pages/Slotbookingpage";
 
 function App() {
@@ -87,7 +88,10 @@ function App() {
     <Route path="/company-special-leads" element={<CompanyAdminleads />} />
     <Route path="/owner-special-leads" element={<AdminSpecialLeads />} />
     <Route path="/admin-dashboards" element={<AdminDashboards />} />
-    
+    <Route
+  path="/admin-offer-leads/:id"
+  element={<AdminOfferLeads/>}
+/>
   </Route>
 
 

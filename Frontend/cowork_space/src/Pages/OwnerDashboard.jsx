@@ -28,14 +28,6 @@ const WORKSPACE_TYPES = [
   "Virtual Office",
 ];
 
-const CITY_OPTIONS = [
-  "Hitech City",
-  "Madhapur",
-  "Gachibowli",
-  "Kondapur",
-  "Financial District",
-];
-
 const MONTH_OPTIONS = [
   "January",
   "February",
@@ -54,11 +46,27 @@ const MONTH_OPTIONS = [
 const NAV_ITEMS = [
   { key: "overview", icon: "⊞", label: "Overview" },
   { key: "workspaces", icon: "🏢", label: "Workspaces" },
+  {
+  key: "offerWorkspaces",
+  icon: "🔥",
+  label: "Offer Workspaces",
+},
   { key: "slots", icon: "⏰", label: "Slot Management" },
   { key: "monthlySlots", icon: "📅", label: "Monthly Slots" },
   { key: "bookings", icon: "📋", label: "My Bookings" },
   // { key: "ownerLeads", icon: "📌", label: "Manager Leads", route: "/owner-leads" },
   { key: "companyLeads", icon: "🏷️", label: "Company Leads" },
+  { key: "hyderabadLeads", icon: "📍", label: "Hyderabad Leads" },
+  {
+  key: "offerLeads",
+  icon: "🔥",
+  label: "Offer Leads",
+},
+  {
+  key: "customisationLeads",
+  icon: "🎨",
+  label: "Customisation Leads",
+},
   { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
 ];
 
@@ -82,13 +90,17 @@ function OwnerDashboard() {
   const navigate = useNavigate();
 
   const [workspaces, setWorkspaces] = useState([]);
+  const [offerWorkspaces, setOfferWorkspaces] = useState([]);
   const [allWorkspaces, setAllWorkspaces] = useState([]);
   const [slots, setSlots] = useState([]);
   const [monthlySlots, setMonthlySlots] = useState([]);
   const [companyLeads, setCompanyLeads] = useState([]);
+  const [hyderabadLeads, setHyderabadLeads] = useState([]);
+  const [offerLeads, setOfferLeads] = useState([]);
+  const [customisationLeads, setCustomisationLeads] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [requests, setRequests] = useState([]);
-
+  const [ownerCity, setOwnerCity] = useState("");
   const [editMonthId, setEditMonthId] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -138,17 +150,87 @@ function OwnerDashboard() {
     capacity: 50,
     price: "",
   });
+  const [offerForm, setOfferForm] = useState({
+  area: "",
+  building: "",
+  type: "",
+  original_price: "",
+  offer_price: "",
+  seats: "",
+  floor: "",
+  image: "",
+  amenities: [],
+});
+
+const fetchOfferLeads = () =>
+  axiosInstance
+    .get("leads/offers/leads/owner/")
+    .then((res) =>
+      setOfferLeads(
+        Array.isArray(res.data)
+          ? res.data
+          : []
+      )
+    )
+    .catch((err) =>
+      console.error(
+        "Offer leads fetch error:",
+        err
+      )
+    );
 
   const [editSlotId, setEditSlotId] = useState(null);
   const [workspaceSearch, setWorkspaceSearch] = useState("");
   const [suggestSearch, setSuggestSearch] = useState("");
-
+const [editOfferId, setEditOfferId] =
+  useState(null);
   const setBusy = (id, value) => {
     setBusyMap((prev) => ({ ...prev, [id]: value }));
   };
 
   const isBusy = (id) => !!busyMap[id];
+const handleEditOffer = (item) => {
 
+  setOfferForm({
+    building: item.building,
+    type: item.type,
+    original_price:
+      item.original_price,
+    offer_price:
+      item.offer_price,
+    seats: item.seats,
+    floor: item.floor,
+    image: item.image,
+    amenities:
+      item.amenities || [],
+  });
+
+  setEditOfferId(item.id);
+};
+const handleDeleteOffer = (id) => {
+
+  if (
+    !window.confirm(
+      "Delete this workspace?"
+    )
+  )
+    return;
+
+  axiosInstance
+    .delete(
+      `workspaces/offers/delete/${id}/`
+    )
+
+    .then(() => {
+
+      fetchOfferWorkspaces();
+
+    })
+
+    .catch((err) => {
+      console.error(err);
+    });
+};
   const showToast = (msg) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 3000);
@@ -176,7 +258,84 @@ function OwnerDashboard() {
       .get("workspaces/")
       .then((res) => setAllWorkspaces(Array.isArray(res.data) ? res.data : []))
       .catch((err) => console.error("All workspaces fetch error:", err));
+const fetchOfferWorkspaces = () =>
 
+  axiosInstance
+    .get(
+      "workspaces/offers/owner/"
+    )
+
+    .then((res) =>
+
+      setOfferWorkspaces(
+
+        Array.isArray(res.data)
+
+          ? res.data
+
+          : []
+
+      )
+    )
+
+    .catch((err) =>
+
+      console.error(
+        "Offer workspace fetch error:",
+        err
+      )
+    );
+const handleAddOfferWorkspace = () => {
+
+  const request = editOfferId
+
+    ? axiosInstance.put(
+        `workspaces/offers/update/${editOfferId}/`,
+        {
+          ...offerForm,
+          area: ownerCity,
+        }
+      )
+
+    : axiosInstance.post(
+        "workspaces/offers/create/",
+        {
+          ...offerForm,
+          area: ownerCity,
+        }
+      );
+
+  request
+
+    .then(() => {
+
+      fetchOfferWorkspaces();
+
+      setEditOfferId(null);
+
+      setOfferForm({
+        building: "",
+        type: "",
+        original_price: "",
+        offer_price: "",
+        seats: "",
+        floor: "",
+        image: "",
+        amenities: [],
+      });
+
+      alert(
+        editOfferId
+          ? "Workspace updated successfully"
+          : "Offer workspace added successfully"
+      );
+
+    })
+
+    .catch((err) => {
+      console.error(err);
+    });
+};
   const fetchRevenue = () =>
     axiosInstance
       .get("cart/owner/revenue/")
@@ -219,18 +378,53 @@ function OwnerDashboard() {
       .then((res) => setRequests(Array.isArray(res.data) ? res.data : []))
       .catch((err) => console.error("Failed to fetch cancel requests:", err));
   }, []);
-
+  const fetchHyderabadLeads = () =>
+  axiosInstance
+    .get("hyderabad/owner/")
+    .then((res) =>
+      setHyderabadLeads(
+        Array.isArray(res.data) ? res.data : []
+      )
+    )
+    .catch((err) =>
+      console.error("Hyderabad leads fetch error:", err)
+    );
+const fetchCustomisationLeads = () =>
+  axiosInstance
+    .get("leads/modern-leads/owner/")
+    .then((res) =>
+      setCustomisationLeads(
+        Array.isArray(res.data) ? res.data : []
+      )
+    )
+    .catch((err) =>
+      console.error(
+        "Customisation leads fetch error:",
+        err
+      )
+    );
   useEffect(() => {
     fetchWorkspaces();
     fetchAllWorkspaces();
+    fetchOfferWorkspaces();
     fetchRevenue();
     fetchSlots();
     fetchAmenities();
     fetchMonthlySlots();
     fetchCompanyLeads();
+      fetchHyderabadLeads();
+      fetchCustomisationLeads();
+      fetchOfferLeads();
     fetchBookings();
     fetchCancelRequests();
   }, [fetchBookings, fetchCancelRequests]);
+
+  useEffect(() => {
+    const loc = localStorage.getItem("user_location");
+    if (loc) {
+      setOwnerCity(loc);
+    }
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -380,16 +574,19 @@ function OwnerDashboard() {
   };
 
   const handleSubmit = () => {
-    if (!form.name || !form.city || !form.price) {
+    if (!form.name || !ownerCity || !form.price) {
       alert("Please fill required fields (Name, City, Price)");
       return;
     }
 
     const payload = {
       ...form,
+      city: ownerCity,
       price: Number(form.price),
       amenities: form.amenities.map(Number),
     };
+
+    console.log("Payload:", payload);
 
     if (editId) {
       axiosInstance
@@ -398,10 +595,9 @@ function OwnerDashboard() {
           alert("Workspace Updated ✅");
           resetWorkspaceForm();
           fetchWorkspaces();
-          fetchAllWorkspaces();
         })
         .catch((err) => {
-          console.error(err?.response?.data || err);
+          console.error(err);
           alert("Update failed");
         });
     } else {
@@ -411,10 +607,9 @@ function OwnerDashboard() {
           alert("Workspace Added ✅");
           resetWorkspaceForm();
           fetchWorkspaces();
-          fetchAllWorkspaces();
         })
         .catch((err) => {
-          console.error(err?.response?.data || err);
+          console.error(err);
           alert("Add failed");
         });
     }
@@ -432,7 +627,6 @@ function OwnerDashboard() {
         ? item.amenities.map((a) => (typeof a === "object" ? a.id : a))
         : [],
     });
-
     setEditId(item.id);
     setActiveSection("workspaces");
     setMobileSidebarOpen(false);
@@ -617,6 +811,60 @@ function OwnerDashboard() {
         alert("Status update failed");
       });
   };
+  const updateHyderabadLeadStatus = (id, status) => {
+  axiosInstance
+    .put(`hyderabad/status/${id}/`, { status })
+    .then(() => {
+      fetchHyderabadLeads();
+    })
+    .catch((err) => {
+      console.error(err?.response?.data || err);
+      alert("Status update failed");
+    });
+};
+const updateOfferLeadStatus = (
+  id,
+  status
+) => {
+
+  axiosInstance
+    .put(
+      `leads/offers/leads/status/${id}/`,
+      { status }
+    )
+
+    .then(() => {
+
+      fetchOfferLeads();
+
+    })
+
+    .catch((err) => {
+
+      console.error(err);
+
+      alert(
+        "Status update failed"
+      );
+
+    });
+};
+const updateCustomisationLeadStatus = (
+  id,
+  status
+) => {
+  axiosInstance
+    .put(`leads/modern-lead/status/${id}/`, {
+      status,
+    })
+    .then(() => {
+      fetchCustomisationLeads();
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Status update failed");
+    });
+};
 
   const handleNav = (item) => {
     if (item.route) {
@@ -642,21 +890,29 @@ function OwnerDashboard() {
     if (!q) return workspaces;
     return workspaces.filter(
       (w) =>
-        w.name?.toLowerCase().includes(q) ||
-        w.city?.toLowerCase().includes(q) ||
-        w.location?.toLowerCase().includes(q)
+        (w.name || "").toLowerCase().includes(q) ||
+        (w.city || "").toLowerCase().includes(q) ||
+        (w.location || "").toLowerCase().includes(q)
     );
   }, [workspaces, workspaceSearch]);
 
   const filteredSuggestedWorkspaces = useMemo(() => {
     const q = suggestSearch.toLowerCase().trim();
     if (!q) return suggestedWorkspaces;
-    return suggestedWorkspaces.filter(
-      (w) =>
-        w.name?.toLowerCase().includes(q) ||
-        w.city?.toLowerCase().includes(q) ||
-        w.location?.toLowerCase().includes(q)
-    );
+
+    return suggestedWorkspaces.filter((w) => {
+      const ownerName = (w.owner_name || w.ownername || "").toLowerCase();
+      const workspaceName = (w.name || "").toLowerCase();
+      const city = (w.city || "").toLowerCase();
+      const location = (w.location || "").toLowerCase();
+
+      return (
+        ownerName.includes(q) ||
+        workspaceName.includes(q) ||
+        city.includes(q) ||
+        location.includes(q)
+      );
+    });
   }, [suggestedWorkspaces, suggestSearch]);
 
   const renderOverview = () => (
@@ -746,16 +1002,8 @@ function OwnerDashboard() {
 
           <div className={styles.fieldGroup}>
             <label>City *</label>
-            <select
-              value={form.city}
-              onChange={(e) => setForm({ ...form, city: e.target.value })}
-            >
-              <option value="">Select City</option>
-              {CITY_OPTIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
+            <select value={ownerCity} disabled>
+              <option value={ownerCity}>{ownerCity}</option>
             </select>
           </div>
 
@@ -863,7 +1111,9 @@ function OwnerDashboard() {
               <th>City</th>
               <th>Location</th>
               <th>Price</th>
+                <th>Status</th>
               <th>Amenities</th>
+            
               <th>Actions</th>
             </tr>
           </thead>
@@ -880,6 +1130,17 @@ function OwnerDashboard() {
                 <td className={styles.priceCell}>
                   ₹{parseFloat(w.price || 0).toLocaleString()}
                 </td>
+                <td>
+  {w.is_approved ? (
+    <span className={styles.approvedBadge}>
+      Approved
+    </span>
+  ) : (
+    <span className={styles.pendingBadge}>
+      Pending
+    </span>
+  )}
+</td>
                 <td>
                   <div className={styles.amenityList}>
                     {Array.isArray(w.amenities) && w.amenities.length > 0 ? (
@@ -926,7 +1187,224 @@ function OwnerDashboard() {
       </div>
     </div>
   );
+const renderOfferWorkspaces = () => (
+  <div className={styles.sectionBody}>
 
+    <div className={styles.formCard}>
+
+      <h3 className={styles.formTitle}>
+        🔥 Add Offer Workspace
+      </h3>
+
+      <div className={styles.formGrid}>
+
+        <div className={styles.fieldGroup}>
+          <label>Area</label>
+
+<input
+  type="text"
+  value={ownerCity}
+  readOnly
+  className={styles.readonlyInput}
+/>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label>Building</label>
+
+          <input
+            value={offerForm.building}
+            onChange={(e) =>
+              setOfferForm({
+                ...offerForm,
+                building: e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label>Workspace Type</label>
+
+          <input
+            value={offerForm.type}
+            onChange={(e) =>
+              setOfferForm({
+                ...offerForm,
+                type: e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label>Original Price</label>
+
+          <input
+            type="number"
+            value={offerForm.original_price}
+            onChange={(e) =>
+              setOfferForm({
+                ...offerForm,
+                original_price:
+                  e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label>Offer Price</label>
+
+          <input
+            type="number"
+            value={offerForm.offer_price}
+            onChange={(e) =>
+              setOfferForm({
+                ...offerForm,
+                offer_price:
+                  e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label>Seats</label>
+
+          <input
+            type="number"
+            value={offerForm.seats}
+            onChange={(e) =>
+              setOfferForm({
+                ...offerForm,
+                seats: e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label>Floor</label>
+
+          <input
+            value={offerForm.floor}
+            onChange={(e) =>
+              setOfferForm({
+                ...offerForm,
+                floor: e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label>Image URL</label>
+
+          <input
+            value={offerForm.image}
+            onChange={(e) =>
+              setOfferForm({
+                ...offerForm,
+                image: e.target.value,
+              })
+            }
+          />
+        </div>
+
+      </div>
+<button
+  className={styles.submitBtn}
+  onClick={handleAddOfferWorkspace}
+>
+  Add Offer Workspace
+</button>
+
+    </div>
+
+    <div className={styles.tableWrap}>
+
+      <table className={styles.table}>
+
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Building</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Offer</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {offerWorkspaces.map((item) => (
+            <tr key={item.id}>
+
+              <td>{item.area}</td>
+
+              <td>{item.building}</td>
+
+              <td>{item.type}</td>
+
+              <td>
+                ₹{item.original_price}
+              </td>
+
+              <td>
+                ₹{item.offer_price}
+              </td>
+
+              <td>
+                {item.is_approved ? (
+                  <span className={styles.approvedBadge}>
+                    Approved
+                  </span>
+                ) : (
+                  <span className={styles.pendingBadge}>
+                    Pending
+                  </span>
+                )}
+              </td>
+              <td>
+
+  <div className={styles.actionBtns}>
+
+    <button
+      className={styles.editBtn}
+      onClick={() =>
+        handleEditOffer(item)
+      }
+    >
+      Edit
+    </button>
+
+    <button
+      className={styles.deleteBtn}
+      onClick={() =>
+        handleDeleteOffer(item.id)
+      }
+    >
+      Delete
+    </button>
+
+  </div>
+
+</td>
+
+            </tr>
+          ))}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+);
   const renderSuggestedWorkspaces = () => (
     <div className={styles.sectionBody}>
       <div className={styles.formCard}>
@@ -940,7 +1418,7 @@ function OwnerDashboard() {
       <div className={styles.tableTopBar}>
         <input
           className={styles.searchInput}
-          placeholder="Search suggested workspaces..."
+          placeholder="Search by manager, workspace, city, or location..."
           value={suggestSearch}
           onChange={(e) => setSuggestSearch(e.target.value)}
         />
@@ -951,6 +1429,7 @@ function OwnerDashboard() {
           <thead>
             <tr>
               <th>#</th>
+              <th>Manager</th>
               <th>Name</th>
               <th>City</th>
               <th>Location</th>
@@ -963,6 +1442,7 @@ function OwnerDashboard() {
             {filteredSuggestedWorkspaces.map((w, i) => (
               <tr key={w.id}>
                 <td>{i + 1}</td>
+                <td>{w.owner_name || w.ownername || "—"}</td>
                 <td>
                   <strong>{w.name}</strong>
                 </td>
@@ -1699,7 +2179,333 @@ function OwnerDashboard() {
       </div>
     </div>
   );
+  const renderCustomisationLeads = () => (
+  <div className={styles.sectionBody}>
+    <div className={styles.tableWrap}>
 
+      <table className={styles.table}>
+
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Preferred Location</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {customisationLeads.map((item) => (
+            <tr key={item.id}>
+
+              <td>{item.company}</td>
+
+              <td>
+                <strong>{item.name}</strong>
+              </td>
+
+              <td>
+                <a
+                  href={`tel:${item.phone}`}
+                  className={styles.phoneLink}
+                >
+                  {item.phone}
+                </a>
+              </td>
+
+              <td>
+                <a
+                  href={`mailto:${item.email}`}
+                  className={styles.emailLink}
+                >
+                  {item.email}
+                </a>
+              </td>
+
+              <td>
+                <span className={styles.statusPill}>
+                  {item.preferred_location}
+                </span>
+              </td>
+
+              <td>
+                <span className={styles.statusPill}>
+                  {item.status}
+                </span>
+              </td>
+
+              <td>
+                <select
+                  value={item.status}
+                  onChange={(e) =>
+                    updateCustomisationLeadStatus(
+                      item.id,
+                      e.target.value
+                    )
+                  }
+                  className={styles.statusSelect}
+                >
+                  <option value="new">New</option>
+                  <option value="contacted">
+                    Contacted
+                  </option>
+                  <option value="closed">
+                    Closed
+                  </option>
+                </select>
+              </td>
+
+            </tr>
+          ))}
+        </tbody>
+
+      </table>
+
+      {customisationLeads.length === 0 && (
+        <div className={styles.empty}>
+          No Customisation Leads Yet
+        </div>
+      )}
+
+    </div>
+  </div>
+
+);
+
+const renderHyderabadLeads = () => (
+  <div className={styles.sectionBody}>
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>Company Size</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Workspace Type</th>
+            <th>Preferred Location</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {hyderabadLeads.map((item) => (
+            <tr key={item.id}>
+              <td>{item.company_size}</td>
+
+              <td>
+                <strong>{item.name}</strong>
+              </td>
+
+              <td>
+                <a
+                  href={`tel:${item.phone}`}
+                  className={styles.phoneLink}
+                >
+                  {item.phone}
+                </a>
+              </td>
+
+              <td>
+                <a
+                  href={`mailto:${item.email}`}
+                  className={styles.emailLink}
+                >
+                  {item.email}
+                </a>
+              </td>
+
+              <td>{item.workspace_type}</td>
+
+              <td>
+                <span className={styles.statusPill}>
+                  {item.preferred_location}
+                </span>
+              </td>
+
+            <td>
+  <span className={styles.statusPill}>
+    {item.status}
+  </span>
+</td>
+
+<td>
+  <select
+    value={item.status}
+    onChange={(e) =>
+      updateHyderabadLeadStatus(
+        item.id,
+        e.target.value
+      )
+    }
+    className={styles.statusSelect}
+  >
+    <option value="New">New</option>
+    <option value="Contacted">Contacted</option>
+    <option value="Interested">Interested</option>
+    <option value="Converted">Converted</option>
+  </select>
+</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {hyderabadLeads.length === 0 && (
+        <div className={styles.empty}>
+          <p>No Hyderabad leads yet</p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+const renderOfferLeads = () => (
+
+  <div className={styles.sectionBody}>
+
+    <div className={styles.tableWrap}>
+
+      <table className={styles.table}>
+
+        <thead>
+
+          <tr>
+
+            <th>Workspace</th>
+
+            <th>Name</th>
+
+            <th>Phone</th>
+
+            <th>Email</th>
+
+            <th>Location</th>
+
+            <th>Team Size</th>
+
+            <th>Status</th>
+
+            <th>Action</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {offerLeads.map((item) => (
+
+            <tr key={item.id}>
+
+              <td>
+
+  <div className={styles.workspaceInfo}>
+
+    <strong>
+      {item.workspace_type}
+    </strong>
+
+    <small>
+      {item.offer_workspace}
+    </small>
+
+  </div>
+
+</td>
+
+              <td>
+                <strong>
+                  {item.name}
+                </strong>
+              </td>
+
+              <td>
+                {item.phone}
+              </td>
+
+              <td>
+                {item.email}
+              </td>
+
+              <td>
+
+                <span className={styles.statusPill}>
+                  {
+                    item.preferred_location
+                  }
+                </span>
+
+              </td>
+
+              <td>
+                {item.team_size}
+              </td>
+
+              <td>
+
+                <span className={styles.statusPill}>
+                  {item.status}
+                </span>
+
+              </td>
+
+              <td>
+
+                <select
+                  value={item.status}
+                  onChange={(e) =>
+                    updateOfferLeadStatus(
+                      item.id,
+                      e.target.value
+                    )
+                  }
+                  className={styles.statusSelect}
+                >
+
+                  <option value="New">
+                    New
+                  </option>
+
+                  <option value="Contacted">
+                    Contacted
+                  </option>
+
+                  <option value="Interested">
+                    Interested
+                  </option>
+
+                  <option value="Converted">
+                    Converted
+                  </option>
+
+                </select>
+
+              </td>
+
+            </tr>
+          ))}
+
+        </tbody>
+
+      </table>
+
+      {offerLeads.length === 0 && (
+
+        <div className={styles.empty}>
+
+          No Offer Leads Yet
+
+        </div>
+      )}
+
+    </div>
+
+  </div>
+);
   const sectionTitles = {
     overview: {
       icon: "⊞",
@@ -1731,6 +2537,11 @@ function OwnerDashboard() {
       title: "Company Leads",
       sub: "Manage company inquiries and update their status",
     },
+    hyderabadLeads: {
+  icon: "📍",
+  title: "Hyderabad Leads",
+  sub: "Manage Hyderabad preferred location leads",
+},
     suggestedWorkspaces: {
       icon: "🧭",
       title: "Suggested Workspaces",
@@ -1779,7 +2590,7 @@ function OwnerDashboard() {
               <span className={styles.navIcon}>{item.icon}</span>
               {!sidebarCollapsed && (
                 <span className={styles.navLabel}>{item.label}</span>
-              )}
+            )}
             </button>
           ))}
         </nav>
@@ -1835,14 +2646,42 @@ function OwnerDashboard() {
         </header>
 
         <div className={styles.content}>
-          {activeSection === "overview" && renderOverview()}
-          {activeSection === "workspaces" && renderWorkspaces()}
-          {activeSection === "slots" && renderSlots()}
-          {activeSection === "monthlySlots" && renderMonthlySlots()}
-          {activeSection === "bookings" && renderBookings()}
-          {activeSection === "companyLeads" && renderCompanyLeads()}
-          {activeSection === "suggestedWorkspaces" &&
-            renderSuggestedWorkspaces()}
+       <div className={styles.content}>
+
+  {activeSection === "overview" &&
+    renderOverview()}
+
+  {activeSection === "workspaces" &&
+    renderWorkspaces()}
+
+  {activeSection === "offerWorkspaces" &&
+    renderOfferWorkspaces()}
+
+  {activeSection === "slots" &&
+    renderSlots()}
+
+  {activeSection === "monthlySlots" &&
+    renderMonthlySlots()}
+
+  {activeSection === "bookings" &&
+    renderBookings()}
+
+  {activeSection === "companyLeads" &&
+    renderCompanyLeads()}
+
+  {activeSection === "hyderabadLeads" &&
+    renderHyderabadLeads()}
+
+  {activeSection === "offerLeads" &&
+    renderOfferLeads()}
+
+  {activeSection === "customisationLeads" &&
+    renderCustomisationLeads()}
+
+  {activeSection === "suggestedWorkspaces" &&
+    renderSuggestedWorkspaces()}
+
+</div>
         </div>
       </main>
     </div>

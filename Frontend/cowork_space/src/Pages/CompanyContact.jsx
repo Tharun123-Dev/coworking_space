@@ -82,6 +82,9 @@ function CompanyContact() {
       newErrors.name = "Name must be at least 2 characters";
     if (!form.phone || !validatePhone(form.phone))
       newErrors.phone = getPhoneError(form.phone);
+    if ( !form.location) {
+  newErrors.location = "Please select location";
+};
     if (form.email && !validateEmail(form.email))
       newErrors.email = "Enter valid email address";
     setErrors(newErrors);
@@ -352,15 +355,19 @@ function CompanyContact() {
                       <svg className="cc-input-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                       </svg>
-                      <select name="location" value={form.location} onChange={handleChange} className="cc-input cc-select">
-                        <option value="">Select preferred area</option>
-                        <option value="Gachibowli">Gachibowli</option>
-                        <option value="Hitec City">Hitec City</option>
-                        <option value="Madhapur">Madhapur</option>
-                        <option value="Banjara Hills">Banjara Hills</option>
-                        <option value="Uppal">Uppal</option>
-                        <option value="Kukatpally">Kukatpally</option>
-                      </select>
+ <select
+  name="location"
+  value={form.location}
+  onChange={handleChange}
+  className="cc-input cc-select"
+>
+  <option value="">Select preferred area</option>
+  <option value="Hitech City">Hitech City</option>
+  <option value="Madhapur">Madhapur</option>
+  <option value="Gachibowli">Gachibowli</option>
+  <option value="Kondapur">Kondapur</option>
+  <option value="Financial District">Financial District</option>
+</select>
                     </div>
                   </div>
 

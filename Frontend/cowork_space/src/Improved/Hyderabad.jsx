@@ -69,9 +69,16 @@ function ContactModal({ onClose, preselect }) {
     phone: "",
     email: "",
     workspace_type: preselect || "",
+     preferred_location: "",
     company_size: "",
     notes: "",
   });
+  const locations = [
+  "Hitech City",
+  "Madhapur",
+  "Gachibowli",
+  "Kondapur",
+];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -222,6 +229,23 @@ function ContactModal({ onClose, preselect }) {
                     <option value="200+">200+ people</option>
                   </select>
                 </div>
+                <div className="wm-field">
+  <label>Preferred Location</label>
+
+  <select
+    name="preferred_location"
+    value={formData.preferred_location}
+    onChange={handleChange}
+  >
+    <option value="">Select Location</option>
+
+    {locations.map((loc) => (
+      <option key={loc} value={loc}>
+        {loc}
+      </option>
+    ))}
+  </select>
+</div>
               </div>
 
               <div className="wm-field">

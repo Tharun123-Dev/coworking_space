@@ -13,25 +13,57 @@ class Lead(models.Model):
 
 from django.db import models
 
+from django.db import models
+
 class Leadss(models.Model):
-    name = models.CharField(max_length=100)
+
+    name = models.CharField(
+        max_length=100
+    )
+
     email = models.EmailField()
-    phone = models.CharField(max_length=15)
-    team_size = models.CharField(max_length=20)
+
+    phone = models.CharField(
+        max_length=15
+    )
+
+    team_size = models.CharField(
+        max_length=20
+    )
+
     message = models.TextField()
-    workspace_type = models.CharField(max_length=50)
+
+    workspace_type = models.CharField(
+        max_length=50
+    )
+
+    # OFFER WORKSPACE NAME
+
+    offer_workspace = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
+    # LOCATION
+
+    preferred_location = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
 
     status = models.CharField(
         max_length=20,
         default="New"
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return self.name
-
-
 from django.db import models
 from django.contrib.auth.models import User
 from workspaces.models import WorkspaceCategory
@@ -98,12 +130,12 @@ class CompanyLead(models.Model):
         choices=TEAM_CHOICES
     )
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=90)
 
     email = models.EmailField(blank=True, null=True)
 
     phone = models.CharField(max_length=20)
-
+    location = models.CharField(max_length=100)
     company = models.CharField(max_length=150, blank=True)
 
     message = models.TextField(blank=True)
@@ -207,11 +239,32 @@ class SupportTicket(models.Model):
 # models.py
 
 class ModernLead(models.Model):
+
     name = models.CharField(max_length=100)
-    email = models.EmailField(blank=True, null=True)
+
+    email = models.EmailField(
+        blank=True,
+        null=True
+    )
+
     phone = models.CharField(max_length=15)
-    company = models.CharField(max_length=100, blank=True, null=True)
-    message = models.TextField(blank=True, null=True)
+
+    company = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    preferred_location = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    message = models.TextField(
+        blank=True,
+        null=True
+    )
 
     status = models.CharField(
         max_length=20,
@@ -223,6 +276,6 @@ class ModernLead(models.Model):
         default="new"
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )

@@ -57,14 +57,14 @@ function SpecialContact() {
   const [loading, setLoading] = useState(false);
   const [typed, setTyped] = useState("");
   const stateRef = useRef({ pi: 0, ci: 0, deleting: false });
-
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    message: "",
-  });
+const [form, setForm] = useState({
+  name: "",
+  email: "",
+  phone: "",
+  company: "",
+  preferred_location: "",
+  message: "",
+});
 
   // 🔹 Typing Effect
   useEffect(() => {
@@ -125,14 +125,14 @@ function SpecialContact() {
       await axiosInstance.post("leads/modern-lead/create/", form);
 
       alert("Request submitted successfully ✅");
-
-      setForm({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        message: "",
-      });
+setForm({
+  name: "",
+  email: "",
+  phone: "",
+  company: "",
+  preferred_location: "",
+  message: "",
+});
 
      
     } catch (error) {
@@ -226,6 +226,30 @@ function SpecialContact() {
               onChange={handleChange}
               className={styles.input}
             />
+            <select
+  name="preferred_location"
+  value={form.preferred_location}
+  onChange={handleChange}
+  className={styles.input}
+>
+  <option value="">Select Preferred Location</option>
+
+  <option value="Hitech City">
+    Hitech City
+  </option>
+
+  <option value="Madhapur">
+    Madhapur
+  </option>
+
+  <option value="Gachibowli">
+    Gachibowli
+  </option>
+
+  <option value="Kondapur">
+    Kondapur
+  </option>
+</select>
 
             <textarea
               name="message"
