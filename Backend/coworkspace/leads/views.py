@@ -442,7 +442,59 @@ def assign_owner(request, id):
     lead.save()
 
     return Response({"message":"Owner assigned"})
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def admin_offer_leads(request):
 
+    leads = Leadss.objects.all().order_by("-created_at")
+
+    data = []
+
+    from accounts.models import Profile
+
+    for l in leads:
+
+        owner_name = "-"
+
+        profile = Profile.objects.filter(
+            location__iexact=
+            l.preferred_location
+        ).first()
+
+        if profile:
+
+            owner_name = (
+                profile.user.username
+            )
+
+        data.append({
+
+            "id": l.id,
+
+            "name": l.name,
+
+            "email": l.email,
+
+            "phone": l.phone,
+
+            "workspace_type":
+                l.workspace_type,
+
+            "preferred_location":
+                l.preferred_location,
+
+            "team_size":
+                l.team_size,
+
+            "status":
+                l.status,
+
+            "owner_name":
+                owner_name,
+
+        })
+
+    return Response(data)
 @api_view(['GET'])
 def get_owners(request):
 

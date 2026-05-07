@@ -60,7 +60,12 @@ const CompaniesSection = () => {
           <div
             key={item.id}
             className={`cs-card ${item.featured ? "cs-card--featured" : ""}`}
-            style={{ backgroundImage: `url(${item.image})` }}
+            style={{ backgroundImage: `url(${item.image})`, cursor: "pointer" }}
+            onClick={() =>
+              navigate(`/speciall-contact/${item.id}`, {
+                state: { workspaceSize: item.size },
+              })
+            }
           >
             <div className="cs-overlay" />
             <div className="cs-card-body">
@@ -77,16 +82,31 @@ const CompaniesSection = () => {
                   ))}
                 </ul>
 
-                <button
-                  className="cs-btn-quote"
-                  onClick={() =>
-                    navigate(`/speciall-contact/${item.id}`, {
-                      state: { workspaceSize: item.size },
-                    })
-                  }
-                >
-                  Get a Quote →
-                </button>
+                <div className="cs-btn-group">
+                  <button
+                    className="cs-btn-quote"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/speciall-contact/${item.id}`, {
+                        state: { workspaceSize: item.size },
+                      });
+                    }}
+                  >
+                    Get a Quote →
+                  </button>
+
+                  <button
+                    className="cs-btn-book"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/speciall-contact/${item.id}`, {
+                        state: { workspaceSize: item.size },
+                      });
+                    }}
+                  >
+                    Book Now →
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -104,8 +124,6 @@ const CompaniesSection = () => {
           >
             Book a Tour
           </button>
-
-       
         </div>
       </div>
     </section>

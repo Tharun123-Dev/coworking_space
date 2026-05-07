@@ -568,43 +568,92 @@
 /* ============================================
    Responsive
    ============================================ */
- 
-@media (max-width: 768px) {
+ @media (max-width: 768px) {
   .container {
     padding: 20px 14px 52px;
   }
- 
+
   .header h2 {
     font-size: 26px;
   }
- 
+
   .topGrid {
     grid-template-columns: 1fr;
+    width: 100%;
+    gap: 16px;
   }
- 
+
+  .panel {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .panelTitle {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .actionRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    width: 100%;
+  }
+
   .userGrid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }
 }
- 
+
 @media (max-width: 480px) {
+  .container {
+    padding: 16px 10px 40px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
+  .header h2 {
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .header p {
+    font-size: 12.5px;
+  }
+
+  .topGrid {
+    gap: 14px;
+  }
+
+  .panel {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+
+  .panelTitle {
+    font-size: 17px;
+  }
+
+  .input {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
   .userGrid {
     grid-template-columns: 1fr;
   }
- 
+
   .cardActions {
     flex-direction: column;
   }
- 
+
   .editBtn,
-  .deleteBtn {
-    width: 100%;
-  }
- 
-  .actionRow {
-    flex-direction: column;
-  }
- 
+  .deleteBtn,
   .primaryBtn,
   .secondaryBtn {
     width: 100%;

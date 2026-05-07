@@ -562,6 +562,8 @@ function ManagementPanel({ defaultTab = "users", owners = [], onOwnerCreated, sh
 
 // ─── Admin Dashboard (Main) ──────────────────────────────────────────────────
 export default function AdminDashboard() {
+
+  
   const navigate = useNavigate();
 
   const [owners, setOwners] = useState([]);
@@ -606,6 +608,104 @@ export default function AdminDashboard() {
   const notifRef = useRef(null);
   const activityRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
+  const buildAdminNotifications =
+(
+  company = [],
+  hyd = [],
+  offer = []
+) => {
+
+  let items = [];
+
+  company.forEach((l) => {
+
+    items.push({
+
+      id:
+        `company-${l.id}`,
+
+      type:
+        "Company Lead",
+
+      name:
+        l.name,
+
+      workspace:
+        l.company || "-",
+
+      section:
+        "company-leads",
+
+      time:
+        "New Lead",
+    });
+
+  });
+
+  hyd.forEach((l) => {
+
+    items.push({
+
+      id:
+        `hyd-${l.id}`,
+
+      type:
+        "Hyderabad Lead",
+
+      name:
+        l.name,
+
+      workspace:
+        l.workspace_type,
+
+      section:
+        "hyderabad-leads",
+
+      time:
+        "New Lead",
+    });
+
+  });
+
+  offer.forEach((l) => {
+
+    items.push({
+
+      id:
+        `offer-${l.id}`,
+
+      type:
+        "Offer Lead",
+
+      name:
+        l.name,
+
+      workspace:
+        l.workspace_type,
+
+      section:
+        "offerleads",
+
+      time:
+        "New Lead",
+    });
+
+  });
+
+  const filtered =
+    items.filter(
+
+      (item) =>
+
+        !viewedAdminNotifications
+        .includes(item.id)
+
+    );
+
+  setAdminNotifications(
+    filtered
+  );
+};
 
   // Track which management tab to open based on which sidebar item was clicked
   const [mgmtDefaultTab, setMgmtDefaultTab] = useState("users");
@@ -645,7 +745,33 @@ export default function AdminDashboard() {
     fetchOwners();
     fetchWS();
     fetchCat();
+Promise.all([
 
+  axiosInstance.get(
+    "leads/company/admin/"
+  ),
+
+  axiosInstance.get(
+    "hyderabad/admin/"
+  ),
+
+  axiosInstance.get(
+    "leads/offers/admin/leads/"
+  ),
+
+]).then(([c,h,o]) => {
+
+  buildAdminNotifications(
+
+    c.data || [],
+
+    h.data || [],
+
+    o.data || []
+
+  );
+
+});
     const syncFromHash = () => {
       const rawHash = window.location.hash || "";
       const [hashSection, hashQuery] = rawHash.replace("#", "").split("?");
@@ -923,7 +1049,8 @@ export default function AdminDashboard() {
     },
     {
       label: "Categories",
-      value: categories.length,
+      // value: workspaces.length,
+      value:9,
       color: "#6366f1",
       spark: SPARKS.cat,
       trend: 8,
@@ -940,7 +1067,37 @@ export default function AdminDashboard() {
       icon: IC.owners,
     },
   ];
+const [adminNotifications,
+  setAdminNotifications] =
+  useState([]);
 
+const [viewedAdminNotifications,
+  setViewedAdminNotifications] =
+  useState(() => {
+
+    return JSON.parse(
+
+      localStorage.getItem(
+        "adminViewedNotifications"
+      )
+
+    ) || [];
+
+  });
+
+  useEffect(() => {
+
+  localStorage.setItem(
+
+    "adminViewedNotifications",
+
+    JSON.stringify(
+      viewedAdminNotifications
+    )
+
+  );
+
+}, [viewedAdminNotifications]);
   const sectionTitle = (() => {
     const map = {
       overview: "Dashboard Overview",
@@ -1198,7 +1355,7 @@ export default function AdminDashboard() {
 
           <div className={styles.topRight}>
             {/* Recent Activity Dropdown */}
-            <div style={{ position: "relative" }} ref={activityRef}>
+            {/* <div style={{ position: "relative" }} ref={activityRef}>
               <button
                 className={styles.actBtn}
                 onClick={() => setActivityDropOpen((p) => !p)}
@@ -1253,7 +1410,7 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* Notification Bell */}
             <div className={styles.notifWrap} ref={notifRef}>
@@ -1262,40 +1419,177 @@ export default function AdminDashboard() {
                 onClick={() => setNotifOpen((p) => !p)}
               >
                 <Icon d={IC.bell} size={15} />
-                <span className={styles.notifBadge}>4</span>
+               {adminNotifications.length >
+0 && (
+
+  <span
+    className={
+      styles.notifBadge
+    }
+  >
+
+    {
+      adminNotifications.length
+    }
+
+  </span>
+
+)}
               </button>
 
-              {notifOpen && (
-                <div className={styles.notifPanel}>
-                  <div className={styles.notifHead}>
-                    <span>Notifications</span>
-                    <span className={styles.notifCount}>4 new</span>
-                  </div>
-                  {MOCK_NOTIF.map((a, i) => (
-                    <div key={i} className={styles.notifItem}>
-                      <span
-                        className={styles.notifIco}
-                        style={{ color: a.color, background: `${a.color}15` }}
-                      >
-                        <Icon d={a.icon} size={12} />
-                      </span>
-                      <div>
-                        <p className={styles.notifTxt}>{a.text}</p>
-                        <p className={styles.notifTime}>{a.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    className={styles.notifAll}
-                    onClick={() => {
-                      setNotifOpen(false);
-                      setSection("activity");
-                    }}
-                  >
-                    View all activity
-                  </button>
-                </div>
-              )}
+            {notifOpen && (
+
+<div
+  className={
+    styles.notifPanel
+  }
+>
+
+  <div
+    className={
+      styles.notifHead
+    }
+  >
+
+    Notifications
+
+    <span
+      className={
+        styles.notifCount
+      }
+    >
+
+      {
+        adminNotifications.length
+      }
+
+    </span>
+
+  </div>
+
+  {adminNotifications.map(
+    (n) => (
+
+    <div
+      key={n.id}
+      className={
+        styles.notifItem
+      }
+    >
+
+      <div
+        className={
+          styles.notifIco
+        }
+        style={{
+          background:
+          "rgba(99,102,241,0.1)",
+
+          color:
+          "#6366f1",
+        }}
+      >
+
+        <Icon
+          d={IC.bell}
+          size={14}
+        />
+
+      </div>
+
+      <div
+        style={{
+          flex:1
+        }}
+      >
+
+        <div
+          className={
+            styles.notifTxt
+          }
+        >
+
+          <strong>
+            {n.type}
+          </strong>
+
+          <br />
+
+          {n.name}
+
+        </div>
+
+        <div
+          className={
+            styles.notifTime
+          }
+        >
+
+          {
+            n.workspace
+          }
+
+        </div>
+
+      </div>
+
+      <button
+
+        className={
+          styles.viewBtn
+        }
+
+        onClick={() => {
+
+          setSection(
+            n.section
+          );
+
+          setViewedAdminNotifications(
+
+            (prev) => [
+
+              ...prev,
+
+              n.id
+
+            ]
+
+          );
+
+          setAdminNotifications(
+
+            (prev) =>
+
+              prev.filter(
+
+                (x) =>
+
+                  x.id !== n.id
+
+              )
+
+          );
+
+          setNotifOpen(
+            false
+          );
+
+        }}
+
+      >
+
+        View
+
+      </button>
+
+    </div>
+
+  ))}
+
+</div>
+
+)}
             </div>
           </div>
         </header>
