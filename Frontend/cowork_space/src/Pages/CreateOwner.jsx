@@ -7,7 +7,7 @@ function CreateOwner() {
     username: "",
     email: "",
     password: "",
-     location: "", 
+    location: "",
   });
 
   const [owners, setOwners] = useState([]);
@@ -22,7 +22,7 @@ function CreateOwner() {
   const fetchOwners = () => {
     axiosInstance
       .get("owners/")
-      .then((res) => setOwners(res.data))
+      .then((res) => setOwners(Array.isArray(res.data) ? res.data : []))
       .catch((err) => console.log(err));
   };
 
@@ -31,7 +31,12 @@ function CreateOwner() {
   };
 
   const resetForm = () => {
-    setForm({ username: "", email: "", password: "" });
+    setForm({
+      username: "",
+      email: "",
+      password: "",
+      location: "",
+    });
     setEditId(null);
   };
 
@@ -48,6 +53,7 @@ function CreateOwner() {
         const payload = {
           username: form.username,
           email: form.email,
+          location: form.location,
         };
 
         if (form.password.trim()) {
@@ -61,7 +67,7 @@ function CreateOwner() {
           username: form.username,
           email: form.email,
           password: form.password,
-          location: form.location, 
+          location: form.location,
         });
         alert("Owner created successfully 🎉");
       }
@@ -82,6 +88,7 @@ function CreateOwner() {
       username: owner.username || "",
       email: owner.email || "",
       password: "",
+      location: owner.location || "",
     });
 
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -94,6 +101,9 @@ function CreateOwner() {
       .delete(`owners/delete/${id}/`)
       .then(() => {
         alert("Owner deleted");
+        if (editId === id) {
+          resetForm();
+        }
         fetchOwners();
       })
       .catch(() => alert("Delete failed ❌"));
@@ -102,7 +112,8 @@ function CreateOwner() {
   const filteredOwners = owners.filter(
     (owner) =>
       owner.username?.toLowerCase().includes(search.toLowerCase()) ||
-      owner.email?.toLowerCase().includes(search.toLowerCase())
+      owner.email?.toLowerCase().includes(search.toLowerCase()) ||
+      owner.location?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -163,7 +174,7 @@ function CreateOwner() {
             </div>
           </div>
 
-          <div className={styles.statCard}>
+          {/* <div className={styles.statCard}>
             <div
               className={`${styles.statIcon} ${
                 editId ? styles.statIconEdit : styles.statIconCreate
@@ -199,167 +210,101 @@ function CreateOwner() {
               <p className={styles.statLabel}>Current Mode</p>
               <h3 className={styles.statValue}>{editId ? "Editing" : "Create"}</h3>
             </div>
-          </div>
+          </div> */}
         </div>
 
-        <div className={styles.topGrid}>
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>
-                {editId ? "Edit Owner Details" : "Add New Owner"}
-              </h3>
-              <p className={styles.cardDesc}>
-                {editId
-                  ? "Update the information below"
-                  : "Fill in the details to create a new owner account"}
-              </p>
-            </div>
-
-            <div className={styles.form}>
-              <div className={styles.fieldGroup}>
-                <label className={styles.label}>Username</label>
-                <input
-                  name="username"
-                  placeholder="e.g. john_doe"
-                  value={form.username}
-                  onChange={handleChange}
-                  className={styles.input}
-                />
-              </div>
-
-              <div className={styles.fieldGroup}>
-                <label className={styles.label}>Email Address</label>
-                <input
-                  name="email"
-                  type="email"
-                  placeholder="e.g. john@example.com"
-                  value={form.email}
-                  onChange={handleChange}
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.fieldGroup}>
-  <label>Location</label>
-  <select
-    name="location"
-    value={form.location}
-    onChange={handleChange}
-    className={styles.input}
-  >
-    <option value="">Select Location</option>
-    <option value="Hitech City">Hitech City</option>
-    <option value="Madhapur">Madhapur</option>
-    <option value="Gachibowli">Gachibowli</option>
-    <option value="Kondapur">Kondapur</option>
-    <option value="Financial District">Financial District</option>
-  </select>
-</div>
-
-              <div className={styles.fieldGroup}>
-                <label className={styles.label}>
-                  Password {editId && <span className={styles.optional}>(optional)</span>}
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder={
-                    editId ? "Leave blank to keep current" : "Enter a strong password"
-                  }
-                  value={form.password}
-                  onChange={handleChange}
-                  className={styles.input}
-                />
-              </div>
-
-              <div className={styles.formActions}>
-                <button
-                  onClick={handleSubmit}
-                  className={styles.primaryBtn}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className={styles.loadingRow}>
-                      <span className={styles.spinner}></span>
-                      Processing...
-                    </span>
-                  ) : editId ? (
-                    "Update Owner"
-                  ) : (
-                    "Create Owner"
-                  )}
-                </button>
-
-                {editId && (
-                  <button onClick={resetForm} className={styles.secondaryBtn}>
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </div>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>
+              {editId ? "Edit Owner Details" : "Add New Owner"}
+            </h3>
+            <p className={styles.cardDesc}>
+              {editId
+                ? "Update the information below"
+                : "Fill in the details to create a new owner account"}
+            </p>
           </div>
 
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3 className={styles.cardTitle}>Search Owners</h3>
-              <p className={styles.cardDesc}>Filter by username or email address</p>
+          <div className={styles.form}>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Username</label>
+              <input
+                name="username"
+                placeholder="e.g. john_doe"
+                value={form.username}
+                onChange={handleChange}
+                className={styles.input}
+              />
             </div>
 
-            <div className={styles.searchWrapper}>
-              <svg
-                className={styles.searchIcon}
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Email Address</label>
               <input
-                type="text"
-                placeholder="Search by username or email..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className={styles.searchInput}
+                name="email"
+                type="email"
+                placeholder="e.g. john@example.com"
+                value={form.email}
+                onChange={handleChange}
+                className={styles.input}
               />
+            </div>
 
-              {search && (
-                <button className={styles.clearBtn} onClick={() => setSearch("")}>
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Location</label>
+              <select
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                className={styles.input}
+              >
+                <option value="">Select Location</option>
+                <option value="Hitech City">Hitech City</option>
+                <option value="Madhapur">Madhapur</option>
+                <option value="Gachibowli">Gachibowli</option>
+                <option value="Kondapur">Kondapur</option>
+                <option value="Financial District">Financial District</option>
+              </select>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>
+                Password {editId && <span className={styles.optional}>(optional)</span>}
+              </label>
+              <input
+                type="password"
+                name="password"
+                placeholder={
+                  editId ? "Leave blank to keep current" : "Enter a strong password"
+                }
+                value={form.password}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.formActions}>
+              <button
+                onClick={handleSubmit}
+                className={styles.primaryBtn}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className={styles.loadingRow}>
+                    <span className={styles.spinner}></span>
+                    Processing...
+                  </span>
+                ) : editId ? (
+                  "Update Owner"
+                ) : (
+                  "Create Owner"
+                )}
+              </button>
+
+              {editId && (
+                <button onClick={resetForm} className={styles.secondaryBtn}>
+                  Cancel
                 </button>
               )}
-            </div>
-
-            <div className={styles.searchStats}>
-              <div className={styles.searchStatItem}>
-                <span
-                  className={styles.searchStatDot}
-                  style={{ background: "#6366f1" }}
-                ></span>
-                <span>Total Records</span>
-                <strong>{owners.length}</strong>
-              </div>
-              <div className={styles.searchStatItem}>
-                <span
-                  className={styles.searchStatDot}
-                  style={{ background: "#10b981" }}
-                ></span>
-                <span>Filtered</span>
-                <strong>{filteredOwners.length}</strong>
-              </div>
             </div>
           </div>
         </div>
@@ -371,6 +316,45 @@ function CreateOwner() {
               <p className={styles.cardDesc}>View, edit, or remove owner accounts</p>
             </div>
             <span className={styles.countBadge}>{filteredOwners.length} owners</span>
+          </div>
+
+          <div className={styles.searchWrapper}>
+            <svg
+              className={styles.searchIcon}
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+
+            <input
+              type="text"
+              placeholder="Search by username, email or location..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={styles.searchInput}
+            />
+
+            {search && (
+              <button className={styles.clearBtn} onClick={() => setSearch("")}>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
           </div>
 
           {filteredOwners.length === 0 ? (
@@ -469,6 +453,7 @@ function CreateOwner() {
                           </button>
                         </div>
                       </td>
+
                       <td>{o.location || "-"}</td>
                     </tr>
                   ))}

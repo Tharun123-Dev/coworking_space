@@ -30,26 +30,17 @@ const Icon = ({ d, size = 16 }) => (
 );
 
 const IC = {
-  dashboard:
-    "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10",
-  workspace:
-    "M3 21h18 M3 10h18 M5 6l7-3 7 3 M4 10v11 M20 10v11 M8 14v3 M12 14v3 M16 14v3",
+  dashboard: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10",
+  workspace: "M3 21h18 M3 10h18 M5 6l7-3 7 3 M4 10v11 M20 10v11 M8 14v3 M12 14v3 M16 14v3",
   category: "M4 6h16M4 12h8m-8 6h16",
-  leads:
-    "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 11a4 4 0 100-8 4 4 0 000 8 M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75",
-  owners:
-    "M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z",
+  leads: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 11a4 4 0 100-8 4 4 0 000 8 M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75",
+  owners: "M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z",
   enterprise: "M3 21h18 M9 3h6l3 7H6L9 3z M6 10v11 M18 10v11 M12 10v11",
-  bookings:
-    "M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z",
-  tickets:
-    "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2 M9 5a2 2 0 002 2h2a2 2 0 002-2 M9 5a2 2 0 012-2h2a2 2 0 012 2",
-  offers:
-    "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77 5.82 21.02 7 14.14 2 9.27l6.91-1.01L12 2z",
-  users:
-    "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 11a4 4 0 100-8 4 4 0 000 8 M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75",
-  support:
-    "M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z",
+  bookings: "M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z",
+  tickets: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2 M9 5a2 2 0 002 2h2a2 2 0 002-2 M9 5a2 2 0 012-2h2a2 2 0 012 2",
+  offers: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77 5.82 21.02 7 14.14 2 9.27l6.91-1.01L12 2z",
+  users: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 11a4 4 0 100-8 4 4 0 000 8 M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75",
+  support: "M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z",
   chevDown: "M6 9l6 6 6-6",
   menu: "M3 6h18 M3 12h18 M3 18h18",
   close: "M18 6L6 18 M6 6l12 12",
@@ -57,11 +48,9 @@ const IC = {
   bell: "M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 01-3.46 0",
   search: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
   add: "M12 5v14 M5 12h14",
-  edit:
-    "M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7 M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z",
+  edit: "M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7 M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z",
   trash: "M3 6h18 M8 6V4h8v2 M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6",
-  refresh:
-    "M23 4v6h-6 M1 20v-6h6 M3.51 9a9 9 0 0114.85-3.36L23 10 M1 14l4.64 4.36A9 9 0 0020.49 15",
+  refresh: "M23 4v6h-6 M1 20v-6h6 M3.51 9a9 9 0 0114.85-3.36L23 10 M1 14l4.64 4.36A9 9 0 0020.49 15",
   clock: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 6v6l4 2",
   tag: "M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z M7 7h.01",
   check: "M20 6L9 17l-5-5",
@@ -69,35 +58,19 @@ const IC = {
   arrowDown: "M6 9l6 6 6-6",
   dotsV: "M12 5h.01 M12 12h.01 M12 19h.01",
   logout: "M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4 M16 17l5-5-5-5 M21 12H9",
-  building:
-    "M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18 M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2 M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2 M10 6h4 M10 10h4 M10 14h4 M10 18h4",
+  building: "M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18 M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2 M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2 M10 6h4 M10 10h4 M10 14h4 M10 18h4",
   amenities: "M4 7h16 M7 4v16 M17 4v16 M4 17h16",
 };
 
 const SIDEBAR_GROUPS = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: IC.dashboard,
-    section: "overview",
-    children: null,
-  },
-  {
-    id: "management-group",
-    label: "Management",
-    icon: IC.users,
-    children: [
+  { id: "dashboard", label: "Dashboard", icon: IC.dashboard, section: "overview", children: null },
+  
+   
       { id: "manage-users", label: "Manage Users", icon: IC.users, section: "users" },
-      { id: "manage-owners", label: "Manage Owners", icon: IC.owners, section: "owners" },
-    ],
-  },
-  {
-    id: "workspaces",
-    label: "Workspaces",
-    icon: IC.workspace,
-    section: "workspaces",
-    children: null,
-  },
+      // { id: "manage-owners", label: "Manage Owners", icon: IC.owners, section: "owners" },
+  
+  
+  { id: "workspaces", label: "Workspaces", icon: IC.workspace, section: "workspaces", children: null },
   {
     id: "leads-group",
     label: "Leads",
@@ -117,34 +90,10 @@ const SIDEBAR_GROUPS = [
       { id: "company-leads", label: "Company Leads", icon: IC.leads, section: "company-leads" },
     ],
   },
-  {
-    id: "bookings",
-    label: "Bookings",
-    icon: IC.bookings,
-    section: "bookings",
-    children: null,
-  },
-  {
-    id: "support",
-    label: "Support",
-    icon: IC.support,
-    section: "tickets",
-    children: null,
-  },
-  {
-    id: "activity",
-    label: "Recent Activity",
-    icon: IC.activity,
-    section: "activity",
-    children: null,
-  },
-  {
-    id: "amenities",
-    label: "Amenities",
-    icon: IC.amenities,
-    section: "amenities",
-    children: null,
-  },
+  { id: "bookings", label: "Bookings", icon: IC.bookings, section: "bookings", children: null },
+  { id: "support", label: "Support", icon: IC.support, section: "tickets", children: null },
+  { id: "activity", label: "Recent Activity", icon: IC.activity, section: "activity", children: null },
+  { id: "amenities", label: "Amenities", icon: IC.amenities, section: "amenities", children: null },
 ];
 
 const CHART_DATA = [
@@ -191,6 +140,7 @@ const RECENT_ACTIVITIES = [
   { id: 15, type: "owner", icon: IC.owners, title: "Owner slot released", desc: "Meera T. released slots for Financial District space", time: "Yesterday", color: "#10b981", badge: "Owner" },
 ];
 
+// ─── Weekly Chart ────────────────────────────────────────────────────────────
 function WeeklyChart({ data }) {
   const [animate, setAnimate] = useState(false);
   const maxB = Math.max(...data.map((d) => d.bookings));
@@ -225,8 +175,7 @@ function WeeklyChart({ data }) {
                   className={styles.barFill}
                   style={{
                     height: `${animate ? (d.revenue / maxR) * 100 : 0}%`,
-                    background:
-                      "linear-gradient(180deg,#6366f1 0%,rgba(99,102,241,0.15) 100%)",
+                    background: "linear-gradient(180deg,#6366f1 0%,rgba(99,102,241,0.15) 100%)",
                     transitionDelay: `${i * 60}ms`,
                   }}
                 />
@@ -236,8 +185,7 @@ function WeeklyChart({ data }) {
                   className={styles.barFill}
                   style={{
                     height: `${animate ? (d.bookings / maxB) * 100 : 0}%`,
-                    background:
-                      "linear-gradient(180deg,#f59e0b 0%,rgba(245,158,11,0.15) 100%)",
+                    background: "linear-gradient(180deg,#f59e0b 0%,rgba(245,158,11,0.15) 100%)",
                     transitionDelay: `${i * 60 + 30}ms`,
                   }}
                 />
@@ -251,6 +199,7 @@ function WeeklyChart({ data }) {
   );
 }
 
+// ─── Donut Chart ─────────────────────────────────────────────────────────────
 function DonutChart({ data }) {
   const r = 52;
   const cx = 64;
@@ -302,8 +251,8 @@ function DonutChart({ data }) {
   );
 }
 
-const mkSpark = (n, mx) =>
-  Array.from({ length: n }, () => Math.floor(Math.random() * mx) + 4);
+// ─── Spark Bar ───────────────────────────────────────────────────────────────
+const mkSpark = (n, mx) => Array.from({ length: n }, () => Math.floor(Math.random() * mx) + 4);
 
 function SparkBar({ data, color }) {
   const max = Math.max(...data);
@@ -324,17 +273,13 @@ function SparkBar({ data, color }) {
   );
 }
 
-function ManagementPanel({
-  defaultTab = "",
-  owners = [],
-  onOwnerCreated,
-  showToast,
-}) {
-  const [tab, setTab] = useState(defaultTab || "");
+// ─── Management Panel (Unified Users + Owners) ───────────────────────────────
+function ManagementPanel({ defaultTab = "users", owners = [], onOwnerCreated, showToast }) {
+  const [tab, setTab] = useState(defaultTab);
   const [showUserForm, setShowUserForm] = useState(false);
   const [showOwnerForm, setShowOwnerForm] = useState(false);
   const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [userCount, setUserCount] = useState(0);
 
   const [userForm, setUserForm] = useState({
     username: "",
@@ -352,13 +297,15 @@ function ManagementPanel({
 
   const fetchUsers = () => {
     axiosInstance
-      .get("users/")
+      .get("leads/users/all")
       .then((r) => {
         const list = Array.isArray(r.data) ? r.data : [];
         setUsers(list);
+        setUserCount(list.length);
       })
       .catch(() => {
         setUsers([]);
+        setUserCount(0);
       });
   };
 
@@ -366,35 +313,29 @@ function ManagementPanel({
     fetchUsers();
   }, []);
 
+  // Keep tab in sync when parent switches section
   useEffect(() => {
-    setTab(defaultTab || "");
-    setSearchTerm("");
-    setShowUserForm(false);
-    setShowOwnerForm(false);
+    setTab(defaultTab);
   }, [defaultTab]);
+
+  const activeUsers = users.filter((u) => u.is_active !== false).length;
+  const ownerCount = owners.length;
+  const verifiedOwners = owners.filter((o) => o.is_verified || o.verified).length;
 
   const handleCreateUser = () => {
     if (!userForm.username || !userForm.email) {
       showToast("Username and email are required", "error");
       return;
     }
-
     axiosInstance
       .post("users/create/", userForm)
       .then(() => {
         showToast("User created successfully");
         setShowUserForm(false);
-        setUserForm({
-          username: "",
-          email: "",
-          phone: "",
-          password: "",
-        });
+        setUserForm({ username: "", email: "", phone: "", password: "" });
         fetchUsers();
       })
-      .catch(() => {
-        showToast("Failed to create user", "error");
-      });
+      .catch(() => showToast("Failed to create user", "error"));
   };
 
   const handleCreateOwner = () => {
@@ -402,477 +343,224 @@ function ManagementPanel({
       showToast("Username and email are required", "error");
       return;
     }
-
     axiosInstance
       .post("owners/create/", ownerForm)
       .then(() => {
         showToast("Owner created successfully");
         setShowOwnerForm(false);
-        setOwnerForm({
-          username: "",
-          email: "",
-          phone: "",
-          password: "",
-        });
+        setOwnerForm({ username: "", email: "", phone: "", password: "" });
         if (onOwnerCreated) onOwnerCreated();
       })
-      .catch(() => {
-        showToast("Failed to create owner", "error");
-      });
-  };
-
-  const filteredUsers = users.filter((u) => {
-    const q = searchTerm.toLowerCase().trim();
-    if (!q) return true;
-
-    return (
-      (u?.username || "").toLowerCase().includes(q) ||
-      (u?.email || "").toLowerCase().includes(q) ||
-      (u?.phone || "").toLowerCase().includes(q)
-    );
-  });
-
-  const filteredOwners = owners.filter((o) => {
-    const q = searchTerm.toLowerCase().trim();
-    if (!q) return true;
-
-    return (
-      (o?.username || "").toLowerCase().includes(q) ||
-      (o?.email || "").toLowerCase().includes(q) ||
-      (o?.phone || "").toLowerCase().includes(q)
-    );
-  });
-
-  const boxStyle = {
-    width: "100%",
-    maxWidth: "920px",
-    background: "#ffffff",
-    border: "1px solid rgba(99,102,241,0.10)",
-    borderRadius: "18px",
-    boxShadow: "0 10px 30px rgba(99,102,241,0.08)",
-    padding: "24px",
-  };
-
-  const inputStyle = {
-    width: "100%",
-    padding: "12px 14px",
-    borderRadius: "12px",
-    border: "1px solid #dbe3ff",
-    outline: "none",
-    fontSize: "14px",
-    background: "#f8faff",
-  };
-
-  const buttonBase = {
-    border: "none",
-    borderRadius: "12px",
-    padding: "11px 16px",
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-    transition: "0.2s ease",
+      .catch(() => showToast("Failed to create owner", "error"));
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        display: "flex",
-        justifyContent: "flex-start",
-        alignItems: "flex-start",
-        padding: "6px 0 0 0",
-      }}
-    >
-      <div style={boxStyle}>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "14px",
-            marginBottom: "18px",
-          }}
+    <div className={styles.section}>
+      {/* ── Stats Row ── */}
+      <div className={styles.statsGrid} style={{ marginBottom: "1.5rem" }}>
+        {[
+          { label: "Total Users", value: userCount, color: "#6366f1", icon: IC.users },
+          { label: "Total Owners", value: ownerCount, color: "#f59e0b", icon: IC.owners },
+          { label: "Active Users", value: activeUsers, color: "#10b981", icon: IC.check },
+          { label: "Verified Owners", value: verifiedOwners, color: "#f43f5e", icon: IC.check },
+        ].map((s, i) => (
+          <div
+            key={i}
+            className={styles.statCard}
+            style={{ "--ac": s.color, cursor: "default" }}
+          >
+            <div className={styles.statTop}>
+              <div
+                className={styles.statIco}
+                style={{ background: `${s.color}18`, color: s.color }}
+              >
+                <Icon d={s.icon} size={18} />
+              </div>
+            </div>
+            <div className={styles.statVal} style={{ color: s.color }}>
+              {s.value}
+            </div>
+            <div className={styles.statLbl}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Tab Bar ── */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <button
+          className={tab === "users" ? styles.btnPrimary : styles.btnGhost}
+          onClick={() => setTab("users")}
         >
-          <div>
-            <h2
-              style={{
-                margin: 0,
-                fontSize: "24px",
-                color: "#1e1b4b",
-                fontWeight: 700,
-              }}
-            >
-              Management
-            </h2>
-            <p
-              style={{
-                margin: "6px 0 0 0",
-                fontSize: "14px",
-                color: "#6b7280",
-              }}
-            >
-              Select one option to manage users or owners.
-            </p>
-          </div>
+          <Icon d={IC.users} size={13} />
+          &nbsp;Manage Users
+        </button>
+        <button
+          className={tab === "owners" ? styles.btnPrimary : styles.btnGhost}
+          style={
+            tab === "owners"
+              ? { background: "#f59e0b", borderColor: "#f59e0b" }
+              : {}
+          }
+          onClick={() => setTab("owners")}
+        >
+          <Icon d={IC.owners} size={13} />
+          &nbsp;Manage Owners
+        </button>
+      </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              flexWrap: "wrap",
-            }}
-          >
-            <button
-              onClick={() => {
-                setTab("users");
-                setSearchTerm("");
-                setShowOwnerForm(false);
-              }}
-              style={{
-                ...buttonBase,
-                background: tab === "users" ? "#6366f1" : "#eef2ff",
-                color: tab === "users" ? "#ffffff" : "#4338ca",
-              }}
-            >
-              Manage Users
-            </button>
-
-            <button
-              onClick={() => {
-                setTab("owners");
-                setSearchTerm("");
-                setShowUserForm(false);
-              }}
-              style={{
-                ...buttonBase,
-                background: tab === "owners" ? "#f59e0b" : "#fff7e6",
-                color: tab === "owners" ? "#ffffff" : "#b45309",
-              }}
-            >
-              Manage Owners
-            </button>
-          </div>
-        </div>
-
-        {tab && (
-          <div style={{ marginBottom: "18px" }}>
-            <input
-              type="text"
-              placeholder={
-                tab === "users"
-                  ? "Search users by username, email, or phone"
-                  : "Search owners by username, email, or phone"
-              }
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-        )}
-
-        {!tab && (
-          <div
-            style={{
-              minHeight: "180px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "14px",
-              background: "#f8faff",
-              border: "1px dashed #c7d2fe",
-              color: "#6b7280",
-              fontSize: "15px",
-              textAlign: "center",
-              padding: "20px",
-            }}
-          >
-            Click Manage Users or Manage Owners to open the section.
-          </div>
-        )}
-
-        {tab === "users" && (
-          <div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: "12px",
-                flexWrap: "wrap",
-                marginBottom: "16px",
-              }}
-            >
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: "18px",
-                  color: "#312e81",
-                  fontWeight: 700,
-                }}
-              >
-                Users
-              </h3>
-
+      {/* ── Users Tab ── */}
+      {tab === "users" && (
+        <>
+          {/* Add User Form Card */}
+          {/* <div className={styles.formCard}>
+            <div className={styles.formHead}>
+              <span className={styles.formHeadIco}>
+                <Icon d={IC.users} size={13} />
+              </span>
+              <span>Users</span>
               <button
-                onClick={() => setShowUserForm((p) => !p)}
-                style={{
-                  ...buttonBase,
-                  background: "#6366f1",
-                  color: "#fff",
+                className={styles.btnPrimary}
+                style={{ marginLeft: "auto" }}
+                onClick={() => {
+                  setShowUserForm((p) => !p);
                 }}
               >
-                {showUserForm ? "Close Form" : "Add User"}
+                <Icon d={showUserForm ? IC.close : IC.add} size={13} />
+                &nbsp;{showUserForm ? "Close" : "Add User"}
               </button>
             </div>
 
             {showUserForm && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "12px",
-                  marginBottom: "18px",
-                  background: "#f8faff",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "14px",
-                  padding: "16px",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={userForm.username}
-                  onChange={(e) =>
-                    setUserForm({ ...userForm, username: e.target.value })
-                  }
-                  style={inputStyle}
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={userForm.email}
-                  onChange={(e) =>
-                    setUserForm({ ...userForm, email: e.target.value })
-                  }
-                  style={inputStyle}
-                />
-                <input
-                  type="text"
-                  placeholder="Phone"
-                  value={userForm.phone}
-                  onChange={(e) =>
-                    setUserForm({ ...userForm, phone: e.target.value })
-                  }
-                  style={inputStyle}
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={userForm.password}
-                  onChange={(e) =>
-                    setUserForm({ ...userForm, password: e.target.value })
-                  }
-                  style={inputStyle}
-                />
-
-                <div
-                  style={{
-                    gridColumn: "1 / -1",
-                    display: "flex",
-                    gap: "10px",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <button
-                    onClick={handleCreateUser}
-                    style={{
-                      ...buttonBase,
-                      background: "#6366f1",
-                      color: "#fff",
-                    }}
-                  >
-                    Create User
+              <>
+                <div className={styles.formGrid} style={{ marginTop: 12 }}>
+                  {[
+                    { ph: "Username *", key: "username", type: "text" },
+                    { ph: "Email Address *", key: "email", type: "email" },
+                    { ph: "Phone Number", key: "phone", type: "text" },
+                    { ph: "Password *", key: "password", type: "password" },
+                  ].map((f) => (
+                    <input
+                      key={f.key}
+                      className={styles.inp}
+                      placeholder={f.ph}
+                      type={f.type}
+                      value={userForm[f.key]}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, [f.key]: e.target.value })
+                      }
+                    />
+                  ))}
+                </div>
+                <div className={styles.formActs}>
+                  <button className={styles.btnPrimary} onClick={handleCreateUser}>
+                    <Icon d={IC.add} size={13} />
+                    &nbsp;Create User
                   </button>
-
                   <button
+                    className={styles.btnGhost}
                     onClick={() => {
                       setShowUserForm(false);
-                      setUserForm({
-                        username: "",
-                        email: "",
-                        phone: "",
-                        password: "",
-                      });
-                    }}
-                    style={{
-                      ...buttonBase,
-                      background: "#eef2ff",
-                      color: "#4338ca",
+                      setUserForm({ username: "", email: "", phone: "", password: "" });
                     }}
                   >
                     Cancel
                   </button>
                 </div>
-              </div>
+              </>
             )}
+          </div> */}
 
-            <div
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: "14px",
-                overflow: "hidden",
-                background: "#fff",
-              }}
-            >
-              <AdminUsers users={filteredUsers} />
-            </div>
+          {/* Users List from AdminUsers component */}
+          <div className={styles.section}>
+            <AdminUsers />
           </div>
-        )}
+        </>
+      )}
 
-        {tab === "owners" && (
-          <div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: "12px",
-                flexWrap: "wrap",
-                marginBottom: "16px",
-              }}
-            >
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: "18px",
-                  color: "#92400e",
-                  fontWeight: 700,
-                }}
+      {/* ── Owners Tab ── */}
+      {tab === "owners" && (
+        <>
+          {/* Add Owner Form Card */}
+          {/* <div className={styles.formCard}>
+            <div className={styles.formHead}>
+              <span
+                className={styles.formHeadIco}
+                style={{ background: "#f59e0b18", color: "#f59e0b" }}
               >
-                Owners
-              </h3>
-
+                <Icon d={IC.owners} size={13} />
+              </span>
+              <span>Owners</span>
               <button
-                onClick={() => setShowOwnerForm((p) => !p)}
+                className={styles.btnPrimary}
                 style={{
-                  ...buttonBase,
+                  marginLeft: "auto",
                   background: "#f59e0b",
-                  color: "#fff",
+                  borderColor: "#f59e0b",
+                }}
+                onClick={() => {
+                  setShowOwnerForm((p) => !p);
                 }}
               >
-                {showOwnerForm ? "Close Form" : "Add Owner"}
+                <Icon d={showOwnerForm ? IC.close : IC.add} size={13} />
+                &nbsp;{showOwnerForm ? "Close" : "Add Owner"}
               </button>
             </div>
 
             {showOwnerForm && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "12px",
-                  marginBottom: "18px",
-                  background: "#fffaf0",
-                  border: "1px solid #f3e8c8",
-                  borderRadius: "14px",
-                  padding: "16px",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={ownerForm.username}
-                  onChange={(e) =>
-                    setOwnerForm({ ...ownerForm, username: e.target.value })
-                  }
-                  style={inputStyle}
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={ownerForm.email}
-                  onChange={(e) =>
-                    setOwnerForm({ ...ownerForm, email: e.target.value })
-                  }
-                  style={inputStyle}
-                />
-                <input
-                  type="text"
-                  placeholder="Phone"
-                  value={ownerForm.phone}
-                  onChange={(e) =>
-                    setOwnerForm({ ...ownerForm, phone: e.target.value })
-                  }
-                  style={inputStyle}
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={ownerForm.password}
-                  onChange={(e) =>
-                    setOwnerForm({ ...ownerForm, password: e.target.value })
-                  }
-                  style={inputStyle}
-                />
-
-                <div
-                  style={{
-                    gridColumn: "1 / -1",
-                    display: "flex",
-                    gap: "10px",
-                    flexWrap: "wrap",
-                  }}
-                >
+              <>
+                <div className={styles.formGrid} style={{ marginTop: 12 }}>
+                  {[
+                    { ph: "Username *", key: "username", type: "text" },
+                    { ph: "Email Address *", key: "email", type: "email" },
+                    { ph: "Phone Number", key: "phone", type: "text" },
+                    { ph: "Password *", key: "password", type: "password" },
+                  ].map((f) => (
+                    <input
+                      key={f.key}
+                      className={styles.inp}
+                      placeholder={f.ph}
+                      type={f.type}
+                      value={ownerForm[f.key]}
+                      onChange={(e) =>
+                        setOwnerForm({ ...ownerForm, [f.key]: e.target.value })
+                      }
+                    />
+                  ))}
+                </div>
+                <div className={styles.formActs}>
                   <button
+                    className={styles.btnPrimary}
+                    style={{ background: "#f59e0b", borderColor: "#f59e0b" }}
                     onClick={handleCreateOwner}
-                    style={{
-                      ...buttonBase,
-                      background: "#f59e0b",
-                      color: "#fff",
-                    }}
                   >
-                    Create Owner
+                    <Icon d={IC.add} size={13} />
+                    &nbsp;Create Owner
                   </button>
-
                   <button
+                    className={styles.btnGhost}
                     onClick={() => {
                       setShowOwnerForm(false);
-                      setOwnerForm({
-                        username: "",
-                        email: "",
-                        phone: "",
-                        password: "",
-                      });
-                    }}
-                    style={{
-                      ...buttonBase,
-                      background: "#fff7e6",
-                      color: "#b45309",
+                      setOwnerForm({ username: "", email: "", phone: "", password: "" });
                     }}
                   >
                     Cancel
                   </button>
                 </div>
-              </div>
+              </>
             )}
+          </div> */}
 
-            <div
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: "14px",
-                overflow: "hidden",
-                background: "#fff",
-              }}
-            >
-              <CreateOwner owners={filteredOwners} />
-            </div>
+          {/* Owners List from CreateOwner component */}
+          <div className={styles.section}>
+            <CreateOwner />
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
 
+// ─── Admin Dashboard (Main) ──────────────────────────────────────────────────
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
@@ -919,7 +607,8 @@ export default function AdminDashboard() {
   const activityRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  const [mgmtDefaultTab, setMgmtDefaultTab] = useState("");
+  // Track which management tab to open based on which sidebar item was clicked
+  const [mgmtDefaultTab, setMgmtDefaultTab] = useState("users");
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -1118,16 +807,14 @@ export default function AdminDashboard() {
       setMobOpen(false);
       return;
     }
-
     if (item.section) {
+      // Set management tab before switching section
       if (item.section === "users") {
         setMgmtDefaultTab("users");
         setSection("management");
-        setOpenGroup("management-group");
       } else if (item.section === "owners") {
         setMgmtDefaultTab("owners");
         setSection("management");
-        setOpenGroup("management-group");
       } else {
         setSection(item.section);
       }
@@ -1208,8 +895,7 @@ export default function AdminDashboard() {
         !ownerFilter || ownerName === ownerFilter.toLowerCase();
 
       const matchesType =
-        !workspaceTypeFilter ||
-        workspaceType === workspaceTypeFilter.toLowerCase();
+        !workspaceTypeFilter || workspaceType === workspaceTypeFilter.toLowerCase();
 
       return matchesSearch && matchesOwner && matchesType;
     });
@@ -1354,18 +1040,9 @@ export default function AdminDashboard() {
     color: "#aaa",
   };
 
-  const activityTypes = [
-    "all",
-    "booking",
-    "lead",
-    "ticket",
-    "workspace",
-    "user",
-    "payment",
-    "owner",
-    "category",
-  ];
+  const activityTypes = ["all", "booking", "lead", "ticket", "workspace", "user", "payment", "owner", "category"];
 
+  // ── Sidebar nav item click handler (top-level items without children) ──
   const handleTopNavClick = (group) => {
     if (group.section === "users") {
       setMgmtDefaultTab("users");
@@ -1383,10 +1060,11 @@ export default function AdminDashboard() {
     <div className={styles.root}>
       {mobOpen && <div className={styles.mobOverlay} onClick={closeMob} />}
 
+      {/* ── Sidebar ── */}
       <aside
-        className={`${styles.sidebar} ${
-          sideOpen ? styles.sidebarOpen : styles.sidebarCollapsed
-        } ${mobOpen ? styles.sidebarMob : ""}`}
+        className={`${styles.sidebar} ${sideOpen ? styles.sidebarOpen : styles.sidebarCollapsed} ${
+          mobOpen ? styles.sidebarMob : ""
+        }`}
       >
         <div className={styles.logo}>
           <div className={styles.logoMark}>
@@ -1504,7 +1182,9 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
+      {/* ── Main Content ── */}
       <div className={`${styles.main} ${!isMobile && !sideOpen ? styles.mainCollapsed : ""}`}>
+        {/* ── Topbar ── */}
         <header className={styles.topbar}>
           <div className={styles.topLeft}>
             <button className={styles.menuBtn} onClick={handleMobileMenuToggle}>
@@ -1517,6 +1197,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className={styles.topRight}>
+            {/* Recent Activity Dropdown */}
             <div style={{ position: "relative" }} ref={activityRef}>
               <button
                 className={styles.actBtn}
@@ -1574,6 +1255,7 @@ export default function AdminDashboard() {
               )}
             </div>
 
+            {/* Notification Bell */}
             <div className={styles.notifWrap} ref={notifRef}>
               <button
                 className={`${styles.iconBtn} ${notifOpen ? styles.iconBtnActive : ""}`}
@@ -1618,7 +1300,10 @@ export default function AdminDashboard() {
           </div>
         </header>
 
+        {/* ── Page Content ── */}
         <main className={styles.content}>
+
+          {/* Dashboard Overview */}
           {section === "overview" && (
             <section className={styles.overview}>
               <div className={styles.statsGrid}>
@@ -1726,8 +1411,23 @@ export default function AdminDashboard() {
             </section>
           )}
 
+          {/* ── Unified Management Section ── */}
           {section === "management" && (
-            <section className={styles.section} style={{ paddingTop: "6px" }}>
+            <section className={styles.section}>
+              <div className={styles.secHead}>
+                <div
+                  className={styles.secIco}
+                  style={{ background: "#6366f118", color: "#6366f1" }}
+                >
+                  <Icon d={IC.users} size={18} />
+                </div>
+                <div>
+                  <h2 className={styles.secTitle}>Management</h2>
+                  <p className={styles.secSub}>
+                    Manage users and owners from one place.
+                  </p>
+                </div>
+              </div>
               <ManagementPanel
                 defaultTab={mgmtDefaultTab}
                 owners={owners}
@@ -1737,6 +1437,7 @@ export default function AdminDashboard() {
             </section>
           )}
 
+          {/* Workspaces */}
           {section === "workspaces" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
@@ -1759,6 +1460,7 @@ export default function AdminDashboard() {
                 </span>
               </div>
 
+              {/* Add / Edit Form */}
               <div className={styles.formCard}>
                 <div className={styles.formHead}>
                   <span className={styles.formHeadIco}>
@@ -1827,7 +1529,11 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className={styles.tableBar} style={{ gap: "12px", flexWrap: "wrap" }}>
+              {/* Filters */}
+              <div
+                className={styles.tableBar}
+                style={{ gap: "12px", flexWrap: "wrap" }}
+              >
                 <div className={styles.tableSearch}>
                   <Icon d={IC.search} size={13} />
                   <input
@@ -1880,6 +1586,7 @@ export default function AdminDashboard() {
                 <span className={styles.tableCount}>{filteredWS.length} records</span>
               </div>
 
+              {/* Table */}
               <div className={styles.tableWrap}>
                 <table className={styles.table}>
                   <thead>
@@ -1982,6 +1689,7 @@ export default function AdminDashboard() {
             </section>
           )}
 
+          {/* Categories */}
           {section === "categories" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
@@ -2179,6 +1887,7 @@ export default function AdminDashboard() {
             </section>
           )}
 
+          {/* Other Sections */}
           {section === "leads" && (
             <section className={styles.sectionWrapper}>
               <AdminLeads />
@@ -2220,6 +1929,7 @@ export default function AdminDashboard() {
             </section>
           )}
 
+          {/* Recent Activity Full Page */}
           {section === "activity" && (
             <section className={styles.section}>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
@@ -2239,8 +1949,11 @@ export default function AdminDashboard() {
         </main>
       </div>
 
+      {/* Toast */}
       {toast && (
-        <div className={`${styles.toast} ${toast.type === "error" ? styles.toastErr : ""}`}>
+        <div
+          className={`${styles.toast} ${toast.type === "error" ? styles.toastErr : ""}`}
+        >
           <span className={styles.toastIcon}>•</span>
           {toast.msg}
         </div>

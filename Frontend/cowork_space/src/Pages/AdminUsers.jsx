@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/AdminUsers.module.css";
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [editUser, setEditUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -73,6 +74,18 @@ function AdminUsers() {
       alert("Delete failed ❌");
     }
   };
+
+  const filteredUsers = useMemo(() => {
+    const value = searchTerm.toLowerCase().trim();
+
+    if (!value) return users;
+
+    return users.filter((user) =>
+      [user.username, user.email, user.phone]
+        .filter(Boolean)
+        .some((field) => field.toLowerCase().includes(value))
+    );
+  }, [users, searchTerm]);
 
   return (
     <div className={styles.container}>
@@ -182,44 +195,58 @@ function AdminUsers() {
         <h3>
           Total Users: <span>{users.length}</span>
         </h3>
+
+        <div className={styles.searchBox}>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Search by username, email, or phone"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className={styles.userGrid}>
-        {users.map((user) => (
-          <div key={user.id} className={styles.card}>
-            <div className={styles.cardTop}>
-              <div className={styles.avatar}>
-                {user.username?.charAt(0).toUpperCase()}
+        {filteredUsers.length > 0 ? (
+          filteredUsers.map((user) => (
+            <div key={user.id} className={styles.card}>
+              <div className={styles.cardTop}>
+                <div className={styles.avatar}>
+                  {user.username?.charAt(0).toUpperCase()}
+                </div>
+
+                <div>
+                  <h3>{user.username}</h3>
+                  <p>{user.email}</p>
+                  <p>📞 {user.phone || "No Phone"}</p>
+                </div>
               </div>
 
-              <div>
-                <h3>{user.username}</h3>
-                <p>{user.email}</p>
-                <p>📞 {user.phone || "No Phone"}</p>
+              <div className={styles.roleBadge}>
+                {user.is_admin || user.is_superuser ? "Admin" : "User"}
+              </div>
+
+              <div className={styles.cardActions}>
+                <button
+                  className={styles.editBtn}
+                  onClick={() => handleEditClick(user)}
+                >
+                  Edit
+                </button>
+
+                <button
+                  className={styles.deleteBtn}
+                  onClick={() => handleDelete(user.id)}
+                >
+                  Delete
+                </button>
               </div>
             </div>
-
-            <div className={styles.roleBadge}>
-              {user.is_admin || user.is_superuser ? "Admin" : "User"}
-            </div>
-
-            <div className={styles.cardActions}>
-              <button
-                className={styles.editBtn}
-                onClick={() => handleEditClick(user)}
-              >
-                Edit
-              </button>
-
-              <button
-                className={styles.deleteBtn}
-                onClick={() => handleDelete(user.id)}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className={styles.noUsers}>No users found.</p>
+        )}
       </div>
     </div>
   );

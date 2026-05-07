@@ -1545,7 +1545,277 @@
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(180,160,100,0.55); }
+.managementShell {
+  width: 100%;
+  display: block;
+  padding: 0;
+  margin: 0;
+}
 
+.managementSimpleCard {
+  width: 100%;
+  max-width: 100%;
+  background: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.08);
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.08);
+  padding: 28px;
+  margin: 0;
+}
+
+.managementTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.managementTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #2f2a67;
+}
+
+.managementSub {
+  margin: 8px 0 0;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.managementTabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.managementTabBtn {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  background: #eef2ff;
+  color: #4f46e5;
+  transition: all 0.25s ease;
+}
+
+.managementTabBtnActiveBlue {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.28);
+}
+
+.managementTabBtnActiveGold {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(245, 158, 11, 0.28);
+}
+
+.managementSearchWrap {
+  margin-bottom: 22px;
+}
+
+.managementSearchBox {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid #a5b4fc;
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 0 16px;
+  min-height: 58px;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.08);
+}
+
+.managementSearchIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+  flex-shrink: 0;
+}
+
+.managementSearchInput {
+  border: none;
+  outline: none;
+  width: 100%;
+  background: transparent;
+  font-size: 15px;
+  color: #374151;
+}
+
+.managementEmptyState {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed #c7d2fe;
+  border-radius: 18px;
+  background: #f8faff;
+  color: #6b7280;
+  font-size: 15px;
+  padding: 24px;
+}
+
+.managementContentBlock {
+  width: 100%;
+}
+
+.managementSectionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.managementSectionTitleBlue {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #312e81;
+}
+
+.managementSectionTitleGold {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #92400e;
+}
+
+.managementActionBtnBlue,
+.managementActionBtnGold,
+.managementSecondaryBtn,
+.managementSecondaryBtnGold {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  border-radius: 14px;
+  padding: 13px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.managementActionBtnBlue {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.22);
+}
+
+.managementActionBtnGold {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.22);
+}
+
+.managementSecondaryBtn {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.managementSecondaryBtnGold {
+  background: #fff7e6;
+  color: #b45309;
+}
+
+.managementFormCard {
+  width: 100%;
+  background: #f8faff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.managementFormCardGold {
+  background: #fffaf0;
+  border: 1px solid #f3e8c8;
+}
+
+.managementFormGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.managementInput {
+  width: 100%;
+  min-width: 0;
+  padding: 13px 14px;
+  border-radius: 14px;
+  border: 1px solid #dbe3ff;
+  outline: none;
+  background: #ffffff;
+  font-size: 14px;
+  color: #374151;
+}
+
+.managementFormActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.managementListWrap {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+@media (max-width: 1100px) {
+  .managementFormGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .managementSimpleCard {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .managementTop {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .managementTabs {
+    width: 100%;
+  }
+
+  .managementTabBtn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .managementFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .managementSectionBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .managementActionBtnBlue,
+  .managementActionBtnGold,
+  .managementSecondaryBtn,
+  .managementSecondaryBtnGold {
+    width: 100%;
+  }
+}
 @media (max-width: 1024px) {
   .chartsRow {
     grid-template-columns: 1fr;
