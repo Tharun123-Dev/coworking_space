@@ -240,6 +240,8 @@ function MyOrders() {
       name: item.workspace || "Workspace",
       workspace: item.workspace || "Workspace",
       location: item.location || "-",
+      amenities:
+item.amenities || [],
       city: item.city || "Hyderabad",
       area: item.area || item.location || "-",
       image:
@@ -274,8 +276,10 @@ function MyOrders() {
               <th>Location</th>
               <th>Date</th>
               <th>Slot</th>
-              <th>Price</th>
+              
+              <th>Additional Amenities</th>
               <th>Status</th>
+              <th> Total Price</th>
               <th>Payment</th>
             </tr>
           </thead>
@@ -315,12 +319,50 @@ function MyOrders() {
                         : "Full Day"}
                     </span>
                   </td>
-                  <td><span className="mo-price">₹{item.price || item.total_price || 0}</span></td>
+        
+                  <td>
+
+  {
+
+    item.amenities?.length > 0
+
+    ?
+
+    item.amenities.map(
+      (a, i) => (
+
+      <div
+        key={i}
+        className="mo-amenityRow"
+      >
+
+        {a.title}
+
+        •
+
+        {a.persons} Person
+
+        •
+
+        ₹{a.total}
+
+      </div>
+
+    ))
+
+    :
+
+    "-"
+
+  }
+
+</td>
                   <td>
                     <span className={`mo-status mo-status--${getStatusClass(item.status)}`}>
                       {item.status || "-"}
                     </span>
                   </td>
+                            <td><span className="mo-price">₹{item.price || item.total_price || 0}</span></td>
                   <td>
                     {isRefunded ? (
                       <span className="mo-payment mo-payment--refunded">💰 Refunded</span>
@@ -387,6 +429,35 @@ function MyOrders() {
                 <span className="mo-payment mo-payment--paid">✅ Paid</span>
               )}
             </div>
+            {item.amenities?.length > 0 && (
+
+  <div className="mo-mobileAmenities">
+
+    {item.amenities.map(
+      (a, i) => (
+
+      <div
+        key={i}
+        className="mo-mobileAmenity"
+      >
+
+        {a.title}
+
+        •
+
+        {a.persons} Person
+
+        •
+
+        ₹{a.total}
+
+      </div>
+
+    ))}
+
+  </div>
+
+)}
           </div>
         );
       })}
@@ -1027,28 +1098,66 @@ function MyOrders() {
                 </div>
               )}
 
-              {activeTab === "amenities" && (
-                <div className="mo-amenities-grid">
-                  {[
-                    { icon: "📶", label: "1Gbps WiFi", desc: "Lightning-fast" },
-                    { icon: "🏢", label: "Meeting Rooms", desc: "Free for members" },
-                    { icon: "🕒", label: "24/7 Access", desc: "Round the clock" },
-                    { icon: "🔋", label: "Power Backup", desc: "100% uptime" },
-                    { icon: "☕", label: "Cafeteria", desc: "Tea, coffee & snacks" },
-                    { icon: "🖨️", label: "Printer", desc: "High-speed machines" },
-                    { icon: "🅿️", label: "Free Parking", desc: "2W / 4W" },
-                    { icon: "❄️", label: "AC Workspace", desc: "Temperature controlled" },
-                  ].map((a) => (
-                    <div key={a.label} className="mo-amenity-card">
-                      <span className="mo-amenity-icon">{a.icon}</span>
-                      <div>
-                        <p>{a.label}</p>
-                        <span>{a.desc}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+           {activeTab === "amenities" && (
+
+  <div className="mo-amenities-grid">
+
+    {
+
+      selectedWorkspaceCard
+      ?.amenities
+      ?.length > 0
+
+      ?
+
+      selectedWorkspaceCard.amenities.map(
+        (a, i) => (
+
+        <div
+          key={i}
+          className="mo-amenity-card"
+        >
+
+          <span className="mo-amenity-icon">
+            ☕
+          </span>
+
+          <div>
+
+            <p>
+              {a.title}
+            </p>
+
+            <span>
+
+              {a.persons}
+              Person
+
+              •
+
+              ₹{a.total}
+
+            </span>
+
+          </div>
+
+        </div>
+
+      ))
+
+      :
+
+      <div className="mo-noAmenities">
+
+        No additional amenities
+
+      </div>
+
+    }
+
+  </div>
+
+)}
 
               {activeTab === "pricing" && (
                 <div>

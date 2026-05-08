@@ -51,3 +51,32 @@ class OfferWorkspaceSerializer(
 
         fields = "__all__"
 
+
+from .models import AdditionalAmenity
+
+
+class AdditionalAmenitySerializer(
+    serializers.ModelSerializer
+):
+
+    workspace_name = serializers.CharField(
+
+        source="workspace.name",
+
+        read_only=True
+
+    )
+
+    owner_name = serializers.CharField(
+
+        source="owner.username",
+
+        read_only=True
+
+    )
+
+    class Meta:
+
+        model = AdditionalAmenity
+
+        fields = "__all__"

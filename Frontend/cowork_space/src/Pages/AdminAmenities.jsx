@@ -4,7 +4,7 @@ import "../Styles/AdminAmenities.css";
 
 const ICON_OPTIONS = [
   { key: "wifi",     label: "📶 WiFi" },
-  { key: "coffee",   label: "☕ Coffee" },
+  // { key: "coffee",   label: "☕ Coffee" },
   { key: "24hr",     label: "⏰ 24/7" },
   { key: "security", label: "🛡️ Security" },
   { key: "parking",  label: "🅿️ Parking" },
@@ -20,7 +20,7 @@ const ICON_OPTIONS = [
 ];
 
 const ICON_MAP = {
-  wifi: "📶", coffee: "☕", "24hr": "⏰", security: "🛡️",
+  wifi: "📶",  "24hr": "⏰", security: "🛡️",
   parking: "🅿️", meeting: "🏢", games: "🎮", pantry: "🍽️",
   cleaning: "🧹", support: "💬", ac: "❄️", printer: "🖨️",
   cctv: "📹", charging: "🔌",
@@ -59,6 +59,41 @@ function AdminDashboard() {
 
   const handleSubmit = async () => {
     if (!form.name.trim()) { alert("Enter amenity name"); return; }
+    const normalizedName =
+
+form.name
+.trim()
+.toLowerCase();
+
+const alreadyExists =
+
+amenities.some(
+
+  (a) =>
+
+    a.name
+    ?.trim()
+    .toLowerCase()
+
+    ===
+
+    normalizedName
+
+    &&
+
+    a.id !== editId
+
+);
+
+if (alreadyExists) {
+
+  alert(
+    "Amenity already exists and added by manger in additional amenities"
+  );
+
+  return;
+
+}
     try {
       setLoading(true);
       if (editId) {
@@ -69,9 +104,40 @@ function AdminDashboard() {
       resetForm();
       fetchAmenities();
     } catch (err) {
-      console.log(err);
-      alert("Error ❌");
-    } finally {
+
+  console.log(err);
+
+  const errorMsg =
+
+    err?.response?.data?.error
+
+    ||
+
+    err?.response?.data?.message
+
+    ||
+
+    "Something went wrong ❌";
+
+  if (
+
+    errorMsg
+    .toLowerCase()
+    .includes("already")
+
+  ) {
+
+    alert(errorMsg);
+
+  }
+
+  else {
+
+    alert(errorMsg);
+
+  }
+
+} finally {
       setLoading(false);
     }
   };

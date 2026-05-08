@@ -81,7 +81,13 @@ class Booking(models.Model):
 )
     # ✅ ADD THIS FIELD (VERY IMPORTANT)
     refund_amount = models.IntegerField(default=0)
+    amenities = models.JSONField(
 
+    default=list,
+
+    blank=True
+
+)
     status = models.CharField(
         max_length=20,
         default="pending",

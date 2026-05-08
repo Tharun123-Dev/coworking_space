@@ -110,6 +110,28 @@ function HyderabadWorkspaces() {
   const [calLoading, setCalLoading] = useState(false);
 
   const [monthlySlots, setMonthlySlots] = useState([]);
+  const [
+
+  additionalAmenities,
+
+  setAdditionalAmenities
+
+] = useState([]);
+
+const [
+
+  selectedAmenities,
+
+  setSelectedAmenities
+
+] = useState([]);
+const [
+
+  amenityPersons,
+
+  setAmenityPersons
+
+] = useState({});
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [selectedMonthSlot, setSelectedMonthSlot] = useState(null);
   const [selectedMonthYear, setSelectedMonthYear] = useState(new Date().getFullYear());
@@ -225,6 +247,8 @@ function HyderabadWorkspaces() {
     setSeatPopupMode(null);
     setSeatPopupTarget(null);
     setSeatInputValue("");
+    setSelectedAmenities([]);
+setAmenityPersons({});
   };
 
   const getAmenityKey = (name = "") => {
@@ -298,8 +322,44 @@ function HyderabadWorkspaces() {
       .finally(() => setMonthLoading(false));
   };
 
+  const fetchAdditionalAmenities =
+(workspaceId) => {
+
+  axiosInstance
+
+    .get(
+
+      `workspaces/additional-amenities/${workspaceId}/`
+
+    )
+
+    .then((res) => {
+
+      setAdditionalAmenities(
+
+        Array.isArray(res.data)
+
+        ? res.data
+
+        : []
+
+      );
+
+    })
+
+    .catch(() => {
+
+      setAdditionalAmenities([]);
+
+    });
+
+};
+
   const openBookingModal = (item, mode = "day") => {
     setSelectedWorkspace(item);
+    fetchAdditionalAmenities(
+  item.id
+);
     resetBookingState(mode);
     setShowModal(false);
     setShowBookingModal(true);
@@ -442,7 +502,37 @@ function HyderabadWorkspaces() {
       const sdkLoaded = await loadRazorpayScript();
       if (!sdkLoaded) { alert("Razorpay failed to load"); setBookingLoading(false); return; }
 
-      const finalAmount = bookingMode === "month" ? monthlyTotalPrice : hourlyTotalPrice;
+      const amenitiesTotal =
+selectedAmenities.reduce(
+
+  (sum, item) =>
+
+    sum +
+
+    (
+
+      Number(item.price || 0)
+
+      *
+
+      Number(
+
+        amenityPersons[item.id] || 1
+
+      )
+
+    ),
+
+  0
+
+)
+const finalAmount =
+
+bookingMode === "month"
+
+? monthlyTotalPrice + amenitiesTotal
+
+: hourlyTotalPrice + amenitiesTotal;
       const res = await axiosInstance.post("payment/create/", { amount: finalAmount });
       const order = res.data;
 
@@ -472,6 +562,20 @@ function HyderabadWorkspaces() {
                     axiosInstance.post("cart/create/", {
                       workspace_id: selectedWorkspace.id,
                       slot_id: slot.id,
+                      amenities:
+
+selectedAmenities.map(
+  (a) => ({
+
+    amenity_id: a.id,
+
+    persons:
+
+    amenityPersons[a.id] || 1,
+
+  })
+),
+
                       seats: Number(hourlySeatCounts[slot.id] || 0),
                       booking_type: "day",
                     })
@@ -481,14 +585,36 @@ function HyderabadWorkspaces() {
                 if (failed.length > 0) alert(`⚠️ ${results.length - failed.length} of ${results.length} slots booked. ${failed.length} failed.`);
                 else alert(selectedSlots.length > 1 ? `${selectedSlots.length} slots booked 🎉` : "Booking confirmed 🎉");
               } else {
-                await axiosInstance.post("cart/create/", {
-                  workspace_id: selectedWorkspace.id,
-                  monthly_slots: selectedMonths.map((id) => ({
-                    monthly_slot_id: Number(id),
-                    seats: Number(monthlySeatCounts[id] || 0),
-                  })),
-                  booking_type: "month",
-                });
+          await axiosInstance.post("cart/create/", {
+
+  workspace_id: selectedWorkspace.id,
+
+  monthly_slots: selectedMonths.map((id) => ({
+
+    monthly_slot_id: Number(id),
+
+    seats: Number(
+      monthlySeatCounts[id] || 0
+    ),
+
+  })),
+
+  amenities:
+
+  selectedAmenities.map(
+    (a) => ({
+
+      amenity_id: a.id,
+
+      persons:
+      amenityPersons[a.id] || 1,
+
+    })
+  ),
+
+  booking_type: "month",
+
+});
                 alert("Monthly booking confirmed 🎉");
               }
 
@@ -891,7 +1017,205 @@ function HyderabadWorkspaces() {
                         );
                       })}
                     </div>
-                    <p className={styles.monthTotalPrice}>Total Seats: {monthlyTotalSeats} | Total: ₹{monthlyTotalPrice.toLocaleString("en-IN")}</p>
+<p className={styles.monthTotalPrice}>
+
+  Total Seats:
+  {monthlyTotalSeats}
+
+  |
+
+  Total: ₹{
+
+    (
+
+      monthlyTotalPrice
+
+      +
+
+      selectedAmenities.reduce(
+
+        (sum, item) =>
+
+          sum +
+
+          (
+
+            Number(item.price || 0)
+
+            *
+
+            Number(
+
+              amenityPersons[item.id] || 1
+
+            )
+
+          ),
+
+        0
+
+      )
+
+    ).toLocaleString("en-IN")
+
+  }
+
+</p>
+<div className={styles.additionalAmenitiesBox}>
+
+  <h3 className={styles.additionalAmenitiesTitle}>
+    Additional Amenities
+  </h3>
+
+  <div
+    className={styles.additionalAmenitiesGrid}
+  >
+
+    {additionalAmenities.map(
+      (item) => {
+
+      const checked =
+        selectedAmenities.some(
+          (a) => a.id === item.id
+        );
+
+      return (
+
+        <label
+
+          key={item.id}
+
+          className={`${styles.additionalAmenityCard}
+          ${
+            checked
+              ? styles.additionalAmenityCardActive
+              : ""
+          }`}
+
+        >
+
+          <input
+
+            type="checkbox"
+
+            checked={checked}
+
+            onChange={(e) => {
+
+              if (e.target.checked) {
+
+                setSelectedAmenities(
+
+                  (prev) => [
+
+                    ...prev,
+
+                    item
+
+                  ]
+
+                );
+
+              } else {
+
+                setSelectedAmenities(
+
+                  (prev) =>
+
+                    prev.filter(
+
+                      (x) =>
+
+                        x.id !== item.id
+
+                    )
+
+                );
+
+              }
+
+            }}
+
+          />
+
+          <div>
+
+            <h4>
+              {item.title}
+            </h4>
+
+            <p>
+              {item.description}
+            </p>
+
+            <span>
+              ₹{item.price}
+            </span>
+
+            {checked && (
+
+              <select
+
+                className={
+                  styles.amenityPersonSelect
+                }
+
+                value={
+                  amenityPersons[item.id] || ""
+                }
+
+                onChange={(e) =>
+
+                  setAmenityPersons({
+
+                    ...amenityPersons,
+
+                    [item.id]:
+                    Number(e.target.value),
+
+                  })
+
+                }
+
+              >
+
+                <option value="">
+                  Persons
+                </option>
+
+                {Array.from({
+
+                  length:
+                  monthlyTotalSeats || 1
+
+                }).map((_, i) => (
+
+                  <option
+                    key={i + 1}
+                    value={i + 1}
+                  >
+
+                    {i + 1} Person
+
+                  </option>
+
+                ))}
+
+              </select>
+
+            )}
+
+          </div>
+
+        </label>
+
+      );
+
+    })}
+
+  </div>
+
+</div>
                   </div>
                 )}
               </div>
@@ -962,7 +1286,202 @@ function HyderabadWorkspaces() {
                             </span>
                           ))}
                         </div>
-                        <p className={styles.totalPrice}>Total Seats: {hourlyTotalSeats} | Total: ₹{hourlyTotalPrice.toLocaleString("en-IN")}</p>
+                        <p className={styles.totalPrice}>Total Seats: {hourlyTotalSeats} |Total: ₹{
+
+  (
+
+    hourlyTotalPrice
+
+    +
+
+ selectedAmenities.reduce(
+
+  (sum, item) =>
+
+    sum +
+
+    (
+
+      Number(item.price || 0)
+
+      *
+
+      Number(
+
+        amenityPersons[item.id] || 1
+
+      )
+
+    ),
+
+  0
+
+)
+  ).toLocaleString("en-IN")
+
+}</p>
+
+                        <div className={styles.additionalAmenitiesBox}>
+
+  <h3 className={styles.additionalAmenitiesTitle}>
+    Additional Amenities
+  </h3>
+
+  <div
+    className={styles.additionalAmenitiesGrid}
+  >
+
+    {additionalAmenities.map(
+      (item) => {
+
+      const checked =
+        selectedAmenities.some(
+          (a) => a.id === item.id
+        );
+
+      return (
+
+        <label
+
+          key={item.id}
+
+          className={`${styles.additionalAmenityCard}
+          ${
+            checked
+              ? styles.additionalAmenityCardActive
+              : ""
+          }`}
+
+        >
+
+          <input
+
+            type="checkbox"
+
+            checked={checked}
+
+            onChange={(e) => {
+
+              if (e.target.checked) {
+
+                setSelectedAmenities(
+
+                  (prev) => [
+
+                    ...prev,
+
+                    item
+
+                  ]
+
+                );
+
+              } else {
+
+                setSelectedAmenities(
+
+                  (prev) =>
+
+                    prev.filter(
+
+                      (x) =>
+
+                        x.id !== item.id
+
+                    )
+
+                );
+
+              }
+
+            }}
+
+          />
+
+          <div>
+
+            <h4>
+              {item.title}
+            </h4>
+
+            <p>
+              {item.description}
+            </p>
+
+            <span>
+              ₹{item.price}
+            </span>
+            {checked && (
+
+  <select
+
+    className={styles.amenityPersonSelect}
+
+    value={
+      amenityPersons[item.id] || ""
+    }
+
+    onChange={(e) =>
+
+      setAmenityPersons({
+
+        ...amenityPersons,
+
+        [item.id]:
+        Number(e.target.value),
+
+      })
+
+    }
+
+  >
+
+    <option value="">
+      Persons
+    </option>
+
+    {Array.from({
+
+      length:
+
+      bookingMode === "month"
+
+      ?
+
+      monthlyTotalSeats || 1
+
+      :
+
+      hourlyTotalSeats || 1
+
+    }).map((_, i) => (
+
+      <option
+        key={i + 1}
+        value={i + 1}
+      >
+
+        {i + 1} Person
+
+      </option>
+
+    ))}
+
+  </select>
+
+)}
+
+          </div>
+
+        </label>
+
+      );
+
+    })}
+
+  </div>
+
+</div>
                       </div>
                     )}
                   </>

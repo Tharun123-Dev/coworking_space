@@ -117,6 +117,21 @@ function HyderabadWorkspaces() {
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState("1");
+  const [
+
+  additionalAmenities,
+
+  setAdditionalAmenities
+
+] = useState([]);
+
+const [
+
+  selectedAmenities,
+
+  setSelectedAmenities
+
+] = useState([]);
   const [bookingLoading, setBookingLoading] = useState(false);
 
   const [slotSearch, setSlotSearch] = useState("");
@@ -373,7 +388,29 @@ function HyderabadWorkspaces() {
       setBookingLoading(true);
 
       const res = await axiosInstance.post("payment/create/", {
-        amount: Number(selectedSeats) * selectedSlot.price,
+       amount:
+
+  (
+
+    Number(selectedSeats)
+
+    *
+
+    selectedSlot.price
+
+  )
+
+  +
+
+  selectedAmenities.reduce(
+
+    (sum, item) =>
+
+      sum + Number(item.price),
+
+    0
+
+  ),
       });
 
       const order = res.data;
@@ -1046,10 +1083,37 @@ function HyderabadWorkspaces() {
                         className={styles.capacityInput}
                       />
 
-                      <p className={styles.totalPrice}>
-                        Total: ₹{Number(selectedSeats || 0) * selectedSlot.price}
-                      </p>
+                     <p className={styles.totalPrice}>
+
+  Total: ₹{
+
+    (
+
+      Number(selectedSeats || 0)
+
+      *
+
+      selectedSlot.price
+
+    )
+
+    +
+
+    selectedAmenities.reduce(
+
+      (sum, item) =>
+
+        sum + Number(item.price),
+
+      0
+
+    )
+
+  }
+
+</p>
                     </div>
+                    
                   )}
                 </>
               )}
@@ -1062,11 +1126,123 @@ function HyderabadWorkspaces() {
               >
                 {bookingLoading ? "Processing..." : "Confirm Booking"}
               </button>
+              <div className={styles.additionalAmenitiesBox}>
+
+  <h3 className={styles.additionalAmenitiesTitle}>
+    Additional Amenities
+  </h3>
+
+  {additionalAmenities.length === 0 ? (
+
+    <p className={styles.noAmenities}>
+      No additional amenities available
+    </p>
+
+  ) : (
+
+    <div className={styles.additionalAmenitiesGrid}>
+
+      {additionalAmenities.map((item) => {
+
+        const checked =
+          selectedAmenities.some(
+            (a) => a.id === item.id
+          );
+
+        return (
+
+          <label
+            key={item.id}
+            className={`${styles.additionalAmenityCard}
+            ${
+              checked
+                ? styles.additionalAmenityCardActive
+                : ""
+            }`}
+          >
+
+            <input
+
+              type="checkbox"
+
+              checked={checked}
+
+              onChange={(e) => {
+
+                if (e.target.checked) {
+
+                  setSelectedAmenities(
+
+                    (prev) => [
+
+                      ...prev,
+
+                      item
+
+                    ]
+
+                  );
+
+                } else {
+
+                  setSelectedAmenities(
+
+                    (prev) =>
+
+                      prev.filter(
+
+                        (x) =>
+
+                          x.id !== item.id
+
+                      )
+
+                  );
+
+                }
+
+              }}
+
+            />
+
+            <div>
+
+              <h4>
+                {item.title}
+              </h4>
+
+              <p>
+                {
+                  item.description
+                }
+              </p>
+
+              <span>
+
+                ₹{item.price}
+
+              </span>
+
+            </div>
+
+          </label>
+
+        );
+
+      })}
+
+    </div>
+
+  )}
+
+</div>
             </div>
           </div>
         </div>
       )}
     </div>
+
+    
   );
 }
 

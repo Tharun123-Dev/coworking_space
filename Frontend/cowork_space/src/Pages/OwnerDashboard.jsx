@@ -34,6 +34,11 @@ const NAV_GROUPS = [
     children: [
       { key: "workspaces", icon: "🏗️", label: "Workspaces" },
       { key: "offerWorkspaces", icon: "🔥", label: "Offer Workspaces" },
+      {
+  key: "additionalAmenities",
+  icon: "☕",
+  label: "Additional Amenities",
+},
       { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
     ],
   },
@@ -100,7 +105,41 @@ function OwnerDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [viewedNotifications, setViewedNotifications] = useState(() => JSON.parse(localStorage.getItem("viewedNotifications")) || []);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [
 
+  additionalAmenities,
+
+  setAdditionalAmenities
+
+] = useState([]);
+
+const [
+
+  editAmenityId,
+
+  setEditAmenityId
+
+] = useState(null);
+
+const [
+
+  amenityForm,
+
+  setAmenityForm
+
+] = useState({
+
+  workspace: "",
+
+  title: "",
+
+  description: "",
+
+  price: "",
+
+  price_type: "full_day",
+
+});
   // Track which sidebar groups are open
   const [openGroups, setOpenGroups] = useState({ workspacesGroup: true, slotsGroup: false, leadsGroup: false });
 
@@ -136,6 +175,44 @@ function OwnerDashboard() {
   const fetchWorkspaces = () => axiosInstance.get("workspaces/?owner=true").then(res => setWorkspaces(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Workspace fetch error:", err));
   const fetchAllWorkspaces = () => axiosInstance.get("workspaces/").then(res => setAllWorkspaces(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("All workspaces fetch error:", err));
   const fetchOfferWorkspaces = () => axiosInstance.get("workspaces/offers/owner/").then(res => setOfferWorkspaces(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Offer workspace fetch error:", err));
+  const fetchAdditionalAmenities =
+() => {
+
+  axiosInstance
+
+    .get(
+
+      "workspaces/additional-amenities/owner/"
+
+    )
+
+    .then((res) => {
+
+      setAdditionalAmenities(
+
+        Array.isArray(res.data)
+
+        ? res.data
+
+        : []
+
+      );
+
+    })
+
+    .catch((err) => {
+
+      console.log(
+
+        "Amenities Fetch Error:",
+
+        err
+
+      );
+
+    });
+
+};
   const fetchRevenue = () => axiosInstance.get("cart/owner/revenue/").then(res => setRevenue(res.data)).catch(err => console.error("Revenue fetch error:", err));
   const fetchSlots = () => axiosInstance.get("workspaces/slots/owner/").then(res => setSlots(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Slot fetch error:", err));
   const fetchMonthlySlots = () => axiosInstance.get("workspaces/monthly-slots/").then(res => setMonthlySlots(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Monthly slots fetch error:", err));
@@ -154,7 +231,200 @@ function OwnerDashboard() {
     const request = editOfferId ? axiosInstance.put(`workspaces/offers/update/${editOfferId}/`, { ...offerForm, area: ownerCity }) : axiosInstance.post("workspaces/offers/create/", { ...offerForm, area: ownerCity });
     request.then(() => { fetchOfferWorkspaces(); setEditOfferId(null); setOfferForm({ building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] }); alert(editOfferId ? "Workspace updated successfully" : "Offer workspace added successfully"); }).catch(err => console.error(err));
   };
+const handleAddAmenity =
+() => {
 
+  if (
+    !amenityForm.workspace ||
+
+    !amenityForm.title ||
+
+    !amenityForm.price
+  ) {
+
+    alert(
+      "Please fill required fields"
+    );
+
+    return;
+  }
+  const existsInAdminAmenities =
+
+amenitiesList.some(
+
+  (a) =>
+
+    a.name
+    ?.trim()
+    .toLowerCase()
+
+    ===
+
+    amenityForm.title
+    .trim()
+    .toLowerCase()
+
+);
+
+if (existsInAdminAmenities) {
+
+  alert(
+
+    `"${amenityForm.title}" already exists in Admin Amenities`
+
+  );
+
+  return;
+
+}
+
+  const alreadyExists =
+
+additionalAmenities.some(
+
+  (a) =>
+
+    a.workspace ===
+    Number(
+      amenityForm.workspace
+    )
+
+    &&
+
+    a.title
+    ?.trim()
+    .toLowerCase()
+
+    ===
+
+    amenityForm.title
+    .trim()
+    .toLowerCase()
+
+    &&
+
+    a.price_type ===
+    amenityForm.price_type
+
+);
+
+if (alreadyExists) {
+
+  alert(
+
+    `"${amenityForm.title}" already exists for this workspace`
+
+  );
+
+  return;
+
+}
+  const request =
+
+    editAmenityId
+
+    ?
+
+    axiosInstance.put(
+
+      `workspaces/additional-amenities/update/${editAmenityId}/`,
+
+      amenityForm
+
+    )
+
+    :
+
+    axiosInstance.post(
+
+      "workspaces/additional-amenities/create/",
+
+      amenityForm
+
+    );
+
+  request
+
+    .then(() => {
+
+      fetchAdditionalAmenities();
+
+      setAmenityForm({
+
+        workspace: "",
+
+        title: "",
+
+        description: "",
+
+        price: "",
+
+        price_type:
+        "full_day",
+
+      });
+
+      setEditAmenityId(
+        null
+      );
+
+      alert(
+
+        editAmenityId
+
+        ?
+
+        "Amenity Updated"
+
+        :
+
+        "Amenity Added"
+
+      );
+
+    })
+
+    .catch((err) => {
+
+      console.log(err);
+
+    });
+
+};
+const handleDeleteAmenity =
+(id) => {
+
+  if (
+    !window.confirm(
+      "Delete this amenity?"
+    )
+  ) return;
+
+  axiosInstance
+
+    .delete(
+
+      `workspaces/additional-amenities/delete/${id}/`
+
+    )
+
+    .then(() => {
+
+      fetchAdditionalAmenities();
+
+      alert(
+        "Deleted Successfully"
+      );
+
+    })
+
+    .catch((err) => {
+
+      console.log(err);
+
+    });
+
+};
   const buildNotifications = () => {
     let items = [];
     companyLeads.forEach(l => items.push({ id: `company-${l.id}`, type: "Company Lead", name: l.name, workspace: l.company || "-", location: l.location || "-", section: "companyLeads" }));
@@ -178,7 +448,7 @@ function OwnerDashboard() {
   useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads]);
   useEffect(() => { localStorage.setItem("viewedNotifications", JSON.stringify(viewedNotifications)); }, [viewedNotifications]);
   useEffect(() => {
-    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
+    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchAdditionalAmenities();fetchRevenue(); fetchSlots(); fetchAmenities(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
   }, [fetchBookings, fetchCancelRequests]);
   useEffect(() => { const loc = localStorage.getItem("user_location"); if (loc) setOwnerCity(loc); }, []);
   useEffect(() => { const handleResize = () => { if (window.innerWidth > 640) setMobileSidebarOpen(false); }; window.addEventListener("resize", handleResize); return () => window.removeEventListener("resize", handleResize); }, []);
@@ -412,8 +682,70 @@ function OwnerDashboard() {
       <div className={styles.tableWrap}>
         {loadingBookings ? <div className={styles.empty}>Loading bookings…</div> : mergedBookings.length === 0 ? <div className={styles.empty}><div>📋</div><p>No bookings yet</p></div> : (
           <table className={styles.table}>
-            <thead><tr><th>Workspace</th><th>Customer</th><th>City</th><th>Date</th><th>Slot</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody>{mergedBookings.map(item => { const isConfirmed = item.status === "confirmed"; const isCancelled = item.status === "cancelled"; const isPulsing = animatingId === item.id; return (<tr key={item.id} className={isPulsing ? styles.rowPulse : ""}><td><div className={styles.bookingWorkspace} onClick={() => openBookingModal(item)}><img src={item.image} alt={item.workspace} className={styles.bookingThumb} /><span className={styles.bookingWorkspaceTitle}>{item.workspace}</span></div></td><td>{item.user}</td><td>{item.city}</td><td>{item.date}</td><td><div><strong>{item.slot_type}</strong><br /><small>{item.slot_time}</small></div></td><td className={styles.priceCell}>₹{Number(item.total_price || 0).toLocaleString()}</td><td><span className={styles.statusPill}>{item.status || "pending"}</span></td><td><div className={styles.bookingActionBox}>{isConfirmed && <span className={styles.statusPill}>✓ Confirmed</span>}{isCancelled && <span className={styles.statusPill}>✕ Cancelled</span>}{!isConfirmed && !isCancelled && <span className={styles.statusPill}>Pending</span>}</div></td></tr>); })}</tbody>
+            <thead><tr><th>Workspace</th><th>Customer</th><th>City</th><th>Date</th><th>Slot</th><th>Additional Amenities</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>{mergedBookings.map(item => { const isConfirmed = item.status === "confirmed"; const isCancelled = item.status === "cancelled"; const isPulsing = animatingId === item.id; return (<tr key={item.id} className={isPulsing ? styles.rowPulse : ""}><td><div className={styles.bookingWorkspace} onClick={() => openBookingModal(item)}><img src={item.image} alt={item.workspace} className={styles.bookingThumb} /><span className={styles.bookingWorkspaceTitle}>{item.workspace}</span></div></td><td>{item.user}</td><td>{item.city}</td><td>{item.date}</td><td><div><strong>{item.slot_type}</strong><br /><small>{item.slot_time}</small></div></td><td>
+
+{
+
+Array.isArray(item.amenities) &&
+item.amenities.length > 0
+
+?
+
+<div className={styles.bookingAmenities}>
+
+  {
+
+    item.amenities.map(
+      (a, i) => (
+
+      <div
+        key={i}
+        className={styles.bookingAmenityItem}
+      >
+
+        <span>
+          ☕
+        </span>
+
+        <div>
+
+          <strong>
+            {a.title}
+          </strong>
+
+          <small>
+
+            {a.persons}
+            Person
+
+            •
+
+            ₹{a.total}
+
+          </small>
+
+        </div>
+
+      </div>
+
+    ))
+
+  }
+
+</div>
+
+:
+
+<span className={styles.noAmenities}>
+
+No Amenities
+
+</span>
+
+}
+
+</td><td className={styles.priceCell}>₹{Number(item.total_price || 0).toLocaleString()}</td><td><span className={styles.statusPill}>{item.status || "pending"}</span></td><td><div className={styles.bookingActionBox}>{isConfirmed && <span className={styles.statusPill}>✓ Confirmed</span>}{isCancelled && <span className={styles.statusPill}>✕ Cancelled</span>}{!isConfirmed && !isCancelled && <span className={styles.statusPill}>Pending</span>}</div></td></tr>); })}</tbody>
           </table>
         )}
       </div>
@@ -436,6 +768,65 @@ function OwnerDashboard() {
               {bookingActiveTab === "overview" && (<><div className={styles.overviewMetaGrid}>{[["Customer", selectedBooking.user], ["Date", selectedBooking.date], ["Slot", `${selectedBooking.slot_type} ${selectedBooking.slot_time || ""}`], ["City", selectedBooking.city], ["Status", selectedBooking.status || "pending"]].map(([label, val]) => <div key={label} className={styles.metaCard}><span>{label}</span><strong className={label === "Status" ? getStatusClass(val) : ""}>{val}</strong></div>)}</div><div className={styles.bookingSummaryBox}><h4>Booking Summary</h4><p>This booking is for <strong>{selectedBooking.workspace}</strong>. Review the customer request and schedule details directly inside the dashboard.</p></div></>)}
               {bookingActiveTab === "features" && <div className={styles.featureGrid}>{[["📶","High-Speed WiFi","Stable internet for work and meetings."],["🪑","Modern Setup","Comfortable desk and seating support."],["❄️","Fully Air Conditioned","Comfortable environment all day."],["☕","Refreshments","Tea, coffee and basic pantry access."]].map(([icon, title, desc]) => <div key={title} className={styles.featureCard}><div className={styles.featureIcon}>{icon}</div><h4>{title}</h4><p>{desc}</p></div>)}</div>}
               {bookingActiveTab === "pricing" && <div className={styles.pricingCard}><span>Booking Amount</span><h2>₹{selectedBooking.total_price}</h2><p>For {selectedBooking.slot_type} {selectedBooking.slot_time} on {selectedBooking.date}</p><div className={styles.pricingList}><div>Workspace reserved for selected slot</div><div>Booking tracked inside dashboard</div><div>Direct manager visibility</div></div></div>}
+              {
+
+selectedBooking?.amenities
+?.length > 0 && (
+
+<div
+  className={
+    styles.modalAmenities
+  }
+>
+
+  <h4>
+    Additional Amenities
+  </h4>
+
+  {
+
+    selectedBooking.amenities.map(
+      (a, i) => (
+
+      <div
+        key={i}
+        className={
+          styles.modalAmenityItem
+        }
+      >
+
+        <span>
+          ☕
+        </span>
+
+        <div>
+
+          <strong>
+            {a.title}
+          </strong>
+
+          <small>
+
+            {a.persons}
+            Person
+
+            •
+
+            ₹{a.total}
+
+          </small>
+
+        </div>
+
+      </div>
+
+    ))
+
+  }
+
+</div>
+
+)}
             </div>
             <div className={styles.modalFooter}><div><strong>₹{selectedBooking.total_price}</strong><small>Total Booking Value</small></div><div>{selectedBooking.status === "confirmed" && <span className={styles.statusPill}>Booking Confirmed</span>}{selectedBooking.status === "cancelled" && <span className={styles.statusPill}>Booking Cancelled</span>}{selectedBooking.status !== "confirmed" && selectedBooking.status !== "cancelled" && <span className={styles.statusPill}>Pending Booking</span>}</div></div>
           </div>
@@ -758,6 +1149,7 @@ function OwnerDashboard() {
           {activeSection === "overview" && renderOverview()}
           {activeSection === "workspaces" && renderWorkspaces()}
           {activeSection === "offerWorkspaces" && renderOfferWorkspaces()}
+
           {activeSection === "slots" && renderSlots()}
           {activeSection === "monthlySlots" && renderMonthlySlots()}
           {activeSection === "bookings" && renderBookings()}
@@ -766,6 +1158,260 @@ function OwnerDashboard() {
           {activeSection === "offerLeads" && renderOfferLeads()}
           {activeSection === "customisationLeads" && renderCustomisationLeads()}
           {activeSection === "suggestedWorkspaces" && renderSuggestedWorkspaces()}
+
+          {activeSection === 'additionalAmenities' && (
+  <div className={styles.sectionCard}>
+    <div className={styles.sectionHeader}>
+      <h2>Additional Amenities</h2>
+    </div>
+
+    <div className={styles.amenityFormGrid}>
+      <select
+        className={`${styles.amenitySelect} ${!amenityForm.workspace ? styles.placeholderSelect : ''}`}
+        value={amenityForm.workspace}
+        onChange={(e) =>
+          setAmenityForm({
+            ...amenityForm,
+            workspace: e.target.value,
+          })
+        }
+      >
+        <option value="" disabled hidden>
+          Select Workspace
+        </option>
+        {workspaces.map((ws) => (
+          <option key={ws.id} value={ws.id}>
+            {ws.workspacename || ws.name || ws.title || `Workspace ${ws.id}`}
+          </option>
+        ))}
+      </select>
+
+      <input
+        className={styles.amenityInput}
+        type="text"
+        placeholder="Amenity Name"
+        value={amenityForm.title}
+        onChange={(e) =>
+          setAmenityForm({
+            ...amenityForm,
+            title: e.target.value,
+          })
+        }
+      />
+
+      <input
+        className={styles.amenityInput}
+        type="text"
+        placeholder="Description"
+        value={amenityForm.description}
+        onChange={(e) =>
+          setAmenityForm({
+            ...amenityForm,
+            description: e.target.value,
+          })
+        }
+      />
+
+      <input
+        className={styles.amenityInput}
+        type="number"
+        placeholder="Price"
+        value={amenityForm.price}
+        onChange={(e) =>
+          setAmenityForm({
+            ...amenityForm,
+            price: e.target.value,
+          })
+        }
+      />
+
+      <select
+        className={styles.amenitySelect}
+        value={amenityForm.pricetype}
+        onChange={(e) =>
+          setAmenityForm({
+            ...amenityForm,
+            pricetype: e.target.value,
+          })
+        }
+      >
+        <option value="halfday">Half Day</option>
+        <option value="fullday">Full Day</option>
+        <option value="monthly">Monthly</option>
+      </select>
+
+      <button className={styles.amenityBtn} onClick={handleAddAmenity}>
+        {
+  editAmenityId
+
+  ?
+
+  "Update Amenity"
+
+  :
+
+  "Add Amenity"
+
+}
+      </button>
+    </div>
+
+    <div className={styles.amenitiesTable}>
+
+  <table>
+
+    <thead>
+
+      <tr>
+
+        <th>
+          Workspace
+        </th>
+
+        <th>
+          Amenity
+        </th>
+
+        <th>
+          Description
+        </th>
+
+        <th>
+          Price
+        </th>
+
+        <th>
+          Type
+        </th>
+   <th>
+  Action
+</th>
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      {additionalAmenities.map(
+        (item) => (
+
+        <tr key={item.id}>
+
+          <td>
+
+            {
+              item.workspace_name
+            }
+
+          </td>
+
+          <td>
+
+            {
+              item.title
+            }
+
+          </td>
+
+          <td>
+
+            {
+              item.description
+            }
+
+          </td>
+
+          <td>
+
+            ₹{item.price}
+
+          </td>
+
+          <td>
+
+            {
+              item.price_type
+                ?.replace("_"," ")
+            }
+
+          </td>
+          <td>
+
+  <div
+    className={styles.actionBtns}
+  >
+
+    <button
+
+      className={styles.editBtn}
+
+      onClick={() => {
+
+        setEditAmenityId(
+          item.id
+        );
+
+        setAmenityForm({
+
+          workspace:
+          item.workspace,
+
+          title:
+          item.title,
+
+          description:
+          item.description,
+
+          price:
+          item.price,
+
+          price_type:
+          item.price_type,
+
+        });
+
+      }}
+
+    >
+
+      Edit
+
+    </button>
+
+    <button
+
+      className={styles.deleteBtn}
+
+      onClick={() =>
+
+        handleDeleteAmenity(
+          item.id
+        )
+
+      }
+
+    >
+
+      Delete
+
+    </button>
+
+  </div>
+
+</td>
+
+        </tr>
+
+      ))}
+
+    </tbody>
+
+  </table>
+
+</div>
+  </div>
+)}
+
         </div>
       </main>
     </div>

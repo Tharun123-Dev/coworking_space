@@ -1341,6 +1341,287 @@
   }
 
 }
+.amenityFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.amenityInput,
+.amenitySelect {
+  width: 100%;
+  height: 54px;
+  border: 1px solid #dbe2ea;
+  border-radius: 14px;
+  padding: 0 18px;
+  font-size: 15px;
+  background: #ffffff;
+  color: #111827;
+  outline: none;
+  transition: 0.25s ease;
+  box-sizing: border-box;
+}
+
+.amenityInput::placeholder {
+  color: #94a3b8;
+}
+
+.amenitySelect {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.amenitySelect option {
+  color: #111827 !important;
+  background: #ffffff !important;
+}
+
+.placeholderSelect {
+  color: #94a3b8 !important;
+}
+
+.amenityInput:focus,
+.amenitySelect:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+}
+
+.amenityBtn {
+  height: 54px;
+  border: none;
+  border-radius: 14px;
+  background: #6366f1;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.amenityBtn:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}
+.amenitiesTable{
+
+  margin-top:28px;
+
+  overflow-x:auto;
+
+  border-radius:18px;
+
+  background:#ffffff;
+
+}
+
+.amenitiesTable table{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+}
+
+.amenitiesTable thead{
+
+  background:#f8fafc;
+
+}
+
+.amenitiesTable th{
+
+  padding:18px;
+
+  text-align:left;
+
+  font-size:14px;
+
+  color:#64748b;
+
+  font-weight:700;
+
+  border-bottom:
+    1px solid #e2e8f0;
+
+}
+
+.amenitiesTable td{
+
+  padding:18px;
+
+  font-size:15px;
+
+  color:#0f172a;
+
+  border-bottom:
+    1px solid #eef2f7;
+
+}
+
+.amenitiesTable tr:hover{
+
+  background:#f8fafc;
+
+}
+.actionBtns{
+
+  display:flex;
+
+  gap:10px;
+
+}
+
+.editBtn{
+
+  border:none;
+
+  background:#3b82f6;
+
+  color:#ffffff;
+
+  padding:8px 14px;
+
+  border-radius:10px;
+
+  cursor:pointer;
+
+  font-size:13px;
+
+  font-weight:600;
+
+}
+
+.deleteBtn{
+
+  border:none;
+
+  background:#ef4444;
+
+  color:#ffffff;
+
+  padding:8px 14px;
+
+  border-radius:10px;
+
+  cursor:pointer;
+
+  font-size:13px;
+
+  font-weight:600;
+
+}.bookingAmenities{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:8px;
+
+}
+
+.bookingAmenityItem{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  background:#f8fafc;
+
+  padding:8px 10px;
+
+  border-radius:10px;
+
+}
+
+.bookingAmenityItem strong{
+
+  display:block;
+
+  color:#0f172a;
+
+  font-size:13px;
+
+}
+
+.bookingAmenityItem small{
+
+  color:#64748b;
+
+  font-size:12px;
+
+}
+
+.noAmenities{
+
+  color:#94a3b8;
+
+  font-size:13px;
+
+}
+
+.modalAmenities{
+
+  margin-top:20px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:12px;
+
+}
+
+.modalAmenityItem{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  background:#f8fafc;
+
+  padding:12px;
+
+  border-radius:12px;
+
+}
+@media(max-width:768px){
+
+  .amenitiesTable th,
+  .amenitiesTable td{
+
+    padding:14px;
+
+    font-size:13px;
+
+  }
+
+}
+@media (max-width: 992px) {
+  .amenityFormGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .amenityFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .amenityInput,
+  .amenitySelect,
+  .amenityBtn {
+    height: 50px;
+    font-size: 14px;
+  }
+}
 
 /* ========================= */
 /* SMALL MOBILE */

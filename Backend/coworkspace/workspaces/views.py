@@ -13,7 +13,11 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Workspace,WorkspaceSlot,MonthlySlot
 from bookings.models import Booking
+from .models import AdditionalAmenity
 
+from .serializers import (
+    AdditionalAmenitySerializer
+)
 
 # 🔥 ADMIN + OWNER PERMISSION
 class IsAdminOrOwner(BasePermission):
@@ -218,15 +222,59 @@ def get_amenities(request):
     serializer = AmenitySerializer(amenities, many=True)
     return Response(serializer.data)
 
-
 @api_view(['POST'])
 def add_amenity(request):
-    serializer = AmenitySerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors)
 
+    name = request.data.get(
+        "name",
+        ""
+    ).strip()
+
+    # ✅ CHECK NORMAL AMENITIES
+
+    exists_in_amenities = Amenity.objects.filter(
+
+        name__iexact=name
+
+    ).exists()
+
+    # ✅ CHECK ADDITIONAL AMENITIES
+
+    exists_in_additional = AdditionalAmenity.objects.filter(
+
+        title__iexact=name
+
+    ).exists()
+
+    if (
+        exists_in_amenities
+        or
+        exists_in_additional
+    ):
+
+        return Response({
+
+            "error":
+            "Amenity already exists"
+
+        }, status=400)
+
+    serializer = AmenitySerializer(
+        data=request.data
+    )
+
+    if serializer.is_valid():
+
+        serializer.save()
+
+        return Response(
+            serializer.data
+        )
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Amenity
@@ -249,20 +297,78 @@ from .serializers import AmenitySerializer
 
 @api_view(['PUT'])
 def update_amenity(request, id):
+
     try:
-        amenity = Amenity.objects.get(id=id)
+
+        amenity = Amenity.objects.get(
+            id=id
+        )
+
     except Amenity.DoesNotExist:
-        return Response({"error": "Amenity not found"}, status=404)
 
-    serializer = AmenitySerializer(amenity, data=request.data)
-    
+        return Response({
+
+            "error":
+            "Amenity not found"
+
+        }, status=404)
+
+    name = request.data.get(
+        "name",
+        ""
+    ).strip()
+
+    # ✅ NORMAL AMENITY CHECK
+
+    exists_in_amenities = Amenity.objects.filter(
+
+        name__iexact=name
+
+    ).exclude(
+        id=id
+    ).exists()
+
+    # ✅ ADDITIONAL AMENITY CHECK
+
+    exists_in_additional = AdditionalAmenity.objects.filter(
+
+        title__iexact=name
+
+    ).exists()
+
+    if (
+        exists_in_amenities
+        or
+        exists_in_additional
+    ):
+
+        return Response({
+
+            "error":
+            "Amenity already exists"
+
+        }, status=400)
+
+    serializer = AmenitySerializer(
+
+        amenity,
+
+        data=request.data
+
+    )
+
     if serializer.is_valid():
+
         serializer.save()
-        return Response(serializer.data)
-    
-    return Response(serializer.errors, status=400)
 
+        return Response(
+            serializer.data
+        )
 
+    return Response(
+        serializer.errors,
+        status=400
+    )
 @api_view(['PUT'])
 @permission_classes([IsAdminOrOwner])
 def toggle_workspace(request, id):
@@ -1002,3 +1108,169 @@ def public_offer_workspaces(request):
     )
 
     return Response(serializer.data)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_additional_amenity(
+    request
+):
+
+    data = request.data
+
+    amenity = AdditionalAmenity.objects.create(
+
+        workspace_id=
+        data.get("workspace"),
+
+        owner=request.user,
+
+        title=
+        data.get("title"),
+
+        description=
+        data.get("description"),
+
+        price=
+        data.get("price"),
+
+        price_type=
+        data.get("price_type"),
+
+    )
+
+    serializer = AdditionalAmenitySerializer(
+        amenity
+    )
+
+    return Response(serializer.data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def owner_additional_amenities(
+    request
+):
+
+    amenities = AdditionalAmenity.objects.filter(
+
+        owner=request.user
+
+    ).order_by("-id")
+
+    serializer = AdditionalAmenitySerializer(
+
+        amenities,
+
+        many=True
+
+    )
+
+    return Response(serializer.data)
+
+@api_view(["GET"])
+def workspace_additional_amenities(
+    request,
+    workspace_id
+):
+
+    amenities = AdditionalAmenity.objects.filter(
+
+        workspace_id=workspace_id,
+
+        is_active=True
+
+    ).order_by("-id")
+
+    serializer = AdditionalAmenitySerializer(
+
+        amenities,
+
+        many=True
+
+    )
+
+    return Response(serializer.data)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_additional_amenity(
+    request,
+    id
+):
+
+    try:
+
+        amenity = AdditionalAmenity.objects.get(
+            id=id
+        )
+
+        amenity.title = request.data.get("title")
+
+        amenity.description = request.data.get(
+            "description"
+        )
+
+        amenity.price = request.data.get("price")
+
+        amenity.price_type = request.data.get(
+            "price_type"
+        )
+
+        amenity.workspace_id = request.data.get(
+            "workspace"
+        )
+
+        amenity.save()
+
+        serializer = AdditionalAmenitySerializer(
+            amenity
+        )
+
+        return Response(serializer.data)
+
+    except AdditionalAmenity.DoesNotExist:
+
+        return Response(
+
+            {
+                "error":
+                "Amenity not found"
+            },
+
+            status=404
+
+        )
+    
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_additional_amenity(
+    request,
+    id
+):
+
+    try:
+
+        amenity =AdditionalAmenity.objects.get(
+            id=id
+        )
+
+        amenity.delete()
+
+        return Response({
+
+            "message":
+            "Deleted successfully"
+
+        })
+
+    except AdditionalAmenity.DoesNotExist:
+
+        return Response(
+
+            {
+                "error":
+                "Amenity not found"
+            },
+
+            status=404
+
+        )
