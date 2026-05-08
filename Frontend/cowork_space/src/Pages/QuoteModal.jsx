@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import "../Styles/QuoteModal.css";
+import "../Styles/Quotemodal.css";
 
 
 const LOCATIONS = ["Hitech City", "Madhapur", "Gachibowli", "Kondapur"];
