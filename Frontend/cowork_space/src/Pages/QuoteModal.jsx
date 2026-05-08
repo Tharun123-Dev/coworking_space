@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../Styles/QuoteModal.css";
 
-/* ── Pricing Data ── */
+
 const LOCATIONS = ["Hitech City", "Madhapur", "Gachibowli", "Kondapur"];
 
 const SPACE_TYPES = {
