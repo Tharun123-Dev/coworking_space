@@ -9,7 +9,7 @@ const SPACE_TYPES = {
     { name: "Private Cabin (per seat)", units: 1, price: 8500 },
     { name: "High-Speed Wi-Fi", units: 1, price: 1200 },
     { name: "Power Backup (24hr)", units: 1, price: 800 },
-    { name: "Meeting Room Access (hrs/mo)", units: 5, price: 500 },
+    { name: "Meeting Room Access (hrs/)", units: 5, price: 500 },
   ],
   Medium: [
     { name: "Dedicated Zone (per seat)", units: 1, price: 7200 },
