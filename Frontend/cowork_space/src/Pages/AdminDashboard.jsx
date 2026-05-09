@@ -1538,44 +1538,73 @@ const [viewedAdminNotifications,
         className={
           styles.viewBtn
         }
+onClick={() => {
 
-        onClick={() => {
+  // ✅ OPEN SECTION
 
-          setSection(
-            n.section
-          );
+  setSection(
+    n.section
+  );
 
-          setViewedAdminNotifications(
+  // ✅ GET SAME SECTION IDS
 
-            (prev) => [
+  const sameSectionIds =
 
-              ...prev,
+    adminNotifications
 
-              n.id
+      .filter(
 
-            ]
+        item =>
 
-          );
+          item.section ===
+          n.section
 
-          setAdminNotifications(
+      )
 
-            (prev) =>
+      .map(
+        item => item.id
+      );
 
-              prev.filter(
+  // ✅ SAVE VIEWED
 
-                (x) =>
+  const updatedViewed = [
 
-                  x.id !== n.id
+    ...new Set([
 
-              )
+      ...viewedAdminNotifications,
 
-          );
+      ...sameSectionIds
 
-          setNotifOpen(
-            false
-          );
+    ])
 
-        }}
+  ];
+
+  setViewedAdminNotifications(
+    updatedViewed
+  );
+
+  // ✅ REMOVE SAME SECTION NOTIFICATIONS
+
+  setAdminNotifications(
+
+    prev =>
+
+      prev.filter(
+
+        item =>
+
+          item.section !==
+          n.section
+
+      )
+
+  );
+
+  // ✅ CLOSE DROPDOWN
+
+  setNotifOpen(false);
+
+}}
 
       >
 

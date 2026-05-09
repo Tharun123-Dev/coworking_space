@@ -434,17 +434,134 @@ const handleDeleteAmenity =
     setNotifications(items.filter(item => !viewedNotifications.includes(item.id)));
   };
 
-  const handleViewNotification = (notification) => {
-    setActiveSection(notification.section);
-    // Auto-open the leads group when navigating from notification
-    if (["companyLeads","hyderabadLeads","offerLeads","customisationLeads"].includes(notification.section)) {
-      setOpenGroups(prev => ({ ...prev, leadsGroup: true }));
-    }
-    setViewedNotifications(prev => prev.includes(notification.id) ? prev : [...prev, notification.id]);
-    setNotifications(prev => prev.filter(n => n.id !== notification.id));
-    setShowNotifications(false);
-  };
+const handleViewNotification = (notification) => {
 
+  setActiveSection(
+    notification.section
+  );
+
+  // ✅ OPEN LEADS GROUP
+
+  if (
+
+    [
+      "companyLeads",
+      "hyderabadLeads",
+      "offerLeads",
+      "customisationLeads"
+
+    ].includes(
+      notification.section
+    )
+
+  ) {
+
+    setOpenGroups(prev => ({
+
+      ...prev,
+
+      leadsGroup: true
+
+    }));
+
+  }
+
+  let updatedViewed = [
+    ...viewedNotifications
+  ];
+
+  // ✅ OFFER LEADS
+
+  if (
+    notification.section ===
+    "offerLeads"
+  ) {
+
+    const offerIds = notifications
+
+      .filter(
+
+        n =>
+          n.section ===
+          "offerLeads"
+
+      )
+
+      .map(n => n.id);
+
+    updatedViewed = [
+      ...new Set([
+        ...updatedViewed,
+        ...offerIds
+      ])
+    ];
+
+  }
+
+  // ✅ CUSTOMISATION LEADS
+
+  else if (
+
+    notification.section ===
+    "customisationLeads"
+
+  ) {
+
+    const customIds = notifications
+
+      .filter(
+
+        n =>
+          n.section ===
+          "customisationLeads"
+
+      )
+
+      .map(n => n.id);
+
+    updatedViewed = [
+      ...new Set([
+        ...updatedViewed,
+        ...customIds
+      ])
+    ];
+
+  }
+
+  // ✅ NORMAL SINGLE
+
+  else {
+
+    updatedViewed = [
+      ...new Set([
+        ...updatedViewed,
+        notification.id
+      ])
+    ];
+
+  }
+
+  setViewedNotifications(
+    updatedViewed
+  );
+
+  // ✅ REMOVE NOTIFICATIONS
+
+  setNotifications(
+
+    prev => prev.filter(
+
+      n => !updatedViewed.includes(
+        n.id
+      )
+
+    )
+
+  );
+
+  setShowNotifications(false);
+
+};
   useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads]);
   useEffect(() => { localStorage.setItem("viewedNotifications", JSON.stringify(viewedNotifications)); }, [viewedNotifications]);
   useEffect(() => {
@@ -839,8 +956,12 @@ selectedBooking?.amenities
     <div className={styles.sectionBody}>
       <div className={styles.tableWrap}>
         <table className={styles.table}>
-          <thead><tr><th>Team Size</th><th>Name</th><th>Phone</th><th>Email</th><th>Company</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>{companyLeads.map(item => (<tr key={item.id}><td>{item.team_size}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td>{item.company}</td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateCompanyLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}</tbody>
+          <thead><tr><th>Team Size</th><th>Name</th><th>Phone</th><th>Email</th>   <th>Preferred Location</th><th>preffere Workspace</th><th>Company</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>{companyLeads.map(item => (<tr key={item.id}><td>{item.team_size}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td>{item.preferred_location}</td><td>
+
+  {item.workspace_type || "—"}
+
+</td><td>{item.company}</td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateCompanyLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}</tbody>
         </table>
         {companyLeads.length === 0 && <div className={styles.empty}><p>No company leads yet</p></div>}
       </div>

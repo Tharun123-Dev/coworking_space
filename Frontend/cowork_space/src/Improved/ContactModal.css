@@ -1,47 +1,68 @@
-/* =============================================
-   ContactModal.css — WorkNest Light Editorial
-   ============================================= */
-
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap");
-
-/* ── CSS Variables ── */
+/* ══════════════════════════════════════════════════════════════
+   ContactModal.css  —  Beautiful, fully responsive, validated
+   Aesthetic: Refined dark-glass luxury with warm amber accents
+   ══════════════════════════════════════════════════════════════ */
+ 
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+ 
+/* ── Tokens ─────────────────────────────────────────────────── */
 :root {
-  --cm-gold: #b8922a;
-  --cm-gold-light: #d4a843;
-  --cm-gold-pale: #f5ead8;
-  --cm-white: #ffffff;
-  --cm-off-white: #fafaf8;
-  --cm-surface: #f4f3f0;
-  --cm-border: #e8e2d9;
-  --cm-border-strong: #d4c9b8;
-  --cm-text: #1a1814;
-  --cm-text-secondary: #6b6560;
-  --cm-text-muted: #a09890;
-  --cm-shadow-soft: 0 2px 16px rgba(0, 0, 0, 0.07);
-  --cm-shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.14), 0 8px 24px rgba(0, 0, 0, 0.08);
-  --cm-radius: 20px;
-  --cm-radius-sm: 10px;
-  --cm-transition: 0.2s ease;
+  --cm-bg:          #0d0f14;
+  --cm-surface:     #14171f;
+  --cm-surface-2:   #1c2030;
+  --cm-border:      rgba(255,255,255,.08);
+  --cm-border-focus:rgba(251,191,36,.55);
+ 
+  --cm-gold:        #fbbf24;
+  --cm-gold-lt:     rgba(251,191,36,.12);
+  --cm-gold-glow:   rgba(251,191,36,.25);
+ 
+  --cm-ok:          #34d399;
+  --cm-ok-lt:       rgba(52,211,153,.1);
+  --cm-err:         #f87171;
+  --cm-err-lt:      rgba(248,113,113,.1);
+ 
+  --cm-text:        #f1f5f9;
+  --cm-text-md:     #94a3b8;
+  --cm-text-sm:     #64748b;
+ 
+  --cm-radius-sm:   8px;
+  --cm-radius:      14px;
+  --cm-radius-lg:   22px;
+ 
+  --cm-shadow:      0 8px 32px rgba(0,0,0,.45);
+  --cm-shadow-lg:   0 20px 60px rgba(0,0,0,.6);
+ 
+  --cm-transition:  0.2s ease;
 }
-
-/* ── Overlay ── */
+ 
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+/* ══════════════════════════════════════════════════════════════
+   OVERLAY
+   ══════════════════════════════════════════════════════════════ */
 .cmModalOverlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
-  background: rgba(250, 248, 245, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  overflow-y: auto;
+  background: rgba(7, 9, 14, 0.92);
+  backdrop-filter: blur(14px) saturate(1.3);
+  z-index: 1000;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px 60px;
-  font-family: "DM Sans", sans-serif;
+  padding: 20px;
+  font-family: 'DM Sans', sans-serif;
+  overflow-y: auto;
+  animation: cmOverlayIn .28s ease both;
 }
-
-/* ── Decorative Background Elements ── */
+ 
+@keyframes cmOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+ 
+/* ── Decorative glows ─────────────────────────────────────────*/
 .cmBackgroundGlow {
   position: fixed;
   border-radius: 50%;
@@ -50,478 +71,530 @@
   z-index: 0;
 }
 .cmGlowOne {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(184, 146, 42, 0.08), transparent 70%);
-  top: -100px;
-  right: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(251,191,36,.12) 0%, transparent 70%);
+  top: -100px; left: -100px;
 }
 .cmGlowTwo {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(184, 146, 42, 0.06), transparent 70%);
-  bottom: -80px;
-  left: -80px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(99,102,241,.1) 0%, transparent 70%);
+  bottom: -80px; right: -80px;
 }
-
-/* ── Grid Texture ── */
+ 
 .cmBackgroundGrid {
   position: fixed;
   inset: 0;
-  z-index: 0;
-  pointer-events: none;
   background-image:
-    linear-gradient(rgba(184, 146, 42, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(184, 146, 42, 0.06) 1px, transparent 1px);
-  background-size: 52px 52px;
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
 }
-
-/* ── Back Button ── */
+ 
+/* ── Back Button ─────────────────────────────────────────────*/
 .cmBackButton {
   position: fixed;
   top: 24px;
-  left: 28px;
-  z-index: 10001;
-  background: var(--cm-white);
-  border: 1px solid var(--cm-border);
-  color: var(--cm-text-secondary);
-  font-family: "DM Sans", sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  padding: 9px 18px;
-  border-radius: 50px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  transition: all var(--cm-transition);
-  box-shadow: var(--cm-shadow-soft);
-}
-.cmBackButton:hover {
-  background: var(--cm-gold-pale);
-  border-color: var(--cm-gold-light);
-  color: var(--cm-gold);
-}
-.cmBackButton span {
-  font-size: 16px;
-  line-height: 1;
-}
-
-/* ── Modal Shell ── */
-.cmModalShell {
-  position: relative;
+  left: 24px;
   z-index: 10;
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  max-width: 980px;
-  width: 100%;
-  border-radius: var(--cm-radius);
-  overflow: hidden;
-  background: var(--cm-white);
-  border: 1px solid var(--cm-border);
-  box-shadow: var(--cm-shadow-modal);
-  margin-top: 56px;
-}
-
-/* ═══════════════════════════════
-   INFO PANEL (Left)
-   ═══════════════════════════════ */
-.cmInfoPanel {
-  background: linear-gradient(160deg, #1a1814 0%, #252018 100%);
-  padding: 56px 40px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
-
-/* decorative corner accent */
-.cmInfoPanel::before {
-  content: "";
-  position: absolute;
-  top: -60px;
-  right: -60px;
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(184, 146, 42, 0.15), transparent 70%);
-  pointer-events: none;
-}
-
-.cmMiniTag {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--cm-gold-light);
-  margin: 0 0 16px;
   display: flex;
   align-items: center;
   gap: 8px;
-}
-.cmMiniTag::before {
-  content: "";
-  display: inline-block;
-  width: 20px;
-  height: 1px;
-  background: var(--cm-gold-light);
-  opacity: 0.6;
-}
-
-.cmTitle {
-  font-family: "Playfair Display", serif;
-  font-size: 40px;
-  font-weight: 500;
-  color: #f5f0e8;
-  margin: 0 0 16px;
-  line-height: 1.12;
-  letter-spacing: -0.01em;
-}
-
-.cmDescription {
-  font-size: 13.5px;
-  color: rgba(245, 240, 232, 0.48);
-  line-height: 1.75;
-  margin: 0 0 40px;
-  font-weight: 300;
-}
-
-/* ── Info List ── */
-.cmInfoList {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 40px;
-}
-
-.cmInfoItem {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.cmInfoIcon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: rgba(184, 146, 42, 0.1);
-  border: 1px solid rgba(184, 146, 42, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  flex-shrink: 0;
-}
-
-.cmInfoItem p {
-  margin: 0;
-  font-size: 13px;
-  color: rgba(245, 240, 232, 0.55);
-  letter-spacing: 0.01em;
-}
-
-/* ── Selected Badge ── */
-.cmSelectedBadge {
-  margin-top: auto;
-  padding: 20px 22px;
-  border-radius: 14px;
-  background: rgba(184, 146, 42, 0.08);
-  border: 1px solid rgba(184, 146, 42, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  position: relative;
-}
-.cmSelectedBadge::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 16px;
-  bottom: 16px;
-  width: 2px;
-  background: var(--cm-gold-light);
-  border-radius: 0 2px 2px 0;
-}
-
-.cmSelectedLabel {
-  font-size: 10px;
+  padding: 10px 18px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--cm-border);
+  border-radius: 50px;
+  color: var(--cm-text-md);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .85rem;
   font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(212, 168, 67, 0.6);
-  padding-left: 12px;
+  cursor: pointer;
+  transition: all var(--cm-transition);
+  backdrop-filter: blur(8px);
 }
-
-.cmSelectedBadge strong {
-  font-family: "Playfair Display", serif;
-  font-size: 19px;
-  font-weight: 500;
-  color: var(--cm-gold-light);
-  padding-left: 12px;
-}
-
-/* ═══════════════════════════════
-   FORM PANEL (Right)
-   ═══════════════════════════════ */
-.cmFormPanel {
-  background: var(--cm-white);
-  padding: 56px 52px;
-  display: flex;
-  flex-direction: column;
-}
-
-.cmFormTitle {
-  font-family: "Playfair Display", serif;
-  font-size: 27px;
-  font-weight: 500;
-  color: var(--cm-text);
-  margin: 0 0 8px;
-  letter-spacing: -0.01em;
-}
-
-/* subtle divider under title */
-.cmFormPanel > .cmFormTitle {
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--cm-border);
-  margin-bottom: 28px;
-}
-
-/* ── Form Grid ── */
-.cmForm {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px 24px;
-}
-
-.cmFieldGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.cmFieldFull {
-  grid-column: 1 / -1;
-}
-
-/* ── Labels ── */
-.cmFieldGroup label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--cm-text-muted);
-}
-
-/* ── Inputs ── */
-.cmFieldGroup input,
-.cmFieldGroup select,
-.cmFieldGroup textarea {
-  width: 100%;
-  background: var(--cm-off-white);
-  border: 1.5px solid var(--cm-border);
-  border-radius: var(--cm-radius-sm);
-  padding: 13px 16px;
-  color: var(--cm-text);
-  font-family: "DM Sans", sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  outline: none;
-  transition: border-color var(--cm-transition), background var(--cm-transition), box-shadow var(--cm-transition);
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.cmFieldGroup input::placeholder,
-.cmFieldGroup textarea::placeholder {
-  color: var(--cm-text-muted);
-  font-weight: 300;
-}
-
-.cmFieldGroup input:focus,
-.cmFieldGroup select:focus,
-.cmFieldGroup textarea:focus {
+.cmBackButton:hover {
+  background: var(--cm-gold-lt);
   border-color: var(--cm-gold);
-  background: var(--cm-white);
-  box-shadow: 0 0 0 3px rgba(184, 146, 42, 0.1);
+  color: var(--cm-gold);
+  transform: translateX(-3px);
 }
-
-.cmFieldGroup input:hover:not(:focus),
-.cmFieldGroup select:hover:not(:focus),
-.cmFieldGroup textarea:hover:not(:focus) {
-  border-color: var(--cm-border-strong);
-}
-
-/* Select */
-.cmFieldGroup select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23a09890' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-  background-color: var(--cm-off-white);
-  padding-right: 40px;
-  cursor: pointer;
-  color: var(--cm-text);
-}
-.cmFieldGroup select option {
-  color: var(--cm-text);
-  background: #fff;
-}
-/* placeholder state */
-.cmFieldGroup select:invalid,
-.cmFieldGroup select option[value=""] {
-  color: var(--cm-text-muted);
-}
-
-/* Textarea */
-.cmFieldGroup textarea {
-  resize: vertical;
-  min-height: 108px;
-  line-height: 1.65;
-}
-
-/* ── Submit Button ── */
-.cmSubmitButton {
-  grid-column: 1 / -1;
+ 
+/* ══════════════════════════════════════════════════════════════
+   MODAL SHELL
+   ══════════════════════════════════════════════════════════════ */
+.cmModalShell {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 380px 1fr;
   width: 100%;
-  padding: 15px 28px;
-  background: linear-gradient(135deg, #1a1814 0%, #2d2820 100%);
-  border: none;
-  border-radius: var(--cm-radius-sm);
-  color: var(--cm-gold-light);
-  font-family: "DM Sans", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: transform var(--cm-transition), box-shadow var(--cm-transition), background var(--cm-transition);
-  box-shadow: 0 4px 20px rgba(26, 24, 20, 0.2);
-  margin-top: 4px;
+  max-width: 960px;
+  min-height: 580px;
+  border-radius: var(--cm-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--cm-shadow-lg);
+  border: 1px solid var(--cm-border);
+  animation: cmShellIn .36s cubic-bezier(.175,.885,.32,1.1) both;
+  animation-delay: .08s;
+}
+ 
+@keyframes cmShellIn {
+  from { opacity: 0; transform: scale(.94) translateY(24px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+ 
+/* ══════════════════════════════════════════════════════════════
+   LEFT — INFO PANEL
+   ══════════════════════════════════════════════════════════════ */
+.cmInfoPanel {
+  background: linear-gradient(160deg, #1a1d2e 0%, #0f1018 100%);
+  border-right: 1px solid var(--cm-border);
+  padding: 44px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   position: relative;
   overflow: hidden;
 }
-.cmSubmitButton::after {
-  content: "";
+ 
+/* subtle diagonal stripe texture */
+.cmInfoPanel::before {
+  content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(184, 146, 42, 0.12), transparent);
-  opacity: 0;
-  transition: opacity var(--cm-transition);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(251,191,36,.02) 0px,
+    rgba(251,191,36,.02) 1px,
+    transparent 1px,
+    transparent 28px
+  );
+  pointer-events: none;
 }
-.cmSubmitButton:hover {
+ 
+.cmMiniTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--cm-gold-lt);
+  border: 1px solid rgba(251,191,36,.3);
+  color: var(--cm-gold);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 50px;
+  width: fit-content;
+}
+.cmMiniTag::before { content: '●'; font-size: .5rem; }
+ 
+.cmTitle {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--cm-text);
+  line-height: 1.2;
+  letter-spacing: -.5px;
+}
+ 
+.cmDescription {
+  font-size: .875rem;
+  color: var(--cm-text-md);
+  line-height: 1.65;
+}
+ 
+/* ── Info items ──────────────────────────────────────────────*/
+.cmInfoList { display: flex; flex-direction: column; gap: 12px; }
+ 
+.cmInfoItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+  transition: border-color var(--cm-transition), background var(--cm-transition);
+}
+.cmInfoItem:hover {
+  border-color: rgba(251,191,36,.25);
+  background: rgba(251,191,36,.04);
+}
+.cmInfoIcon { font-size: 1.1rem; flex-shrink: 0; }
+.cmInfoItem p { font-size: .875rem; color: var(--cm-text); font-weight: 500; }
+ 
+/* ── Selected badge ──────────────────────────────────────────*/
+.cmSelectedBadge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(251,191,36,.1) 0%, rgba(251,191,36,.04) 100%);
+  border: 1px solid rgba(251,191,36,.25);
+  border-radius: var(--cm-radius);
+  padding: 16px 18px;
+  margin-top: 4px;
+}
+.cmSelectedLabel {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--cm-gold);
+}
+.cmSelectedBadge strong {
+  font-size: .95rem;
+  color: var(--cm-text);
+  font-weight: 600;
+}
+.cmSelectedBadge small {
+  font-size: .78rem;
+  color: var(--cm-text-md);
+}
+ 
+/* ── Progress stepper ────────────────────────────────────────*/
+.cm-progress {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: auto;
+  padding-top: 8px;
+}
+ 
+.cm-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.cm-progress-step span {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; font-weight: 700;
+  border: 1.5px solid var(--cm-border);
+  color: var(--cm-text-sm);
+  background: var(--cm-surface-2);
+  transition: all var(--cm-transition);
+}
+.cm-progress-step p {
+  font-size: .6rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .8px;
+  color: var(--cm-text-sm);
+  white-space: nowrap;
+}
+.cm-progress-step--done span  { background: var(--cm-ok-lt); border-color: var(--cm-ok); color: var(--cm-ok); }
+.cm-progress-step--done p     { color: var(--cm-ok); }
+.cm-progress-step--active span { background: var(--cm-gold-lt); border-color: var(--cm-gold); color: var(--cm-gold); }
+.cm-progress-step--active p    { color: var(--cm-gold); }
+ 
+.cm-progress-line {
+  flex: 1;
+  height: 1.5px;
+  background: var(--cm-border);
+  margin: 0 6px;
+  margin-bottom: 18px;
+}
+.cm-progress-line--done { background: var(--cm-ok); }
+ 
+/* ══════════════════════════════════════════════════════════════
+   RIGHT — FORM PANEL
+   ══════════════════════════════════════════════════════════════ */
+.cmFormPanel {
+  background: var(--cm-surface);
+  padding: 44px 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+ 
+.cmFormTitle {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--cm-text);
+  margin-bottom: 4px;
+}
+ 
+.cm-form-sub {
+  font-size: .8rem;
+  color: var(--cm-text-sm);
+  margin-bottom: 24px;
+}
+.cm-req-star { color: var(--cm-gold); font-weight: 700; }
+.cm-optional { font-size: .75rem; font-weight: 400; color: var(--cm-text-sm); }
+ 
+/* ── Form ────────────────────────────────────────────────────*/
+.cmForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+ 
+.cmFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  grid-column: span 1;
+}
+.cmFieldFull { grid-column: span 2; }
+ 
+.cmFieldGroup label {
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--cm-text-md);
+}
+ 
+/* ── Read-only row ───────────────────────────────────────────*/
+.cm-readonly-row {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.cm-readonly-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+}
+.cm-readonly-field span { font-size: .95rem; flex-shrink: 0; }
+.cm-readonly-field input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--cm-text-md);
+  font-size: .85rem;
+  font-family: 'DM Sans', sans-serif;
+  width: 100%;
+  cursor: default;
+}
+ 
+/* ── Field wrap & validation ─────────────────────────────────*/
+.cm-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+ 
+/* Base input / select / textarea */
+.cm-input,
+.cmForm input:not([readonly]),
+.cmForm select,
+.cmForm textarea {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(255,255,255,.05);
+  border: 1.5px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+  color: var(--cm-text);
+  font-size: .875rem;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color var(--cm-transition), background var(--cm-transition), box-shadow var(--cm-transition);
+  appearance: none;
+}
+ 
+.cm-input:focus,
+.cmForm input:not([readonly]):focus,
+.cmForm select:focus,
+.cmForm textarea:focus {
+  border-color: var(--cm-gold);
+  background: rgba(251,191,36,.05);
+  box-shadow: 0 0 0 3px var(--cm-gold-glow);
+}
+ 
+.cmForm select option {
+  background: #1c2030;
+  color: var(--cm-text);
+}
+ 
+.cm-textarea { resize: vertical; min-height: 100px; max-height: 180px; }
+ 
+/* ── Validation states ───────────────────────────────────────*/
+.cm-input--err {
+  border-color: var(--cm-err) !important;
+  background: var(--cm-err-lt) !important;
+  box-shadow: 0 0 0 3px rgba(248,113,113,.15) !important;
+}
+.cm-input--ok {
+  border-color: var(--cm-ok) !important;
+  background: var(--cm-ok-lt) !important;
+  box-shadow: 0 0 0 3px rgba(52,211,153,.12) !important;
+}
+ 
+/* ── Inline messages ─────────────────────────────────────────*/
+.cm-err {
+  font-size: .73rem;
+  font-weight: 600;
+  color: var(--cm-err);
+  animation: cmValIn .16s ease both;
+}
+.cm-ok {
+  font-size: .73rem;
+  font-weight: 600;
+  color: var(--cm-ok);
+  animation: cmValIn .16s ease both;
+}
+@keyframes cmValIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+ 
+/* ── Message meta ────────────────────────────────────────────*/
+.cm-msg-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 18px;
+}
+.cm-char-count {
+  font-size: .7rem;
+  color: var(--cm-text-sm);
+  font-weight: 500;
+  margin-left: auto;
+}
+.cm-char-warn { color: var(--cm-gold); font-weight: 700; }
+ 
+/* ── Submit Button ───────────────────────────────────────────*/
+.cmSubmitButton {
+  grid-column: span 2;
+  margin-top: 8px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #0d0f14;
+  border: none;
+  border-radius: var(--cm-radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: opacity var(--cm-transition), transform var(--cm-transition), box-shadow var(--cm-transition);
+  box-shadow: 0 6px 24px rgba(251,191,36,.35);
+}
+.cmSubmitButton:hover:not(:disabled) {
+  opacity: .93;
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(26, 24, 20, 0.28);
+  box-shadow: 0 10px 32px rgba(251,191,36,.5);
 }
-.cmSubmitButton:hover::after {
-  opacity: 1;
+.cmSubmitButton:active:not(:disabled) { transform: translateY(0); }
+.cmSubmitButton:disabled { opacity: .5; cursor: not-allowed; }
+ 
+/* ── Spinner ─────────────────────────────────────────────────*/
+.cm-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(0,0,0,.2);
+  border-top-color: #0d0f14;
+  border-radius: 50%;
+  animation: cmSpin .7s linear infinite;
+  flex-shrink: 0;
 }
-.cmSubmitButton:active {
-  transform: translateY(0px);
-  box-shadow: 0 2px 10px rgba(26, 24, 20, 0.2);
+@keyframes cmSpin { to { transform: rotate(360deg); } }
+ 
+/* ══════════════════════════════════════════════════════════════
+   TOAST
+   ══════════════════════════════════════════════════════════════ */
+.cm-toast-container {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
 }
-
-/* ═══════════════════════════════
+.cm-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 20px;
+  border-radius: var(--cm-radius);
+  font-size: .875rem;
+  font-weight: 600;
+  box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  max-width: 340px;
+  border: 1px solid transparent;
+  backdrop-filter: blur(8px);
+  animation: cmToastIn .3s cubic-bezier(.175,.885,.32,1.275) both;
+}
+.cm-toast-icon { font-size: 1rem; flex-shrink: 0; }
+.cm-toast--success { background: rgba(20,40,30,.95); color: #34d399; border-color: rgba(52,211,153,.3); }
+.cm-toast--error   { background: rgba(40,14,14,.95); color: #f87171; border-color: rgba(248,113,113,.3); }
+@keyframes cmToastIn {
+  from { opacity: 0; transform: translateX(40px) scale(.92); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+ 
+/* ══════════════════════════════════════════════════════════════
    RESPONSIVE
-   ═══════════════════════════════ */
-
-/* Tablet */
+   ══════════════════════════════════════════════════════════════ */
+ 
+/* Tablet ≤900px */
 @media (max-width: 900px) {
   .cmModalShell {
     grid-template-columns: 1fr;
-    max-width: 580px;
-    margin-top: 68px;
+    max-width: 560px;
+    min-height: unset;
   }
-
+ 
   .cmInfoPanel {
-    padding: 44px 36px;
-    border-bottom: 1px solid rgba(184, 146, 42, 0.15);
+    padding: 32px 28px;
+    border-right: none;
+    border-bottom: 1px solid var(--cm-border);
   }
-
-  .cmTitle {
-    font-size: 34px;
-  }
-
-  .cmSelectedBadge {
-    margin-top: 32px;
-  }
-
-  .cmFormPanel {
-    padding: 44px 36px;
-  }
+ 
+  .cmTitle { font-size: 1.6rem; }
+ 
+  .cm-progress { display: none; }
 }
-
-/* Mobile */
-@media (max-width: 600px) {
-  .cmModalOverlay {
-    padding: 16px 12px 40px;
-    justify-content: flex-start;
-    background: rgba(250, 248, 245, 0.96);
-  }
-
-  .cmBackButton {
-    top: 16px;
-    left: 16px;
-    font-size: 12px;
-    padding: 8px 14px;
-  }
-
-  .cmModalShell {
-    margin-top: 58px;
-    border-radius: 16px;
-  }
-
-  .cmInfoPanel {
-    padding: 36px 24px;
-  }
-
-  .cmTitle {
-    font-size: 28px;
-  }
-
-  .cmDescription {
-    font-size: 13px;
-    margin-bottom: 28px;
-  }
-
-  .cmInfoList {
-    margin-bottom: 28px;
-  }
-
-  .cmFormPanel {
-    padding: 36px 24px;
-  }
-
-  .cmFormTitle {
-    font-size: 22px;
-  }
-
-  .cmForm {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .cmSubmitButton {
-    font-size: 12.5px;
-    padding: 14px;
-  }
+ 
+/* Tablet form grid ≤760px */
+@media (max-width: 760px) {
+  .cmFormPanel { padding: 28px 24px; }
+ 
+  .cmForm { grid-template-columns: 1fr; }
+  .cmFieldFull,
+  .cmSubmitButton { grid-column: span 1; }
+ 
+  .cm-readonly-row { grid-template-columns: 1fr; grid-column: span 1; }
 }
-
-/* Small Mobile */
+ 
+/* Mobile ≤520px */
+@media (max-width: 520px) {
+  .cmModalOverlay { padding: 12px; }
+ 
+  .cmBackButton { top: 12px; left: 12px; padding: 8px 14px; font-size: .8rem; }
+ 
+  .cmModalShell { border-radius: var(--cm-radius); }
+ 
+  .cmInfoPanel { padding: 24px 18px; gap: 14px; }
+  .cmTitle { font-size: 1.35rem; }
+  .cmDescription { font-size: .82rem; }
+ 
+  .cmFormPanel { padding: 22px 16px; }
+  .cmFormTitle { font-size: 1.25rem; }
+ 
+  .cm-toast-container { right: 10px; left: 10px; bottom: 14px; }
+  .cm-toast { max-width: 100%; }
+}
+ 
+/* Very small ≤380px */
 @media (max-width: 380px) {
-  .cmInfoPanel,
-  .cmFormPanel {
-    padding: 28px 18px;
-  }
-
-  .cmTitle {
-    font-size: 24px;
-  }
-
-  .cmFieldGroup input,
-  .cmFieldGroup select,
-  .cmFieldGroup textarea {
-    padding: 11px 13px;
-    font-size: 13px;
-  }
+  .cmInfoPanel { padding: 18px 14px; }
+  .cmFormPanel { padding: 18px 12px; }
+  .cmSubmitButton { font-size: .875rem; padding: 12px 20px; }
 }

@@ -107,14 +107,25 @@
   background: #ffffff;
 }
 
-.review-form textarea,
+.review-form textarea{
+    width: 100%;
+  border: 1px solid var(--review-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color:black !important;
+  background: #ffffff;
+  outline: none;
+  transition: var(--review-transition);
+  margin-bottom: 12px;
+}
 .review-form select {
   width: 100%;
   border: 1px solid var(--review-border);
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 14px;
-  color: var(--review-text);
+  color: var(--review-text) !;
   background: #ffffff;
   outline: none;
   transition: var(--review-transition);

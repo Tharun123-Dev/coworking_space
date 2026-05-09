@@ -9,26 +9,39 @@ const teamSizes = [
   { value: "large", label: "Large", range: "50+", icon: "🏗️", desc: "Enterprises & corps" },
 ];
 
-const workspaceTypes = [
-  { value: "private_office", label: "Private Office", icon: "🔒" },
-  { value: "dedicated_desk", label: "Dedicated Desk", icon: "💼" },
-  { value: "coworking", label: "Coworking", icon: "🤝" },
-  { value: "virtual_office", label: "Virtual Office", icon: "🌐" },
-];
+const workspaceTypeMap = {
+  small: [
+    { value: "hot_desk", label: "Hot Desk", icon: "🪑" },
+    { value: "dedicated_desk", label: "Dedicated Desk", icon: "💼" },
+    { value: "virtual_office", label: "Virtual Office", icon: "🌐" },
+  ],
+  medium: [
+    { value: "private_office_space", label: "Private Office Space", icon: "🏢" },
+    { value: "private_cabin", label: "Private Cabin", icon: "🚪" },
+    { value: "meeting_room", label: "Meeting Room", icon: "📋" },
+  ],
+  large: [
+    { value: "board_room", label: "Board Room", icon: "🧑‍💼" },
+    { value: "event_space", label: "Event Space", icon: "🎤" },
+    { value: "podcast", label: "Podcast", icon: "🎙️" },
+  ],
+};
 
-// Map label from CompaniesSection → form value
+const LOCATION_OPTIONS = {
+  small: ["Madhapur", "Kondapur", "Hitech City"],
+  medium: ["Gachibowli", "Hitech City", "Madhapur"],
+  large: ["Financial District", "Gachibowli", "Hitech City"],
+};
+
 const sizeMap = { Small: "small", Medium: "medium", Large: "large" };
 
 function CompanyContact() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Detect how user arrived
-  const passedSize = location.state?.workspaceSize;   // "Small" | "Medium" | "Large"
-  const isTour     = location.state?.tour || false;   // Book a Tour flow
+  const passedSize = location.state?.workspaceSize;
+  const isTour = location.state?.tour || false;
 
-  // If Get a Quote was clicked → pre-fill size, start at step 2
-  // If Book a Tour or direct visit → start at step 1
   const initialSize = passedSize ? sizeMap[passedSize] || "" : "";
   const initialStep = passedSize ? 2 : 1;
 
@@ -47,10 +60,9 @@ function CompanyContact() {
     message: "",
   });
 
-  // ── Validation ──────────────────────────────────
   const validatePhone = (phone) => /^(\+91|91)?[6-9]\d{9}$/.test(phone);
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validateName  = (name)  => name.trim().length >= 2;
+  const validateName = (name) => name.trim().length >= 2;
 
   const getPhoneError = (phone) => {
     if (!phone) return "Phone number is required";
@@ -58,14 +70,33 @@ function CompanyContact() {
     return "Enter valid 10-digit Indian mobile number (starts with 6-9)";
   };
 
+  const getAvailableLocations = () => LOCATION_OPTIONS[form.team_size] || [];
+  const getAvailableWorkspaceTypes = () => workspaceTypeMap[form.team_size] || [];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
     if (errors[name]) setErrors({ ...errors, [name]: "" });
   };
 
-  const handleTeamSize      = (val) => setForm({ ...form, team_size: val });
-  const handleWorkspaceType = (val) => setForm({ ...form, workspace_type: val });
+  const handleTeamSize = (val) => {
+    setForm({
+      ...form,
+      team_size: val,
+      workspace_type: "",
+      location: "",
+    });
+    setErrors((prev) => ({
+      ...prev,
+      team_size: "",
+      workspace_type: "",
+      location: "",
+    }));
+  };
+
+  const handleWorkspaceType = (val) => {
+    setForm({ ...form, workspace_type: val });
+  };
 
   const validateStep1 = () => {
     const newErrors = {};
@@ -74,19 +105,29 @@ function CompanyContact() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const goToStep2 = () => { if (validateStep1()) setStep(2); };
+  const goToStep2 = () => {
+    if (validateStep1()) setStep(2);
+  };
 
   const validateStep2 = () => {
     const newErrors = {};
-    if (!form.name || !validateName(form.name))
+
+    if (!form.name || !validateName(form.name)) {
       newErrors.name = "Name must be at least 2 characters";
-    if (!form.phone || !validatePhone(form.phone))
+    }
+
+    if (!form.phone || !validatePhone(form.phone)) {
       newErrors.phone = getPhoneError(form.phone);
-    if ( !form.location) {
-  newErrors.location = "Please select location";
-};
-    if (form.email && !validateEmail(form.email))
+    }
+
+    if (!form.location) {
+      newErrors.location = "Please select location";
+    }
+
+    if (form.email && !validateEmail(form.email)) {
       newErrors.email = "Enter valid email address";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -105,11 +146,15 @@ function CompanyContact() {
     }
   };
 
-  const getTeamSizeLabel = () => teamSizes.find(t => t.value === form.team_size)?.label || "";
-  const getTeamSizeRange = () => teamSizes.find(t => t.value === form.team_size)?.range || "";
-  const getWorkspaceLabel = () => workspaceTypes.find(w => w.value === form.workspace_type)?.label || "";
+  const getTeamSizeLabel = () =>
+    teamSizes.find((t) => t.value === form.team_size)?.label || "";
 
-  // Progress bar — when coming from Get a Quote, step 2 is "100%"
+  const getTeamSizeRange = () =>
+    teamSizes.find((t) => t.value === form.team_size)?.range || "";
+
+  const getWorkspaceLabel = () =>
+    getAvailableWorkspaceTypes().find((w) => w.value === form.workspace_type)?.label || "";
+
   const progressWidth = step === 1 ? "50%" : "100%";
 
   return (
@@ -119,7 +164,6 @@ function CompanyContact() {
       <div className="cc-blob cc-blob--br"></div>
 
       <div className="cc-wrapper">
-        {/* ── LEFT PANEL ── */}
         <div className="cc-left">
           <div className="cc-left-inner">
             <span className="cc-eyebrow">
@@ -128,7 +172,8 @@ function CompanyContact() {
             </span>
 
             <h1 className="cc-heading">
-              Your Company,<br />
+              Your Company,
+              <br />
               <em>Our Space.</em>
             </h1>
 
@@ -145,7 +190,7 @@ function CompanyContact() {
                 { icon: "🏆", title: "Handpicked Spaces", desc: "Curated based on your team size & requirements" },
                 { icon: "💰", title: "Volume Pricing", desc: "Negotiated rates for teams of 10 or more" },
                 { icon: "🔐", title: "Enterprise SLA", desc: "Guaranteed uptime, security & support" },
-              ].map(p => (
+              ].map((p) => (
                 <div key={p.title} className="cc-perk">
                   <div className="cc-perk-icon">{p.icon}</div>
                   <div>
@@ -175,19 +220,16 @@ function CompanyContact() {
           </div>
         </div>
 
-        {/* ── RIGHT PANEL — FORM ── */}
         <div className="cc-right">
           <div className="cc-card">
             <div className="cc-card-glow"></div>
 
-            {/* Progress bar */}
             {step < 3 && (
               <div className="cc-progress">
                 <div className="cc-progress-track">
                   <div className="cc-progress-fill" style={{ width: progressWidth }}></div>
                 </div>
                 <div className="cc-progress-steps">
-                  {/* Only show Team Size step label when NOT coming from Get a Quote */}
                   {!passedSize && (
                     <>
                       <span className={`cc-progress-step ${step >= 1 ? "active" : ""}`}>
@@ -205,7 +247,6 @@ function CompanyContact() {
               </div>
             )}
 
-            {/* ══ STEP 1 — Team Size (only for Book a Tour / direct) ══ */}
             {step === 1 && (
               <div className="cc-step cc-step--1">
                 <div className="cc-step-header">
@@ -214,7 +255,7 @@ function CompanyContact() {
                 </div>
 
                 <div className="cc-team-grid">
-                  {teamSizes.map(t => (
+                  {teamSizes.map((t) => (
                     <button
                       key={t.value}
                       className={`cc-team-card ${form.team_size === t.value ? "cc-team-card--active" : ""}`}
@@ -229,24 +270,27 @@ function CompanyContact() {
                     </button>
                   ))}
                 </div>
+
                 {errors.team_size && <div className="cc-error-msg">{errors.team_size}</div>}
 
-                <div className="cc-field-group">
-                  <label className="cc-label">Preferred Workspace Type</label>
-                  <div className="cc-workspace-grid">
-                    {workspaceTypes.map(w => (
-                      <button
-                        key={w.value}
-                        className={`cc-ws-pill ${form.workspace_type === w.value ? "cc-ws-pill--active" : ""}`}
-                        onClick={() => handleWorkspaceType(w.value)}
-                        type="button"
-                      >
-                        <span>{w.icon}</span>
-                        <span>{w.label}</span>
-                      </button>
-                    ))}
+                {form.team_size && (
+                  <div className="cc-field-group">
+                    <label className="cc-label">Preferred Workspace Type</label>
+                    <div className="cc-workspace-grid">
+                      {getAvailableWorkspaceTypes().map((w) => (
+                        <button
+                          key={w.value}
+                          className={`cc-ws-pill ${form.workspace_type === w.value ? "cc-ws-pill--active" : ""}`}
+                          onClick={() => handleWorkspaceType(w.value)}
+                          type="button"
+                        >
+                          <span>{w.icon}</span>
+                          <span>{w.label}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <button className="cc-btn-next" onClick={goToStep2}>
                   <span>Continue</span>
@@ -255,7 +299,6 @@ function CompanyContact() {
               </div>
             )}
 
-            {/* ══ STEP 2 — Details (always shown for Get a Quote) ══ */}
             {step === 2 && !isSubmitting && (
               <div className="cc-step cc-step--2">
                 <div className="cc-step-header">
@@ -263,21 +306,17 @@ function CompanyContact() {
                   <p>We'll have a workspace specialist reach out within 12 hours</p>
                 </div>
 
-                {/* Selected summary */}
                 <div className="cc-selection-summary">
-                  {/* Show pre-selected size badge */}
                   <span className="cc-summary-tag">
-                    {teamSizes.find(t => t.value === form.team_size)?.icon}&nbsp;
+                    {teamSizes.find((t) => t.value === form.team_size)?.icon}&nbsp;
                     {getTeamSizeLabel()} Team ({getTeamSizeRange()})
                   </span>
 
-                  {/* Workspace type — shown inline here when coming from Get a Quote */}
                   {passedSize ? (
-                    // Inline workspace selector (no separate step 1)
                     <div className="cc-inline-ws">
                       <span className="cc-inline-ws-label">Preferred Workspace Type</span>
                       <div className="cc-workspace-grid cc-workspace-grid--inline">
-                        {workspaceTypes.map(w => (
+                        {getAvailableWorkspaceTypes().map((w) => (
                           <button
                             key={w.value}
                             className={`cc-ws-pill ${form.workspace_type === w.value ? "cc-ws-pill--active" : ""}`}
@@ -293,15 +332,16 @@ function CompanyContact() {
                   ) : (
                     form.workspace_type && (
                       <span className="cc-summary-tag">
-                        {workspaceTypes.find(w => w.value === form.workspace_type)?.icon}&nbsp;
+                        {getAvailableWorkspaceTypes().find((w) => w.value === form.workspace_type)?.icon}&nbsp;
                         {getWorkspaceLabel()}
                       </span>
                     )
                   )}
 
-                  {/* Only show Change button when NOT from Get a Quote */}
                   {!passedSize && (
-                    <button className="cc-change-btn" onClick={() => setStep(1)}>← Change</button>
+                    <button className="cc-change-btn" onClick={() => setStep(1)}>
+                      ← Change
+                    </button>
                   )}
                 </div>
 
@@ -310,9 +350,16 @@ function CompanyContact() {
                     <label className="cc-label">Full Name <span className="req">*</span></label>
                     <div className="cc-input-wrap">
                       <svg className="cc-input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
                       </svg>
-                      <input name="name" placeholder="Your full name" value={form.name} onChange={handleChange} className={`cc-input ${errors.name ? "cc-input--error" : ""}`} />
+                      <input
+                        name="name"
+                        placeholder="Your full name"
+                        value={form.name}
+                        onChange={handleChange}
+                        className={`cc-input ${errors.name ? "cc-input--error" : ""}`}
+                      />
                     </div>
                     {errors.name && <div className="cc-error-text">{errors.name}</div>}
                   </div>
@@ -321,9 +368,15 @@ function CompanyContact() {
                     <label className="cc-label">Company Name</label>
                     <div className="cc-input-wrap">
                       <svg className="cc-input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                       </svg>
-                      <input name="company" placeholder="Your company" value={form.company} onChange={handleChange} className="cc-input" />
+                      <input
+                        name="company"
+                        placeholder="Your company"
+                        value={form.company}
+                        onChange={handleChange}
+                        className="cc-input"
+                      />
                     </div>
                   </div>
 
@@ -331,9 +384,17 @@ function CompanyContact() {
                     <label className="cc-label">Work Email</label>
                     <div className="cc-input-wrap">
                       <svg className="cc-input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
                       </svg>
-                      <input name="email" type="email" placeholder="work@company.com" value={form.email} onChange={handleChange} className={`cc-input ${errors.email ? "cc-input--error" : ""}`} />
+                      <input
+                        name="email"
+                        type="email"
+                        placeholder="work@company.com"
+                        value={form.email}
+                        onChange={handleChange}
+                        className={`cc-input ${errors.email ? "cc-input--error" : ""}`}
+                      />
                     </div>
                     {errors.email && <div className="cc-error-text">{errors.email}</div>}
                   </div>
@@ -342,39 +403,54 @@ function CompanyContact() {
                     <label className="cc-label">Phone <span className="req">*</span></label>
                     <div className="cc-input-wrap">
                       <svg className="cc-input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
                       </svg>
-                      <input name="phone" type="tel" placeholder="+91 9876543210" value={form.phone} onChange={handleChange} className={`cc-input ${errors.phone ? "cc-input--error" : ""}`} />
+                      <input
+                        name="phone"
+                        type="tel"
+                        placeholder="+91 9876543210"
+                        value={form.phone}
+                        onChange={handleChange}
+                        className={`cc-input ${errors.phone ? "cc-input--error" : ""}`}
+                      />
                     </div>
                     {errors.phone && <div className="cc-error-text">{errors.phone}</div>}
                   </div>
 
                   <div className="cc-field cc-field--full">
-                    <label className="cc-label">Preferred Location</label>
+                    <label className="cc-label">Preferred Location <span className="req">*</span></label>
                     <div className="cc-input-wrap">
                       <svg className="cc-input-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                       </svg>
- <select
-  name="location"
-  value={form.location}
-  onChange={handleChange}
-  className="cc-input cc-select"
->
-  <option value="">Select preferred area</option>
-  <option value="Hitech City">Hitech City</option>
-  <option value="Madhapur">Madhapur</option>
-  <option value="Gachibowli">Gachibowli</option>
-  <option value="Kondapur">Kondapur</option>
-  <option value="Financial District">Financial District</option>
-</select>
+                      <select
+                        name="location"
+                        value={form.location}
+                        onChange={handleChange}
+                        className={`cc-input cc-select ${errors.location ? "cc-input--error" : ""}`}
+                      >
+                        <option value="">Select preferred area</option>
+                        {getAvailableLocations().map((loc) => (
+                          <option key={loc} value={loc}>
+                            {loc}
+                          </option>
+                        ))}
+                      </select>
                     </div>
+                    {errors.location && <div className="cc-error-text">{errors.location}</div>}
                   </div>
 
                   <div className="cc-field cc-field--full">
                     <label className="cc-label">Additional Requirements</label>
                     <div className="cc-input-wrap cc-textarea-wrap">
-                      <textarea name="message" placeholder="Any specific needs — security clearance, server room, dedicated floor, branding, etc." value={form.message} onChange={handleChange} className="cc-input cc-textarea" rows="3" />
+                      <textarea
+                        name="message"
+                        placeholder="Any specific needs — security clearance, server room, dedicated floor, branding, etc."
+                        value={form.message}
+                        onChange={handleChange}
+                        className="cc-input cc-textarea"
+                        rows="3"
+                      />
                     </div>
                   </div>
                 </div>
@@ -392,7 +468,6 @@ function CompanyContact() {
               </div>
             )}
 
-            {/* ══ SUBMITTING ══ */}
             {isSubmitting && (
               <div className="cc-submitting">
                 <div className="cc-submit-rings"><div></div><div></div><div></div></div>
@@ -409,7 +484,6 @@ function CompanyContact() {
               </div>
             )}
 
-            {/* ══ SUCCESS ══ */}
             {step === 3 && !isSubmitting && (
               <div className="cc-success">
                 <div className="cc-success-ring">

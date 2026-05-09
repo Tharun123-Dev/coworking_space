@@ -105,7 +105,6 @@ class SpecialLead(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
-
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -130,34 +129,74 @@ class CompanyLead(models.Model):
         choices=TEAM_CHOICES
     )
 
-    name = models.CharField(max_length=90)
+    name = models.CharField(
+        max_length=90
+    )
 
-    email = models.EmailField(blank=True, null=True)
-
-    phone = models.CharField(max_length=20)
-    location = models.CharField(max_length=100)
-    company = models.CharField(max_length=150, blank=True)
-
-    message = models.TextField(blank=True)
-
-    # assigned by admin
-    owner = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
+    email = models.EmailField(
         blank=True,
+        null=True
+    )
+
+    phone = models.CharField(
+        max_length=20
+    )
+
+    # ✅ LOCATION
+
+    location = models.CharField(
+        max_length=100
+    )
+
+    # ✅ NEW FIELD
+
+    workspace_type = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    company = models.CharField(
+        max_length=150,
+        blank=True
+    )
+
+    message = models.TextField(
+        blank=True
+    )
+
+    # ✅ ASSIGNED OWNER
+
+    owner = models.ForeignKey(
+
+        User,
+
+        on_delete=models.SET_NULL,
+
+        null=True,
+
+        blank=True,
+
         related_name="company_leads"
+
     )
 
     status = models.CharField(
+
         max_length=20,
+
         choices=STATUS_CHOICES,
-        default="new"
+
+        default="pending"
+
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
+
         return self.name
 
 class BusinessEnterpriseLead(models.Model):

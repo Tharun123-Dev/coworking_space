@@ -328,6 +328,10 @@ function AdminCompanyLeads() {
                     { key: "phone", label: "Phone" },
                     { key: "email", label: "Email" },
                     { key: "location", label: "Location" },
+                    {
+  key: "workspace_type",
+  label: "Workspace"
+},
                     { key: "owner_name", label: "Owner" },
                     { key: "status", label: "Status" },
                   ].map(col => (
@@ -386,6 +390,15 @@ function AdminCompanyLeads() {
                         📍 {lead.location || "No Location"}
                       </span>
                     </td>
+                    <td data-label="Workspace">
+
+  <span className={styles.teamBadge}>
+
+    {lead.workspace_type || "—"}
+
+  </span>
+
+</td>
                     <td data-label="Owner">
                       {lead.owner_name
                         ? <span className={styles.ownerAssigned}>{lead.owner_name}</span>

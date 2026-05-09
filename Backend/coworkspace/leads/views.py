@@ -365,37 +365,97 @@ from accounts.models import Profile
 @api_view(['POST'])
 def create_company_lead(request):
 
-    location = request.data.get("location")
+    location = request.data.get(
+        "location"
+    )
+
+    workspace_type = request.data.get(
+        "workspace_type"
+    )
 
     # ✅ FIND OWNER BASED ON LOCATION
+
     owner_profile = Profile.objects.filter(
+
         role="owner",
+
         location=location
+
     ).first()
 
     lead = CompanyLead.objects.create(
-        team_size=request.data.get("team_size"),
-        name=request.data.get("name"),
-        email=request.data.get("email"),
-        phone=request.data.get("phone"),
-        company=request.data.get("company"),
-        message=request.data.get("message"),
-        location=location,   # ✅ ADD THIS
-        owner=owner_profile.user if owner_profile else None  # ✅ AUTO ASSIGN
+
+        team_size=request.data.get(
+            "team_size"
+        ),
+
+        name=request.data.get(
+            "name"
+        ),
+
+        email=request.data.get(
+            "email"
+        ),
+
+        phone=request.data.get(
+            "phone"
+        ),
+
+        company=request.data.get(
+            "company"
+        ),
+
+        message=request.data.get(
+            "message"
+        ),
+
+        # ✅ LOCATION
+
+        location=location,
+
+        # ✅ MAIN FIX
+
+        workspace_type=
+            workspace_type,
+
+        # ✅ AUTO OWNER
+
+        owner=(
+            owner_profile.user
+            if owner_profile
+            else None
+        )
+
     )
 
     # ✅ ACTIVITY LOG
+
     ActivityLog.objects.create(
-        user=request.user if request.user.is_authenticated else None,
+
+        user=(
+            request.user
+            if request.user.is_authenticated
+            else None
+        ),
+
         action="CREATE",
+
         model_name="CompanyLead",
-        message=f"{lead.name} submitted company lead ({lead.company}) in {location}"
+
+        message=(
+            f"{lead.name} submitted "
+            f"{workspace_type} lead "
+            f"in {location}"
+        )
+
     )
 
-    return Response({"message": "Lead created"})
+    return Response({
 
-from rest_framework.permissions import IsAdminUser
-from rest_framework.decorators import permission_classes
+        "message":
+        "Lead created"
+
+    })
 
 
 @api_view(['GET'])
@@ -407,22 +467,59 @@ def admin_company_leads(request):
     data = []
 
     for l in leads:
+
         data.append({
+
             "id": l.id,
-            "team_size": l.team_size,
-            "name": l.name,
-            "phone": l.phone,
-            "email": l.email,
-            "company": l.company,
-            "message": l.message,
-            "status": l.status,
 
-            # ✅ ADD THIS (MAIN FIX)
-            "location": l.location,
+            "team_size":
+                l.team_size,
 
-            # owner info
-            "owner": l.owner.id if l.owner else None,
-            "owner_name": l.owner.username if l.owner else None,
+            "name":
+                l.name,
+
+            "phone":
+                l.phone,
+
+            "email":
+                l.email,
+
+            "company":
+                l.company,
+
+            "message":
+                l.message,
+
+            # ✅ LOCATION
+
+            "location":
+                l.location,
+
+            # ✅ WORKSPACE TYPE
+
+            "workspace_type":
+
+                getattr(
+                    l,
+                    "workspace_type",
+                    ""
+                ),
+
+            # ✅ STATUS
+
+            "status":
+                l.status,
+
+            # ✅ OWNER INFO
+
+            "owner":
+                l.owner.id
+                if l.owner else None,
+
+            "owner_name":
+                l.owner.username
+                if l.owner else None,
+
         })
 
     return Response(data)
@@ -513,9 +610,70 @@ def get_owners(request):
 @permission_classes([IsAuthenticated])
 def owner_company_leads(request):
 
-    leads = CompanyLead.objects.filter(owner=request.user)
+    leads = CompanyLead.objects.filter(
+        owner=request.user
+    ).order_by("-created_at")
 
-    data = list(leads.values())
+    data = []
+
+    for l in leads:
+
+        data.append({
+
+            "id": l.id,
+
+            "team_size":
+                l.team_size,
+
+            "name":
+                l.name,
+
+            "phone":
+                l.phone,
+
+            "email":
+                l.email,
+
+            "company":
+                l.company,
+
+            "message":
+                l.message,
+
+            # ✅ PREFERRED WORKSPACE TYPE
+
+            "workspace_type":
+
+                getattr(
+                    l,
+                    "workspace_type",
+                    ""
+                ),
+
+            # ✅ LOCATION
+
+            "preferred_location":
+
+                getattr(
+                    l,
+                    "location",
+                    ""
+                )
+
+                or
+
+                getattr(
+                    l,
+                    "preferred_location",
+                    ""
+                ),
+
+            # ✅ STATUS
+
+            "status":
+                l.status,
+
+        })
 
     return Response(data)
 
