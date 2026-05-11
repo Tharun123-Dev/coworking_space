@@ -48,6 +48,7 @@ class Amenity(models.Model):
         return self.name
 
 class Workspace(models.Model):
+
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -55,17 +56,42 @@ class Workspace(models.Model):
         blank=True,
         related_name="owner_workspaces"
     )
-    is_approved = models.BooleanField(default=False)
-    name = models.CharField(max_length=200)
-    city = models.CharField(max_length=100)
-    location = models.CharField(max_length=200)
-   
+
+    is_approved = models.BooleanField(
+        default=False
+    )
+
+    # ✅ ADD THIS
+
+    isavailable = models.BooleanField(
+        default=True
+    )
+
+    name = models.CharField(
+        max_length=200
+    )
+
+    city = models.CharField(
+        max_length=100
+    )
+
+    location = models.CharField(
+        max_length=200
+    )
+
     price = models.IntegerField()
-    amenities = models.ManyToManyField(Amenity, blank=True)
+
+    amenities = models.ManyToManyField(
+        Amenity,
+        blank=True
+    )
+
     description = models.TextField()
+
     image = models.URLField()
 
     def __str__(self):
+
         return self.name
 
 

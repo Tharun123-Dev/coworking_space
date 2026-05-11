@@ -320,8 +320,21 @@ class ModernLead(models.Model):
     )
 class QuotationLead(models.Model):
 
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("contacted", "Contacted"),
+        ("closed", "Closed"),
+    )
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
     name = models.CharField(
-        max_length=100
+        max_length=120
     )
 
     email = models.EmailField()
@@ -330,46 +343,37 @@ class QuotationLead(models.Model):
         max_length=20
     )
 
+    company = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True
+    )
+
+    preferred_location = models.CharField(
+        max_length=150
+    )
+
     workspace_type = models.CharField(
-        max_length=200
+        max_length=120
     )
 
-    location = models.CharField(
-        max_length=100
-    )
-
-    team_size = models.CharField(
-        max_length=50
-    )
-
-    total_price = models.IntegerField(
-        default=0
-    )
-
-    quotation_pdf = models.FileField(
-        upload_to="quotation_pdfs/",
-        null=True,
+    quotation_details = models.JSONField(
+        default=list,
         blank=True
     )
 
-    owner = models.ForeignKey(
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
 
-        User,
-
-        on_delete=models.SET_NULL,
-
-        null=True,
-
-        blank=True,
-
-        related_name="quotation_leads"
-
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
     )
 
     created_at = models.DateTimeField(
         auto_now_add=True
     )
-
-    def __str__(self):
-
-        return self.name

@@ -1160,82 +1160,233 @@ def admin_offer_workspace_leads(
 
     return Response(data)
 
-from .models import QuotationLead
-from accounts.models import Profile
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+)
 
-from rest_framework.decorators import api_view
+from rest_framework.permissions import (
+    IsAuthenticated,
+)
+
 from rest_framework.response import Response
+
+from .models import QuotationLead
+
+from accounts.models import Profile
 
 
 @api_view(['POST'])
 def create_quotation_lead(request):
 
     location = request.data.get(
-        "location"
+        "preferred_location"
     )
 
-    # ✅ FIND OWNER BY LOCATION
-
     owner_profile = Profile.objects.filter(
-
         role="owner",
-
-        location=location
-
+        location__iexact=location
     ).first()
+
+    print("LOCATION :", location)
+    print("OWNER :", owner_profile)
 
     lead = QuotationLead.objects.create(
 
-        name=request.data.get(
-            "name"
-        ),
+        name=request.data.get("name"),
 
-        email=request.data.get(
-            "email"
-        ),
+        email=request.data.get("email"),
 
-        phone=request.data.get(
-            "phone"
-        ),
+        phone=request.data.get("phone"),
+
+        company=request.data.get("company"),
+
+        preferred_location=location,
 
         workspace_type=request.data.get(
             "workspace_type"
         ),
 
-        location=location,
-
-        team_size=request.data.get(
-            "team_size"
+        total_amount=request.data.get(
+            "total_amount"
         ),
+        quotation_details=request.data.get(
+    "quotation_details",
+    []
+),
 
-        total_price=request.data.get(
-            "total_price",
-            0
-        ),
-
-        owner=(
-            owner_profile.user
-            if owner_profile
-            else None
-        )
+        owner=owner_profile.user
+        if owner_profile else None
 
     )
 
-    # ✅ SAVE PDF
+    return Response({
+        "message":
+            "Quotation Lead Created"
+    })
 
-    if request.FILES.get(
-        "quotation_pdf"
-    ):
 
-        lead.quotation_pdf = request.FILES[
-            "quotation_pdf"
-        ]
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def owner_quotation_leads(request):
+
+    leads = QuotationLead.objects.filter(
+        owner=request.user
+    ).order_by("-created_at")
+
+    data = []
+
+    for l in leads:
+
+        data.append({
+
+            "id": l.id,
+
+            "name": l.name,
+
+            "email": l.email,
+
+            "phone": l.phone,
+
+            "company": l.company,
+
+            "preferred_location":
+                l.preferred_location,
+
+            "workspace_type":
+                l.workspace_type,
+
+            "total_amount":
+                l.total_amount,
+
+            "quotation_details":
+                l.quotation_details,
+
+            "created_at":
+                l.created_at,
+
+
+            "status": l.status,
+
+        })
+
+    return Response(data)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_quotation_lead_status(
+    request,
+    pk
+):
+
+    try:
+
+        lead = QuotationLead.objects.get(
+            id=pk,
+            owner=request.user
+        )
+
+        lead.status = request.data.get(
+            "status"
+        )
 
         lead.save()
 
-    return Response({
+        return Response({
+            "message":
+                "Status Updated"
+        })
 
-        "message":
-        "Quotation lead created"
+    except QuotationLead.DoesNotExist:
 
-    })
+        return Response(
+            {
+                "error":
+                    "Lead not found"
+            },
+            status=404
+        )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_quotation_leads(request):
+
+    leads = QuotationLead.objects.all().order_by(
+        "-created_at"
+    )
+
+    data = []
+
+    for l in leads:
+
+        data.append({
+
+            "id": l.id,
+
+            "name": l.name,
+
+            "email": l.email,
+
+            "phone": l.phone,
+
+            "company": l.company,
+
+            "preferred_location":
+                l.preferred_location,
+
+            "workspace_type":
+                l.workspace_type,
+
+            "quotation_details":
+                l.quotation_details,
+
+            "total_amount":
+                l.total_amount,
+
+            "status":
+                l.status,
+
+            "created_at":
+                l.created_at,
+
+            "owner_name":
+                l.owner.username
+                if l.owner else "No Owner",
+
+        })
+
+    return Response(data)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def admin_update_quotation_status(
+    request,
+    pk
+):
+
+    try:
+
+        lead = QuotationLead.objects.get(
+            id=pk
+        )
+
+        lead.status = request.data.get(
+            "status"
+        )
+
+        lead.save()
+
+        return Response({
+            "message":
+                "Status Updated"
+        })
+
+    except QuotationLead.DoesNotExist:
+
+        return Response(
+            {
+                "error":
+                    "Lead not found"
+            },
+            status=404
+        )

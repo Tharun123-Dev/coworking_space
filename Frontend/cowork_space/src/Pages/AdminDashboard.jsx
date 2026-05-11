@@ -13,6 +13,7 @@ import AdminLeads from "./Leads";
 import styles from "../Styles/AdminDashboard.module.css";
 import AdminAmenities from "./AdminAmenities";
 import RecentActivity from "./RecentActivity";
+import AdminQuotationLeads from "./AdminQuotationLeads";
 
 const Icon = ({ d, size = 16 }) => (
   <svg
@@ -60,16 +61,19 @@ const IC = {
   logout: "M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4 M16 17l5-5-5-5 M21 12H9",
   building: "M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18 M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2 M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2 M10 6h4 M10 10h4 M10 14h4 M10 18h4",
   amenities: "M4 7h16 M7 4v16 M17 4v16 M4 17h16",
+  // Eye open (active/visible)
+  eyeOn: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 9a3 3 0 100 6 3 3 0 000-6z",
+  // Eye off (inactive/hidden)
+  eyeOff: "M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94 M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19 M1 1l22 22",
+  // Approve (check circle)
+  approveCircle: "M22 11.08V12a10 10 0 11-5.93-9.14 M22 4L12 14.01l-3-3",
+  // Reject (x circle)
+  rejectCircle: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M15 9l-6 6 M9 9l6 6",
 };
 
 const SIDEBAR_GROUPS = [
   { id: "dashboard", label: "Dashboard", icon: IC.dashboard, section: "overview", children: null },
-  
-   
-      { id: "manage-users", label: "Manage Users", icon: IC.users, section: "users" },
-      // { id: "manage-owners", label: "Manage Owners", icon: IC.owners, section: "owners" },
-  
-  
+  { id: "manage-users", label: "Manage Users", icon: IC.users, section: "users" },
   { id: "workspaces", label: "Workspaces", icon: IC.workspace, section: "workspaces", children: null },
   {
     id: "leads-group",
@@ -79,6 +83,7 @@ const SIDEBAR_GROUPS = [
       { id: "view-leads", label: "View Leads", icon: IC.leads, section: "leads" },
       { id: "offerleads", label: "Offer Leads", icon: IC.offers, section: "offerleads" },
       { id: "enterprise", label: "Customise Leads", icon: IC.enterprise, section: "enterprise" },
+      { id: "quotation-leads", label: "Quotation Leads", icon: IC.leads, section: "quotation-leads" },
     ],
   },
   {
@@ -139,6 +144,43 @@ const RECENT_ACTIVITIES = [
   { id: 14, type: "payment", icon: IC.bookings, title: "Refund processed", desc: "2,800 refund processed for Booking 1035", time: "Yesterday", color: "#f43f5e", badge: "Payment" },
   { id: 15, type: "owner", icon: IC.owners, title: "Owner slot released", desc: "Meera T. released slots for Financial District space", time: "Yesterday", color: "#10b981", badge: "Owner" },
 ];
+
+const WORKSPACE_TYPES = [
+
+  "Hot Desk",
+
+  "Dedicated Desk",
+
+  "Private Office Space",
+
+  "Private Cabin",
+
+  "Meeting Room",
+
+  "Board Room",
+
+  "Event Space",
+
+  "Podcast",
+
+  "Virtual Office",
+
+];
+
+const LOCATIONS = [
+
+  "Hitech City",
+
+  "Gachibowli",
+
+  "Madhapur",
+
+  "Financial District",
+
+  "Kondapur",
+
+];
+
 
 // ─── Weekly Chart ────────────────────────────────────────────────────────────
 function WeeklyChart({ data }) {
@@ -313,7 +355,6 @@ function ManagementPanel({ defaultTab = "users", owners = [], onOwnerCreated, sh
     fetchUsers();
   }, []);
 
-  // Keep tab in sync when parent switches section
   useEffect(() => {
     setTab(defaultTab);
   }, [defaultTab]);
@@ -410,151 +451,16 @@ function ManagementPanel({ defaultTab = "users", owners = [], onOwnerCreated, sh
 
       {/* ── Users Tab ── */}
       {tab === "users" && (
-        <>
-          {/* Add User Form Card */}
-          {/* <div className={styles.formCard}>
-            <div className={styles.formHead}>
-              <span className={styles.formHeadIco}>
-                <Icon d={IC.users} size={13} />
-              </span>
-              <span>Users</span>
-              <button
-                className={styles.btnPrimary}
-                style={{ marginLeft: "auto" }}
-                onClick={() => {
-                  setShowUserForm((p) => !p);
-                }}
-              >
-                <Icon d={showUserForm ? IC.close : IC.add} size={13} />
-                &nbsp;{showUserForm ? "Close" : "Add User"}
-              </button>
-            </div>
-
-            {showUserForm && (
-              <>
-                <div className={styles.formGrid} style={{ marginTop: 12 }}>
-                  {[
-                    { ph: "Username *", key: "username", type: "text" },
-                    { ph: "Email Address *", key: "email", type: "email" },
-                    { ph: "Phone Number", key: "phone", type: "text" },
-                    { ph: "Password *", key: "password", type: "password" },
-                  ].map((f) => (
-                    <input
-                      key={f.key}
-                      className={styles.inp}
-                      placeholder={f.ph}
-                      type={f.type}
-                      value={userForm[f.key]}
-                      onChange={(e) =>
-                        setUserForm({ ...userForm, [f.key]: e.target.value })
-                      }
-                    />
-                  ))}
-                </div>
-                <div className={styles.formActs}>
-                  <button className={styles.btnPrimary} onClick={handleCreateUser}>
-                    <Icon d={IC.add} size={13} />
-                    &nbsp;Create User
-                  </button>
-                  <button
-                    className={styles.btnGhost}
-                    onClick={() => {
-                      setShowUserForm(false);
-                      setUserForm({ username: "", email: "", phone: "", password: "" });
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            )}
-          </div> */}
-
-          {/* Users List from AdminUsers component */}
-          <div className={styles.section}>
-            <AdminUsers />
-          </div>
-        </>
+        <div className={styles.section}>
+          <AdminUsers />
+        </div>
       )}
 
       {/* ── Owners Tab ── */}
       {tab === "owners" && (
-        <>
-          {/* Add Owner Form Card */}
-          {/* <div className={styles.formCard}>
-            <div className={styles.formHead}>
-              <span
-                className={styles.formHeadIco}
-                style={{ background: "#f59e0b18", color: "#f59e0b" }}
-              >
-                <Icon d={IC.owners} size={13} />
-              </span>
-              <span>Owners</span>
-              <button
-                className={styles.btnPrimary}
-                style={{
-                  marginLeft: "auto",
-                  background: "#f59e0b",
-                  borderColor: "#f59e0b",
-                }}
-                onClick={() => {
-                  setShowOwnerForm((p) => !p);
-                }}
-              >
-                <Icon d={showOwnerForm ? IC.close : IC.add} size={13} />
-                &nbsp;{showOwnerForm ? "Close" : "Add Owner"}
-              </button>
-            </div>
-
-            {showOwnerForm && (
-              <>
-                <div className={styles.formGrid} style={{ marginTop: 12 }}>
-                  {[
-                    { ph: "Username *", key: "username", type: "text" },
-                    { ph: "Email Address *", key: "email", type: "email" },
-                    { ph: "Phone Number", key: "phone", type: "text" },
-                    { ph: "Password *", key: "password", type: "password" },
-                  ].map((f) => (
-                    <input
-                      key={f.key}
-                      className={styles.inp}
-                      placeholder={f.ph}
-                      type={f.type}
-                      value={ownerForm[f.key]}
-                      onChange={(e) =>
-                        setOwnerForm({ ...ownerForm, [f.key]: e.target.value })
-                      }
-                    />
-                  ))}
-                </div>
-                <div className={styles.formActs}>
-                  <button
-                    className={styles.btnPrimary}
-                    style={{ background: "#f59e0b", borderColor: "#f59e0b" }}
-                    onClick={handleCreateOwner}
-                  >
-                    <Icon d={IC.add} size={13} />
-                    &nbsp;Create Owner
-                  </button>
-                  <button
-                    className={styles.btnGhost}
-                    onClick={() => {
-                      setShowOwnerForm(false);
-                      setOwnerForm({ username: "", email: "", phone: "", password: "" });
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            )}
-          </div> */}
-
-          {/* Owners List from CreateOwner component */}
-          <div className={styles.section}>
-            <CreateOwner />
-          </div>
-        </>
+        <div className={styles.section}>
+          <CreateOwner />
+        </div>
       )}
     </div>
   );
@@ -562,23 +468,33 @@ function ManagementPanel({ defaultTab = "users", owners = [], onOwnerCreated, sh
 
 // ─── Admin Dashboard (Main) ──────────────────────────────────────────────────
 export default function AdminDashboard() {
-
-  
   const navigate = useNavigate();
 
   const [owners, setOwners] = useState([]);
   const [workspaces, setWorkspaces] = useState([]);
   const [categories, setCategories] = useState([]);
-
+  const [amenities,
+setAmenities] =
+useState([]);
   const [form, setForm] = useState({
-    name: "",
-    city: "",
-    location: "",
-    price: "",
-    image: "",
-    description: "",
-    isavailable: true,
-  });
+
+  name: "",
+
+  city: "",
+
+  location: "",
+
+  price: "",
+
+  image: "",
+
+  description: "",
+
+  amenities: [],
+
+  isavailable: true,
+
+});
 
   const [editId, setEditId] = useState(null);
   const [catForm, setCatForm] = useState({
@@ -608,106 +524,50 @@ export default function AdminDashboard() {
   const notifRef = useRef(null);
   const activityRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
-  const buildAdminNotifications =
-(
-  company = [],
-  hyd = [],
-  offer = []
-) => {
 
-  let items = [];
+  const buildAdminNotifications = (company = [], hyd = [], offer = []) => {
+    let items = [];
 
-  company.forEach((l) => {
-
-    items.push({
-
-      id:
-        `company-${l.id}`,
-
-      type:
-        "Company Lead",
-
-      name:
-        l.name,
-
-      workspace:
-        l.company || "-",
-
-      section:
-        "company-leads",
-
-      time:
-        "New Lead",
+    company.forEach((l) => {
+      items.push({
+        id: `company-${l.id}`,
+        type: "Company Lead",
+        name: l.name,
+        workspace: l.company || "-",
+        section: "company-leads",
+        time: "New Lead",
+      });
     });
 
-  });
-
-  hyd.forEach((l) => {
-
-    items.push({
-
-      id:
-        `hyd-${l.id}`,
-
-      type:
-        "Hyderabad Lead",
-
-      name:
-        l.name,
-
-      workspace:
-        l.workspace_type,
-
-      section:
-        "hyderabad-leads",
-
-      time:
-        "New Lead",
+    hyd.forEach((l) => {
+      items.push({
+        id: `hyd-${l.id}`,
+        type: "Hyderabad Lead",
+        name: l.name,
+        workspace: l.workspace_type,
+        section: "hyderabad-leads",
+        time: "New Lead",
+      });
     });
 
-  });
-
-  offer.forEach((l) => {
-
-    items.push({
-
-      id:
-        `offer-${l.id}`,
-
-      type:
-        "Offer Lead",
-
-      name:
-        l.name,
-
-      workspace:
-        l.workspace_type,
-
-      section:
-        "offerleads",
-
-      time:
-        "New Lead",
+    offer.forEach((l) => {
+      items.push({
+        id: `offer-${l.id}`,
+        type: "Offer Lead",
+        name: l.name,
+        workspace: l.workspace_type,
+        section: "offerleads",
+        time: "New Lead",
+      });
     });
 
-  });
-
-  const filtered =
-    items.filter(
-
-      (item) =>
-
-        !viewedAdminNotifications
-        .includes(item.id)
-
+    const filtered = items.filter(
+      (item) => !viewedAdminNotifications.includes(item.id)
     );
 
-  setAdminNotifications(
-    filtered
-  );
-};
+    setAdminNotifications(filtered);
+  };
 
-  // Track which management tab to open based on which sidebar item was clicked
   const [mgmtDefaultTab, setMgmtDefaultTab] = useState("users");
 
   useEffect(() => {
@@ -745,33 +605,28 @@ export default function AdminDashboard() {
     fetchOwners();
     fetchWS();
     fetchCat();
-Promise.all([
+    axiosInstance
+.get("amenities/")
+.then((res) => {
 
-  axiosInstance.get(
-    "leads/company/admin/"
-  ),
-
-  axiosInstance.get(
-    "hyderabad/admin/"
-  ),
-
-  axiosInstance.get(
-    "leads/offers/admin/leads/"
-  ),
-
-]).then(([c,h,o]) => {
-
-  buildAdminNotifications(
-
-    c.data || [],
-
-    h.data || [],
-
-    o.data || []
-
+  setAmenities(
+    res.data || []
   );
 
+})
+.catch((err) => {
+
+  console.log(err);
+
 });
+    Promise.all([
+      axiosInstance.get("leads/company/admin/"),
+      axiosInstance.get("hyderabad/admin/"),
+      axiosInstance.get("leads/offers/admin/leads/"),
+    ]).then(([c, h, o]) => {
+      buildAdminNotifications(c.data || [], h.data || [], o.data || []);
+    });
+
     const syncFromHash = () => {
       const rawHash = window.location.hash || "";
       const [hashSection, hashQuery] = rawHash.replace("#", "").split("?");
@@ -822,12 +677,12 @@ Promise.all([
     }
 
     const req = editId
-      ? axiosInstance.put(`workspaces/update/${editId}`, form)
-      : axiosInstance.post("workspaces/add", form);
+      ? axiosInstance.put(`workspaces/update/${editId}/`, form)
+      : axiosInstance.post("workspaces/add/", form);
 
     req
       .then(() => {
-        showToast(editId ? "Updated successfully" : "Workspace added");
+        showToast(editId ? "Updated successfully" : "Workspace added succesfully and make a approval for visible in website");
         setEditId(null);
         setForm({
           name: "",
@@ -858,16 +713,67 @@ Promise.all([
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Delete this workspace?")) return;
-    axiosInstance
-      .delete(`workspaces/delete/${id}`)
-      .then(() => {
-        showToast("Deleted");
-        fetchWS();
-      })
-      .catch(() => showToast("Delete failed", "error"));
-  };
+  // ─── NEW: Toggle Active / Inactive ───────────────────────────────────────
+  // When set to inactive: is_approved becomes false → hidden from website
+  // When set to active:   is_approved becomes true  → visible on website
+ const handleToggleActive = (item) => {
+
+  const isCurrentlyActive =
+    item.isavailable !== false;
+
+  const newStatus =
+    !isCurrentlyActive;
+
+  axiosInstance
+
+    .put(
+
+      `workspaces/update/${item.id}/`,
+
+      {
+
+        ...item,
+
+        isavailable: newStatus,
+
+        // ✅ KEEP APPROVAL SAME
+
+        is_approved:
+          item.is_approved,
+
+      }
+
+    )
+
+    .then(() => {
+
+      showToast(
+
+        newStatus
+
+          ? "Workspace Activated"
+
+          : "Workspace Inactivated"
+
+      );
+
+      fetchWS();
+
+    })
+
+    .catch(() =>
+
+      showToast(
+
+        "Failed to update workspace",
+
+        "error"
+
+      )
+
+    );
+
+};
 
   const handleApprove = (id) => {
     axiosInstance
@@ -934,7 +840,6 @@ Promise.all([
       return;
     }
     if (item.section) {
-      // Set management tab before switching section
       if (item.section === "users") {
         setMgmtDefaultTab("users");
         setSection("management");
@@ -1049,8 +954,7 @@ Promise.all([
     },
     {
       label: "Categories",
-      // value: workspaces.length,
-      value:9,
+      value: 9,
       color: "#6366f1",
       spark: SPARKS.cat,
       trend: 8,
@@ -1067,37 +971,20 @@ Promise.all([
       icon: IC.owners,
     },
   ];
-const [adminNotifications,
-  setAdminNotifications] =
-  useState([]);
 
-const [viewedAdminNotifications,
-  setViewedAdminNotifications] =
-  useState(() => {
+  const [adminNotifications, setAdminNotifications] = useState([]);
 
-    return JSON.parse(
-
-      localStorage.getItem(
-        "adminViewedNotifications"
-      )
-
-    ) || [];
-
+  const [viewedAdminNotifications, setViewedAdminNotifications] = useState(() => {
+    return JSON.parse(localStorage.getItem("adminViewedNotifications")) || [];
   });
 
   useEffect(() => {
+    localStorage.setItem(
+      "adminViewedNotifications",
+      JSON.stringify(viewedAdminNotifications)
+    );
+  }, [viewedAdminNotifications]);
 
-  localStorage.setItem(
-
-    "adminViewedNotifications",
-
-    JSON.stringify(
-      viewedAdminNotifications
-    )
-
-  );
-
-}, [viewedAdminNotifications]);
   const sectionTitle = (() => {
     const map = {
       overview: "Dashboard Overview",
@@ -1110,96 +997,8 @@ const [viewedAdminNotifications,
     return map[section] || "Dashboard";
   })();
 
-  const MOCK_NOTIF = [
-    { icon: IC.workspace, text: "New workspace Horizon Hub added", time: "2m ago", color: "#f59e0b" },
-    { icon: IC.leads, text: "Lead 4821 assigned to Ravi", time: "11m ago", color: "#6366f1" },
-    { icon: IC.tickets, text: "Ticket 209 marked resolved", time: "34m ago", color: "#10b981" },
-    { icon: IC.bookings, text: "Booking 1042 confirmed", time: "1h ago", color: "#f43f5e" },
-  ];
-
-  const activityDropdownStyle = {
-    position: "absolute",
-    top: "calc(100% + 10px)",
-    left: 50,
-    transform: "translateX(-50%)",
-    width: "360px",
-    background: "var(--card-bg, #fff)",
-    border: "1px solid rgba(0,0,0,0.08)",
-    borderRadius: "14px",
-    boxShadow: "0 12px 40px rgba(0,0,0,0.14)",
-    zIndex: 1000,
-    overflow: "hidden",
-  };
-
-  const actDropHeadStyle = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "14px 16px 10px",
-    borderBottom: "1px solid rgba(0,0,0,0.06)",
-  };
-
-  const actDropTitleStyle = {
-    fontSize: "13px",
-    fontWeight: 700,
-    color: "var(--text-primary, #1a1a1a)",
-  };
-
-  const actDropViewAllStyle = {
-    fontSize: "12px",
-    color: "#6366f1",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: 600,
-    padding: 0,
-  };
-
-  const actDropItemStyle = {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "10px",
-    padding: "11px 16px",
-    borderBottom: "1px solid rgba(0,0,0,0.04)",
-    transition: "background 0.15s",
-  };
-
-  const actDropIcoStyle = (color) => ({
-    width: "30px",
-    height: "30px",
-    borderRadius: "8px",
-    background: `${color}18`,
-    color,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    marginTop: "1px",
-  });
-
-  const actDropTxtStyle = {
-    fontSize: "12.5px",
-    fontWeight: 600,
-    color: "var(--text-primary, #1a1a1a)",
-    lineHeight: 1.3,
-    marginBottom: "2px",
-  };
-
-  const actDropDescStyle = {
-    fontSize: "11.5px",
-    color: "var(--text-muted, #888)",
-    lineHeight: 1.4,
-    marginBottom: "3px",
-  };
-
-  const actDropTimeStyle = {
-    fontSize: "11px",
-    color: "#aaa",
-  };
-
   const activityTypes = ["all", "booking", "lead", "ticket", "workspace", "user", "payment", "owner", "category"];
 
-  // ── Sidebar nav item click handler (top-level items without children) ──
   const handleTopNavClick = (group) => {
     if (group.section === "users") {
       setMgmtDefaultTab("users");
@@ -1354,64 +1153,6 @@ const [viewedAdminNotifications,
           </div>
 
           <div className={styles.topRight}>
-            {/* Recent Activity Dropdown */}
-            {/* <div style={{ position: "relative" }} ref={activityRef}>
-              <button
-                className={styles.actBtn}
-                onClick={() => setActivityDropOpen((p) => !p)}
-              >
-                <span className={styles.livePulse}>
-                  <Icon d={IC.activity} size={14} />
-                </span>
-                <span className={styles.actBtnTxt}>Recent Activity</span>
-              </button>
-
-              {activityDropOpen && (
-                <div style={activityDropdownStyle}>
-                  <div style={actDropHeadStyle}>
-                    <span style={actDropTitleStyle}>Recent Activity</span>
-                    <button
-                      style={actDropViewAllStyle}
-                      onClick={() => {
-                        setActivityDropOpen(false);
-                        setSection("activity");
-                      }}
-                    >
-                      View all
-                    </button>
-                  </div>
-
-                  {RECENT_ACTIVITIES.slice(0, 5).map((a) => (
-                    <div key={a.id} style={actDropItemStyle}>
-                      <div style={actDropIcoStyle(a.color)}>
-                        <Icon d={a.icon} size={13} />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={actDropTxtStyle}>{a.title}</p>
-                        <p style={actDropDescStyle}>{a.desc}</p>
-                        <span style={actDropTimeStyle}>{a.time}</span>
-                      </div>
-                      <span
-                        style={{
-                          fontSize: "10px",
-                          fontWeight: 600,
-                          padding: "2px 7px",
-                          borderRadius: "20px",
-                          background: `${a.color}15`,
-                          color: a.color,
-                          flexShrink: 0,
-                          alignSelf: "flex-start",
-                          marginTop: "2px",
-                        }}
-                      >
-                        {a.badge}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div> */}
-
             {/* Notification Bell */}
             <div className={styles.notifWrap} ref={notifRef}>
               <button
@@ -1419,206 +1160,65 @@ const [viewedAdminNotifications,
                 onClick={() => setNotifOpen((p) => !p)}
               >
                 <Icon d={IC.bell} size={15} />
-               {adminNotifications.length >
-0 && (
-
-  <span
-    className={
-      styles.notifBadge
-    }
-  >
-
-    {
-      adminNotifications.length
-    }
-
-  </span>
-
-)}
+                {adminNotifications.length > 0 && (
+                  <span className={styles.notifBadge}>{adminNotifications.length}</span>
+                )}
               </button>
 
-            {notifOpen && (
+              {notifOpen && (
+                <div className={styles.notifPanel}>
+                  <div className={styles.notifHead}>
+                    Notifications
+                    <span className={styles.notifCount}>{adminNotifications.length}</span>
+                  </div>
 
-<div
-  className={
-    styles.notifPanel
-  }
->
+                  {adminNotifications.map((n) => (
+                    <div key={n.id} className={styles.notifItem}>
+                      <div
+                        className={styles.notifIco}
+                        style={{
+                          background: "rgba(99,102,241,0.1)",
+                          color: "#6366f1",
+                        }}
+                      >
+                        <Icon d={IC.bell} size={14} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div className={styles.notifTxt}>
+                          <strong>{n.type}</strong>
+                          <br />
+                          {n.name}
+                        </div>
+                        <div className={styles.notifTime}>{n.workspace}</div>
+                      </div>
+                      <button
+                        className={styles.viewBtn}
+                        onClick={() => {
+                          setSection(n.section);
 
-  <div
-    className={
-      styles.notifHead
-    }
-  >
+                          const sameSectionIds = adminNotifications
+                            .filter((item) => item.section === n.section)
+                            .map((item) => item.id);
 
-    Notifications
+                          const updatedViewed = [
+                            ...new Set([...viewedAdminNotifications, ...sameSectionIds]),
+                          ];
 
-    <span
-      className={
-        styles.notifCount
-      }
-    >
+                          setViewedAdminNotifications(updatedViewed);
 
-      {
-        adminNotifications.length
-      }
+                          setAdminNotifications((prev) =>
+                            prev.filter((item) => item.section !== n.section)
+                          );
 
-    </span>
-
-  </div>
-
-  {adminNotifications.map(
-    (n) => (
-
-    <div
-      key={n.id}
-      className={
-        styles.notifItem
-      }
-    >
-
-      <div
-        className={
-          styles.notifIco
-        }
-        style={{
-          background:
-          "rgba(99,102,241,0.1)",
-
-          color:
-          "#6366f1",
-        }}
-      >
-
-        <Icon
-          d={IC.bell}
-          size={14}
-        />
-
-      </div>
-
-      <div
-        style={{
-          flex:1
-        }}
-      >
-
-        <div
-          className={
-            styles.notifTxt
-          }
-        >
-
-          <strong>
-            {n.type}
-          </strong>
-
-          <br />
-
-          {n.name}
-
-        </div>
-
-        <div
-          className={
-            styles.notifTime
-          }
-        >
-
-          {
-            n.workspace
-          }
-
-        </div>
-
-      </div>
-
-      <button
-
-        className={
-          styles.viewBtn
-        }
-onClick={() => {
-
-  // ✅ OPEN SECTION
-
-  setSection(
-    n.section
-  );
-
-  // ✅ GET SAME SECTION IDS
-
-  const sameSectionIds =
-
-    adminNotifications
-
-      .filter(
-
-        item =>
-
-          item.section ===
-          n.section
-
-      )
-
-      .map(
-        item => item.id
-      );
-
-  // ✅ SAVE VIEWED
-
-  const updatedViewed = [
-
-    ...new Set([
-
-      ...viewedAdminNotifications,
-
-      ...sameSectionIds
-
-    ])
-
-  ];
-
-  setViewedAdminNotifications(
-    updatedViewed
-  );
-
-  // ✅ REMOVE SAME SECTION NOTIFICATIONS
-
-  setAdminNotifications(
-
-    prev =>
-
-      prev.filter(
-
-        item =>
-
-          item.section !==
-          n.section
-
-      )
-
-  );
-
-  // ✅ CLOSE DROPDOWN
-
-  setNotifOpen(false);
-
-}}
-
-      >
-
-        View
-
-      </button>
-
-    </div>
-
-  ))}
-
-</div>
-
-)}
+                          setNotifOpen(false);
+                        }}
+                      >
+                        View
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -1793,26 +1393,208 @@ onClick={() => {
                 </div>
 
                 <div className={styles.formGrid}>
-                  {[
-                    { ph: "Workspace Name", key: "name" },
-                    { ph: "City", key: "city" },
-                    { ph: "Location Area", key: "location" },
-                    { ph: "Price", key: "price" },
-                    { ph: "Description", key: "description" },
-                    { ph: "Image URL", key: "image" },
-                  ].map((f) => (
-                    <input
-                      key={f.key}
-                      className={styles.inp}
-                      placeholder={f.ph}
-                      value={form[f.key]}
-                      onChange={(e) =>
-                        setForm({ ...form, [f.key]: e.target.value })
-                      }
-                    />
-                  ))}
+             
+                {/* Workspace Type */}
 
-                  <select
+<select
+  className={styles.selectField}
+  value={form.name}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      name: e.target.value,
+    })
+  }
+>
+
+  <option value="">
+    Select Workspace Type
+  </option>
+
+  {WORKSPACE_TYPES.map((type) => (
+
+    <option
+      key={type}
+      value={type}
+    >
+
+      {type}
+
+    </option>
+
+  ))}
+
+</select>
+
+{/* Location */}
+
+<select
+  className={styles.selectField}
+  value={form.city}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      city: e.target.value,
+    })
+  }
+>
+
+  <option value="">
+    Select Location
+  </option>
+
+  {LOCATIONS.map((loc) => (
+
+    <option
+      key={loc}
+      value={loc}
+    >
+
+      {loc}
+
+    </option>
+
+  ))}
+
+</select>
+
+{/* Location Area */}
+
+<input
+  className={styles.inp}
+  placeholder="Location Area"
+  value={form.location}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      location: e.target.value,
+    })
+  }
+/>
+
+{/* Price */}
+
+<input
+  className={styles.inp}
+  placeholder="Price"
+  value={form.price}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      price: e.target.value,
+    })
+  }
+/>
+
+{/* Description */}
+
+<input
+  className={styles.inp}
+  placeholder="Description"
+  value={form.description}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      description: e.target.value,
+    })
+  }
+/>
+
+{/* Image URL */}
+
+<input
+  className={styles.inp}
+  placeholder="Image URL"
+  value={form.image}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      image: e.target.value,
+    })
+  }
+/>
+{/* Amenities */}
+
+<div className={styles.fieldGroup}>
+
+  {/* <label>
+    Amenities
+  </label> */}
+
+  <div
+    className={styles.amenitiesGrid}
+  >
+
+    {amenities.map((a) => (
+
+      <label
+        key={a.id}
+        className={
+          styles.amenityItem
+        }
+      >
+
+        <input
+
+          type="checkbox"
+
+          checked={
+            form.amenities?.includes(
+              a.id
+            )
+          }
+
+          onChange={(e) => {
+
+            if (e.target.checked) {
+
+              setForm({
+
+                ...form,
+
+                amenities: [
+
+                  ...(form.amenities || []),
+
+                  a.id,
+
+                ],
+
+              });
+
+            } else {
+
+              setForm({
+
+                ...form,
+
+                amenities:
+
+                  form.amenities.filter(
+
+                    (id) =>
+                      id !== a.id
+
+                  ),
+
+              });
+
+            }
+
+          }}
+
+        />
+
+        {a.name}
+
+      </label>
+
+    ))}
+
+  </div>
+
+</div>
+                  {/* <select
                     className={styles.selectField}
                     value={form.isavailable ? "available" : "unavailable"}
                     onChange={(e) =>
@@ -1821,7 +1603,7 @@ onClick={() => {
                   >
                     <option value="available">Available</option>
                     <option value="unavailable">Unavailable</option>
-                  </select>
+                  </select> */}
                 </div>
 
                 <div className={styles.formActs}>
@@ -1922,6 +1704,7 @@ onClick={() => {
                       <th>Location</th>
                       <th>Price</th>
                       <th>Approval</th>
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -1942,8 +1725,17 @@ onClick={() => {
                         item.name ||
                         "-";
 
+                      const isActive = item.isavailable !== false;
+
                       return (
-                        <tr key={item.id}>
+                        <tr
+                          key={item.id}
+                          style={
+                            !isActive
+                              ? { opacity: 0.55, background: "rgba(0,0,0,0.02)" }
+                              : {}
+                          }
+                        >
                           <td className={styles.tdSerial}>
                             {String(i + 1).padStart(2, "0")}
                           </td>
@@ -1953,6 +1745,8 @@ onClick={() => {
                           <td>{item.city}</td>
                           <td className={styles.tdMuted}>{item.location}</td>
                           <td className={styles.tdAccent}>{item.price}</td>
+
+                          {/* Approval column */}
                           <td>
                             {item.is_approved ? (
                               <span className={styles.approvedBadge}>Approved</span>
@@ -1960,39 +1754,81 @@ onClick={() => {
                               <span className={styles.pendingBadge}>Pending</span>
                             )}
                           </td>
+
+                          {/* Active / Inactive status column */}
+                          <td>
+                            {isActive ? (
+                              <span
+                                className={styles.approvedBadge}
+                                style={{ background: "#10b98118", color: "#10b981", border: "1px solid #10b98130" }}
+                              >
+                                Active
+                              </span>
+                            ) : (
+                              <span
+                                className={styles.pendingBadge}
+                                style={{ background: "#6b728018", color: "#6b7280", border: "1px solid #6b728030" }}
+                              >
+                                Inactive
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Actions — icons only */}
                           <td>
                             <div className={styles.actCell}>
+
+                              {/* Edit icon */}
                               <button
                                 className={styles.editBtn}
+                                title="Edit Workspace"
                                 onClick={() => handleEdit(item)}
+                                style={{ padding: "5px 7px" }}
                               >
-                                <Icon d={IC.edit} size={11} />
-                                Edit
+                                <Icon d={IC.edit} size={13} />
                               </button>
 
+                              {/* Approve / Reject icon */}
                               {!item.is_approved ? (
                                 <button
                                   className={styles.approveBtn}
+                                  title="Approve Workspace"
                                   onClick={() => handleApprove(item.id)}
+                                  style={{ padding: "5px 7px" }}
                                 >
-                                  Approve
+                                  <Icon d={IC.approveCircle} size={13} />
                                 </button>
                               ) : (
                                 <button
                                   className={styles.rejectBtn}
+                                  title="Reject / Revoke Approval"
                                   onClick={() => handleReject(item.id)}
+                                  style={{ padding: "5px 7px" }}
                                 >
-                                  Reject
+                                  <Icon d={IC.rejectCircle} size={13} />
                                 </button>
                               )}
 
+                              {/* Active / Inactive toggle icon */}
                               <button
-                                className={styles.delBtn}
-                                onClick={() => handleDelete(item.id)}
+                                title={isActive ? "Set Inactive (hide from website)" : "Set Active (show on website)"}
+                                onClick={() => handleToggleActive(item)}
+                                style={{
+                                  padding: "5px 7px",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  borderRadius: "6px",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  background: isActive ? "#10b98118" : "#6b728018",
+                                  color: isActive ? "#10b981" : "#6b7280",
+                                  transition: "all 0.18s ease",
+                                }}
                               >
-                                <Icon d={IC.trash} size={11} />
-                                Delete
+                                <Icon d={isActive ? IC.eyeOn : IC.eyeOff} size={13} />
                               </button>
+
                             </div>
                           </td>
                         </tr>
@@ -2001,7 +1837,7 @@ onClick={() => {
 
                     {filteredWS.length === 0 && (
                       <tr>
-                        <td colSpan={9} className={styles.tdEmpty}>
+                        <td colSpan={10} className={styles.tdEmpty}>
                           No workspaces found for selected owner/type filters
                         </td>
                       </tr>
@@ -2207,6 +2043,21 @@ onClick={() => {
                   ))
                 )}
               </div>
+            </section>
+          )}
+
+          {/* Quotation Leads */}
+          {section === "quotation-leads" && (
+            <section className={styles.section}>
+              <div className={styles.secHead}>
+                <div>
+                  <h2 className={styles.secTitle}>Quotation Leads</h2>
+                  <p className={styles.secSub}>
+                    All quotation leads with owner and location details
+                  </p>
+                </div>
+              </div>
+              <AdminQuotationLeads />
             </section>
           )}
 

@@ -3,84 +3,88 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import "../Styles/Companies.css";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const LOCATIONS = ["Madhapur", "Gachibowli", "Hitech City", "Kondapur"];
 
 const SIZE_CONFIG = {
   Small: {
-    subtitle: "1 – 20 Employees",
+    subtitle: "Mini Workspace",
+    seatRange: "0 – 20 Seats",
+    minSeats: 0,
+    maxSeats: 20,
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
     featured: false,
     types: ["Hot Desk", "Dedicated Desk", "Virtual Office"],
     minUnits: 1,
-    maxUnits: 10,
+    maxUnits: 20,
+    displayLabel: "Small",
+    accent: "#6366f1",
+    accentLight: "#eef2ff",
+    description: "Perfect for freelancers & early-stage teams",
+    icon: "🪑",
   },
   Medium: {
-    subtitle: "20 – 75 Employees",
+    subtitle: "Team Workspace",
+    seatRange: "20 – 50 Seats",
+    minSeats: 20,
+    maxSeats: 50,
     image: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800&q=80",
     featured: true,
     types: ["Private Office Space", "Private Cabin", "Meeting Room"],
-    minUnits: 10,
+    minUnits: 1,
     maxUnits: 50,
+    displayLabel: "Medium",
+    accent: "#7c3aed",
+    accentLight: "#ede9fe",
+    description: "Ideal for growing teams & startups",
+    icon: "🏢",
   },
   Large: {
-    subtitle: "75 – 200+ Employees",
+    subtitle: "Enterprise Workspace",
+    seatRange: "50 – 200 Seats",
+    minSeats: 50,
+    maxSeats: 200,
     image: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80",
     featured: false,
     types: ["Board Room", "Event Space", "Podcast"],
-    minUnits: 50,
+    minUnits: 1,
     maxUnits: 200,
+    displayLabel: "Large",
+    accent: "#0f766e",
+    accentLight: "#f0fdfa",
+    description: "Built for enterprises & large organizations",
+    icon: "🏬",
   },
 };
 
-// Hint config per size × direction
 const UPGRADE_HINTS = {
   Small: {
     tooHigh: {
       icon: "🏢",
-      title: "Looking like a Medium-level company!",
-      body: "Your requirement (>10 units) fits our Medium workspace plans perfectly.",
+      title: "Looks like a Medium-tier requirement!",
+      body: "Your seat count exceeds the Small plan limit of 20. Our Medium workspace plans (20–50 seats) fit perfectly.",
       badge: "Switch to Medium",
       switchTo: "Medium",
     },
-    tooLow: null,
   },
   Medium: {
     tooHigh: {
       icon: "🏬",
-      title: "Sounds like a Large company setup!",
-      body: "For more than 50 units, our Large workspace plans are the right fit.",
+      title: "Sounds like a Large workspace setup!",
+      body: "For more than 50 seats, our Large workspace plans (50–200 seats) are the right fit.",
       badge: "Switch to Large",
       switchTo: "Large",
-    },
-    tooLow: {
-      icon: "🏠",
-      title: "That's a Small team size.",
-      body: "For fewer than 10 units, our Small workspace plans suit you better.",
-      badge: "Switch to Small",
-      switchTo: "Small",
     },
   },
   Large: {
     tooHigh: {
       icon: "⚠️",
       title: "Exceeds maximum capacity (200 seats)",
-      body: "We support up to 200 units. Please contact us directly for enterprise solutions beyond this.",
+      body: "We support up to 200 seats in the Large plan. Please enter a value within that range.",
       badge: null,
       switchTo: null,
     },
-    tooLow: {
-      icon: "🏢",
-      title: "That's a Medium-level requirement.",
-      body: "For fewer than 50 units, our Medium workspace plans are a better fit.",
-      badge: "Switch to Medium",
-      switchTo: "Medium",
-    },
   },
 };
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function workspaceMatchesLocation(workspace, selectedLocation) {
   const loc = selectedLocation.trim().toLowerCase();
@@ -94,167 +98,82 @@ function workspaceMatchesLocation(workspace, selectedLocation) {
   );
 }
 
-/**
- * Returns hint config when the typed value is outside the tier's range,
- * or null when in-range / empty (still typing).
- */
 function getUnitHint(rawVal, size) {
   if (rawVal === "" || rawVal === undefined) return null;
   const n = parseInt(rawVal, 10);
-  if (isNaN(n) || n === 0) return null;
-  const { minUnits, maxUnits } = SIZE_CONFIG[size];
+  if (isNaN(n) || n <= 0) return null;
+  const { maxUnits } = SIZE_CONFIG[size];
   const hints = UPGRADE_HINTS[size];
   if (n > maxUnits) return hints?.tooHigh || null;
-  if (n < minUnits) return hints?.tooLow || null;
   return null;
 }
 
-// ─── PDF Generator ────────────────────────────────────────────────────────────
+// ─── Seat Capacity Bar ────────────────────────────────────────────────────────
+function SeatCapacityBar({ size, currentUnits }) {
+  const config = SIZE_CONFIG[size];
+  const pct = Math.min((currentUnits / config.maxUnits) * 100, 100);
+  const isOver = currentUnits > config.maxUnits;
 
-function buildQuoteHTML({ location, rows, companyName, date, size }) {
-  const tableRows = rows
-    .map((r) => {
-      const price = Number(r.price || 0);
-      const units = Number(r.units || 1);
-      const total = price * units;
-      return `
-        <tr>
-          <td class="td">${r.name}</td>
-          <td class="td tc">${units}</td>
-          <td class="td tc">&#8377;${price.toLocaleString("en-IN")}.00</td>
-          <td class="td tc">with included</td>
-          <td class="td tc">with included</td>
-          <td class="td tc bold">&#8377;${total.toLocaleString("en-IN")}.00</td>
-        </tr>`;
-    })
-    .join("");
-
-  const totalAmount = rows.reduce(
-    (s, r) => s + Number(r.price || 0) * Number(r.units || 1),
-    0
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>
+          Seat Capacity Used
+        </span>
+        <span style={{
+          fontSize: 12,
+          fontWeight: 700,
+          color: isOver ? "#ef4444" : config.accent,
+          background: isOver ? "#fee2e2" : config.accentLight,
+          padding: "2px 10px",
+          borderRadius: 99,
+        }}>
+          {currentUnits} / {config.maxUnits} seats
+        </span>
+      </div>
+      <div style={{
+        height: 8,
+        background: "#f3f4f6",
+        borderRadius: 99,
+        overflow: "hidden",
+        border: "1px solid #e5e7eb",
+      }}>
+        <div style={{
+          height: "100%",
+          width: `${pct}%`,
+          background: isOver
+            ? "linear-gradient(90deg, #f87171, #ef4444)"
+            : `linear-gradient(90deg, ${config.accent}99, ${config.accent})`,
+          borderRadius: 99,
+          transition: "width 0.4s ease",
+        }} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+        <span style={{ fontSize: 10, color: "#9ca3af" }}>{config.minSeats} seats</span>
+        <span style={{ fontSize: 10, color: "#9ca3af" }}>{config.maxSeats} seats</span>
+      </div>
+    </div>
   );
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<title>Workspace Quotation &#8211; ${location}</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'DM Sans',sans-serif;background:#fff;padding:48px 56px;color:#1a1a1a;font-size:14px}
-  .logo{font-size:22px;font-weight:700;color:#7c3aed;letter-spacing:-.4px}
-  .logo span{color:#1a1a1a}
-  .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px}
-  .top-right{text-align:right;font-size:12px;color:#666;line-height:1.7}
-  .filters{display:flex;gap:24px;margin-bottom:28px}
-  .filter-box{border:1.5px solid #d1d5db;border-radius:8px;padding:8px 16px;min-width:180px}
-  .filter-label{font-size:10px;color:#999;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
-  .filter-val{font-size:14px;font-weight:500;color:#1a1a1a}
-  table{width:100%;border-collapse:collapse;margin-bottom:24px}
-  thead tr{background:#f3f4f6}
-  th{padding:12px 14px;text-align:left;font-size:12px;font-weight:600;color:#374151;letter-spacing:.03em}
-  th.tc,td.tc{text-align:center}
-  .td{padding:14px;border-bottom:1px solid #e5e7eb;font-size:13.5px;color:#1a1a1a}
-  .bold{font-weight:600}
-  .summary-wrap{display:flex;justify-content:flex-end}
-  .summary{width:280px;border-top:2px solid #e5e7eb;padding-top:16px}
-  .summary-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13.5px;color:#374151}
-  .summary-total{display:flex;justify-content:space-between;padding:10px 0 0;margin-top:8px;border-top:1.5px solid #1a1a1a;font-size:15px;font-weight:700;color:#1a1a1a}
-  .dl-btn{display:inline-block;margin-top:28px;padding:11px 28px;background:#7c3aed;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none}
-  @media print{.dl-btn{display:none}}
-</style>
-</head>
-<body>
-<div class="top">
-  <div>
-    <div class="logo">Workspace<span>Hub</span></div>
-    <div style="font-size:12px;color:#999;margin-top:4px">Premium Coworking &middot; Hyderabad</div>
-  </div>
-  <div class="top-right">
-    <div><strong>Date:</strong> ${date}</div>
-    ${companyName ? `<div><strong>For:</strong> ${companyName}</div>` : ""}
-    <div><strong>Location:</strong> ${location}</div>
-    <div><strong>Package:</strong> ${size} &ndash; ${SIZE_CONFIG[size]?.subtitle || ""}</div>
-  </div>
-</div>
-<div class="filters">
-  <div class="filter-box">
-    <div class="filter-label">Location</div>
-    <div class="filter-val">${location}</div>
-  </div>
-  <div class="filter-box">
-    <div class="filter-label">Package Size</div>
-    <div class="filter-val">${size}</div>
-  </div>
-  <div class="filter-box">
-    <div class="filter-label">Space Types</div>
-    <div class="filter-val">${rows.map((r) => r.name).join(", ")}</div>
-  </div>
-</div>
-<table>
-  <thead>
-    <tr>
-      <th>Item Name</th>
-      <th class="tc">Units</th>
-      <th class="tc">Price / Unit</th>
-      <th class="tc">CGST (9%)</th>
-      <th class="tc">SGST (9%)</th>
-      <th class="tc">Total</th>
-    </tr>
-  </thead>
-  <tbody>${tableRows}</tbody>
-</table>
-<div class="summary-wrap">
-  <div class="summary">
-    <div class="summary-row"><span>Subtotal</span><span>&#8377;${totalAmount.toLocaleString("en-IN")}</span></div>
-    <div class="summary-total"><span>Grand Total</span><span>&#8377;${totalAmount.toLocaleString("en-IN")}</span></div>
-  </div>
-</div>
-<button class="dl-btn" onclick="window.print()">&#8595; Download / Print PDF</button>
-</body>
-</html>`;
-}
-
-function downloadQuote(location, rows, companyName, size) {
-  const validRows = rows.filter((r) => r.price > 0);
-  if (!validRows.length) return;
-  const date = new Date().toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-  const html = buildQuoteHTML({ location, rows: validRows, companyName, date, size });
-  const blob = new Blob([html], { type: "text/html" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `Quotation_${size}_${location}_${Date.now()}.html`;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 // ─── Hint Banner ──────────────────────────────────────────────────────────────
-
 function HintBanner({ hint, onSwitch }) {
   if (!hint) return null;
   const isWarning = !hint.switchTo;
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 12,
-        background: isWarning ? "#fef3c7" : "#ede9fe",
-        border: `1.5px solid ${isWarning ? "#fcd34d" : "#c4b5fd"}`,
-        borderRadius: 10,
-        padding: "12px 16px",
-        marginBottom: 16,
-        fontSize: 13,
-        color: isWarning ? "#92400e" : "#4c1d95",
-        lineHeight: 1.5,
-      }}
-    >
+    <div style={{
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 12,
+      background: isWarning ? "#fef3c7" : "#ede9fe",
+      border: `1.5px solid ${isWarning ? "#fcd34d" : "#c4b5fd"}`,
+      borderRadius: 10,
+      padding: "12px 16px",
+      marginBottom: 16,
+      fontSize: 13,
+      color: isWarning ? "#92400e" : "#4c1d95",
+      lineHeight: 1.5,
+    }}>
       <span style={{ fontSize: 20, flexShrink: 0 }}>{hint.icon}</span>
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 700, marginBottom: 2 }}>{hint.title}</div>
@@ -284,8 +203,93 @@ function HintBanner({ hint, onSwitch }) {
   );
 }
 
-// ─── Quote Modal ──────────────────────────────────────────────────────────────
+function buildQuoteHTML({ location, rows, companyName, date, size, leadForm }) {
+  const config = SIZE_CONFIG[size];
+  const tableRows = rows
+    .map((r) => {
+      const price = Number(r.price || 0);
+      const units = Number(r.units || 1);
+      const total = price * units;
+      return `
+        <tr>
+          <td class="td">${r.name}</td>
+          <td class="td tc">${units}</td>
+          <td class="td tc">&#8377;${price.toLocaleString("en-IN")}.00</td>
+          <td class="td tc">&#8377;${Math.round(price * 0.09).toLocaleString("en-IN")}.00</td>
+          <td class="td tc">&#8377;${Math.round(price * 0.09).toLocaleString("en-IN")}.00</td>
+          <td class="td tc bold">&#8377;${total.toLocaleString("en-IN")}.00</td>
+        </tr>`;
+    })
+    .join("");
 
+  const totalAmount = rows.reduce(
+    (s, r) => s + Number(r.price || 0) * Number(r.units || 1),
+    0
+  );
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Workspace Quotation - ${location}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Arial,sans-serif;background:#fff;padding:40px;color:#1a1a1a;font-size:14px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}
+  .logo{font-size:22px;font-weight:700;color:#7c3aed}
+  .top-right{text-align:right;font-size:12px;color:#666;line-height:1.7}
+  .box{border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;margin-bottom:14px}
+  .box-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em}
+  .box-val{font-size:14px;font-weight:600;color:#111}
+  table{width:100%;border-collapse:collapse;margin:18px 0}
+  thead tr{background:#f3f4f6}
+  th{padding:10px 12px;text-align:left;font-size:12px;color:#374151}
+  td{padding:12px;border-bottom:1px solid #e5e7eb;font-size:13px}
+  .tc{text-align:center}
+  .bold{font-weight:700}
+  .summary{width:280px;margin-left:auto;border-top:2px solid #e5e7eb;padding-top:14px}
+  .summary-row{display:flex;justify-content:space-between;padding:4px 0}
+  .summary-total{display:flex;justify-content:space-between;padding-top:10px;margin-top:8px;border-top:1px solid #111;font-weight:700}
+  .meta{margin-bottom:16px}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div>
+      <div class="logo">Co Work</div>
+      <div style="font-size:12px;color:#999;margin-top:4px">Premium Coworking · Hyderabad</div>
+    </div>
+    <div class="top-right">
+      <div><strong>Date:</strong> ${date}</div>
+      ${leadForm.name ? `<div><strong>Name:</strong> ${leadForm.name}</div>` : ""}
+      ${leadForm.email ? `<div><strong>Email:</strong> ${leadForm.email}</div>` : ""}
+      ${leadForm.phone ? `<div><strong>Phone:</strong> ${leadForm.phone}</div>` : ""}
+      ${companyName ? `<div><strong>Company:</strong> ${companyName}</div>` : ""}
+    </div>
+  </div>
+  <div class="meta">
+    <div class="box"><div class="box-label">Location</div><div class="box-val">${location}</div></div>
+    <div class="box"><div class="box-label">Package Size</div><div class="box-val">${size} (${config.seatRange})</div></div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Item Name</th><th class="tc">Seats</th><th class="tc">Price / Seat</th>
+        <th class="tc">CGST (9%)</th><th class="tc">SGST (9%)</th><th class="tc">Total</th>
+      </tr>
+    </thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+  <div class="summary">
+    <div class="summary-row"><span>Subtotal</span><span>&#8377;${totalAmount.toLocaleString("en-IN")}</span></div>
+    <div class="summary-total"><span>Grand Total</span><span>&#8377;${totalAmount.toLocaleString("en-IN")}</span></div>
+  </div>
+  <script>window.onload = function() { window.print(); };</script>
+</body>
+</html>`;
+}
+
+// ─── Quote Modal ──────────────────────────────────────────────────────────────
 function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
   const config = SIZE_CONFIG[size] || SIZE_CONFIG.Small;
   const overlayRef = useRef();
@@ -294,14 +298,18 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
   const [locationOpen, setLocationOpen] = useState(false);
   const [typeOpen, setTypeOpen] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState([config.types[0]]);
-  // Raw string inputs so field can be completely empty while typing
   const [unitInputs, setUnitInputs] = useState({});
   const [companyName, setCompanyName] = useState("");
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const [leadForm, setLeadForm] = useState({ name: "", email: "", phone: "" });
 
-  // Reset when size changes
   useEffect(() => {
     setSelectedTypes([config.types[0]]);
     setUnitInputs({});
+    setCompanyName("");
+    setLeadForm({ name: "", email: "", phone: "" });
+    setFormErrors({});
   }, [size]);
 
   useEffect(() => {
@@ -317,15 +325,12 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
 
   if (!open) return null;
 
-  // ── price lookup ──
   const getPrice = (typeName) => {
     const nameMatches = allWorkspaces.filter(
       (w) => (w.name || "").trim().toLowerCase() === typeName.trim().toLowerCase()
     );
     if (nameMatches.length === 0) return 0;
-    const locationMatch = nameMatches.find((w) =>
-      workspaceMatchesLocation(w, location)
-    );
+    const locationMatch = nameMatches.find((w) => workspaceMatchesLocation(w, location));
     if (locationMatch) return Number(locationMatch.price || 0);
     if (nameMatches.length === 1) return Number(nameMatches[0].price || 0);
     return 0;
@@ -337,23 +342,17 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
     );
   };
 
-  // Raw string stored in state (allows "" so user can clear with backspace)
-  const getRaw = (type) =>
-    unitInputs[type] !== undefined ? unitInputs[type] : "1";
-
-  // Numeric value used for price calculation; falls back to 1 when empty/invalid
+  const getRaw = (type) => (unitInputs[type] !== undefined ? unitInputs[type] : "1");
   const getEffective = (type) => {
     const n = parseInt(getRaw(type), 10);
     return isNaN(n) || n < 1 ? 1 : n;
   };
 
   const handleUnitChange = (type, value) => {
-    // Strip anything that isn't a digit; allow empty string
     const sanitised = value.replace(/[^0-9]/g, "");
     setUnitInputs((prev) => ({ ...prev, [type]: sanitised }));
   };
 
-  // Build rows
   const rows = selectedTypes.map((type) => ({
     name: type,
     price: getPrice(type),
@@ -361,18 +360,62 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
     raw: getRaw(type),
   }));
 
-  // Per-row hints
   const rowHints = Object.fromEntries(
     selectedTypes.map((type) => [type, getUnitHint(getRaw(type), size)])
   );
+
   const activeHint = Object.values(rowHints).find(Boolean) || null;
   const hasOutOfRange = activeHint !== null;
+  const hasAnyPrice = rows.some((r) => r.price > 0);
+
+  const totalSeats = rows.reduce((s, r) => s + r.units, 0);
 
   const totalAmount = rows.reduce(
     (s, r) => s + (r.price > 0 && !rowHints[r.name] ? r.price * r.units : 0),
     0
   );
-  const hasAnyPrice = rows.some((r) => r.price > 0);
+
+  const validateForm = () => {
+    const errors = {};
+    if (!leadForm.name.trim()) errors.name = "Name is required.";
+    if (!leadForm.email.trim()) errors.email = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(leadForm.email)) errors.email = "Enter a valid email.";
+    if (!leadForm.phone.trim()) errors.phone = "Phone number is required.";
+    else if (!/^[0-9]{10}$/.test(leadForm.phone.replace(/\s/g, ""))) errors.phone = "Enter a valid 10-digit phone number.";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleDownload = async () => {
+    if (!validateForm()) return;
+    try {
+      await axiosInstance.post("leads/create-quotation-lead/", {
+        name: leadForm.name,
+        email: leadForm.email,
+        phone: leadForm.phone,
+        company: companyName,
+        preferred_location: location,
+        workspace_type: size,
+        total_amount: totalAmount,
+        quotation_details: rows,
+      });
+    } catch (error) {
+      console.log("Quotation Lead Error", error);
+    }
+
+    const html = buildQuoteHTML({
+      location, rows, companyName,
+      date: new Date().toLocaleDateString("en-IN"),
+      size, leadForm,
+    });
+
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url, "_blank", "width=900,height=700");
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    if (printWindow) printWindow.focus();
+    setShowLeadForm(false);
+  };
 
   return (
     <div
@@ -383,31 +426,122 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
       <div className="qm-modal">
         <button className="qm-close" onClick={onClose}>✕</button>
 
-        {/* Size badge */}
-        <div style={{ marginBottom: 14 }}>
-          <span
-            style={{
-              display: "inline-block",
-              padding: "3px 12px",
-              borderRadius: 99,
-              fontSize: 12,
-              fontWeight: 700,
-              background: "#ede9fe",
-              color: "#6d28d9",
-              letterSpacing: ".04em",
-            }}
-          >
-            {size} · {config.subtitle}
-          </span>
-          <p style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
-            Valid units for this tier:{" "}
-            <strong>{config.minUnits}–{config.maxUnits}</strong>
-          </p>
+        {/* ── Modal Header with Seat Range Info ── */}
+        <div style={{
+          background: `linear-gradient(135deg, ${config.accentLight}, #fff)`,
+          border: `1.5px solid ${config.accent}33`,
+          borderRadius: 12,
+          padding: "14px 18px",
+          marginBottom: 18,
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+        }}>
+          <div style={{
+            fontSize: 32,
+            width: 52,
+            height: 52,
+            background: config.accentLight,
+            border: `1.5px solid ${config.accent}44`,
+            borderRadius: 12,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            {config.icon}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{
+                display: "inline-block",
+                padding: "3px 12px",
+                borderRadius: 99,
+                fontSize: 12,
+                fontWeight: 700,
+                background: config.accent,
+                color: "#fff",
+                letterSpacing: ".04em",
+              }}>
+                {config.displayLabel} Plan
+              </span>
+              <span style={{
+                display: "inline-block",
+                padding: "3px 12px",
+                borderRadius: 99,
+                fontSize: 12,
+                fontWeight: 600,
+                background: config.accentLight,
+                color: config.accent,
+                border: `1px solid ${config.accent}44`,
+              }}>
+                {config.seatRange}
+              </span>
+            </div>
+            <p style={{ fontSize: 12, color: "#6b7280", marginTop: 5 }}>
+              {config.description}
+            </p>
+          </div>
+          <div style={{
+            textAlign: "right",
+            flexShrink: 0,
+            fontSize: 11,
+            color: "#9ca3af",
+            lineHeight: 1.7,
+          }}>
+            <div style={{ fontWeight: 700, fontSize: 13, color: "#374151" }}>Seat Limit</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: config.accent }}>
+              {config.maxSeats}
+            </div>
+            <div>seats max</div>
+          </div>
         </div>
 
-        {/* Filters row */}
+        {/* ── Size Switcher Tabs ── */}
+        <div style={{
+          display: "flex",
+          gap: 6,
+          marginBottom: 18,
+          background: "#f9fafb",
+          borderRadius: 10,
+          padding: 4,
+          border: "1px solid #e5e7eb",
+        }}>
+          {["Small", "Medium", "Large"].map((s) => {
+            const sc = SIZE_CONFIG[s];
+            const isActive = s === size;
+            return (
+              <button
+                key={s}
+                onClick={() => onSwitchSize(s)}
+                style={{
+                  flex: 1,
+                  padding: "8px 6px",
+                  borderRadius: 8,
+                  border: "none",
+                  cursor: "pointer",
+                  background: isActive ? sc.accent : "transparent",
+                  color: isActive ? "#fff" : "#6b7280",
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: 12,
+                  transition: "all 0.2s",
+                  lineHeight: 1.3,
+                }}
+              >
+                <div>{s}</div>
+                <div style={{ fontSize: 10, opacity: 0.85, fontWeight: 400 }}>
+                  {sc.seatRange}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Seat Capacity Progress Bar ── */}
+        <SeatCapacityBar size={size} currentUnits={totalSeats} />
+
+        {/* ── Filters Row ── */}
         <div className="qm-filters-row">
-          {/* Location */}
           <div className="qm-dropdown-wrap">
             <div className="qm-dropdown-label">Location</div>
             <div
@@ -432,7 +566,6 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
             )}
           </div>
 
-          {/* Space type */}
           <div className="qm-dropdown-wrap">
             <div className="qm-dropdown-label">Space Type</div>
             <div
@@ -452,20 +585,12 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
                   const checked = selectedTypes.includes(type);
                   return (
                     <label key={type} className="qm-checkbox-item">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleType(type)}
-                      />
+                      <input type="checkbox" checked={checked} onChange={() => toggleType(type)} />
                       <span className="qm-checkbox-label">{type}</span>
                       {price > 0 ? (
-                        <span className="qm-checkbox-price">
-                          ₹{price.toLocaleString("en-IN")}
-                        </span>
+                        <span className="qm-checkbox-price">₹{price.toLocaleString("en-IN")}</span>
                       ) : (
-                        <span className="qm-checkbox-price" style={{ color: "#aaa" }}>
-                          N/A
-                        </span>
+                        <span className="qm-checkbox-price" style={{ color: "#aaa" }}>N/A</span>
                       )}
                     </label>
                   );
@@ -474,7 +599,6 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
             )}
           </div>
 
-          {/* Company */}
           <div className="qm-company-wrap">
             <div className="qm-dropdown-label">Company (optional)</div>
             <input
@@ -486,23 +610,21 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
           </div>
         </div>
 
-        {/* Upgrade / downgrade hint banner */}
         <HintBanner hint={activeHint} onSwitch={onSwitchSize} />
 
-        {/* Table */}
         {selectedTypes.length > 0 ? (
           <div className="qm-table-wrap">
             <table className="qm-table">
               <thead>
                 <tr>
                   <th>Item Name</th>
-                  <th style={{ width: 140 }}>
-                    Units{" "}
+                  <th style={{ width: 160 }}>
+                    Seats{" "}
                     <span style={{ fontWeight: 400, color: "#9ca3af", fontSize: 11 }}>
-                      ({config.minUnits}–{config.maxUnits})
+                      (max {config.maxUnits})
                     </span>
                   </th>
-                  <th>Price / Unit</th>
+                  <th>Price / Seat</th>
                   <th>CGST (9%)</th>
                   <th>SGST (9%)</th>
                   <th>Total</th>
@@ -513,45 +635,39 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
                   const hint = rowHints[row.name];
                   const outOfRange = hint !== null && row.raw !== "";
                   const total = row.price * row.units;
-
                   return (
                     <tr key={row.name}>
                       <td>{row.name}</td>
-
-                      {/* ── Free-type input – fully clearable ── */}
                       <td>
-                        <input
-                          className="qm-units-input"
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="Enter units"
-                          value={row.raw}
-                          onChange={(e) => handleUnitChange(row.name, e.target.value)}
-                          style={{
-                            width: 90,
-                            borderColor: outOfRange ? "#f87171" : undefined,
-                            outline: outOfRange ? "2px solid #fee2e2" : undefined,
-                          }}
-                        />
-                        {outOfRange && (
-                          <div
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <input
+                            className="qm-units-input"
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="Seats"
+                            value={row.raw}
+                            onChange={(e) => handleUnitChange(row.name, e.target.value)}
                             style={{
-                              fontSize: 10,
-                              color: "#ef4444",
-                              marginTop: 3,
-                              lineHeight: 1.3,
+                              width: 80,
+                              borderColor: outOfRange ? "#f87171" : undefined,
+                              outline: outOfRange ? "2px solid #fee2e2" : undefined,
                             }}
-                          >
-                            Out of range
+                          />
+                          <span style={{ fontSize: 11, color: "#9ca3af", whiteSpace: "nowrap" }}>
+                            / {config.maxUnits} max
+                          </span>
+                        </div>
+                        {outOfRange && (
+                          <div style={{ fontSize: 10, color: "#ef4444", marginTop: 3, lineHeight: 1.3 }}>
+                            Max {config.maxSeats} seats for {size} plan
                           </div>
                         )}
                       </td>
-
                       <td>
                         {row.price > 0 ? (
                           `₹${row.price.toLocaleString("en-IN")}.00`
                         ) : (
-                          <span className="qm-no-price">Not available</span>
+                          <span className="qm-no-price">Not available here</span>
                         )}
                       </td>
                       <td>{row.price > 0 ? "included" : "—"}</td>
@@ -568,52 +684,84 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
             </table>
 
             {!hasAnyPrice && (
-              <div
-                style={{
-                  background: "#fef3c7",
-                  border: "1px solid #fcd34d",
-                  borderRadius: 8,
-                  padding: "12px 16px",
-                  fontSize: 13,
-                  color: "#92400e",
-                  marginBottom: 16,
-                }}
-              >
-                ⚠️ No pricing found for <strong>{location}</strong> with the selected
-                type(s).
+              <div style={{
+                background: "#fef3c7",
+                border: "1px solid #fcd34d",
+                borderRadius: 8,
+                padding: "12px 16px",
+                fontSize: 13,
+                color: "#92400e",
+                marginBottom: 16,
+              }}>
+                ⚠️ No pricing found for <strong>{location}</strong> with the selected type(s).
               </div>
             )}
 
-            {/* Summary */}
             <div className="qm-summary-wrap">
               <div className="qm-summary">
                 <div className="qm-summary-row">
                   <span>Subtotal</span>
-                  <span>
-                    {hasOutOfRange ? "—" : `₹${totalAmount.toLocaleString("en-IN")}`}
-                  </span>
+                  <span>{hasOutOfRange ? "—" : `₹${totalAmount.toLocaleString("en-IN")}`}</span>
                 </div>
                 <div className="qm-summary-total">
                   <span>Grand Total</span>
-                  <span>
-                    {hasOutOfRange ? "—" : `₹${totalAmount.toLocaleString("en-IN")}`}
-                  </span>
+                  <span>{hasOutOfRange ? "—" : `₹${totalAmount.toLocaleString("en-IN")}`}</span>
                 </div>
               </div>
             </div>
 
             <button
               className="qm-download-btn"
-              onClick={() =>
-
-  setShowLeadForm(true)
-
-}
+              onClick={() => setShowLeadForm(true)}
               disabled={!hasAnyPrice || hasOutOfRange}
-              title={hasOutOfRange ? "Fix unit count before downloading" : undefined}
+              title={hasOutOfRange ? "Fix seat count before downloading" : undefined}
             >
               ⬇ Download Quotation PDF
             </button>
+
+            {showLeadForm && (
+              <div className="qm-form-overlay">
+                <div className="qm-lead-popup">
+                  <h2>Download Quotation</h2>
+                  <p>Enter your details to continue</p>
+
+                  <div className="qm-field">
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      value={leadForm.name}
+                      onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
+                    />
+                    {formErrors.name && <span className="qm-error">{formErrors.name}</span>}
+                  </div>
+
+                  <div className="qm-field">
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={leadForm.email}
+                      onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
+                    />
+                    {formErrors.email && <span className="qm-error">{formErrors.email}</span>}
+                  </div>
+
+                  <div className="qm-field">
+                    <input
+                      type="text"
+                      placeholder="Phone Number"
+                      value={leadForm.phone}
+                      onChange={(e) =>
+                        setLeadForm({ ...leadForm, phone: e.target.value.replace(/[^0-9]/g, "").slice(0, 10) })
+                      }
+                    />
+                    {formErrors.phone && <span className="qm-error">{formErrors.phone}</span>}
+                  </div>
+
+                  <button className="qm-download-btn" onClick={handleDownload}>Download PDF</button>
+                  <button className="qm-cancel-btn" onClick={() => setShowLeadForm(false)}>Cancel</button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="qm-empty">
@@ -626,8 +774,7 @@ function QuoteModal({ open, onClose, size, onSwitchSize, allWorkspaces }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
+// ─── Companies Section ────────────────────────────────────────────────────────
 const CompaniesSection = () => {
   const navigate = useNavigate();
   const [allWorkspaces, setAllWorkspaces] = useState([]);
@@ -650,9 +797,7 @@ const CompaniesSection = () => {
     setQuoteOpen(true);
   };
 
-  const handleSwitchSize = (newSize) => {
-    setSelectedSize(newSize);
-  };
+  const handleSwitchSize = (newSize) => setSelectedSize(newSize);
 
   const sizes = ["Small", "Medium", "Large"];
   const cardImages = [
@@ -667,6 +812,9 @@ const CompaniesSection = () => {
         <div className="cs-header">
           <span className="cs-eyebrow">Workspace Solutions · Hyderabad</span>
           <h2 className="cs-title">Office Space for Every Team Size</h2>
+          <p style={{ color: "#6b7280", fontSize: 14, marginTop: 6 }}>
+            Choose a plan that fits your team's seat count — from solo desks to enterprise floors.
+          </p>
         </div>
 
         <div className="cs-grid">
@@ -678,27 +826,86 @@ const CompaniesSection = () => {
                 className={`cs-card ${config.featured ? "cs-card--featured" : ""}`}
                 style={{ backgroundImage: `url(${cardImages[idx]})` }}
                 onClick={() =>
-                  navigate(`/speciall-contact/${idx + 1}`, {
-                    state: { workspaceSize: size },
-                  })
+                  navigate(`/speciall-contact/${idx + 1}`, { state: { workspaceSize: size } })
                 }
               >
                 <div className="cs-overlay" />
                 <div className="cs-card-body">
                   <div>
-                    {config.featured && <span className="cs-badge">Popular</span>}
+                    {config.featured && <span className="cs-badge">Most Popular</span>}
+
+                    {/* Seat Range Badge */}
+                    <div style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      background: "rgba(255,255,255,0.18)",
+                      backdropFilter: "blur(6px)",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      borderRadius: 99,
+                      padding: "4px 12px",
+                      marginBottom: 10,
+                      fontSize: 12,
+                      color: "#fff",
+                      fontWeight: 600,
+                    }}>
+                      <span style={{ fontSize: 14 }}>🪑</span>
+                      {config.seatRange}
+                    </div>
+
                     <h3 className="cs-size">{size}</h3>
                     <p className="cs-sub">{config.subtitle}</p>
-                    <p
-                      style={{
-                        fontSize: 11,
-                        color: "rgba(255,255,255,0.65)",
-                        marginTop: 4,
-                      }}
-                    >
-                      {config.minUnits}–{config.maxUnits} units
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", marginTop: 4 }}>
+                      {config.description}
                     </p>
+
+                    {/* Seat Dots Visual */}
+                    <div style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 3,
+                      marginTop: 10,
+                      maxWidth: 120,
+                    }}>
+                      {Array.from({
+                        length: size === "Small" ? 5 : size === "Medium" ? 8 : 12
+                      }).map((_, i) => (
+                        <div key={i} style={{
+                          width: size === "Large" ? 8 : 10,
+                          height: size === "Large" ? 8 : 10,
+                          borderRadius: "50%",
+                          background: "rgba(255,255,255,0.6)",
+                          border: "1px solid rgba(255,255,255,0.4)",
+                        }} />
+                      ))}
+                      <div style={{
+                        fontSize: 10,
+                        color: "rgba(255,255,255,0.7)",
+                        alignSelf: "center",
+                        marginLeft: 2,
+                      }}>
+                        up to {config.maxSeats}
+                      </div>
+                    </div>
+
+                    {/* Space Types */}
+                    <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      {config.types.map((t) => (
+                        <span key={t} style={{
+                          fontSize: 10,
+                          background: "rgba(255,255,255,0.15)",
+                          border: "1px solid rgba(255,255,255,0.25)",
+                          borderRadius: 99,
+                          padding: "2px 8px",
+                          color: "rgba(255,255,255,0.9)",
+                          backdropFilter: "blur(4px)",
+                        }}>
+                          {t}
+                        </span>
+                      ))}
+                    </div>
                   </div>
+
                   <div className="cs-btn-group">
                     <button
                       className="cs-btn-quote"
@@ -710,9 +917,7 @@ const CompaniesSection = () => {
                       className="cs-btn-book"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/speciall-contact/${idx + 1}`, {
-                          state: { workspaceSize: size },
-                        });
+                        navigate(`/speciall-contact/${idx + 1}`, { state: { workspaceSize: size } });
                       }}
                     >
                       Book Now →

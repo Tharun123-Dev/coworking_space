@@ -34,11 +34,7 @@ const NAV_GROUPS = [
     children: [
       { key: "workspaces", icon: "🏗️", label: "Workspaces" },
       { key: "offerWorkspaces", icon: "🔥", label: "Offer Workspaces" },
-      {
-        key: "additionalAmenities",
-        icon: "☕",
-        label: "Additional Amenities",
-      },
+      { key: "additionalAmenities", icon: "☕", label: "Additional Amenities" },
       { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
     ],
   },
@@ -60,6 +56,7 @@ const NAV_GROUPS = [
       { key: "hyderabadLeads", icon: "📍", label: "Hyderabad Leads" },
       { key: "offerLeads", icon: "🔥", label: "Offer Leads" },
       { key: "customisationLeads", icon: "🎨", label: "Customisation Leads" },
+      { key: "quotationLeads", icon: "📄", label: "Quotation Leads" },
     ],
   },
   {
@@ -74,6 +71,30 @@ const LS_KEY = "ownerBookingStates";
 const loadStates = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; } };
 const saveState = (id, patch) => { const all = loadStates(); all[id] = { ...(all[id] || {}), ...patch }; localStorage.setItem(LS_KEY, JSON.stringify(all)); };
 
+// ─── Inline SVG icon component (matches AdminDashboard style) ────────────────
+const SvgIcon = ({ d, size = 14 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ display: "inline-block", verticalAlign: "middle" }}
+  >
+    <path d={d} />
+  </svg>
+);
+
+// SVG paths for workspace action icons
+const SVG = {
+  edit: "M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7 M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z",
+  eyeOn: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 9a3 3 0 100 6 3 3 0 000-6z",
+  eyeOff: "M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94 M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19 M1 1l22 22",
+};
+
 function OwnerDashboard() {
   const navigate = useNavigate();
 
@@ -86,6 +107,7 @@ function OwnerDashboard() {
   const [hyderabadLeads, setHyderabadLeads] = useState([]);
   const [offerLeads, setOfferLeads] = useState([]);
   const [customisationLeads, setCustomisationLeads] = useState([]);
+  const [quotationLeads, setQuotationLeads] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [requests, setRequests] = useState([]);
   const [ownerCity, setOwnerCity] = useState("");
@@ -107,6 +129,7 @@ function OwnerDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [additionalAmenities, setAdditionalAmenities] = useState([]);
   const [editAmenityId, setEditAmenityId] = useState(null);
+
   const [amenityForm, setAmenityForm] = useState({
     workspace: "",
     title: "",
@@ -128,8 +151,7 @@ function OwnerDashboard() {
   const [suggestSearch, setSuggestSearch] = useState("");
   const [editOfferId, setEditOfferId] = useState(null);
 
-  // ─── APPROVED WORKSPACES (used in Slot, Monthly Slot, Additional Amenities dropdowns) ───
-  // Only workspaces with is_approved === true are shown in slot/amenity dropdowns
+  // ─── APPROVED WORKSPACES ──────────────────────────────────────────────────
   const approvedWorkspaces = useMemo(
     () => workspaces.filter(w => w.is_approved === true),
     [workspaces]
@@ -159,12 +181,8 @@ function OwnerDashboard() {
   const fetchAdditionalAmenities = () => {
     axiosInstance
       .get("workspaces/additional-amenities/owner/")
-      .then((res) => {
-        setAdditionalAmenities(Array.isArray(res.data) ? res.data : []);
-      })
-      .catch((err) => {
-        console.log("Amenities Fetch Error:", err);
-      });
+      .then((res) => { setAdditionalAmenities(Array.isArray(res.data) ? res.data : []); })
+      .catch((err) => { console.log("Amenities Fetch Error:", err); });
   };
   const fetchRevenue = () => axiosInstance.get("cart/owner/revenue/").then(res => setRevenue(res.data)).catch(err => console.error("Revenue fetch error:", err));
   const fetchSlots = () => axiosInstance.get("workspaces/slots/owner/").then(res => setSlots(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Slot fetch error:", err));
@@ -177,6 +195,11 @@ function OwnerDashboard() {
   const fetchCancelRequests = useCallback(() => axiosInstance.get("cart/booking/owner/cancel-requests/").then(res => setRequests(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Failed to fetch cancel requests:", err)), []);
   const fetchHyderabadLeads = () => axiosInstance.get("hyderabad/owner/").then(res => setHyderabadLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Hyderabad leads fetch error:", err));
   const fetchCustomisationLeads = () => axiosInstance.get("leads/modern-leads/owner/").then(res => setCustomisationLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Customisation leads fetch error:", err));
+  const fetchQuotationLeads = () =>
+    axiosInstance
+      .get("leads/quotation-leads/owner/")
+      .then((res) => setQuotationLeads(Array.isArray(res.data) ? res.data : []))
+      .catch((err) => console.error("Quotation leads fetch error:", err));
 
   const handleEditOffer = (item) => { setOfferForm({ building: item.building, type: item.type, original_price: item.original_price, offer_price: item.offer_price, seats: item.seats, floor: item.floor, image: item.image, amenities: item.amenities || [] }); setEditOfferId(item.id); };
   const handleDeleteOffer = (id) => { if (!window.confirm("Delete this workspace?")) return; axiosInstance.delete(`workspaces/offers/delete/${id}/`).then(() => fetchOfferWorkspaces()).catch(err => console.error(err)); };
@@ -186,46 +209,22 @@ function OwnerDashboard() {
   };
 
   const handleAddAmenity = () => {
-    if (!amenityForm.workspace || !amenityForm.title || !amenityForm.price) {
-      alert("Please fill required fields");
-      return;
-    }
-    const existsInAdminAmenities = amenitiesList.some(
-      (a) => a.name?.trim().toLowerCase() === amenityForm.title.trim().toLowerCase()
-    );
-    if (existsInAdminAmenities) {
-      alert(`"${amenityForm.title}" already exists in Admin Amenities`);
-      return;
-    }
-    const alreadyExists = additionalAmenities.some(
-      (a) =>
-        a.workspace === Number(amenityForm.workspace) &&
-        a.title?.trim().toLowerCase() === amenityForm.title.trim().toLowerCase() &&
-        a.price_type === amenityForm.price_type
-    );
-    if (alreadyExists) {
-      alert(`"${amenityForm.title}" already exists for this workspace`);
-      return;
-    }
+    if (!amenityForm.workspace || !amenityForm.title || !amenityForm.price) { alert("Please fill required fields"); return; }
+    const existsInAdminAmenities = amenitiesList.some((a) => a.name?.trim().toLowerCase() === amenityForm.title.trim().toLowerCase());
+    if (existsInAdminAmenities) { alert(`"${amenityForm.title}" already exists in Admin Amenities`); return; }
+    const alreadyExists = additionalAmenities.some((a) => a.workspace === Number(amenityForm.workspace) && a.title?.trim().toLowerCase() === amenityForm.title.trim().toLowerCase() && a.price_type === amenityForm.price_type);
+    if (alreadyExists) { alert(`"${amenityForm.title}" already exists for this workspace`); return; }
     const request = editAmenityId
       ? axiosInstance.put(`workspaces/additional-amenities/update/${editAmenityId}/`, amenityForm)
       : axiosInstance.post("workspaces/additional-amenities/create/", amenityForm);
     request
-      .then(() => {
-        fetchAdditionalAmenities();
-        setAmenityForm({ workspace: "", title: "", description: "", price: "", price_type: "full_day" });
-        setEditAmenityId(null);
-        alert(editAmenityId ? "Amenity Updated" : "Amenity Added");
-      })
+      .then(() => { fetchAdditionalAmenities(); setAmenityForm({ workspace: "", title: "", description: "", price: "", price_type: "full_day" }); setEditAmenityId(null); alert(editAmenityId ? "Amenity Updated" : "Amenity Added"); })
       .catch((err) => { console.log(err); });
   };
 
   const handleDeleteAmenity = (id) => {
     if (!window.confirm("Delete this amenity?")) return;
-    axiosInstance
-      .delete(`workspaces/additional-amenities/delete/${id}/`)
-      .then(() => { fetchAdditionalAmenities(); alert("Deleted Successfully"); })
-      .catch((err) => { console.log(err); });
+    axiosInstance.delete(`workspaces/additional-amenities/delete/${id}/`).then(() => { fetchAdditionalAmenities(); alert("Deleted Successfully"); }).catch((err) => { console.log(err); });
   };
 
   const buildNotifications = () => {
@@ -239,28 +238,22 @@ function OwnerDashboard() {
 
   const handleViewNotification = (notification) => {
     setActiveSection(notification.section);
-    if (["companyLeads","hyderabadLeads","offerLeads","customisationLeads"].includes(notification.section)) {
-      setOpenGroups(prev => ({ ...prev, leadsGroup: true }));
+    if (["companyLeads", "hyderabadLeads", "offerLeads", "customisationLeads", "quotationLeads"].includes(notification.section)) {
+      setOpenGroups((prev) => ({ ...prev, leadsGroup: true }));
     }
     let updatedViewed = [...viewedNotifications];
-    if (notification.section === "offerLeads") {
-      const offerIds = notifications.filter(n => n.section === "offerLeads").map(n => n.id);
-      updatedViewed = [...new Set([...updatedViewed, ...offerIds])];
-    } else if (notification.section === "customisationLeads") {
-      const customIds = notifications.filter(n => n.section === "customisationLeads").map(n => n.id);
-      updatedViewed = [...new Set([...updatedViewed, ...customIds])];
-    } else {
-      updatedViewed = [...new Set([...updatedViewed, notification.id])];
-    }
+    const sameSectionIds = notifications.filter((n) => n.section === notification.section).map((n) => n.id);
+    updatedViewed = [...new Set([...updatedViewed, ...sameSectionIds])];
     setViewedNotifications(updatedViewed);
-    setNotifications(prev => prev.filter(n => !updatedViewed.includes(n.id)));
+    localStorage.setItem("viewedNotifications", JSON.stringify(updatedViewed));
+    setNotifications((prev) => prev.filter((n) => n.section !== notification.section));
     setShowNotifications(false);
   };
 
   useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads]);
   useEffect(() => { localStorage.setItem("viewedNotifications", JSON.stringify(viewedNotifications)); }, [viewedNotifications]);
   useEffect(() => {
-    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
+    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchQuotationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
   }, [fetchBookings, fetchCancelRequests]);
   useEffect(() => { const loc = localStorage.getItem("user_location"); if (loc) setOwnerCity(loc); }, []);
   useEffect(() => { const handleResize = () => { if (window.innerWidth > 640) setMobileSidebarOpen(false); }; window.addEventListener("resize", handleResize); return () => window.removeEventListener("resize", handleResize); }, []);
@@ -299,6 +292,13 @@ function OwnerDashboard() {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, ...patch } : b));
     setSelectedBooking(prev => prev?.id === id ? { ...prev, ...patch } : prev);
   };
+
+  const updateQuotationLeadStatus = (id, status) => {
+    axiosInstance.patch(`leads/quotation-lead/${id}/status/`, { status })
+      .then(() => { fetchQuotationLeads(); })
+      .catch((err) => console.log(err));
+  };
+
   const getLatestBooking = (id) => { const booking = bookings.find(b => b.id === id); if (!booking) return null; const ls = localStates[id] || {}; return { ...booking, ...ls }; };
   const openBookingModal = (item) => { const latest = getLatestBooking(item.id); setSelectedBooking(latest || item); setBookingActiveTab("overview"); };
   const closeBookingModal = () => setSelectedBooking(null);
@@ -313,36 +313,44 @@ function OwnerDashboard() {
     if (!form.name || !ownerCity || !form.price) { alert("Please fill required fields (Name, City, Price)"); return; }
     const payload = { ...form, city: ownerCity, price: Number(form.price), amenities: form.amenities.map(Number) };
     if (editId) { axiosInstance.put(`workspaces/update/${editId}/`, payload).then(() => { alert("Workspace Updated ✅"); resetWorkspaceForm(); fetchWorkspaces(); }).catch(err => { console.error(err); alert("Update failed"); }); }
-    else { axiosInstance.post("workspaces/add/", payload).then(() => { alert("Workspace Added ✅"); resetWorkspaceForm(); fetchWorkspaces(); }).catch(err => { console.error(err); alert("Add failed"); }); }
+    else { axiosInstance.post("workspaces/add/", payload).then(() => { alert("Workspace Added And Waiting For an admin approval... ✅"); resetWorkspaceForm(); fetchWorkspaces(); }).catch(err => { console.error(err); alert("Add failed"); }); }
   };
 
-  const handleEdit = (item) => { setForm({ name: item.name || "", city: item.city || "", location: item.location || "", price: item.price || "", image: item.image || "", description: item.description || "", amenities: Array.isArray(item.amenities) ? item.amenities.map(a => typeof a === "object" ? a.id : a) : [] }); setEditId(item.id); setActiveSection("workspaces"); setMobileSidebarOpen(false); };
-  const handleDelete = (id) => { if (!window.confirm("Delete this workspace?")) return; axiosInstance.delete(`workspaces/delete/${id}/`).then(() => { fetchWorkspaces(); fetchAllWorkspaces(); }).catch(err => { console.error(err?.response?.data || err); alert("Delete failed"); }); };
-
-  const createSlot = () => {
-    if (!slotForm.workspace_id || !slotForm.date || !slotForm.price) { alert("Fill all fields"); return; }
-    const payload = { ...slotForm, workspace_id: Number(slotForm.workspace_id), start_time: slotForm.slot_type === "hour" ? Number(slotForm.start_time) : null, end_time: slotForm.slot_type === "hour" ? Number(slotForm.end_time) : null, capacity: Number(slotForm.capacity), price: Number(slotForm.price) };
-    if (editSlotId) { axiosInstance.put(`workspaces/slot/update/${editSlotId}/`, payload).then(() => { alert("Slot Updated ✅"); resetSlotForm(); fetchSlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Slot update failed"); }); }
-    else { axiosInstance.post("workspaces/slot/create/", payload).then(() => { alert("Slot Created ✅"); resetSlotForm(); fetchSlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Slot create failed"); }); }
+  const handleEdit = (item) => {
+    setForm({ name: item.name || "", city: item.city || "", location: item.location || "", price: item.price || "", image: item.image || "", description: item.description || "", amenities: Array.isArray(item.amenities) ? item.amenities.map(a => typeof a === "object" ? a.id : a) : [] });
+    setEditId(item.id);
+    setActiveSection("workspaces");
+    setMobileSidebarOpen(false);
   };
 
-  const handleEditSlot = (s) => { setSlotForm({ workspace_id: s.workspace_id || "", date: s.date || "", slot_type: s.slot_type || "hour", start_time: s.start_time || 9, end_time: s.end_time || 18, capacity: s.capacity || 50, price: s.price || "" }); setEditSlotId(s.id); setActiveSection("slots"); setMobileSidebarOpen(false); };
-  const deleteSlot = (id) => { if (!window.confirm("Delete slot?")) return; axiosInstance.delete(`workspaces/slot/delete/${id}/`).then(() => { alert("Deleted ✅"); fetchSlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Delete slot failed"); }); };
+  // ─── NEW: Toggle Active / Inactive for owner workspaces ──────────────────
+  // Inactive → isavailable: false → hidden from website
+  // Active   → isavailable: true  → visible on website
+  const handleToggleActive = (item) => {
+    const isCurrentlyActive = item.isavailable !== false;
+    const newStatus = !isCurrentlyActive;
 
-  const createMonthlySlots = () => {
-    if (!monthlyForm.workspace_id || !monthlyForm.year || monthlyForm.months.length === 0 || !monthlyForm.capacity || !monthlyForm.price) { alert("Please fill all monthly slot fields"); return; }
-    const payload = { workspace_id: Number(monthlyForm.workspace_id), year: Number(monthlyForm.year), months: monthlyForm.months.map(Number), capacity: Number(monthlyForm.capacity), price: Number(monthlyForm.price) };
-    axiosInstance.post("workspaces/month-slots/create/", payload).then(() => { alert("Monthly slots created ✅"); resetMonthlyForm(); fetchMonthlySlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Error creating monthly slots"); });
+    axiosInstance
+      .put(`workspaces/update/${item.id}/`, {
+        ...item,
+        isavailable: newStatus,
+        // Also flip is_approved to false when marking inactive so it's not visible
+        is_approved: newStatus ? item.is_approved : false,
+        // Flatten amenities to IDs if needed
+        amenities: Array.isArray(item.amenities)
+          ? item.amenities.map(a => (typeof a === "object" ? a.id : a))
+          : [],
+      })
+      .then(() => {
+        showToast(
+          newStatus
+            ? "✅ Workspace set to Active — now visible on website"
+            : "🚫 Workspace set to Inactive — hidden from website"
+        );
+        fetchWorkspaces();
+      })
+      .catch(() => showToast("❌ Failed to update workspace status"));
   };
-
-  const handleEditMonth = (slot) => { setMonthlyForm({ workspace_id: String(slot.workspace_id || ""), year: slot.year || new Date().getFullYear(), months: [String(slot.month)], capacity: slot.capacity || 50, price: slot.price || "" }); setEditMonthId(slot.id); setActiveSection("monthlySlots"); setMobileSidebarOpen(false); };
-  const updateMonthlySlot = () => { if (!editMonthId) return; axiosInstance.put(`workspaces/monthly-slot/update/${editMonthId}/`, { capacity: Number(monthlyForm.capacity), price: Number(monthlyForm.price) }).then(() => { alert("Updated ✅"); resetMonthlyForm(); fetchMonthlySlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Update failed"); }); };
-  const deleteMonthlySlot = (id) => { if (!window.confirm("Delete this monthly slot?")) return; axiosInstance.delete(`workspaces/monthly-slot/delete/${id}/`).then(() => { alert("Deleted ✅"); fetchMonthlySlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Delete failed"); }); };
-
-  const updateCompanyLeadStatus = (id, status) => axiosInstance.put(`leads/company/status/${id}/`, { status }).then(() => fetchCompanyLeads()).catch(err => { console.error(err?.response?.data || err); alert("Status update failed"); });
-  const updateHyderabadLeadStatus = (id, status) => axiosInstance.put(`hyderabad/status/${id}/`, { status }).then(() => fetchHyderabadLeads()).catch(err => { console.error(err?.response?.data || err); alert("Status update failed"); });
-  const updateOfferLeadStatus = (id, status) => axiosInstance.put(`leads/offers/leads/status/${id}/`, { status }).then(() => fetchOfferLeads()).catch(err => { console.error(err); alert("Status update failed"); });
-  const updateCustomisationLeadStatus = (id, status) => axiosInstance.put(`leads/modern-lead/status/${id}/`, { status }).then(() => fetchCustomisationLeads()).catch(err => { console.error(err); alert("Status update failed"); });
 
   const myWorkspaceIds = useMemo(() => new Set(workspaces.map(w => w.id)), [workspaces]);
   const suggestedWorkspaces = useMemo(() => allWorkspaces.filter(w => !myWorkspaceIds.has(w.id)), [allWorkspaces, myWorkspaceIds]);
@@ -367,8 +375,23 @@ function OwnerDashboard() {
     </div>
   );
 
+  // ─── Workspace action button shared style helpers ─────────────────────────
+  const iconBtnBase = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "32px",
+    height: "32px",
+    borderRadius: "6px",
+    border: "none",
+    cursor: "pointer",
+    transition: "all 0.18s ease",
+    flexShrink: 0,
+  };
+
   const renderWorkspaces = () => (
     <div className={styles.sectionBody}>
+      {toastMsg && <div className={styles.toast}>{toastMsg}</div>}
       <div className={styles.formCard}>
         <h3 className={styles.formTitle}>{editId ? "✏️ Edit Workspace" : "➕ Add Workspace"}</h3>
         <div className={styles.formGrid}>
@@ -385,11 +408,124 @@ function OwnerDashboard() {
           {editId && <button className={styles.cancelBtn} onClick={resetWorkspaceForm}>Cancel</button>}
         </div>
       </div>
-      <div className={styles.tableTopBar}><input className={styles.searchInput} placeholder="Search my workspaces..." value={workspaceSearch} onChange={e => setWorkspaceSearch(e.target.value)} /></div>
+
+      <div className={styles.tableTopBar}>
+        <input className={styles.searchInput} placeholder="Search my workspaces..." value={workspaceSearch} onChange={e => setWorkspaceSearch(e.target.value)} />
+      </div>
+
       <div className={styles.tableWrap}>
         <table className={styles.table}>
-          <thead><tr><th>#</th><th>Name</th><th>City</th><th>Location</th><th>Price</th><th>Status</th><th>Amenities</th><th>Actions</th></tr></thead>
-          <tbody>{filteredMyWorkspaces.map((w, i) => (<tr key={w.id}><td>{i + 1}</td><td><strong>{w.name}</strong></td><td>{w.city}</td><td>{w.location || "—"}</td><td className={styles.priceCell}>₹{parseFloat(w.price || 0).toLocaleString()}</td><td>{w.is_approved ? <span className={styles.approvedBadge}>Approved</span> : <span className={styles.pendingBadge}>Pending</span>}</td><td><div className={styles.amenityList}>{Array.isArray(w.amenities) && w.amenities.length > 0 ? w.amenities.map((amenity, idx) => <span key={typeof amenity === "object" ? amenity.id || idx : idx} className={styles.amenityTag}><span>{getAmenityIcon(amenity)}</span><span>{getAmenityLabel(amenity)}</span></span>) : <span className={styles.noData}>No amenities</span>}</div></td><td><button onClick={() => handleEdit(w)} className={styles.editBtn}>Edit</button><button onClick={() => handleDelete(w.id)} className={styles.deleteBtn}>Delete</button></td></tr>))}</tbody>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>City</th>
+              <th>Location</th>
+              <th>Price</th>
+              <th>Approval</th>
+              <th>Status</th>
+              <th>Amenities</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredMyWorkspaces.map((w, i) => {
+              const isActive = w.isavailable !== false;
+              return (
+                <tr
+                  key={w.id}
+                  style={!isActive ? { opacity: 0.55, background: "rgba(0,0,0,0.02)" } : {}}
+                >
+                  <td>{i + 1}</td>
+                  <td><strong>{w.name}</strong></td>
+                  <td>{w.city}</td>
+                  <td>{w.location || "—"}</td>
+                  <td className={styles.priceCell}>₹{parseFloat(w.price || 0).toLocaleString()}</td>
+
+                  {/* Approval badge */}
+                  <td>
+                    {w.is_approved
+                      ? <span className={styles.approvedBadge}>Approved</span>
+                      : <span className={styles.pendingBadge}>Pending</span>}
+                  </td>
+
+                  {/* Active / Inactive status badge */}
+                  <td>
+                    {isActive ? (
+                      <span style={{
+                        display: "inline-block",
+                        padding: "2px 10px",
+                        borderRadius: "20px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        background: "#10b98118",
+                        color: "#10b981",
+                        border: "1px solid #10b98130",
+                      }}>Active</span>
+                    ) : (
+                      <span style={{
+                        display: "inline-block",
+                        padding: "2px 10px",
+                        borderRadius: "20px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        background: "#6b728018",
+                        color: "#6b7280",
+                        border: "1px solid #6b728030",
+                      }}>Inactive</span>
+                    )}
+                  </td>
+
+                  {/* Amenities */}
+                  <td>
+                    <div className={styles.amenityList}>
+                      {Array.isArray(w.amenities) && w.amenities.length > 0
+                        ? w.amenities.map((amenity, idx) => (
+                          <span key={typeof amenity === "object" ? amenity.id || idx : idx} className={styles.amenityTag}>
+                            <span>{getAmenityIcon(amenity)}</span>
+                            <span>{getAmenityLabel(amenity)}</span>
+                          </span>
+                        ))
+                        : <span className={styles.noData}>No amenities</span>}
+                    </div>
+                  </td>
+
+                  {/* Actions — icons only */}
+                  <td>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+
+                      {/* Edit icon */}
+                      <button
+                        title="Edit Workspace"
+                        onClick={() => handleEdit(w)}
+                        style={{
+                          ...iconBtnBase,
+                          background: "rgba(99,102,241,0.1)",
+                          color: "#6366f1",
+                        }}
+                      >
+                        <SvgIcon d={SVG.edit} size={14} />
+                      </button>
+
+                      {/* Active / Inactive toggle icon */}
+                      <button
+                        title={isActive ? "Set Inactive (hide from website)" : "Set Active (show on website)"}
+                        onClick={() => handleToggleActive(w)}
+                        style={{
+                          ...iconBtnBase,
+                          background: isActive ? "#10b98118" : "#6b728018",
+                          color: isActive ? "#10b981" : "#6b7280",
+                        }}
+                      >
+                        <SvgIcon d={isActive ? SVG.eyeOn : SVG.eyeOff} size={14} />
+                      </button>
+
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
         </table>
         {filteredMyWorkspaces.length === 0 && <div className={styles.empty}>No workspaces yet. Add one above!</div>}
       </div>
@@ -435,7 +571,6 @@ function OwnerDashboard() {
     </div>
   );
 
-  // ─── SLOT MANAGEMENT: uses approvedWorkspaces ─────────────────────────────
   const renderSlots = () => (
     <div className={styles.sectionBody}>
       <div className={styles.formCard}>
@@ -443,18 +578,11 @@ function OwnerDashboard() {
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}>
             <label>Workspace</label>
-            {/* ✅ Only admin-approved workspaces shown here */}
             <select value={slotForm.workspace_id} onChange={e => setSlotForm({ ...slotForm, workspace_id: e.target.value })}>
               <option value="">Select Workspace</option>
-              {approvedWorkspaces.map(w => (
-                <option key={w.id} value={w.id}>{w.name} — {w.city}</option>
-              ))}
+              {approvedWorkspaces.map(w => (<option key={w.id} value={w.id}>{w.name} — {w.city}</option>))}
             </select>
-            {approvedWorkspaces.length === 0 && (
-              <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>
-                No approved workspaces yet. Workspaces must be approved by admin before creating slots.
-              </small>
-            )}
+            {approvedWorkspaces.length === 0 && <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>No approved workspaces yet. Workspaces must be approved by admin before creating slots.</small>}
           </div>
           <div className={styles.fieldGroup}><label>Date</label><input type="date" value={slotForm.date} onChange={e => setSlotForm({ ...slotForm, date: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Slot Type</label><select value={slotForm.slot_type} onChange={e => setSlotForm({ ...slotForm, slot_type: e.target.value })}><option value="hour">Hourly</option><option value="day">Full Day</option></select></div>
@@ -474,7 +602,6 @@ function OwnerDashboard() {
     </div>
   );
 
-  // ─── MONTHLY SLOTS: uses approvedWorkspaces ───────────────────────────────
   const renderMonthlySlots = () => (
     <div className={styles.sectionBody}>
       <div className={styles.formCard}>
@@ -482,22 +609,11 @@ function OwnerDashboard() {
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}>
             <label>Workspace</label>
-            {/* ✅ Only admin-approved workspaces shown here */}
-            <select
-              value={monthlyForm.workspace_id}
-              onChange={e => setMonthlyForm({ ...monthlyForm, workspace_id: e.target.value })}
-              disabled={!!editMonthId}
-            >
+            <select value={monthlyForm.workspace_id} onChange={e => setMonthlyForm({ ...monthlyForm, workspace_id: e.target.value })} disabled={!!editMonthId}>
               <option value="">Select Workspace</option>
-              {approvedWorkspaces.map(w => (
-                <option key={w.id} value={w.id}>{w.name} — {w.city}</option>
-              ))}
+              {approvedWorkspaces.map(w => (<option key={w.id} value={w.id}>{w.name} — {w.city}</option>))}
             </select>
-            {approvedWorkspaces.length === 0 && (
-              <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>
-                No approved workspaces yet. Workspaces must be approved by admin before creating monthly slots.
-              </small>
-            )}
+            {approvedWorkspaces.length === 0 && <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>No approved workspaces yet. Workspaces must be approved by admin before creating monthly slots.</small>}
           </div>
           <div className={styles.fieldGroup}><label>Year</label><input type="number" value={monthlyForm.year} onChange={e => setMonthlyForm({ ...monthlyForm, year: e.target.value })} disabled={!!editMonthId} /></div>
           <div className={styles.fieldGroup}><label>Select Months</label><select multiple value={monthlyForm.months} className={styles.monthSelect} onChange={e => { const selected = Array.from(e.target.selectedOptions, opt => opt.value); setMonthlyForm({ ...monthlyForm, months: selected }); }} disabled={!!editMonthId}>{MONTH_OPTIONS.map((month, i) => <option key={i} value={String(i + 1)}>{month}</option>)}</select></div>
@@ -559,12 +675,7 @@ function OwnerDashboard() {
               {selectedBooking?.amenities?.length > 0 && (
                 <div className={styles.modalAmenities}>
                   <h4>Additional Amenities</h4>
-                  {selectedBooking.amenities.map((a, i) => (
-                    <div key={i} className={styles.modalAmenityItem}>
-                      <span>☕</span>
-                      <div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div>
-                    </div>
-                  ))}
+                  {selectedBooking.amenities.map((a, i) => (<div key={i} className={styles.modalAmenityItem}><span>☕</span><div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div></div>))}
                 </div>
               )}
             </div>
@@ -623,6 +734,75 @@ function OwnerDashboard() {
     </div>
   );
 
+  const renderQuotationLeads = () => (
+    <div className={styles.sectionBody}>
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Name</th><th>Phone</th><th>Email</th><th>Company</th>
+              <th>Location</th><th>Workspace</th><th>Workspace Details</th>
+              <th>Total</th><th>Date</th><th>Status</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quotationLeads.map((item) => (
+              <tr key={item.id}>
+                <td><strong>{item.name}</strong></td>
+                <td>{item.phone}</td>
+                <td>{item.email}</td>
+                <td>{item.company}</td>
+                <td>{item.preferred_location}</td>
+                <td>{item.workspace_type}</td>
+                <td>
+                  {item.quotation_details?.map((q, index) => (
+                    <div key={index}>{q.name} — {q.units} units</div>
+                  ))}
+                </td>
+                <td>₹{item.total_amount}</td>
+                <td>{new Date(item.created_at).toLocaleDateString()}</td>
+                <td><span className={styles.statusPill}>{item.status}</span></td>
+                <td>
+                  <select value={item.status} onChange={(e) => updateQuotationLeadStatus(item.id, e.target.value)} className={styles.statusSelect}>
+                    <option value="pending">Pending</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {quotationLeads.length === 0 && <div className={styles.empty}>No Quotation Leads Yet</div>}
+      </div>
+    </div>
+  );
+
+  const createSlot = () => {
+    if (!slotForm.workspace_id || !slotForm.date || !slotForm.price) { alert("Fill all fields"); return; }
+    const payload = { ...slotForm, workspace_id: Number(slotForm.workspace_id), start_time: slotForm.slot_type === "hour" ? Number(slotForm.start_time) : null, end_time: slotForm.slot_type === "hour" ? Number(slotForm.end_time) : null, capacity: Number(slotForm.capacity), price: Number(slotForm.price) };
+    if (editSlotId) { axiosInstance.put(`workspaces/slot/update/${editSlotId}/`, payload).then(() => { alert("Slot Updated ✅"); resetSlotForm(); fetchSlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Slot update failed"); }); }
+    else { axiosInstance.post("workspaces/slot/create/", payload).then(() => { alert("Slot Created ✅"); resetSlotForm(); fetchSlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Slot create failed"); }); }
+  };
+
+  const handleEditSlot = (s) => { setSlotForm({ workspace_id: s.workspace_id || "", date: s.date || "", slot_type: s.slot_type || "hour", start_time: s.start_time || 9, end_time: s.end_time || 18, capacity: s.capacity || 50, price: s.price || "" }); setEditSlotId(s.id); setActiveSection("slots"); setMobileSidebarOpen(false); };
+  const deleteSlot = (id) => { if (!window.confirm("Delete slot?")) return; axiosInstance.delete(`workspaces/slot/delete/${id}/`).then(() => { alert("Deleted ✅"); fetchSlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Delete slot failed"); }); };
+
+  const createMonthlySlots = () => {
+    if (!monthlyForm.workspace_id || !monthlyForm.year || monthlyForm.months.length === 0 || !monthlyForm.capacity || !monthlyForm.price) { alert("Please fill all monthly slot fields"); return; }
+    const payload = { workspace_id: Number(monthlyForm.workspace_id), year: Number(monthlyForm.year), months: monthlyForm.months.map(Number), capacity: Number(monthlyForm.capacity), price: Number(monthlyForm.price) };
+    axiosInstance.post("workspaces/month-slots/create/", payload).then(() => { alert("Monthly slots created ✅"); resetMonthlyForm(); fetchMonthlySlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Error creating monthly slots"); });
+  };
+
+  const handleEditMonth = (slot) => { setMonthlyForm({ workspace_id: String(slot.workspace_id || ""), year: slot.year || new Date().getFullYear(), months: [String(slot.month)], capacity: slot.capacity || 50, price: slot.price || "" }); setEditMonthId(slot.id); setActiveSection("monthlySlots"); setMobileSidebarOpen(false); };
+  const updateMonthlySlot = () => { if (!editMonthId) return; axiosInstance.put(`workspaces/monthly-slot/update/${editMonthId}/`, { capacity: Number(monthlyForm.capacity), price: Number(monthlyForm.price) }).then(() => { alert("Updated ✅"); resetMonthlyForm(); fetchMonthlySlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Update failed"); }); };
+  const deleteMonthlySlot = (id) => { if (!window.confirm("Delete this monthly slot?")) return; axiosInstance.delete(`workspaces/monthly-slot/delete/${id}/`).then(() => { alert("Deleted ✅"); fetchMonthlySlots(); }).catch(err => { console.error(err?.response?.data || err); alert("Delete failed"); }); };
+
+  const updateCompanyLeadStatus = (id, status) => axiosInstance.put(`leads/company/status/${id}/`, { status }).then(() => fetchCompanyLeads()).catch(err => { console.error(err?.response?.data || err); alert("Status update failed"); });
+  const updateHyderabadLeadStatus = (id, status) => axiosInstance.put(`hyderabad/status/${id}/`, { status }).then(() => fetchHyderabadLeads()).catch(err => { console.error(err?.response?.data || err); alert("Status update failed"); });
+  const updateOfferLeadStatus = (id, status) => axiosInstance.put(`leads/offers/leads/status/${id}/`, { status }).then(() => fetchOfferLeads()).catch(err => { console.error(err); alert("Status update failed"); });
+  const updateCustomisationLeadStatus = (id, status) => axiosInstance.put(`leads/modern-lead/status/${id}/`, { status }).then(() => fetchCustomisationLeads()).catch(err => { console.error(err); alert("Status update failed"); });
+
   const sectionTitles = {
     overview: { icon: "⊞", title: "Overview", sub: "Revenue summary and quick stats" },
     workspaces: { icon: "🏗️", title: "Workspace Management", sub: "Add, edit, and manage your listings" },
@@ -635,12 +815,12 @@ function OwnerDashboard() {
     hyderabadLeads: { icon: "📍", title: "Hyderabad Leads", sub: "Manage Hyderabad preferred location leads" },
     offerLeads: { icon: "🔥", title: "Offer Leads", sub: "Manage offer workspace leads" },
     customisationLeads: { icon: "🎨", title: "Customisation Leads", sub: "Manage customisation inquiries" },
+    quotationLeads: { icon: "📄", title: "Quotation Leads", sub: "Manage quotation inquiries" },
     additionalAmenities: { icon: "☕", title: "Additional Amenities", sub: "Manage additional amenities for your workspaces" },
   };
 
   const current = sectionTitles[activeSection];
 
-  // Inline styles for sidebar group elements
   const groupTitleStyle = {
     display: "flex", alignItems: "center", justifyContent: "space-between",
     padding: "10px 16px", cursor: "pointer", userSelect: "none",
@@ -691,12 +871,7 @@ function OwnerDashboard() {
             if (group.single) {
               const isActive = activeSection === group.key;
               return (
-                <button
-                  key={group.key}
-                  style={singleItemStyle(isActive)}
-                  onClick={() => handleNav(group.key)}
-                  title={group.label}
-                >
+                <button key={group.key} style={singleItemStyle(isActive)} onClick={() => handleNav(group.key)} title={group.label}>
                   <span style={{ fontSize: "15px" }}>{group.icon}</span>
                   {!sidebarCollapsed && <span>{group.label}</span>}
                 </button>
@@ -738,12 +913,7 @@ function OwnerDashboard() {
                     {group.children.map(child => {
                       const isActive = activeSection === child.key;
                       return (
-                        <button
-                          key={child.key}
-                          style={childItemStyle(isActive)}
-                          onClick={() => handleNav(child.key, group.key)}
-                          title={child.label}
-                        >
+                        <button key={child.key} style={childItemStyle(isActive)} onClick={() => handleNav(child.key, group.key)} title={child.label}>
                           <span style={{ fontSize: "13px" }}>{child.icon}</span>
                           <span>{child.label}</span>
                         </button>
@@ -787,9 +957,7 @@ function OwnerDashboard() {
                   <span>Notifications</span>
                   <button className={styles.closeNotificationBtn} onClick={() => setShowNotifications(false)}>✕</button>
                 </div>
-                {notifications.length === 0 && (
-                  <div className={styles.notificationEmpty}>No Notifications</div>
-                )}
+                {notifications.length === 0 && <div className={styles.notificationEmpty}>No Notifications</div>}
                 <div className={styles.notificationScroll}>
                   {notifications.map((n) => (
                     <div key={n.id} className={styles.notificationItem}>
@@ -818,9 +986,10 @@ function OwnerDashboard() {
           {activeSection === "hyderabadLeads" && renderHyderabadLeads()}
           {activeSection === "offerLeads" && renderOfferLeads()}
           {activeSection === "customisationLeads" && renderCustomisationLeads()}
+          {activeSection === "quotationLeads" && renderQuotationLeads()}
           {activeSection === "suggestedWorkspaces" && renderSuggestedWorkspaces()}
 
-          {/* ─── ADDITIONAL AMENITIES: uses approvedWorkspaces ─────────────── */}
+          {/* ─── ADDITIONAL AMENITIES ────────────────────────────────────── */}
           {activeSection === "additionalAmenities" && (
             <div className={styles.sectionCard}>
               <div className={styles.sectionHeader}>
@@ -828,7 +997,6 @@ function OwnerDashboard() {
               </div>
 
               <div className={styles.amenityFormGrid}>
-                {/* ✅ Only admin-approved workspaces shown here */}
                 <select
                   className={`${styles.amenitySelect} ${!amenityForm.workspace ? styles.placeholderSelect : ""}`}
                   value={amenityForm.workspace}
@@ -847,35 +1015,11 @@ function OwnerDashboard() {
                   </small>
                 )}
 
-                <input
-                  className={styles.amenityInput}
-                  type="text"
-                  placeholder="Amenity Name"
-                  value={amenityForm.title}
-                  onChange={(e) => setAmenityForm({ ...amenityForm, title: e.target.value })}
-                />
+                <input className={styles.amenityInput} type="text" placeholder="Amenity Name" value={amenityForm.title} onChange={(e) => setAmenityForm({ ...amenityForm, title: e.target.value })} />
+                <input className={styles.amenityInput} type="text" placeholder="Description" value={amenityForm.description} onChange={(e) => setAmenityForm({ ...amenityForm, description: e.target.value })} />
+                <input className={styles.amenityInput} type="number" placeholder="Price" value={amenityForm.price} onChange={(e) => setAmenityForm({ ...amenityForm, price: e.target.value })} />
 
-                <input
-                  className={styles.amenityInput}
-                  type="text"
-                  placeholder="Description"
-                  value={amenityForm.description}
-                  onChange={(e) => setAmenityForm({ ...amenityForm, description: e.target.value })}
-                />
-
-                <input
-                  className={styles.amenityInput}
-                  type="number"
-                  placeholder="Price"
-                  value={amenityForm.price}
-                  onChange={(e) => setAmenityForm({ ...amenityForm, price: e.target.value })}
-                />
-
-                <select
-                  className={styles.amenitySelect}
-                  value={amenityForm.price_type}
-                  onChange={(e) => setAmenityForm({ ...amenityForm, price_type: e.target.value })}
-                >
+                <select className={styles.amenitySelect} value={amenityForm.price_type} onChange={(e) => setAmenityForm({ ...amenityForm, price_type: e.target.value })}>
                   <option value="half_day">Half Day</option>
                   <option value="full_day">Full Day</option>
                   <option value="monthly">Monthly</option>
@@ -889,14 +1033,7 @@ function OwnerDashboard() {
               <div className={styles.amenitiesTable}>
                 <table>
                   <thead>
-                    <tr>
-                      <th>Workspace</th>
-                      <th>Amenity</th>
-                      <th>Description</th>
-                      <th>Price</th>
-                      <th>Type</th>
-                      <th>Action</th>
-                    </tr>
+                    <tr><th>Workspace</th><th>Amenity</th><th>Description</th><th>Price</th><th>Type</th><th>Action</th></tr>
                   </thead>
                   <tbody>
                     {additionalAmenities.map((item) => (
@@ -908,36 +1045,15 @@ function OwnerDashboard() {
                         <td>{item.price_type?.replace("_", " ")}</td>
                         <td>
                           <div className={styles.actionBtns}>
-                            <button
-                              className={styles.editBtn}
-                              onClick={() => {
-                                setEditAmenityId(item.id);
-                                setAmenityForm({
-                                  workspace: item.workspace,
-                                  title: item.title,
-                                  description: item.description,
-                                  price: item.price,
-                                  price_type: item.price_type,
-                                });
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className={styles.deleteBtn}
-                              onClick={() => handleDeleteAmenity(item.id)}
-                            >
-                              Delete
-                            </button>
+                            <button className={styles.editBtn} onClick={() => { setEditAmenityId(item.id); setAmenityForm({ workspace: item.workspace, title: item.title, description: item.description, price: item.price, price_type: item.price_type }); }}>Edit</button>
+                            <button className={styles.deleteBtn} onClick={() => handleDeleteAmenity(item.id)}>Delete</button>
                           </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                {additionalAmenities.length === 0 && (
-                  <div className={styles.empty}>No additional amenities yet.</div>
-                )}
+                {additionalAmenities.length === 0 && <div className={styles.empty}>No additional amenities yet.</div>}
               </div>
             </div>
           )}

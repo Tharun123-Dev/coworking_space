@@ -50,7 +50,8 @@ def get_workspaces(request):
     else:
 
         workspaces = Workspace.objects.filter(
-            is_approved=True
+            is_approved=True,
+            isavailable=True
         ).prefetch_related("amenities")
 
     if city:
@@ -92,6 +93,8 @@ def get_categories(request):
 
     serializer = WorkspaceCategorySerializer(data, many=True)
     return Response(serializer.data)
+from accounts.models import Profile
+
 
 @api_view(['POST'])
 @permission_classes([IsAdminOrOwner])
@@ -99,32 +102,69 @@ def add_workspace(request):
 
     data = request.data.copy()
 
-    # ✅ GET AMENITIES FROM REQUEST
-    amenities_ids = data.pop("amenities", [])
+    # ✅ GET LOCATION
+    city = data.get("city")
 
-    serializer = WorkspaceSerializer(data=data)
+    # ✅ FIND OWNER BASED ON LOCATION
+    owner_profile = Profile.objects.filter(
+        role="owner",
+        location=city
+    ).first()
+
+    # ✅ GET AMENITIES
+    amenities_ids = data.pop(
+        "amenities",
+        []
+    )
+
+    serializer = WorkspaceSerializer(
+        data=data
+    )
 
     if serializer.is_valid():
+
         workspace = serializer.save(
-    owner=request.user,
-    is_approved=False
-)
+
+            # ✅ AUTO OWNER ASSIGN
+            owner=owner_profile.user
+            if owner_profile else request.user,
+
+            is_approved=False
+
+        )
 
         # ✅ SET AMENITIES
         if amenities_ids:
-            workspace.amenities.set(amenities_ids)
 
-        # ✅ LOG
+            workspace.amenities.set(
+                amenities_ids
+            )
+
+        # ✅ ACTIVITY LOG
         ActivityLog.objects.create(
+
             user=request.user,
+
             action="CREATE",
+
             model_name="Workspace",
+
             message=f"{request.user.username} added workspace {workspace.name}"
+
         )
 
-        return Response(WorkspaceSerializer(workspace).data)
+        return Response(
 
-    return Response(serializer.errors, status=400)
+            WorkspaceSerializer(
+                workspace
+            ).data
+
+        )
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
 # ===========================
 # UPDATE WORKSPACE
 # ===========================
@@ -135,38 +175,117 @@ from workspaces.models import ActivityLog
 def update_workspace(request, id):
 
     try:
-        workspace = Workspace.objects.get(id=id)
+
+        workspace = Workspace.objects.get(
+            id=id
+        )
+
     except Workspace.DoesNotExist:
-        return Response({"error": "Workspace not found"}, status=404)
+
+        return Response(
+            {"error": "Workspace not found"},
+            status=404
+        )
+
+    # ✅ OWNER CHECK
 
     if not request.user.is_superuser:
+
         if workspace.owner != request.user:
-            return Response({"error": "Not allowed"}, status=403)
+
+            return Response(
+                {"error": "Not allowed"},
+                status=403
+            )
 
     data = request.data.copy()
 
-    # ✅ GET AMENITIES
-    amenities_ids = data.pop("amenities", [])
+    print("UPDATE DATA :", data)
 
-    serializer = WorkspaceSerializer(workspace, data=data)
+    # ✅ REMOVE UNWANTED FIELDS
+
+    data.pop("owner_name", None)
+    data.pop("created_at", None)
+
+    # ✅ GET AMENITIES
+
+    amenities_data = data.pop(
+        "amenities",
+        []
+    )
+
+    # ✅ CONVERT OBJECTS TO IDS
+
+    amenities_ids = []
+
+    for item in amenities_data:
+
+        # frontend sends full object
+        if isinstance(item, dict):
+
+            amenities_ids.append(
+                item.get("id")
+            )
+
+        # frontend sends id directly
+        else:
+
+            amenities_ids.append(item)
+
+    print("AMENITY IDS :", amenities_ids)
+
+    serializer = WorkspaceSerializer(
+
+        workspace,
+
+        data=data,
+
+        partial=True
+
+    )
 
     if serializer.is_valid():
-        updated_workspace = serializer.save(owner=workspace.owner)
 
-        # ✅ UPDATE AMENITIES
-        if amenities_ids is not None:
-            updated_workspace.amenities.set(amenities_ids)
-
-        ActivityLog.objects.create(
-            user=request.user,
-            action="UPDATE",
-            model_name="Workspace",
-            message=f"{request.user.username} updated workspace {updated_workspace.name}"
+        updated_workspace = serializer.save(
+            owner=workspace.owner
         )
 
-        return Response(WorkspaceSerializer(updated_workspace).data)
+        # ✅ UPDATE AMENITIES
 
-    return Response(serializer.errors, status=400)
+        if amenities_ids is not None:
+
+            updated_workspace.amenities.set(
+                amenities_ids
+            )
+
+        # ✅ ACTIVITY LOG
+
+        ActivityLog.objects.create(
+
+            user=request.user,
+
+            action="UPDATE",
+
+            model_name="Workspace",
+
+            message=f"{request.user.username} updated workspace {updated_workspace.name}"
+
+        )
+
+        return Response(
+
+            WorkspaceSerializer(
+                updated_workspace
+            ).data
+
+        )
+
+    print(serializer.errors)
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
 
 @api_view(['PUT'])
 @permission_classes([IsAdminUser])
