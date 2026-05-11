@@ -1159,3 +1159,83 @@ def admin_offer_workspace_leads(
         })
 
     return Response(data)
+
+from .models import QuotationLead
+from accounts.models import Profile
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+@api_view(['POST'])
+def create_quotation_lead(request):
+
+    location = request.data.get(
+        "location"
+    )
+
+    # ✅ FIND OWNER BY LOCATION
+
+    owner_profile = Profile.objects.filter(
+
+        role="owner",
+
+        location=location
+
+    ).first()
+
+    lead = QuotationLead.objects.create(
+
+        name=request.data.get(
+            "name"
+        ),
+
+        email=request.data.get(
+            "email"
+        ),
+
+        phone=request.data.get(
+            "phone"
+        ),
+
+        workspace_type=request.data.get(
+            "workspace_type"
+        ),
+
+        location=location,
+
+        team_size=request.data.get(
+            "team_size"
+        ),
+
+        total_price=request.data.get(
+            "total_price",
+            0
+        ),
+
+        owner=(
+            owner_profile.user
+            if owner_profile
+            else None
+        )
+
+    )
+
+    # ✅ SAVE PDF
+
+    if request.FILES.get(
+        "quotation_pdf"
+    ):
+
+        lead.quotation_pdf = request.FILES[
+            "quotation_pdf"
+        ]
+
+        lead.save()
+
+    return Response({
+
+        "message":
+        "Quotation lead created"
+
+    })

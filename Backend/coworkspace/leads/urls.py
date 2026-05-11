@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import admin_offer_leads,admin_offer_workspace_leads,createe_lead,owner_offer_leads,update_offer_lead_status,create_modern_lead,admin_customisation_leads,update_customisation_lead_status,owner_customisation_leads,create_ticket,update_ticket,admin_tickets,user_tickets,create_lead, get_leads, get_users, create_user, delete_user, update_user,create_special_lead, owner_special_leads,update_special_lead,user_special_leads,admin_special_leads,create_company_lead,admin_company_leads,assign_owner,owner_company_leads,update_company_status,create_business_enterprise_lead,admin_business_leads,update_business_status
+from .views import create_quotation_lead,admin_offer_leads,admin_offer_workspace_leads,createe_lead,owner_offer_leads,update_offer_lead_status,create_modern_lead,admin_customisation_leads,update_customisation_lead_status,owner_customisation_leads,create_ticket,update_ticket,admin_tickets,user_tickets,create_lead, get_leads, get_users, create_user, delete_user, update_user,create_special_lead, owner_special_leads,update_special_lead,user_special_leads,admin_special_leads,create_company_lead,admin_company_leads,assign_owner,owner_company_leads,update_company_status,create_business_enterprise_lead,admin_business_leads,update_business_status
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import LeadViewSet
@@ -72,6 +72,10 @@ path(
 path(
     "offers/admin/leads/",
     admin_offer_leads
+),
+path(
+    "quotation/create/",
+    create_quotation_lead
 ),
 
 ]

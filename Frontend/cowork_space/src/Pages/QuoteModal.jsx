@@ -39,7 +39,22 @@ const QuoteModal = ({ open, onClose, defaultSize = "Small" }) => {
   const [spaceType, setSpaceType] = useState(defaultSize);
   const [quantities, setQuantities] = useState({});
   const overlayRef = useRef(null);
+  const [companyName, setCompanyName] =
+  useState("");
 
+const [showLeadForm, setShowLeadForm] =
+  useState(false);
+
+const [leadForm, setLeadForm] =
+  useState({
+
+    name: "",
+
+    email: "",
+
+    phone: ""
+
+  });
   /* sync spaceType when parent changes defaultSize */
   useEffect(() => {
     setSpaceType(defaultSize);
@@ -97,7 +112,131 @@ const QuoteModal = ({ open, onClose, defaultSize = "Small" }) => {
   };
 
   if (!open) return null;
+  if (showLeadForm) {
 
+  return (
+
+    <div className="qm-overlay">
+
+      <div className="qm-lead-popup">
+
+        <h2>
+
+          Download Quotation
+
+        </h2>
+
+        <p>
+
+          Enter details to
+          continue
+
+        </p>
+
+        <input
+
+          type="text"
+
+          placeholder="Name"
+
+          value={leadForm.name}
+
+          onChange={(e) =>
+
+            setLeadForm({
+
+              ...leadForm,
+
+              name:
+                e.target.value
+
+            })
+
+          }
+
+        />
+
+        <input
+
+          type="email"
+
+          placeholder="Email"
+
+          value={leadForm.email}
+
+          onChange={(e) =>
+
+            setLeadForm({
+
+              ...leadForm,
+
+              email:
+                e.target.value
+
+            })
+
+          }
+
+        />
+
+        <input
+
+          type="text"
+
+          placeholder="Phone Number"
+
+          value={leadForm.phone}
+
+          onChange={(e) =>
+
+            setLeadForm({
+
+              ...leadForm,
+
+              phone:
+                e.target.value
+
+            })
+
+          }
+
+        />
+
+        <button
+
+          className="qm-download-btn"
+
+          onClick={handleQuotationDownload}
+
+        >
+
+          Download PDF
+
+        </button>
+
+        <button
+
+          className="qm-cancel-btn"
+
+          onClick={() =>
+
+            setShowLeadForm(false)
+
+          }
+
+        >
+
+          Cancel
+
+        </button>
+
+      </div>
+
+    </div>
+
+  );
+
+}
   return (
     <div className="qm-overlay" ref={overlayRef} onClick={handleOverlayClick}>
       <div className="qm-modal">

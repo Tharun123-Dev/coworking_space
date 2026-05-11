@@ -318,3 +318,58 @@ class ModernLead(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True
     )
+class QuotationLead(models.Model):
+
+    name = models.CharField(
+        max_length=100
+    )
+
+    email = models.EmailField()
+
+    phone = models.CharField(
+        max_length=20
+    )
+
+    workspace_type = models.CharField(
+        max_length=200
+    )
+
+    location = models.CharField(
+        max_length=100
+    )
+
+    team_size = models.CharField(
+        max_length=50
+    )
+
+    total_price = models.IntegerField(
+        default=0
+    )
+
+    quotation_pdf = models.FileField(
+        upload_to="quotation_pdfs/",
+        null=True,
+        blank=True
+    )
+
+    owner = models.ForeignKey(
+
+        User,
+
+        on_delete=models.SET_NULL,
+
+        null=True,
+
+        blank=True,
+
+        related_name="quotation_leads"
+
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+
+        return self.name
