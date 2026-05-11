@@ -35,10 +35,10 @@ const NAV_GROUPS = [
       { key: "workspaces", icon: "🏗️", label: "Workspaces" },
       { key: "offerWorkspaces", icon: "🔥", label: "Offer Workspaces" },
       {
-  key: "additionalAmenities",
-  icon: "☕",
-  label: "Additional Amenities",
-},
+        key: "additionalAmenities",
+        icon: "☕",
+        label: "Additional Amenities",
+      },
       { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
     ],
   },
@@ -105,41 +105,16 @@ function OwnerDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [viewedNotifications, setViewedNotifications] = useState(() => JSON.parse(localStorage.getItem("viewedNotifications")) || []);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [
+  const [additionalAmenities, setAdditionalAmenities] = useState([]);
+  const [editAmenityId, setEditAmenityId] = useState(null);
+  const [amenityForm, setAmenityForm] = useState({
+    workspace: "",
+    title: "",
+    description: "",
+    price: "",
+    price_type: "full_day",
+  });
 
-  additionalAmenities,
-
-  setAdditionalAmenities
-
-] = useState([]);
-
-const [
-
-  editAmenityId,
-
-  setEditAmenityId
-
-] = useState(null);
-
-const [
-
-  amenityForm,
-
-  setAmenityForm
-
-] = useState({
-
-  workspace: "",
-
-  title: "",
-
-  description: "",
-
-  price: "",
-
-  price_type: "full_day",
-
-});
   // Track which sidebar groups are open
   const [openGroups, setOpenGroups] = useState({ workspacesGroup: true, slotsGroup: false, leadsGroup: false });
 
@@ -153,6 +128,13 @@ const [
   const [suggestSearch, setSuggestSearch] = useState("");
   const [editOfferId, setEditOfferId] = useState(null);
 
+  // ─── APPROVED WORKSPACES (used in Slot, Monthly Slot, Additional Amenities dropdowns) ───
+  // Only workspaces with is_approved === true are shown in slot/amenity dropdowns
+  const approvedWorkspaces = useMemo(
+    () => workspaces.filter(w => w.is_approved === true),
+    [workspaces]
+  );
+
   const setBusy = (id, value) => setBusyMap(prev => ({ ...prev, [id]: value }));
   const isBusy = (id) => !!busyMap[id];
 
@@ -164,7 +146,6 @@ const [
   const handleNav = (sectionKey, groupKey) => {
     setActiveSection(sectionKey);
     setMobileSidebarOpen(false);
-    // Auto-open the parent group
     if (groupKey) setOpenGroups(prev => ({ ...prev, [groupKey]: true }));
   };
 
@@ -175,44 +156,16 @@ const [
   const fetchWorkspaces = () => axiosInstance.get("workspaces/?owner=true").then(res => setWorkspaces(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Workspace fetch error:", err));
   const fetchAllWorkspaces = () => axiosInstance.get("workspaces/").then(res => setAllWorkspaces(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("All workspaces fetch error:", err));
   const fetchOfferWorkspaces = () => axiosInstance.get("workspaces/offers/owner/").then(res => setOfferWorkspaces(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Offer workspace fetch error:", err));
-  const fetchAdditionalAmenities =
-() => {
-
-  axiosInstance
-
-    .get(
-
-      "workspaces/additional-amenities/owner/"
-
-    )
-
-    .then((res) => {
-
-      setAdditionalAmenities(
-
-        Array.isArray(res.data)
-
-        ? res.data
-
-        : []
-
-      );
-
-    })
-
-    .catch((err) => {
-
-      console.log(
-
-        "Amenities Fetch Error:",
-
-        err
-
-      );
-
-    });
-
-};
+  const fetchAdditionalAmenities = () => {
+    axiosInstance
+      .get("workspaces/additional-amenities/owner/")
+      .then((res) => {
+        setAdditionalAmenities(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch((err) => {
+        console.log("Amenities Fetch Error:", err);
+      });
+  };
   const fetchRevenue = () => axiosInstance.get("cart/owner/revenue/").then(res => setRevenue(res.data)).catch(err => console.error("Revenue fetch error:", err));
   const fetchSlots = () => axiosInstance.get("workspaces/slots/owner/").then(res => setSlots(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Slot fetch error:", err));
   const fetchMonthlySlots = () => axiosInstance.get("workspaces/monthly-slots/").then(res => setMonthlySlots(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Monthly slots fetch error:", err));
@@ -231,200 +184,50 @@ const [
     const request = editOfferId ? axiosInstance.put(`workspaces/offers/update/${editOfferId}/`, { ...offerForm, area: ownerCity }) : axiosInstance.post("workspaces/offers/create/", { ...offerForm, area: ownerCity });
     request.then(() => { fetchOfferWorkspaces(); setEditOfferId(null); setOfferForm({ building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] }); alert(editOfferId ? "Workspace updated successfully" : "Offer workspace added successfully"); }).catch(err => console.error(err));
   };
-const handleAddAmenity =
-() => {
 
-  if (
-    !amenityForm.workspace ||
-
-    !amenityForm.title ||
-
-    !amenityForm.price
-  ) {
-
-    alert(
-      "Please fill required fields"
+  const handleAddAmenity = () => {
+    if (!amenityForm.workspace || !amenityForm.title || !amenityForm.price) {
+      alert("Please fill required fields");
+      return;
+    }
+    const existsInAdminAmenities = amenitiesList.some(
+      (a) => a.name?.trim().toLowerCase() === amenityForm.title.trim().toLowerCase()
     );
-
-    return;
-  }
-  const existsInAdminAmenities =
-
-amenitiesList.some(
-
-  (a) =>
-
-    a.name
-    ?.trim()
-    .toLowerCase()
-
-    ===
-
-    amenityForm.title
-    .trim()
-    .toLowerCase()
-
-);
-
-if (existsInAdminAmenities) {
-
-  alert(
-
-    `"${amenityForm.title}" already exists in Admin Amenities`
-
-  );
-
-  return;
-
-}
-
-  const alreadyExists =
-
-additionalAmenities.some(
-
-  (a) =>
-
-    a.workspace ===
-    Number(
-      amenityForm.workspace
-    )
-
-    &&
-
-    a.title
-    ?.trim()
-    .toLowerCase()
-
-    ===
-
-    amenityForm.title
-    .trim()
-    .toLowerCase()
-
-    &&
-
-    a.price_type ===
-    amenityForm.price_type
-
-);
-
-if (alreadyExists) {
-
-  alert(
-
-    `"${amenityForm.title}" already exists for this workspace`
-
-  );
-
-  return;
-
-}
-  const request =
-
-    editAmenityId
-
-    ?
-
-    axiosInstance.put(
-
-      `workspaces/additional-amenities/update/${editAmenityId}/`,
-
-      amenityForm
-
-    )
-
-    :
-
-    axiosInstance.post(
-
-      "workspaces/additional-amenities/create/",
-
-      amenityForm
-
+    if (existsInAdminAmenities) {
+      alert(`"${amenityForm.title}" already exists in Admin Amenities`);
+      return;
+    }
+    const alreadyExists = additionalAmenities.some(
+      (a) =>
+        a.workspace === Number(amenityForm.workspace) &&
+        a.title?.trim().toLowerCase() === amenityForm.title.trim().toLowerCase() &&
+        a.price_type === amenityForm.price_type
     );
+    if (alreadyExists) {
+      alert(`"${amenityForm.title}" already exists for this workspace`);
+      return;
+    }
+    const request = editAmenityId
+      ? axiosInstance.put(`workspaces/additional-amenities/update/${editAmenityId}/`, amenityForm)
+      : axiosInstance.post("workspaces/additional-amenities/create/", amenityForm);
+    request
+      .then(() => {
+        fetchAdditionalAmenities();
+        setAmenityForm({ workspace: "", title: "", description: "", price: "", price_type: "full_day" });
+        setEditAmenityId(null);
+        alert(editAmenityId ? "Amenity Updated" : "Amenity Added");
+      })
+      .catch((err) => { console.log(err); });
+  };
 
-  request
+  const handleDeleteAmenity = (id) => {
+    if (!window.confirm("Delete this amenity?")) return;
+    axiosInstance
+      .delete(`workspaces/additional-amenities/delete/${id}/`)
+      .then(() => { fetchAdditionalAmenities(); alert("Deleted Successfully"); })
+      .catch((err) => { console.log(err); });
+  };
 
-    .then(() => {
-
-      fetchAdditionalAmenities();
-
-      setAmenityForm({
-
-        workspace: "",
-
-        title: "",
-
-        description: "",
-
-        price: "",
-
-        price_type:
-        "full_day",
-
-      });
-
-      setEditAmenityId(
-        null
-      );
-
-      alert(
-
-        editAmenityId
-
-        ?
-
-        "Amenity Updated"
-
-        :
-
-        "Amenity Added"
-
-      );
-
-    })
-
-    .catch((err) => {
-
-      console.log(err);
-
-    });
-
-};
-const handleDeleteAmenity =
-(id) => {
-
-  if (
-    !window.confirm(
-      "Delete this amenity?"
-    )
-  ) return;
-
-  axiosInstance
-
-    .delete(
-
-      `workspaces/additional-amenities/delete/${id}/`
-
-    )
-
-    .then(() => {
-
-      fetchAdditionalAmenities();
-
-      alert(
-        "Deleted Successfully"
-      );
-
-    })
-
-    .catch((err) => {
-
-      console.log(err);
-
-    });
-
-};
   const buildNotifications = () => {
     let items = [];
     companyLeads.forEach(l => items.push({ id: `company-${l.id}`, type: "Company Lead", name: l.name, workspace: l.company || "-", location: l.location || "-", section: "companyLeads" }));
@@ -434,138 +237,30 @@ const handleDeleteAmenity =
     setNotifications(items.filter(item => !viewedNotifications.includes(item.id)));
   };
 
-const handleViewNotification = (notification) => {
+  const handleViewNotification = (notification) => {
+    setActiveSection(notification.section);
+    if (["companyLeads","hyderabadLeads","offerLeads","customisationLeads"].includes(notification.section)) {
+      setOpenGroups(prev => ({ ...prev, leadsGroup: true }));
+    }
+    let updatedViewed = [...viewedNotifications];
+    if (notification.section === "offerLeads") {
+      const offerIds = notifications.filter(n => n.section === "offerLeads").map(n => n.id);
+      updatedViewed = [...new Set([...updatedViewed, ...offerIds])];
+    } else if (notification.section === "customisationLeads") {
+      const customIds = notifications.filter(n => n.section === "customisationLeads").map(n => n.id);
+      updatedViewed = [...new Set([...updatedViewed, ...customIds])];
+    } else {
+      updatedViewed = [...new Set([...updatedViewed, notification.id])];
+    }
+    setViewedNotifications(updatedViewed);
+    setNotifications(prev => prev.filter(n => !updatedViewed.includes(n.id)));
+    setShowNotifications(false);
+  };
 
-  setActiveSection(
-    notification.section
-  );
-
-  // ✅ OPEN LEADS GROUP
-
-  if (
-
-    [
-      "companyLeads",
-      "hyderabadLeads",
-      "offerLeads",
-      "customisationLeads"
-
-    ].includes(
-      notification.section
-    )
-
-  ) {
-
-    setOpenGroups(prev => ({
-
-      ...prev,
-
-      leadsGroup: true
-
-    }));
-
-  }
-
-  let updatedViewed = [
-    ...viewedNotifications
-  ];
-
-  // ✅ OFFER LEADS
-
-  if (
-    notification.section ===
-    "offerLeads"
-  ) {
-
-    const offerIds = notifications
-
-      .filter(
-
-        n =>
-          n.section ===
-          "offerLeads"
-
-      )
-
-      .map(n => n.id);
-
-    updatedViewed = [
-      ...new Set([
-        ...updatedViewed,
-        ...offerIds
-      ])
-    ];
-
-  }
-
-  // ✅ CUSTOMISATION LEADS
-
-  else if (
-
-    notification.section ===
-    "customisationLeads"
-
-  ) {
-
-    const customIds = notifications
-
-      .filter(
-
-        n =>
-          n.section ===
-          "customisationLeads"
-
-      )
-
-      .map(n => n.id);
-
-    updatedViewed = [
-      ...new Set([
-        ...updatedViewed,
-        ...customIds
-      ])
-    ];
-
-  }
-
-  // ✅ NORMAL SINGLE
-
-  else {
-
-    updatedViewed = [
-      ...new Set([
-        ...updatedViewed,
-        notification.id
-      ])
-    ];
-
-  }
-
-  setViewedNotifications(
-    updatedViewed
-  );
-
-  // ✅ REMOVE NOTIFICATIONS
-
-  setNotifications(
-
-    prev => prev.filter(
-
-      n => !updatedViewed.includes(
-        n.id
-      )
-
-    )
-
-  );
-
-  setShowNotifications(false);
-
-};
   useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads]);
   useEffect(() => { localStorage.setItem("viewedNotifications", JSON.stringify(viewedNotifications)); }, [viewedNotifications]);
   useEffect(() => {
-    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchAdditionalAmenities();fetchRevenue(); fetchSlots(); fetchAmenities(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
+    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
   }, [fetchBookings, fetchCancelRequests]);
   useEffect(() => { const loc = localStorage.getItem("user_location"); if (loc) setOwnerCity(loc); }, []);
   useEffect(() => { const handleResize = () => { if (window.innerWidth > 640) setMobileSidebarOpen(false); }; window.addEventListener("resize", handleResize); return () => window.removeEventListener("resize", handleResize); }, []);
@@ -654,7 +349,7 @@ const handleViewNotification = (notification) => {
   const filteredMyWorkspaces = useMemo(() => { const q = workspaceSearch.toLowerCase().trim(); if (!q) return workspaces; return workspaces.filter(w => (w.name || "").toLowerCase().includes(q) || (w.city || "").toLowerCase().includes(q) || (w.location || "").toLowerCase().includes(q)); }, [workspaces, workspaceSearch]);
   const filteredSuggestedWorkspaces = useMemo(() => { const q = suggestSearch.toLowerCase().trim(); if (!q) return suggestedWorkspaces; return suggestedWorkspaces.filter(w => { const ownerName = (w.owner_name || w.ownername || "").toLowerCase(); return ownerName.includes(q) || (w.name || "").toLowerCase().includes(q) || (w.city || "").toLowerCase().includes(q) || (w.location || "").toLowerCase().includes(q); }); }, [suggestedWorkspaces, suggestSearch]);
 
-  // ─── RENDER SECTIONS (unchanged logic) ───────────────────────────────────
+  // ─── RENDER SECTIONS ─────────────────────────────────────────────────────
   const renderOverview = () => (
     <div className={styles.overviewGrid}>
       <div className={`${styles.statCard} ${styles.gold}`}><span className={styles.statIcon}>💰</span><div><p className={styles.statValue}>₹{revenue.total_revenue?.toLocaleString()}</p><p className={styles.statLabel}>Total Revenue</p></div></div>
@@ -740,12 +435,27 @@ const handleViewNotification = (notification) => {
     </div>
   );
 
+  // ─── SLOT MANAGEMENT: uses approvedWorkspaces ─────────────────────────────
   const renderSlots = () => (
     <div className={styles.sectionBody}>
       <div className={styles.formCard}>
         <h3 className={styles.formTitle}>{editSlotId ? "✏️ Edit Slot" : "➕ Create Slot"}</h3>
         <div className={styles.formGrid}>
-          <div className={styles.fieldGroup}><label>Workspace</label><select value={slotForm.workspace_id} onChange={e => setSlotForm({ ...slotForm, workspace_id: e.target.value })}><option value="">Select Workspace</option>{workspaces.map(w => <option key={w.id} value={w.id}>{w.name} — {w.city}</option>)}</select></div>
+          <div className={styles.fieldGroup}>
+            <label>Workspace</label>
+            {/* ✅ Only admin-approved workspaces shown here */}
+            <select value={slotForm.workspace_id} onChange={e => setSlotForm({ ...slotForm, workspace_id: e.target.value })}>
+              <option value="">Select Workspace</option>
+              {approvedWorkspaces.map(w => (
+                <option key={w.id} value={w.id}>{w.name} — {w.city}</option>
+              ))}
+            </select>
+            {approvedWorkspaces.length === 0 && (
+              <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>
+                No approved workspaces yet. Workspaces must be approved by admin before creating slots.
+              </small>
+            )}
+          </div>
           <div className={styles.fieldGroup}><label>Date</label><input type="date" value={slotForm.date} onChange={e => setSlotForm({ ...slotForm, date: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Slot Type</label><select value={slotForm.slot_type} onChange={e => setSlotForm({ ...slotForm, slot_type: e.target.value })}><option value="hour">Hourly</option><option value="day">Full Day</option></select></div>
           <div className={styles.fieldGroup}><label>Capacity</label><input type="number" placeholder="50" value={slotForm.capacity} onChange={e => setSlotForm({ ...slotForm, capacity: e.target.value })} /></div>
@@ -764,12 +474,31 @@ const handleViewNotification = (notification) => {
     </div>
   );
 
+  // ─── MONTHLY SLOTS: uses approvedWorkspaces ───────────────────────────────
   const renderMonthlySlots = () => (
     <div className={styles.sectionBody}>
       <div className={styles.formCard}>
         <h3 className={styles.formTitle}>{editMonthId ? "✏️ Edit Monthly Slot" : "📆 Create Monthly Slots"}</h3>
         <div className={styles.formGrid}>
-          <div className={styles.fieldGroup}><label>Workspace</label><select value={monthlyForm.workspace_id} onChange={e => setMonthlyForm({ ...monthlyForm, workspace_id: e.target.value })} disabled={!!editMonthId}><option value="">Select Workspace</option>{workspaces.map(w => <option key={w.id} value={w.id}>{w.name} — {w.city}</option>)}</select></div>
+          <div className={styles.fieldGroup}>
+            <label>Workspace</label>
+            {/* ✅ Only admin-approved workspaces shown here */}
+            <select
+              value={monthlyForm.workspace_id}
+              onChange={e => setMonthlyForm({ ...monthlyForm, workspace_id: e.target.value })}
+              disabled={!!editMonthId}
+            >
+              <option value="">Select Workspace</option>
+              {approvedWorkspaces.map(w => (
+                <option key={w.id} value={w.id}>{w.name} — {w.city}</option>
+              ))}
+            </select>
+            {approvedWorkspaces.length === 0 && (
+              <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>
+                No approved workspaces yet. Workspaces must be approved by admin before creating monthly slots.
+              </small>
+            )}
+          </div>
           <div className={styles.fieldGroup}><label>Year</label><input type="number" value={monthlyForm.year} onChange={e => setMonthlyForm({ ...monthlyForm, year: e.target.value })} disabled={!!editMonthId} /></div>
           <div className={styles.fieldGroup}><label>Select Months</label><select multiple value={monthlyForm.months} className={styles.monthSelect} onChange={e => { const selected = Array.from(e.target.selectedOptions, opt => opt.value); setMonthlyForm({ ...monthlyForm, months: selected }); }} disabled={!!editMonthId}>{MONTH_OPTIONS.map((month, i) => <option key={i} value={String(i + 1)}>{month}</option>)}</select></div>
           <div className={styles.fieldGroup}><label>Capacity</label><input type="number" value={monthlyForm.capacity} onChange={e => setMonthlyForm({ ...monthlyForm, capacity: e.target.value })} /></div>
@@ -801,68 +530,10 @@ const handleViewNotification = (notification) => {
           <table className={styles.table}>
             <thead><tr><th>Workspace</th><th>Customer</th><th>City</th><th>Date</th><th>Slot</th><th>Additional Amenities</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
             <tbody>{mergedBookings.map(item => { const isConfirmed = item.status === "confirmed"; const isCancelled = item.status === "cancelled"; const isPulsing = animatingId === item.id; return (<tr key={item.id} className={isPulsing ? styles.rowPulse : ""}><td><div className={styles.bookingWorkspace} onClick={() => openBookingModal(item)}><img src={item.image} alt={item.workspace} className={styles.bookingThumb} /><span className={styles.bookingWorkspaceTitle}>{item.workspace}</span></div></td><td>{item.user}</td><td>{item.city}</td><td>{item.date}</td><td><div><strong>{item.slot_type}</strong><br /><small>{item.slot_time}</small></div></td><td>
-
-{
-
-Array.isArray(item.amenities) &&
-item.amenities.length > 0
-
-?
-
-<div className={styles.bookingAmenities}>
-
-  {
-
-    item.amenities.map(
-      (a, i) => (
-
-      <div
-        key={i}
-        className={styles.bookingAmenityItem}
-      >
-
-        <span>
-          ☕
-        </span>
-
-        <div>
-
-          <strong>
-            {a.title}
-          </strong>
-
-          <small>
-
-            {a.persons}
-            Person
-
-            •
-
-            ₹{a.total}
-
-          </small>
-
-        </div>
-
-      </div>
-
-    ))
-
-  }
-
-</div>
-
-:
-
-<span className={styles.noAmenities}>
-
-No Amenities
-
-</span>
-
-}
-
-</td><td className={styles.priceCell}>₹{Number(item.total_price || 0).toLocaleString()}</td><td><span className={styles.statusPill}>{item.status || "pending"}</span></td><td><div className={styles.bookingActionBox}>{isConfirmed && <span className={styles.statusPill}>✓ Confirmed</span>}{isCancelled && <span className={styles.statusPill}>✕ Cancelled</span>}{!isConfirmed && !isCancelled && <span className={styles.statusPill}>Pending</span>}</div></td></tr>); })}</tbody>
+              {Array.isArray(item.amenities) && item.amenities.length > 0
+                ? <div className={styles.bookingAmenities}>{item.amenities.map((a, i) => (<div key={i} className={styles.bookingAmenityItem}><span>☕</span><div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div></div>))}</div>
+                : <span className={styles.noAmenities}>No Amenities</span>}
+            </td><td className={styles.priceCell}>₹{Number(item.total_price || 0).toLocaleString()}</td><td><span className={styles.statusPill}>{item.status || "pending"}</span></td><td><div className={styles.bookingActionBox}>{isConfirmed && <span className={styles.statusPill}>✓ Confirmed</span>}{isCancelled && <span className={styles.statusPill}>✕ Cancelled</span>}{!isConfirmed && !isCancelled && <span className={styles.statusPill}>Pending</span>}</div></td></tr>); })}</tbody>
           </table>
         )}
       </div>
@@ -885,65 +556,17 @@ No Amenities
               {bookingActiveTab === "overview" && (<><div className={styles.overviewMetaGrid}>{[["Customer", selectedBooking.user], ["Date", selectedBooking.date], ["Slot", `${selectedBooking.slot_type} ${selectedBooking.slot_time || ""}`], ["City", selectedBooking.city], ["Status", selectedBooking.status || "pending"]].map(([label, val]) => <div key={label} className={styles.metaCard}><span>{label}</span><strong className={label === "Status" ? getStatusClass(val) : ""}>{val}</strong></div>)}</div><div className={styles.bookingSummaryBox}><h4>Booking Summary</h4><p>This booking is for <strong>{selectedBooking.workspace}</strong>. Review the customer request and schedule details directly inside the dashboard.</p></div></>)}
               {bookingActiveTab === "features" && <div className={styles.featureGrid}>{[["📶","High-Speed WiFi","Stable internet for work and meetings."],["🪑","Modern Setup","Comfortable desk and seating support."],["❄️","Fully Air Conditioned","Comfortable environment all day."],["☕","Refreshments","Tea, coffee and basic pantry access."]].map(([icon, title, desc]) => <div key={title} className={styles.featureCard}><div className={styles.featureIcon}>{icon}</div><h4>{title}</h4><p>{desc}</p></div>)}</div>}
               {bookingActiveTab === "pricing" && <div className={styles.pricingCard}><span>Booking Amount</span><h2>₹{selectedBooking.total_price}</h2><p>For {selectedBooking.slot_type} {selectedBooking.slot_time} on {selectedBooking.date}</p><div className={styles.pricingList}><div>Workspace reserved for selected slot</div><div>Booking tracked inside dashboard</div><div>Direct manager visibility</div></div></div>}
-              {
-
-selectedBooking?.amenities
-?.length > 0 && (
-
-<div
-  className={
-    styles.modalAmenities
-  }
->
-
-  <h4>
-    Additional Amenities
-  </h4>
-
-  {
-
-    selectedBooking.amenities.map(
-      (a, i) => (
-
-      <div
-        key={i}
-        className={
-          styles.modalAmenityItem
-        }
-      >
-
-        <span>
-          ☕
-        </span>
-
-        <div>
-
-          <strong>
-            {a.title}
-          </strong>
-
-          <small>
-
-            {a.persons}
-            Person
-
-            •
-
-            ₹{a.total}
-
-          </small>
-
-        </div>
-
-      </div>
-
-    ))
-
-  }
-
-</div>
-
-)}
+              {selectedBooking?.amenities?.length > 0 && (
+                <div className={styles.modalAmenities}>
+                  <h4>Additional Amenities</h4>
+                  {selectedBooking.amenities.map((a, i) => (
+                    <div key={i} className={styles.modalAmenityItem}>
+                      <span>☕</span>
+                      <div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className={styles.modalFooter}><div><strong>₹{selectedBooking.total_price}</strong><small>Total Booking Value</small></div><div>{selectedBooking.status === "confirmed" && <span className={styles.statusPill}>Booking Confirmed</span>}{selectedBooking.status === "cancelled" && <span className={styles.statusPill}>Booking Cancelled</span>}{selectedBooking.status !== "confirmed" && selectedBooking.status !== "cancelled" && <span className={styles.statusPill}>Pending Booking</span>}</div></div>
           </div>
@@ -956,12 +579,8 @@ selectedBooking?.amenities
     <div className={styles.sectionBody}>
       <div className={styles.tableWrap}>
         <table className={styles.table}>
-          <thead><tr><th>Team Size</th><th>Name</th><th>Phone</th><th>Email</th>   <th>Preferred Location</th><th>preffere Workspace</th><th>Company</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>{companyLeads.map(item => (<tr key={item.id}><td>{item.team_size}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td>{item.preferred_location}</td><td>
-
-  {item.workspace_type || "—"}
-
-</td><td>{item.company}</td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateCompanyLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}</tbody>
+          <thead><tr><th>Team Size</th><th>Name</th><th>Phone</th><th>Email</th><th>Preferred Location</th><th>Preferred Workspace</th><th>Company</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>{companyLeads.map(item => (<tr key={item.id}><td>{item.team_size}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td>{item.preferred_location}</td><td>{item.workspace_type || "—"}</td><td>{item.company}</td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateCompanyLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}</tbody>
         </table>
         {companyLeads.length === 0 && <div className={styles.empty}><p>No company leads yet</p></div>}
       </div>
@@ -1016,6 +635,7 @@ selectedBooking?.amenities
     hyderabadLeads: { icon: "📍", title: "Hyderabad Leads", sub: "Manage Hyderabad preferred location leads" },
     offerLeads: { icon: "🔥", title: "Offer Leads", sub: "Manage offer workspace leads" },
     customisationLeads: { icon: "🎨", title: "Customisation Leads", sub: "Manage customisation inquiries" },
+    additionalAmenities: { icon: "☕", title: "Additional Amenities", sub: "Manage additional amenities for your workspaces" },
   };
 
   const current = sectionTitles[activeSection];
@@ -1069,7 +689,6 @@ selectedBooking?.amenities
         <nav className={styles.nav} style={{ padding: "8px 0" }}>
           {NAV_GROUPS.map(group => {
             if (group.single) {
-              // Single item (Overview, My Bookings)
               const isActive = activeSection === group.key;
               return (
                 <button
@@ -1084,13 +703,11 @@ selectedBooking?.amenities
               );
             }
 
-            // Group with children
             const isOpen = openGroups[group.key];
             const hasActiveChild = group.children.some(c => c.key === activeSection);
 
             return (
               <div key={group.key}>
-                {/* Group header */}
                 <div
                   style={{
                     ...groupTitleStyle,
@@ -1116,7 +733,6 @@ selectedBooking?.amenities
                   )}
                 </div>
 
-                {/* Children */}
                 {!sidebarCollapsed && isOpen && (
                   <div style={{ overflow: "hidden" }}>
                     {group.children.map(child => {
@@ -1165,104 +781,29 @@ selectedBooking?.amenities
               🔔
               {notifications.length > 0 && <span className={styles.notificationCount}>{notifications.length}</span>}
             </button>
-    {showNotifications && (
-
-  <div
-    className={
-      styles.notificationDropdown
-    }
-  >
-
-    <div
-      className={
-        styles.notificationHeader
-      }
-    >
-
-      <span>
-        Notifications
-      </span>
-
-      <button
-        className={
-          styles.closeNotificationBtn
-        }
-        onClick={() =>
-          setShowNotifications(false)
-        }
-      >
-        ✕
-      </button>
-
-    </div>
-
-    {notifications.length === 0 && (
-
-      <div
-        className={
-          styles.notificationEmpty
-        }
-      >
-        No Notifications
-      </div>
-
-    )}
-
-    <div
-      className={
-        styles.notificationScroll
-      }
-    >
-
-      {notifications.map((n) => (
-
-        <div
-          key={n.id}
-          className={
-            styles.notificationItem
-          }
-        >
-
-          <div
-            className={
-              styles.notificationInfo
-            }
-          >
-
-            <strong>
-              {n.type}
-            </strong>
-
-            <p>
-              {n.name}
-            </p>
-
-            <small>
-              {n.workspace}
-            </small>
-
-          </div>
-
-          <button
-            className={
-              styles.viewBtn
-            }
-            onClick={() =>
-              handleViewNotification(n)
-            }
-          >
-            View
-          </button>
-
-        </div>
-
-      ))}
-
-    </div>
-
-  </div>
-
-)}
+            {showNotifications && (
+              <div className={styles.notificationDropdown}>
+                <div className={styles.notificationHeader}>
+                  <span>Notifications</span>
+                  <button className={styles.closeNotificationBtn} onClick={() => setShowNotifications(false)}>✕</button>
+                </div>
+                {notifications.length === 0 && (
+                  <div className={styles.notificationEmpty}>No Notifications</div>
+                )}
+                <div className={styles.notificationScroll}>
+                  {notifications.map((n) => (
+                    <div key={n.id} className={styles.notificationItem}>
+                      <div className={styles.notificationInfo}>
+                        <strong>{n.type}</strong>
+                        <p>{n.name}</p>
+                        <small>{n.workspace}</small>
+                      </div>
+                      <button className={styles.viewBtn} onClick={() => handleViewNotification(n)}>View</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
@@ -1270,7 +811,6 @@ selectedBooking?.amenities
           {activeSection === "overview" && renderOverview()}
           {activeSection === "workspaces" && renderWorkspaces()}
           {activeSection === "offerWorkspaces" && renderOfferWorkspaces()}
-
           {activeSection === "slots" && renderSlots()}
           {activeSection === "monthlySlots" && renderMonthlySlots()}
           {activeSection === "bookings" && renderBookings()}
@@ -1280,259 +820,127 @@ selectedBooking?.amenities
           {activeSection === "customisationLeads" && renderCustomisationLeads()}
           {activeSection === "suggestedWorkspaces" && renderSuggestedWorkspaces()}
 
-          {activeSection === 'additionalAmenities' && (
-  <div className={styles.sectionCard}>
-    <div className={styles.sectionHeader}>
-      <h2>Additional Amenities</h2>
-    </div>
-
-    <div className={styles.amenityFormGrid}>
-      <select
-        className={`${styles.amenitySelect} ${!amenityForm.workspace ? styles.placeholderSelect : ''}`}
-        value={amenityForm.workspace}
-        onChange={(e) =>
-          setAmenityForm({
-            ...amenityForm,
-            workspace: e.target.value,
-          })
-        }
-      >
-        <option value="" disabled hidden>
-          Select Workspace
-        </option>
-        {workspaces.map((ws) => (
-          <option key={ws.id} value={ws.id}>
-            {ws.workspacename || ws.name || ws.title || `Workspace ${ws.id}`}
-          </option>
-        ))}
-      </select>
-
-      <input
-        className={styles.amenityInput}
-        type="text"
-        placeholder="Amenity Name"
-        value={amenityForm.title}
-        onChange={(e) =>
-          setAmenityForm({
-            ...amenityForm,
-            title: e.target.value,
-          })
-        }
-      />
-
-      <input
-        className={styles.amenityInput}
-        type="text"
-        placeholder="Description"
-        value={amenityForm.description}
-        onChange={(e) =>
-          setAmenityForm({
-            ...amenityForm,
-            description: e.target.value,
-          })
-        }
-      />
-
-      <input
-        className={styles.amenityInput}
-        type="number"
-        placeholder="Price"
-        value={amenityForm.price}
-        onChange={(e) =>
-          setAmenityForm({
-            ...amenityForm,
-            price: e.target.value,
-          })
-        }
-      />
-
-      <select
-        className={styles.amenitySelect}
-        value={amenityForm.pricetype}
-        onChange={(e) =>
-          setAmenityForm({
-            ...amenityForm,
-            pricetype: e.target.value,
-          })
-        }
-      >
-        <option value="halfday">Half Day</option>
-        <option value="fullday">Full Day</option>
-        <option value="monthly">Monthly</option>
-      </select>
-
-      <button className={styles.amenityBtn} onClick={handleAddAmenity}>
-        {
-  editAmenityId
-
-  ?
-
-  "Update Amenity"
-
-  :
-
-  "Add Amenity"
-
-}
-      </button>
-    </div>
-
-    <div className={styles.amenitiesTable}>
-
-  <table>
-
-    <thead>
-
-      <tr>
-
-        <th>
-          Workspace
-        </th>
-
-        <th>
-          Amenity
-        </th>
-
-        <th>
-          Description
-        </th>
-
-        <th>
-          Price
-        </th>
-
-        <th>
-          Type
-        </th>
-   <th>
-  Action
-</th>
-      </tr>
-
-    </thead>
-
-    <tbody>
-
-      {additionalAmenities.map(
-        (item) => (
-
-        <tr key={item.id}>
-
-          <td>
-
-            {
-              item.workspace_name
-            }
-
-          </td>
-
-          <td>
-
-            {
-              item.title
-            }
-
-          </td>
-
-          <td>
-
-            {
-              item.description
-            }
-
-          </td>
-
-          <td>
-
-            ₹{item.price}
-
-          </td>
-
-          <td>
-
-            {
-              item.price_type
-                ?.replace("_"," ")
-            }
-
-          </td>
-          <td>
-
-  <div
-    className={styles.actionBtns}
-  >
-
-    <button
-
-      className={styles.editBtn}
-
-      onClick={() => {
-
-        setEditAmenityId(
-          item.id
-        );
-
-        setAmenityForm({
-
-          workspace:
-          item.workspace,
-
-          title:
-          item.title,
-
-          description:
-          item.description,
-
-          price:
-          item.price,
-
-          price_type:
-          item.price_type,
-
-        });
-
-      }}
-
-    >
-
-      Edit
-
-    </button>
-
-    <button
-
-      className={styles.deleteBtn}
-
-      onClick={() =>
-
-        handleDeleteAmenity(
-          item.id
-        )
-
-      }
-
-    >
-
-      Delete
-
-    </button>
-
-  </div>
-
-</td>
-
-        </tr>
-
-      ))}
-
-    </tbody>
-
-  </table>
-
-</div>
-  </div>
-)}
-
+          {/* ─── ADDITIONAL AMENITIES: uses approvedWorkspaces ─────────────── */}
+          {activeSection === "additionalAmenities" && (
+            <div className={styles.sectionCard}>
+              <div className={styles.sectionHeader}>
+                <h2>Additional Amenities</h2>
+              </div>
+
+              <div className={styles.amenityFormGrid}>
+                {/* ✅ Only admin-approved workspaces shown here */}
+                <select
+                  className={`${styles.amenitySelect} ${!amenityForm.workspace ? styles.placeholderSelect : ""}`}
+                  value={amenityForm.workspace}
+                  onChange={(e) => setAmenityForm({ ...amenityForm, workspace: e.target.value })}
+                >
+                  <option value="" disabled hidden>Select Workspace</option>
+                  {approvedWorkspaces.map((ws) => (
+                    <option key={ws.id} value={ws.id}>
+                      {ws.workspacename || ws.name || ws.title || `Workspace ${ws.id}`}
+                    </option>
+                  ))}
+                </select>
+                {approvedWorkspaces.length === 0 && (
+                  <small style={{ color: "#f87171", gridColumn: "1 / -1" }}>
+                    No approved workspaces yet. Workspaces must be approved by admin before adding amenities.
+                  </small>
+                )}
+
+                <input
+                  className={styles.amenityInput}
+                  type="text"
+                  placeholder="Amenity Name"
+                  value={amenityForm.title}
+                  onChange={(e) => setAmenityForm({ ...amenityForm, title: e.target.value })}
+                />
+
+                <input
+                  className={styles.amenityInput}
+                  type="text"
+                  placeholder="Description"
+                  value={amenityForm.description}
+                  onChange={(e) => setAmenityForm({ ...amenityForm, description: e.target.value })}
+                />
+
+                <input
+                  className={styles.amenityInput}
+                  type="number"
+                  placeholder="Price"
+                  value={amenityForm.price}
+                  onChange={(e) => setAmenityForm({ ...amenityForm, price: e.target.value })}
+                />
+
+                <select
+                  className={styles.amenitySelect}
+                  value={amenityForm.price_type}
+                  onChange={(e) => setAmenityForm({ ...amenityForm, price_type: e.target.value })}
+                >
+                  <option value="half_day">Half Day</option>
+                  <option value="full_day">Full Day</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+
+                <button className={styles.amenityBtn} onClick={handleAddAmenity}>
+                  {editAmenityId ? "Update Amenity" : "Add Amenity"}
+                </button>
+              </div>
+
+              <div className={styles.amenitiesTable}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Workspace</th>
+                      <th>Amenity</th>
+                      <th>Description</th>
+                      <th>Price</th>
+                      <th>Type</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {additionalAmenities.map((item) => (
+                      <tr key={item.id}>
+                        <td>{item.workspace_name}</td>
+                        <td>{item.title}</td>
+                        <td>{item.description}</td>
+                        <td>₹{item.price}</td>
+                        <td>{item.price_type?.replace("_", " ")}</td>
+                        <td>
+                          <div className={styles.actionBtns}>
+                            <button
+                              className={styles.editBtn}
+                              onClick={() => {
+                                setEditAmenityId(item.id);
+                                setAmenityForm({
+                                  workspace: item.workspace,
+                                  title: item.title,
+                                  description: item.description,
+                                  price: item.price,
+                                  price_type: item.price_type,
+                                });
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className={styles.deleteBtn}
+                              onClick={() => handleDeleteAmenity(item.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {additionalAmenities.length === 0 && (
+                  <div className={styles.empty}>No additional amenities yet.</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
