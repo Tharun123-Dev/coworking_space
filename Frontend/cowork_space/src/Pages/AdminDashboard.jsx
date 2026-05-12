@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axiosInstance from "../Services/Axios";
 import { useNavigate } from "react-router-dom";
-import AdminUsers from "./AdminUsers";
-import CreateOwner from "./CreateOwner";
 import AdminLeadss from "../Improved/AdminLeadss";
 import AdminCompanyLeads from "../Pages/CompanyAdminleads";
 import AdminBookings from "./AdminBookings";
@@ -15,6 +13,7 @@ import AdminAmenities from "./AdminAmenities";
 import RecentActivity from "./RecentActivity";
 import AdminQuotationLeads from "./AdminQuotationLeads";
 
+// ─── Icon ────────────────────────────────────────────────────────────────────
 const Icon = ({ d, size = 16 }) => (
   <svg
     width={size}
@@ -61,19 +60,21 @@ const IC = {
   logout: "M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4 M16 17l5-5-5-5 M21 12H9",
   building: "M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18 M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2 M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2 M10 6h4 M10 10h4 M10 14h4 M10 18h4",
   amenities: "M4 7h16 M7 4v16 M17 4v16 M4 17h16",
-  // Eye open (active/visible)
   eyeOn: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 9a3 3 0 100 6 3 3 0 000-6z",
-  // Eye off (inactive/hidden)
   eyeOff: "M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94 M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19 M1 1l22 22",
-  // Approve (check circle)
   approveCircle: "M22 11.08V12a10 10 0 11-5.93-9.14 M22 4L12 14.01l-3-3",
-  // Reject (x circle)
   rejectCircle: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M15 9l-6 6 M9 9l6 6",
+  userPlus: "M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M8.5 11a4 4 0 100-8 4 4 0 000 8 M20 8v6 M23 11h-6",
+  shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+  phone: "M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z",
+  mail: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6",
+  mapPin: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z M12 7a3 3 0 100 6 3 3 0 000-6z",
+  key: "M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4",
 };
 
 const SIDEBAR_GROUPS = [
   { id: "dashboard", label: "Dashboard", icon: IC.dashboard, section: "overview", children: null },
-  { id: "manage-users", label: "Manage Users", icon: IC.users, section: "users" },
+  { id: "manage-users", label: "Manage Users", icon: IC.users, section: "management" },
   { id: "workspaces", label: "Workspaces", icon: IC.workspace, section: "workspaces", children: null },
   {
     id: "leads-group",
@@ -146,43 +147,15 @@ const RECENT_ACTIVITIES = [
 ];
 
 const WORKSPACE_TYPES = [
-
-  "Hot Desk",
-
-  "Dedicated Desk",
-
-  "Private Office Space",
-
-  "Private Cabin",
-
-  "Meeting Room",
-
-  "Board Room",
-
-  "Event Space",
-
-  "Podcast",
-
-  "Virtual Office",
-
+  "Hot Desk", "Dedicated Desk", "Private Office Space", "Private Cabin",
+  "Meeting Room", "Board Room", "Event Space", "Podcast", "Virtual Office",
 ];
 
 const LOCATIONS = [
-
-  "Hitech City",
-
-  "Gachibowli",
-
-  "Madhapur",
-
-  "Financial District",
-
-  "Kondapur",
-
+  "Hitech City", "Gachibowli", "Madhapur", "Financial District", "Kondapur",
 ];
 
-
-// ─── Weekly Chart ────────────────────────────────────────────────────────────
+// ─── Weekly Chart ─────────────────────────────────────────────────────────────
 function WeeklyChart({ data }) {
   const [animate, setAnimate] = useState(false);
   const maxB = Math.max(...data.map((d) => d.bookings));
@@ -207,7 +180,6 @@ function WeeklyChart({ data }) {
           <span className={styles.legendTxt}>Revenue k</span>
         </div>
       </div>
-
       <div className={styles.chartBody}>
         {data.map((d, i) => (
           <div key={i} className={styles.chartCol}>
@@ -241,11 +213,9 @@ function WeeklyChart({ data }) {
   );
 }
 
-// ─── Donut Chart ─────────────────────────────────────────────────────────────
+// ─── Donut Chart ──────────────────────────────────────────────────────────────
 function DonutChart({ data }) {
-  const r = 52;
-  const cx = 64;
-  const cy = 64;
+  const r = 52, cx = 64, cy = 64;
   const circ = 2 * Math.PI * r;
   let offset = 0;
 
@@ -255,15 +225,8 @@ function DonutChart({ data }) {
         {data.map((seg, i) => {
           const dash = (seg.pct / 100) * circ;
           const el = (
-            <circle
-              key={i}
-              cx={cx}
-              cy={cy}
-              r={r}
-              fill="none"
-              stroke={seg.color}
-              strokeWidth="18"
-              strokeDasharray={`${dash} ${circ - dash}`}
+            <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={seg.color}
+              strokeWidth="18" strokeDasharray={`${dash} ${circ - dash}`}
               strokeDashoffset={-offset}
               style={{ transform: "rotate(-90deg)", transformOrigin: "64px 64px" }}
             />
@@ -272,14 +235,9 @@ function DonutChart({ data }) {
           return el;
         })}
         <circle cx="64" cy="64" r="40" fill="var(--card-bg, #fff)" />
-        <text x="64" y="60" textAnchor="middle" fill="#1E1A08" fontSize="11" fontWeight="700">
-          Space
-        </text>
-        <text x="64" y="75" textAnchor="middle" fill="#A89A6A" fontSize="9">
-          Mix
-        </text>
+        <text x="64" y="60" textAnchor="middle" fill="#1E1A08" fontSize="11" fontWeight="700">Space</text>
+        <text x="64" y="75" textAnchor="middle" fill="#A89A6A" fontSize="9">Mix</text>
       </svg>
-
       <div className={styles.donutLegend}>
         {data.map((d, i) => (
           <div key={i} className={styles.donutItem}>
@@ -293,7 +251,7 @@ function DonutChart({ data }) {
   );
 }
 
-// ─── Spark Bar ───────────────────────────────────────────────────────────────
+// ─── Spark Bar ────────────────────────────────────────────────────────────────
 const mkSpark = (n, mx) => Array.from({ length: n }, () => Math.floor(Math.random() * mx) + 4);
 
 function SparkBar({ data, color }) {
@@ -301,9 +259,7 @@ function SparkBar({ data, color }) {
   return (
     <div className={styles.spark}>
       {data.map((v, i) => (
-        <div
-          key={i}
-          className={styles.sparkBar}
+        <div key={i} className={styles.sparkBar}
           style={{
             height: `${(v / max) * 100}%`,
             background: color,
@@ -315,198 +271,898 @@ function SparkBar({ data, color }) {
   );
 }
 
-// ─── Management Panel (Unified Users + Owners) ───────────────────────────────
-function ManagementPanel({ defaultTab = "users", owners = [], onOwnerCreated, showToast }) {
-  const [tab, setTab] = useState(defaultTab);
-  const [showUserForm, setShowUserForm] = useState(false);
-  const [showOwnerForm, setShowOwnerForm] = useState(false);
+// ─── UNIFIED MANAGEMENT PANEL ─────────────────────────────────────────────────
+// Replaces AdminUsers + CreateOwner completely. All logic lives here.
+function UnifiedManagementPanel({ showToast }) {
+  // ── Data state ──
   const [users, setUsers] = useState([]);
-  const [userCount, setUserCount] = useState(0);
+  const [owners, setOwners] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [userForm, setUserForm] = useState({
-    username: "",
-    email: "",
-    phone: "",
-    password: "",
-  });
+  // ── Search / Filter ──
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all"); // all | users | owners | admins
 
-  const [ownerForm, setOwnerForm] = useState({
-    username: "",
-    email: "",
-    phone: "",
-    password: "",
-  });
+  // ── Form mode: null | "addUser" | "addOwner" | "editUser" | "editOwner" ──
+  const [formMode, setFormMode] = useState(null);
 
+  // ── User form ──
+  const [userForm, setUserForm] = useState({ username: "", email: "", phone: "", password: "" });
+  const [editUserId, setEditUserId] = useState(null);
+
+  // ── Owner form ──
+  const ownerFormInit = { username: "", email: "", password: "", location: "" };
+  const [ownerForm, setOwnerForm] = useState(ownerFormInit);
+  const [editOwnerId, setEditOwnerId] = useState(null);
+
+  // ── Fetch ──
   const fetchUsers = () => {
-    axiosInstance
-      .get("leads/users/all")
-      .then((r) => {
-        const list = Array.isArray(r.data) ? r.data : [];
-        setUsers(list);
-        setUserCount(list.length);
-      })
-      .catch(() => {
-        setUsers([]);
-        setUserCount(0);
-      });
+    axiosInstance.get("leads/users/all/")
+      .then((r) => setUsers(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setUsers([]));
+  };
+
+  const fetchOwners = () => {
+    axiosInstance.get("owners/")
+      .then((r) => setOwners(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setOwners([]));
   };
 
   useEffect(() => {
     fetchUsers();
+    fetchOwners();
   }, []);
 
-  useEffect(() => {
-    setTab(defaultTab);
-  }, [defaultTab]);
-
+  // ── Stats ──
   const activeUsers = users.filter((u) => u.is_active !== false).length;
-  const ownerCount = owners.length;
+  const adminUsers = users.filter((u) => u.is_admin || u.is_superuser).length;
   const verifiedOwners = owners.filter((o) => o.is_verified || o.verified).length;
 
-  const handleCreateUser = () => {
+  // ── Combined + filtered list ──
+  const combined = useMemo(() => {
+    const q = search.toLowerCase().trim();
+const ownerEmails = owners.map(
+  (o) => o.email?.toLowerCase()
+);
+
+const filteredUsers = users.filter(
+  (u) =>
+    !ownerEmails.includes(
+      u.email?.toLowerCase()
+    )
+);
+
+const uList = filteredUsers.map(
+  (u) => ({
+    ...u,
+    _type: "user",
+  })
+);
+
+const oList = owners.map(
+  (o) => ({
+    ...o,
+    _type: "owner",
+  })
+);
+    let merged = [...uList, ...oList];
+
+    if (roleFilter === "users") merged = uList;
+    else if (roleFilter === "owners") merged = oList;
+    else if (roleFilter === "admins") merged = uList.filter((u) => u.is_admin || u.is_superuser);
+
+    if (q) {
+      merged = merged.filter((item) =>
+        [item.username, item.email, item.phone, item.location]
+          .filter(Boolean)
+          .some((f) => f.toLowerCase().includes(q))
+      );
+    }
+    return merged;
+  }, [users, owners, search, roleFilter]);
+
+  // ── Reset forms ──
+  const resetForms = () => {
+    setFormMode(null);
+    setUserForm({ username: "", email: "", phone: "", password: "" });
+    setOwnerForm(ownerFormInit);
+    setEditUserId(null);
+    setEditOwnerId(null);
+  };
+
+  // ── Open edit ──
+  const openEditUser = (u) => {
+    setEditUserId(u.id);
+    setUserForm({
+      username: u.username || "",
+      email: u.email || "",
+      phone: u.phone || "",
+      password: "",
+      is_admin: u.is_admin ?? u.is_superuser ?? false,
+    });
+    setFormMode("editUser");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const openEditOwner = (o) => {
+    setEditOwnerId(o.id);
+    setOwnerForm({
+      username: o.username || "",
+      email: o.email || "",
+      password: "",
+      location: o.location || "",
+    });
+    setFormMode("editOwner");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // ── Create User ──
+  const handleCreateUser = async () => {
     if (!userForm.username || !userForm.email) {
       showToast("Username and email are required", "error");
       return;
     }
-    axiosInstance
-      .post("users/create/", userForm)
-      .then(() => {
-        showToast("User created successfully");
-        setShowUserForm(false);
-        setUserForm({ username: "", email: "", phone: "", password: "" });
-        fetchUsers();
-      })
-      .catch(() => showToast("Failed to create user", "error"));
+    try {
+      setLoading(true);
+      await axiosInstance.post("leads/users/create/", userForm);
+      showToast("User created successfully");
+      resetForms();
+      fetchUsers();
+    } catch {
+      showToast("Failed to create user", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCreateOwner = () => {
-    if (!ownerForm.username || !ownerForm.email) {
-      showToast("Username and email are required", "error");
+  // ── Update User ──
+  const handleUpdateUser = async () => {
+    try {
+      setLoading(true);
+      await axiosInstance.put(`leads/users/update/${editUserId}/`, {
+        username: userForm.username,
+        email: userForm.email,
+        phone: userForm.phone,
+        is_admin: userForm.is_admin || false,
+      });
+      showToast("User updated successfully");
+      resetForms();
+      fetchUsers();
+    } catch {
+      showToast("Failed to update user", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Delete User ──
+  const handleDeleteUser = async (id) => {
+    if (!window.confirm("Delete this user?")) return;
+    try {
+      await axiosInstance.delete(`leads/users/delete/${id}/`);
+      showToast("User deleted");
+      fetchUsers();
+    } catch {
+      showToast("Failed to delete user", "error");
+    }
+  };
+
+  // ── Create Owner ──
+  const handleCreateOwner = async () => {
+    if (!ownerForm.username || !ownerForm.email || !ownerForm.password) {
+      showToast("Username, email and password are required", "error");
       return;
     }
-    axiosInstance
-      .post("owners/create/", ownerForm)
-      .then(() => {
-        showToast("Owner created successfully");
-        setShowOwnerForm(false);
-        setOwnerForm({ username: "", email: "", phone: "", password: "" });
-        if (onOwnerCreated) onOwnerCreated();
-      })
-      .catch(() => showToast("Failed to create owner", "error"));
+    try {
+      setLoading(true);
+      await axiosInstance.post("admin/create-owner/", ownerForm);
+      showToast("Owner created successfully");
+      resetForms();
+      fetchOwners();
+    } catch {
+      showToast("Failed to create owner", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Update Owner ──
+  const handleUpdateOwner = async () => {
+    try {
+      setLoading(true);
+      const payload = {
+        username: ownerForm.username,
+        email: ownerForm.email,
+        location: ownerForm.location,
+      };
+      if (ownerForm.password.trim()) payload.password = ownerForm.password;
+      await axiosInstance.put(`owners/update/${editOwnerId}/`, payload);
+      showToast("Owner updated successfully");
+      resetForms();
+      fetchOwners();
+    } catch {
+      showToast("Failed to update owner", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Delete Owner ──
+  const handleDeleteOwner = async (id) => {
+    if (!window.confirm("Delete this owner?")) return;
+    try {
+      await axiosInstance.delete(`owners/delete/${id}/`);
+      showToast("Owner deleted");
+      fetchOwners();
+    } catch {
+      showToast("Failed to delete owner", "error");
+    }
+  };
+
+  const isUserForm = formMode === "addUser" || formMode === "editUser";
+  const isOwnerForm = formMode === "addOwner" || formMode === "editOwner";
+  const isEditMode = formMode === "editUser" || formMode === "editOwner";
+
+  // ── Inline styles (no extra CSS file needed) ──
+  const S = {
+    // Stats row
+    statsRow: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+      gap: "12px",
+      marginBottom: "20px",
+    },
+    statCard: (color) => ({
+      // background: `${color}10`,
+      border: `1px solid ${color}25`,
+      borderRadius: "12px",
+      padding: "14px 16px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "6px",
+    }),
+    statIco: (color) => ({
+      width: 36,
+      height: 36,
+      borderRadius: "8px",
+      background: `${color}18`,
+      color:"black",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: "4px",
+    }),
+  statVal: () => ({
+  fontSize: "22px",
+  fontWeight: 700,
+  color: "#000",
+  lineHeight: 1,
+}),
+  statLbl: {
+  fontSize: "11px",
+  color: "#000",
+  fontWeight: 600,
+  textTransform: "uppercase",
+  letterSpacing: "0.04em",
+},
+
+    // Action bar
+    actionBar: {
+      display: "flex",
+      gap: "10px",
+      marginBottom: "20px",
+      flexWrap: "wrap",
+    },
+    addUserBtn: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "6px",
+      padding: "8px 16px",
+      borderRadius: "8px",
+      border: "none",
+      background: "#6366f1",
+      // color: "#fff",
+      fontWeight: 600,
+      fontSize: "13px",
+      cursor: "pointer",
+      transition: "opacity 0.18s",
+    },
+    addOwnerBtn: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "6px",
+      padding: "8px 16px",
+      borderRadius: "8px",
+      border: "none",
+      background: "#f59e0b",
+      // color: "#fff",
+      fontWeight: 600,
+      fontSize: "13px",
+      cursor: "pointer",
+      transition: "opacity 0.18s",
+    },
+
+    // Form card
+    formCard: (accent) => ({
+      background: "var(--card-bg, #fff)",
+      border: `1.5px solid ${accent}30`,
+      borderRadius: "12px",
+      padding: "20px",
+      marginBottom: "20px",
+      boxShadow: `0 2px 12px ${accent}08`,
+    }),
+    formTitle: (accent) => ({
+      fontSize: "15px",
+      fontWeight: 700,
+      color: accent,
+      marginBottom: "16px",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+    }),
+    formGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+      gap: "12px",
+      marginBottom: "16px",
+    },
+ inp: {
+  padding: "9px 12px",
+  borderRadius: "8px",
+  border: "1.5px solid var(--border, #e5e7eb)",
+  fontSize: "13px",
+  width: "100%",
+  outline: "none",
+  color: "#000",
+  background: "#fff",
+  boxSizing: "border-box",
+},
+    checkRow: {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      fontSize: "13px",
+      // color: "var(--text, #1f2937)",
+      padding: "9px 0",
+    },
+    formActions: {
+      display: "flex",
+      gap: "10px",
+      flexWrap: "wrap",
+    },
+    submitBtn: (color) => ({
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "6px",
+      padding: "9px 18px",
+      borderRadius: "8px",
+      border: "none",
+      background: color,
+      color: "#fff",
+      fontWeight: 600,
+      fontSize: "13px",
+      cursor: "pointer",
+    }),
+cancelBtn: {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "6px",
+  padding: "9px 18px",
+  borderRadius: "8px",
+  border: "1.5px solid #000",
+  background: "#fff",
+  color: "#000",
+  fontWeight: 600,
+  fontSize: "13px",
+  cursor: "pointer",
+},
+    // Filter + search bar
+    filterBar: {
+      display: "flex",
+      gap: "10px",
+      marginBottom: "14px",
+      flexWrap: "wrap",
+      alignItems: "center",
+    },
+    searchWrap: {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      background: "var(--card-bg, #fff)",
+      border: "1.5px solid var(--border, #e5e7eb)",
+      borderRadius: "8px",
+      padding: "7px 12px",
+      flex: "1",
+      minWidth: "200px",
+    },
+     searchInp: {
+      border: "none",
+      outline: "none",
+      // background: "transparent",
+      fontSize: "13px",
+      color:"black",
+      width: "100%",
+    },
+    roleBtn: (active) => ({
+      padding: "7px 14px",
+      borderRadius: "8px",
+      border: active ? "none" : "1.5px solid var(--border, #e5e7eb)",
+      background: active ? "#6366f1" : "transparent",
+      // color: active ? "#fff" : "var(--text, #555)",
+      fontWeight: 600,
+      fontSize: "12px",
+      cursor: "pointer",
+      transition: "all 0.18s",
+    }),
+
+    // Table
+    tableWrap: {
+      overflowX: "auto",
+      borderRadius: "12px",
+      border: "1.5px solid var(--border, #e5e7eb)",
+    },
+    table: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: "13px",
+    },
+    th: {
+      padding: "11px 14px",
+      textAlign: "left",
+      // background: "var(--th-bg, #f8f9fa)",
+      color: "var(--muted, #252020)",
+      fontWeight: 600,
+      fontSize: "11px",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      borderBottom: "1.5px solid var(--border, #e5e7eb)",
+      whiteSpace: "nowrap",
+    },
+  td: {
+  padding: "11px 14px",
+  borderBottom: "1px solid var(--border-light, #f3f4f6)",
+  color: "#000",
+  verticalAlign: "middle",
+},
+    avatarCell: (color) => ({
+      width: 32,
+      height: 32,
+      borderRadius: "50%",
+      background: `${color}20`,
+      color,
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontWeight: 700,
+      fontSize: "13px",
+      flexShrink: 0,
+    }),
+    userBadge: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "4px",
+      padding: "3px 9px",
+      borderRadius: "20px",
+      background: "#6366f115",
+      color: "#6366f1",
+      fontSize: "11px",
+      fontWeight: 600,
+      border: "1px solid #6366f125",
+    },
+    ownerBadge: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "4px",
+      padding: "3px 9px",
+      borderRadius: "20px",
+      background: "#f59e0b15",
+      color: "#f59e0b",
+      fontSize: "11px",
+      fontWeight: 600,
+      border: "1px solid #f59e0b25",
+    },
+    adminBadge: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "4px",
+      padding: "3px 9px",
+      borderRadius: "20px",
+      background: "#10b98115",
+      color: "#10b981",
+      fontSize: "11px",
+      fontWeight: 600,
+      border: "1px solid #10b98125",
+    },
+ editBtn: {
+  padding: "5px 10px",
+  borderRadius: "6px",
+  border: "none",
+  background: "#6366f115",
+  color: "#000",
+  cursor: "pointer",
+  fontSize: "12px",
+  fontWeight: 600,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "4px",
+},
+    delBtn: {
+      padding: "5px 10px",
+      borderRadius: "6px",
+      border: "none",
+      background: "#f43f5e15",
+      color: "#f43f5e",
+      cursor: "pointer",
+      fontSize: "12px",
+      fontWeight: 600,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "4px",
+    },
+    emptyRow: {
+      padding: "40px",
+      textAlign: "center",
+      color: "var(--muted, #aaa)",
+      fontSize: "14px",
+    },
+    countBadge: {
+      display: "inline-flex",
+      alignItems: "center",
+      padding: "3px 10px",
+      borderRadius: "20px",
+      background: "var(--badge-bg, #f3f4f6)",
+      color: "var(--muted, #888)",
+      fontSize: "11px",
+      fontWeight: 600,
+      marginLeft: "8px",
+    },
   };
 
   return (
-    <div className={styles.section}>
+    <div>
       {/* ── Stats Row ── */}
-      <div className={styles.statsGrid} style={{ marginBottom: "1.5rem" }}>
+      <div style={S.statsRow}>
         {[
-          { label: "Total Users", value: userCount, color: "#6366f1", icon: IC.users },
-          { label: "Total Owners", value: ownerCount, color: "#f59e0b", icon: IC.owners },
+          { label: "Total Users", value: users.length, color: "#6366f1", icon: IC.users },
+          { label: "Total Owners", value: owners.length, color: "#f59e0b", icon: IC.owners },
           { label: "Active Users", value: activeUsers, color: "#10b981", icon: IC.check },
-          { label: "Verified Owners", value: verifiedOwners, color: "#f43f5e", icon: IC.check },
+          { label: "Admin Users", value: adminUsers, color: "#f43f5e", icon: IC.shield },
+          { label: "Verified Owners", value: verifiedOwners, color: "#8b5cf6", icon: IC.approveCircle },
         ].map((s, i) => (
-          <div
-            key={i}
-            className={styles.statCard}
-            style={{ "--ac": s.color, cursor: "default" }}
-          >
-            <div className={styles.statTop}>
-              <div
-                className={styles.statIco}
-                style={{ background: `${s.color}18`, color: s.color }}
-              >
-                <Icon d={s.icon} size={18} />
-              </div>
+          <div key={i} style={S.statCard(s.color)}>
+            <div style={S.statIco(s.color)}>
+              <Icon d={s.icon} size={17} />
             </div>
-            <div className={styles.statVal} style={{ color: s.color }}>
-              {s.value}
-            </div>
-            <div className={styles.statLbl}>{s.label}</div>
+            <div style={S.statVal(s.color)}>{s.value}</div>
+            <div style={S.statLbl}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* ── Tab Bar ── */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+      {/* ── Action Buttons ── */}
+      <div style={S.actionBar}>
         <button
-          className={tab === "users" ? styles.btnPrimary : styles.btnGhost}
-          onClick={() => setTab("users")}
+          style={{
+            ...S.addUserBtn,
+            opacity: formMode === "addUser" ? 0.75 : 1,
+            outline: formMode === "addUser" ? "2px solid #6366f1" : "none",
+          }}
+          onClick={() => {
+            resetForms();
+            setFormMode(formMode === "addUser" ? null : "addUser");
+          }}
         >
-          <Icon d={IC.users} size={13} />
-          &nbsp;Manage Users
+          <Icon d={IC.userPlus} size={14} />
+          {formMode === "addUser" ? "Close Form" : "Add User"}
         </button>
         <button
-          className={tab === "owners" ? styles.btnPrimary : styles.btnGhost}
-          style={
-            tab === "owners"
-              ? { background: "#f59e0b", borderColor: "#f59e0b" }
-              : {}
-          }
-          onClick={() => setTab("owners")}
+          style={{
+            ...S.addOwnerBtn,
+            opacity: formMode === "addOwner" ? 0.75 : 1,
+            outline: formMode === "addOwner" ? "2px solid #f59e0b" : "none",
+          }}
+          onClick={() => {
+            resetForms();
+            setFormMode(formMode === "addOwner" ? null : "addOwner");
+          }}
         >
-          <Icon d={IC.owners} size={13} />
-          &nbsp;Manage Owners
+          <Icon d={IC.owners} size={14} />
+          {formMode === "addOwner" ? "Close Form" : "Add Owner"}
         </button>
       </div>
 
-      {/* ── Users Tab ── */}
-      {tab === "users" && (
-        <div className={styles.section}>
-          <AdminUsers />
+      {/* ── Inline Form: User (Add or Edit) ── */}
+      {isUserForm && (
+        <div style={S.formCard("#6366f1")}>
+          <div style={S.formTitle("#6366f1")}>
+            <Icon d={isEditMode ? IC.edit : IC.userPlus} size={16} />
+            {isEditMode ? `Edit User — ${userForm.username}` : "Add New User"}
+          </div>
+          <div style={S.formGrid}>
+            <input
+              style={S.inp}
+              placeholder="Username *"
+              value={userForm.username}
+              onChange={(e) => setUserForm({ ...userForm, username: e.target.value })}
+            />
+            <input
+              style={S.inp}
+              placeholder="Email *"
+              type="email"
+              value={userForm.email}
+              onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+            />
+            <input
+              style={S.inp}
+              placeholder="Phone"
+              value={userForm.phone || ""}
+              onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
+            />
+            {!isEditMode && (
+              <input
+                style={S.inp}
+                placeholder="Password *"
+                type="password"
+                value={userForm.password}
+                onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+              />
+            )}
+          </div>
+          {isEditMode && (
+            <label style={S.checkRow}>
+              <input
+                type="checkbox"
+                checked={userForm.is_admin || false}
+                onChange={(e) => setUserForm({ ...userForm, is_admin: e.target.checked })}
+                style={{ width: 16, height: 16, accentColor: "#6366f1" }}
+              />
+              Grant Admin Access
+            </label>
+          )}
+          <div style={S.formActions}>
+            <button
+              style={S.submitBtn("#6366f1")}
+              disabled={loading}
+              onClick={isEditMode ? handleUpdateUser : handleCreateUser}
+            >
+              <Icon d={isEditMode ? IC.check : IC.add} size={13} />
+              {loading ? "Saving..." : isEditMode ? "Update User" : "Create User"}
+            </button>
+            <button style={S.cancelBtn} onClick={resetForms}>
+              <Icon d={IC.close} size={13} />
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
-      {/* ── Owners Tab ── */}
-      {tab === "owners" && (
-        <div className={styles.section}>
-          <CreateOwner />
+      {/* ── Inline Form: Owner (Add or Edit) ── */}
+      {isOwnerForm && (
+        <div style={S.formCard("#f59e0b")}>
+          <div style={S.formTitle("#f59e0b")}>
+            <Icon d={isEditMode ? IC.edit : IC.owners} size={16} />
+            {isEditMode ? `Edit Owner — ${ownerForm.username}` : "Add New Owner"}
+          </div>
+          <div style={S.formGrid}>
+            <input
+              style={S.inp}
+              placeholder="Username *"
+              value={ownerForm.username}
+              onChange={(e) => setOwnerForm({ ...ownerForm, username: e.target.value })}
+            />
+            <input
+              style={S.inp}
+              placeholder="Email *"
+              type="email"
+              value={ownerForm.email}
+              onChange={(e) => setOwnerForm({ ...ownerForm, email: e.target.value })}
+            />
+            <select
+              style={S.inp}
+              value={ownerForm.location}
+              onChange={(e) => setOwnerForm({ ...ownerForm, location: e.target.value })}
+            >
+              <option value="">Select Location</option>
+              <option value="Hitech City">Hitech City</option>
+              <option value="Madhapur">Madhapur</option>
+              <option value="Gachibowli">Gachibowli</option>
+              <option value="Kondapur">Kondapur</option>
+              <option value="Financial District">Financial District</option>
+            </select>
+            <input
+              style={S.inp}
+              placeholder={isEditMode ? "New Password (leave blank to keep)" : "Password *"}
+              type="password"
+              value={ownerForm.password}
+              onChange={(e) => setOwnerForm({ ...ownerForm, password: e.target.value })}
+            />
+          </div>
+          <div style={S.formActions}>
+            <button
+              style={S.submitBtn("#f59e0b")}
+              disabled={loading}
+              onClick={isEditMode ? handleUpdateOwner : handleCreateOwner}
+            >
+              <Icon d={isEditMode ? IC.check : IC.add} size={13} />
+              {loading ? "Saving..." : isEditMode ? "Update Owner" : "Create Owner"}
+            </button>
+            <button style={S.cancelBtn} onClick={resetForms}>
+              <Icon d={IC.close} size={13} />
+              Cancel
+            </button>
+          </div>
         </div>
       )}
+
+      {/* ── Filter + Search Bar ── */}
+      <div style={S.filterBar}>
+        {/* Role filter pills */}
+        {[
+          { key: "all", label: "All" },
+          { key: "users", label: "Users" },
+          { key: "owners", label: "Owners" },
+          { key: "admins", label: "Admins" },
+        ].map((r) => (
+          <button
+            key={r.key}
+            style={S.roleBtn(roleFilter === r.key)}
+            onClick={() => setRoleFilter(r.key)}
+          >
+            {r.label}
+          </button>
+        ))}
+
+        {/* Search */}
+        <div style={S.searchWrap}>
+          <Icon d={IC.search} size={13} />
+          <input
+            style={S.searchInp}
+            placeholder="Search by name, email, phone, location..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button
+              style={{ border: "none", background: "none", cursor: "pointer", color: "var(--muted,#aaa)", padding: 0 }}
+              onClick={() => setSearch("")}
+            >
+              <Icon d={IC.close} size={12} />
+            </button>
+          )}
+        </div>
+
+        <span style={S.countBadge}>{combined.length} records</span>
+      </div>
+
+      {/* ── Combined Table ── */}
+      <div style={S.tableWrap}>
+        <table style={S.table}>
+          <thead>
+            <tr>
+              <th style={S.th}>#</th>
+              <th style={S.th}>Name</th>
+              <th style={S.th}>Email</th>
+              <th style={S.th}>Phone / Location</th>
+              <th style={S.th}>Role</th>
+              <th style={S.th}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {combined.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={S.emptyRow}>
+                  No records found for the selected filter / search.
+                </td>
+              </tr>
+            ) : (
+              combined.map((item, i) => {
+                const isOwner = item._type === "owner";
+                const isAdmin = !isOwner && (item.is_admin || item.is_superuser);
+                const accent = isOwner ? "#f59e0b" : isAdmin ? "#10b981" : "#6366f1";
+                const initial = (item.username || "?").charAt(0).toUpperCase();
+                const phoneOrLoc = isOwner
+                  ? item.location || "-"
+                  : item.phone || "-";
+
+                return (
+                  <tr
+                    key={`${item._type}-${item.id}`}
+                    style={{
+                      background: i % 2 === 0 ? "transparent" : "var(--row-alt, rgba(0,0,0,0.01))",
+                      transition: "background 0.15s",
+                    }}
+                  >
+                   <td style={{ ...S.td, color: "#000", fontSize: "12px" }}>
+                      {String(i + 1).padStart(2, "0")}
+                    </td>
+
+                    <td style={S.td}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div style={S.avatarCell(accent)}>{initial}</div>
+                       <span style={{ fontWeight: 600, color: "#000" }}>
+  {item.username}
+</span>
+                      </div>
+                    </td>
+
+                   <td style={{ ...S.td, color: "#000", fontWeight: 600, fontSize: "12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <Icon d={IC.mail} size={11} />
+                        {item.email}
+                      </div>
+                    </td>
+
+                  <td style={{ ...S.td, color: "#000", fontWeight: 600, fontSize: "12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <Icon d={isOwner ? IC.mapPin : IC.phone} size={11} />
+                        {phoneOrLoc}
+                      </div>
+                    </td>
+
+                    <td style={S.td}>
+                      {isOwner ? (
+                        <span style={S.ownerBadge}>
+                          <Icon d={IC.owners} size={10} /> Owner
+                        </span>
+                      ) : isAdmin ? (
+                        <span style={S.adminBadge}>
+                          <Icon d={IC.shield} size={10} /> Admin
+                        </span>
+                      ) : (
+                        <span style={S.userBadge}>
+                          <Icon d={IC.users} size={10} /> User
+                        </span>
+                      )}
+                    </td>
+
+                    <td style={S.td}>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button
+                          style={S.editBtn}
+                          title="Edit"
+                          onClick={() => isOwner ? openEditOwner(item) : openEditUser(item)}
+                        >
+                          <Icon d={IC.edit} size={12} /> Edit
+                        </button>
+                        <button
+                          style={S.delBtn}
+                          title="Delete"
+                          onClick={() => isOwner ? handleDeleteOwner(item.id) : handleDeleteUser(item.id)}
+                        >
+                          <Icon d={IC.trash} size={12} /> Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-// ─── Admin Dashboard (Main) ──────────────────────────────────────────────────
+// ─── Admin Dashboard (Main) ───────────────────────────────────────────────────
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const [owners, setOwners] = useState([]);
   const [workspaces, setWorkspaces] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [amenities,
-setAmenities] =
-useState([]);
+  const [amenities, setAmenities] = useState([]);
+
   const [form, setForm] = useState({
-
-  name: "",
-
-  city: "",
-
-  location: "",
-
-  price: "",
-
-  image: "",
-
-  description: "",
-
-  amenities: [],
-
-  isavailable: true,
-
-});
+    name: "", city: "", location: "", price: "",
+    image: "", description: "", amenities: [], isavailable: true,
+  });
 
   const [editId, setEditId] = useState(null);
+
   const [catForm, setCatForm] = useState({
-    name: "",
-    category: "",
-    description: "",
-    image: "",
-    hourlyprice: "",
-    dailyprice: "",
-    monthlyprice: "",
-    isavailable: true,
-    owner: "",
+    name: "", category: "", description: "", image: "",
+    hourlyprice: "", dailyprice: "", monthlyprice: "", isavailable: true, owner: "",
   });
 
   const [section, setSection] = useState("overview");
@@ -520,55 +1176,21 @@ useState([]);
   const [ticketFilter, setTicketFilter] = useState("all");
   const [notifOpen, setNotifOpen] = useState(false);
   const [actFilter, setActFilter] = useState("all");
-  const [activityDropOpen, setActivityDropOpen] = useState(false);
   const notifRef = useRef(null);
-  const activityRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [adminNotifications, setAdminNotifications] = useState([]);
+  const [viewedAdminNotifications, setViewedAdminNotifications] = useState(() => {
+    return JSON.parse(localStorage.getItem("adminViewedNotifications")) || [];
+  });
 
   const buildAdminNotifications = (company = [], hyd = [], offer = []) => {
     let items = [];
-
-    company.forEach((l) => {
-      items.push({
-        id: `company-${l.id}`,
-        type: "Company Lead",
-        name: l.name,
-        workspace: l.company || "-",
-        section: "company-leads",
-        time: "New Lead",
-      });
-    });
-
-    hyd.forEach((l) => {
-      items.push({
-        id: `hyd-${l.id}`,
-        type: "Hyderabad Lead",
-        name: l.name,
-        workspace: l.workspace_type,
-        section: "hyderabad-leads",
-        time: "New Lead",
-      });
-    });
-
-    offer.forEach((l) => {
-      items.push({
-        id: `offer-${l.id}`,
-        type: "Offer Lead",
-        name: l.name,
-        workspace: l.workspace_type,
-        section: "offerleads",
-        time: "New Lead",
-      });
-    });
-
-    const filtered = items.filter(
-      (item) => !viewedAdminNotifications.includes(item.id)
-    );
-
+    company.forEach((l) => items.push({ id: `company-${l.id}`, type: "Company Lead", name: l.name, workspace: l.company || "-", section: "company-leads", time: "New Lead" }));
+    hyd.forEach((l) => items.push({ id: `hyd-${l.id}`, type: "Hyderabad Lead", name: l.name, workspace: l.workspace_type, section: "hyderabad-leads", time: "New Lead" }));
+    offer.forEach((l) => items.push({ id: `offer-${l.id}`, type: "Offer Lead", name: l.name, workspace: l.workspace_type, section: "offerleads", time: "New Lead" }));
+    const filtered = items.filter((item) => !viewedAdminNotifications.includes(item.id));
     setAdminNotifications(filtered);
   };
-
-  const [mgmtDefaultTab, setMgmtDefaultTab] = useState("users");
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -577,27 +1199,20 @@ useState([]);
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const SPARKS = {
-    ws: mkSpark(10, 8),
-    cat: mkSpark(10, 6),
-    own: mkSpark(10, 4),
-  };
+  const SPARKS = { ws: mkSpark(10, 8), cat: mkSpark(10, 6), own: mkSpark(10, 4) };
 
   const fetchWS = () =>
-    axiosInstance
-      .get("workspaces/admin/workspaces")
+    axiosInstance.get("workspaces/admin/workspaces")
       .then((r) => setWorkspaces(Array.isArray(r.data) ? r.data : []))
       .catch(() => setWorkspaces([]));
 
   const fetchCat = () =>
-    axiosInstance
-      .get("workspaces/categories")
+    axiosInstance.get("workspaces/categories")
       .then((r) => setCategories(Array.isArray(r.data) ? r.data : []))
       .catch(() => setCategories([]));
 
   const fetchOwners = () =>
-    axiosInstance
-      .get("owners")
+    axiosInstance.get("owners")
       .then((r) => setOwners(Array.isArray(r.data) ? r.data : []))
       .catch(() => setOwners([]));
 
@@ -605,20 +1220,10 @@ useState([]);
     fetchOwners();
     fetchWS();
     fetchCat();
-    axiosInstance
-.get("amenities/")
-.then((res) => {
+    axiosInstance.get("amenities/")
+      .then((res) => setAmenities(res.data || []))
+      .catch((err) => console.log(err));
 
-  setAmenities(
-    res.data || []
-  );
-
-})
-.catch((err) => {
-
-  console.log(err);
-
-});
     Promise.all([
       axiosInstance.get("leads/company/admin/"),
       axiosInstance.get("hyderabad/admin/"),
@@ -630,15 +1235,10 @@ useState([]);
     const syncFromHash = () => {
       const rawHash = window.location.hash || "";
       const [hashSection, hashQuery] = rawHash.replace("#", "").split("?");
-
-      if (hashSection === "workspaces") {
-        setSection("workspaces");
-      }
-
+      if (hashSection === "workspaces") setSection("workspaces");
       if (hashQuery) {
         const params = new URLSearchParams(hashQuery);
         const ownerFromUrl = params.get("owner");
-
         if (ownerFromUrl) {
           setOwnerFilter(ownerFromUrl);
           setSearchQ(ownerFromUrl);
@@ -646,20 +1246,18 @@ useState([]);
         }
       }
     };
-
     syncFromHash();
     window.addEventListener("hashchange", syncFromHash);
     return () => window.removeEventListener("hashchange", syncFromHash);
   }, []);
 
   useEffect(() => {
+    localStorage.setItem("adminViewedNotifications", JSON.stringify(viewedAdminNotifications));
+  }, [viewedAdminNotifications]);
+
+  useEffect(() => {
     const h = (e) => {
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
-        setNotifOpen(false);
-      }
-      if (activityRef.current && !activityRef.current.contains(e.target)) {
-        setActivityDropOpen(false);
-      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
@@ -671,186 +1269,65 @@ useState([]);
   };
 
   const handleSubmit = () => {
-    if (!form.name || !form.city || !form.price) {
-      showToast("Fill required fields", "error");
-      return;
-    }
-
+    if (!form.name || !form.city || !form.price) { showToast("Fill required fields", "error"); return; }
     const req = editId
       ? axiosInstance.put(`workspaces/update/${editId}/`, form)
       : axiosInstance.post("workspaces/add/", form);
-
-    req
-      .then(() => {
-        showToast(editId ? "Updated successfully" : "Workspace added succesfully and make a approval for visible in website");
-        setEditId(null);
-        setForm({
-          name: "",
-          city: "",
-          location: "",
-          price: "",
-          image: "",
-          description: "",
-          isavailable: true,
-        });
-        fetchWS();
-      })
-      .catch(() => showToast("Operation failed", "error"));
+    req.then(() => {
+      showToast(editId ? "Updated successfully" : "Workspace added successfully and make a approval for visible in website");
+      setEditId(null);
+      setForm({ name: "", city: "", location: "", price: "", image: "", description: "", isavailable: true });
+      fetchWS();
+    }).catch(() => showToast("Operation failed", "error"));
   };
 
   const handleEdit = (item) => {
-    setForm({
-      name: item.name || "",
-      city: item.city || "",
-      location: item.location || "",
-      price: item.price || "",
-      image: item.image || "",
-      description: item.description || "",
-      isavailable: item.isavailable ?? true,
-    });
+    setForm({ name: item.name || "", city: item.city || "", location: item.location || "", price: item.price || "", image: item.image || "", description: item.description || "", isavailable: item.isavailable ?? true });
     setEditId(item.id);
     setSection("workspaces");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ─── NEW: Toggle Active / Inactive ───────────────────────────────────────
-  // When set to inactive: is_approved becomes false → hidden from website
-  // When set to active:   is_approved becomes true  → visible on website
- const handleToggleActive = (item) => {
-
-  const isCurrentlyActive =
-    item.isavailable !== false;
-
-  const newStatus =
-    !isCurrentlyActive;
-
-  axiosInstance
-
-    .put(
-
-      `workspaces/update/${item.id}/`,
-
-      {
-
-        ...item,
-
-        isavailable: newStatus,
-
-        // ✅ KEEP APPROVAL SAME
-
-        is_approved:
-          item.is_approved,
-
-      }
-
-    )
-
-    .then(() => {
-
-      showToast(
-
-        newStatus
-
-          ? "Workspace Activated"
-
-          : "Workspace Inactivated"
-
-      );
-
-      fetchWS();
-
-    })
-
-    .catch(() =>
-
-      showToast(
-
-        "Failed to update workspace",
-
-        "error"
-
-      )
-
-    );
-
-};
+  const handleToggleActive = (item) => {
+    const newStatus = !(item.isavailable !== false);
+    axiosInstance.put(`workspaces/update/${item.id}/`, { ...item, isavailable: newStatus, is_approved: item.is_approved })
+      .then(() => { showToast(newStatus ? "Workspace Activated" : "Workspace Inactivated"); fetchWS(); })
+      .catch(() => showToast("Failed to update workspace", "error"));
+  };
 
   const handleApprove = (id) => {
-    axiosInstance
-      .put(`workspaces/approve/${id}/`)
-      .then(() => {
-        showToast("Workspace Approved");
-        fetchWS();
-      })
-      .catch(() => {
-        showToast("Approval Failed", "error");
-      });
+    axiosInstance.put(`workspaces/approve/${id}/`)
+      .then(() => { showToast("Workspace Approved"); fetchWS(); })
+      .catch(() => showToast("Approval Failed", "error"));
   };
 
   const handleReject = (id) => {
-    axiosInstance
-      .put(`workspaces/reject/${id}/`)
-      .then(() => {
-        showToast("Workspace Rejected");
-        fetchWS();
-      })
-      .catch(() => {
-        showToast("Reject Failed", "error");
-      });
+    axiosInstance.put(`workspaces/reject/${id}/`)
+      .then(() => { showToast("Workspace Rejected"); fetchWS(); })
+      .catch(() => showToast("Reject Failed", "error"));
   };
 
   const handleAddCat = () => {
-    axiosInstance
-      .post("workspaces/categories/add", catForm)
+    axiosInstance.post("workspaces/categories/add", catForm)
       .then(() => {
         showToast("Category added");
-        setCatForm({
-          name: "",
-          category: "",
-          description: "",
-          image: "",
-          hourlyprice: "",
-          dailyprice: "",
-          monthlyprice: "",
-          isavailable: true,
-          owner: "",
-        });
+        setCatForm({ name: "", category: "", description: "", image: "", hourlyprice: "", dailyprice: "", monthlyprice: "", isavailable: true, owner: "" });
         fetchCat();
-      })
-      .catch(() => showToast("Failed to add", "error"));
+      }).catch(() => showToast("Failed to add", "error"));
   };
 
   const handleDeleteCat = (id) => {
     if (!window.confirm("Delete this category?")) return;
-    axiosInstance
-      .delete(`workspaces/categories/delete/${id}`)
-      .then(() => {
-        showToast("Deleted");
-        fetchCat();
-      })
+    axiosInstance.delete(`workspaces/categories/delete/${id}`)
+      .then(() => { showToast("Deleted"); fetchCat(); })
       .catch(() => showToast("Delete failed", "error"));
   };
 
   const toggleGroup = (id) => setOpenGroup((prev) => (prev === id ? null : id));
 
   const goNav = (item) => {
-    if (item.path) {
-      navigate(item.path);
-      setMobOpen(false);
-      return;
-    }
-    if (item.section) {
-      if (item.section === "users") {
-        setMgmtDefaultTab("users");
-        setSection("management");
-      } else if (item.section === "owners") {
-        setMgmtDefaultTab("owners");
-        setSection("management");
-      } else {
-        setSection(item.section);
-      }
-      setMobOpen(false);
-    }
+    if (item.path) { navigate(item.path); setMobOpen(false); return; }
+    if (item.section) { setSection(item.section); setMobOpen(false); }
   };
 
   const closeMob = () => setMobOpen(false);
@@ -861,154 +1338,44 @@ useState([]);
   };
 
   const ownerOptions = useMemo(() => {
-    const names = [
-      ...new Set(
-        workspaces
-          .map((w) => w.ownername || w.owner_name || w.owner?.username || w.owner?.name || "")
-          .filter(Boolean)
-      ),
-    ];
+    const names = [...new Set(workspaces.map((w) => w.ownername || w.owner_name || w.owner?.username || w.owner?.name || "").filter(Boolean))];
     return names.sort((a, b) => a.localeCompare(b));
   }, [workspaces]);
 
   const workspaceTypeOptions = useMemo(() => {
-    const types = [
-      ...new Set(
-        workspaces
-          .map(
-            (w) =>
-              w.usertype ||
-              w.workspace_type ||
-              w.workspacetype ||
-              w.category ||
-              w.name ||
-              ""
-          )
-          .filter(Boolean)
-      ),
-    ];
+    const types = [...new Set(workspaces.map((w) => w.usertype || w.workspace_type || w.workspacetype || w.category || w.name || "").filter(Boolean))];
     return types.sort((a, b) => a.localeCompare(b));
   }, [workspaces]);
 
   const filteredWS = useMemo(() => {
     const q = searchQ.toLowerCase().trim();
     return workspaces.filter((w) => {
-      const ownerName = (
-        w.ownername ||
-        w.owner_name ||
-        w.owner?.username ||
-        w.owner?.name ||
-        ""
-      )
-        .toString()
-        .toLowerCase();
-
-      const workspaceType = (
-        w.usertype ||
-        w.workspace_type ||
-        w.workspacetype ||
-        w.category ||
-        w.name ||
-        ""
-      )
-        .toString()
-        .toLowerCase();
-
-      const matchesSearch =
-        !q ||
-        w.name?.toLowerCase().includes(q) ||
-        w.city?.toLowerCase().includes(q) ||
-        w.location?.toLowerCase().includes(q) ||
-        ownerName.includes(q) ||
-        workspaceType.includes(q);
-
-      const matchesOwner =
-        !ownerFilter || ownerName === ownerFilter.toLowerCase();
-
-      const matchesType =
-        !workspaceTypeFilter || workspaceType === workspaceTypeFilter.toLowerCase();
-
+      const ownerName = (w.ownername || w.owner_name || w.owner?.username || w.owner?.name || "").toString().toLowerCase();
+      const workspaceType = (w.usertype || w.workspace_type || w.workspacetype || w.category || w.name || "").toString().toLowerCase();
+      const matchesSearch = !q || w.name?.toLowerCase().includes(q) || w.city?.toLowerCase().includes(q) || w.location?.toLowerCase().includes(q) || ownerName.includes(q) || workspaceType.includes(q);
+      const matchesOwner = !ownerFilter || ownerName === ownerFilter.toLowerCase();
+      const matchesType = !workspaceTypeFilter || workspaceType === workspaceTypeFilter.toLowerCase();
       return matchesSearch && matchesOwner && matchesType;
     });
   }, [workspaces, searchQ, ownerFilter, workspaceTypeFilter]);
 
-  const filteredTickets =
-    ticketFilter === "all"
-      ? MOCK_TICKETS
-      : MOCK_TICKETS.filter((t) => t.status === ticketFilter);
-
-  const filteredActivity =
-    actFilter === "all"
-      ? RECENT_ACTIVITIES
-      : RECENT_ACTIVITIES.filter((a) => a.type === actFilter);
+  const filteredActivity = actFilter === "all" ? RECENT_ACTIVITIES : RECENT_ACTIVITIES.filter((a) => a.type === actFilter);
 
   const STATS = [
-    {
-      label: "Total Workspaces",
-      value: workspaces.length,
-      color: "#f59e0b",
-      spark: SPARKS.ws,
-      trend: 12,
-      up: true,
-      icon: IC.workspace,
-    },
-    {
-      label: "Categories",
-      value: 9,
-      color: "#6366f1",
-      spark: SPARKS.cat,
-      trend: 8,
-      up: true,
-      icon: IC.category,
-    },
-    {
-      label: "Total Owners",
-      value: owners.length,
-      color: "#10b981",
-      spark: SPARKS.own,
-      trend: 3,
-      up: true,
-      icon: IC.owners,
-    },
+    { label: "Total Workspaces", value: workspaces.length, color: "#f59e0b", spark: SPARKS.ws, trend: 12, up: true, icon: IC.workspace },
+    { label: "Categories", value: 9, color: "#6366f1", spark: SPARKS.cat, trend: 8, up: true, icon: IC.category },
+    { label: "Total Owners", value: owners.length, color: "#10b981", spark: SPARKS.own, trend: 3, up: true, icon: IC.owners },
   ];
 
-  const [adminNotifications, setAdminNotifications] = useState([]);
-
-  const [viewedAdminNotifications, setViewedAdminNotifications] = useState(() => {
-    return JSON.parse(localStorage.getItem("adminViewedNotifications")) || [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem(
-      "adminViewedNotifications",
-      JSON.stringify(viewedAdminNotifications)
-    );
-  }, [viewedAdminNotifications]);
-
   const sectionTitle = (() => {
-    const map = {
-      overview: "Dashboard Overview",
-      management: "Management",
-      workspaces: "Workspace Management",
-      categories: "Category Management",
-      tickets: "Support Tickets",
-      activity: "Recent Activity",
-    };
+    const map = { overview: "Dashboard Overview", management: "User & Owner Management", workspaces: "Workspace Management", categories: "Category Management", tickets: "Support Tickets", activity: "Recent Activity" };
     return map[section] || "Dashboard";
   })();
 
   const activityTypes = ["all", "booking", "lead", "ticket", "workspace", "user", "payment", "owner", "category"];
 
   const handleTopNavClick = (group) => {
-    if (group.section === "users") {
-      setMgmtDefaultTab("users");
-      setSection("management");
-    } else if (group.section === "owners") {
-      setMgmtDefaultTab("owners");
-      setSection("management");
-    } else {
-      setSection(group.section);
-    }
+    setSection(group.section || "overview");
     closeMob();
   };
 
@@ -1017,24 +1384,14 @@ useState([]);
       {mobOpen && <div className={styles.mobOverlay} onClick={closeMob} />}
 
       {/* ── Sidebar ── */}
-      <aside
-        className={`${styles.sidebar} ${sideOpen ? styles.sidebarOpen : styles.sidebarCollapsed} ${
-          mobOpen ? styles.sidebarMob : ""
-        }`}
-      >
+      <aside className={`${styles.sidebar} ${sideOpen ? styles.sidebarOpen : styles.sidebarCollapsed} ${mobOpen ? styles.sidebarMob : ""}`}>
         <div className={styles.logo}>
-          <div className={styles.logoMark}>
-            <Icon d={IC.building} size={18} />
-          </div>
+          <div className={styles.logoMark}><Icon d={IC.building} size={18} /></div>
           {(sideOpen || mobOpen) && (
-            <span className={styles.logoText}>
-              Co<span className={styles.logoAccent}>Work</span>
-            </span>
+            <span className={styles.logoText}>Co<span className={styles.logoAccent}>Work</span></span>
           )}
           {isMobile && mobOpen && (
-            <button className={styles.sideCloseBtn} onClick={closeMob}>
-              <Icon d={IC.close} size={14} />
-            </button>
+            <button className={styles.sideCloseBtn} onClick={closeMob}><Icon d={IC.close} size={14} /></button>
           )}
         </div>
 
@@ -1043,34 +1400,21 @@ useState([]);
         <nav className={styles.nav}>
           {SIDEBAR_GROUPS.map((group) => {
             if (!group.children) {
-              const isActive =
-                section === group.section ||
-                (group.section === "overview" && section === "overview");
-
+              const isActive = section === group.section;
               return (
-                <button
-                  key={group.id}
+                <button key={group.id}
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
                   onClick={() => handleTopNavClick(group)}
                   title={!sideOpen && !mobOpen ? group.label : ""}
                 >
-                  <span className={styles.navIco}>
-                    <Icon d={group.icon} size={15} />
-                  </span>
-                  {(sideOpen || mobOpen) && (
-                    <span className={styles.navLabel}>{group.label}</span>
-                  )}
+                  <span className={styles.navIco}><Icon d={group.icon} size={15} /></span>
+                  {(sideOpen || mobOpen) && <span className={styles.navLabel}>{group.label}</span>}
                 </button>
               );
             }
 
             const isOpen = openGroup === group.id;
-            const isActive = group.children.some(
-              (c) =>
-                c.section === section ||
-                (section === "management" &&
-                  (c.section === "users" || c.section === "owners"))
-            );
+            const isActive = group.children.some((c) => c.section === section);
 
             return (
               <div key={group.id}>
@@ -1079,43 +1423,25 @@ useState([]);
                   onClick={() => (sideOpen || mobOpen) && toggleGroup(group.id)}
                   title={!sideOpen && !mobOpen ? group.label : ""}
                 >
-                  <span className={styles.navIco}>
-                    <Icon d={group.icon} size={15} />
-                  </span>
-                  {(sideOpen || mobOpen) && (
-                    <span className={styles.navLabel}>{group.label}</span>
-                  )}
+                  <span className={styles.navIco}><Icon d={group.icon} size={15} /></span>
+                  {(sideOpen || mobOpen) && <span className={styles.navLabel}>{group.label}</span>}
                   {(sideOpen || mobOpen) && (
                     <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}>
                       <Icon d={IC.chevDown} size={11} />
                     </span>
                   )}
                 </button>
-
                 {(sideOpen || mobOpen) && isOpen && (
                   <div className={styles.navChildren}>
-                    {group.children.map((child) => {
-                      const childActive =
-                        section === child.section ||
-                        (section === "management" && child.section === mgmtDefaultTab) ||
-                        (section === "management" &&
-                          child.section === "users" &&
-                          mgmtDefaultTab === "users") ||
-                        (section === "management" &&
-                          child.section === "owners" &&
-                          mgmtDefaultTab === "owners");
-
-                      return (
-                        <button
-                          key={child.id}
-                          className={`${styles.navChild} ${childActive ? styles.navChildActive : ""}`}
-                          onClick={() => goNav(child)}
-                        >
-                          <span className={styles.childDot} />
-                          <span>{child.label}</span>
-                        </button>
-                      );
-                    })}
+                    {group.children.map((child) => (
+                      <button key={child.id}
+                        className={`${styles.navChild} ${section === child.section ? styles.navChildActive : ""}`}
+                        onClick={() => goNav(child)}
+                      >
+                        <span className={styles.childDot} />
+                        <span>{child.label}</span>
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
@@ -1153,7 +1479,6 @@ useState([]);
           </div>
 
           <div className={styles.topRight}>
-            {/* Notification Bell */}
             <div className={styles.notifWrap} ref={notifRef}>
               <button
                 className={`${styles.iconBtn} ${notifOpen ? styles.iconBtnActive : ""}`}
@@ -1165,101 +1490,36 @@ useState([]);
                 )}
               </button>
 
-{notifOpen && (
-  <div className={styles.notifPanel}>
-
-    <div className={styles.notifHead}>
-
-      <div className={styles.notifHeading}>
-
-        <h3>Notifications</h3>
-
-        <span className={styles.notifCount}>
-          {adminNotifications.length}
-        </span>
-
-      </div>
-
-      <button
-        className={styles.notifClose}
-        onClick={() => setNotifOpen(false)}
-      >
-        ✕
-      </button>
-
-    </div>
-
-    {adminNotifications.map((n) => (
-      <div
-        key={n.id}
-        className={styles.notifItem}
-      >
-        <div
-          className={styles.notifIco}
-          style={{
-            background: "rgba(99,102,241,0.1)",
-            color: "#6366f1",
-          }}
-        >
-          <Icon d={IC.bell} size={14} />
-        </div>
-
-        <div style={{ flex: 1 }}>
-          <div className={styles.notifTxt}>
-            <strong>{n.type}</strong>
-            <br />
-            {n.name}
-          </div>
-
-          <div className={styles.notifTime}>
-            {n.workspace}
-          </div>
-        </div>
-
-        <button
-          className={styles.viewBtn}
-          onClick={() => {
-
-            setSection(n.section);
-
-            const sameSectionIds =
-              adminNotifications
-                .filter(
-                  (item) =>
-                    item.section === n.section
-                )
-                .map((item) => item.id);
-
-            const updatedViewed = [
-              ...new Set([
-                ...viewedAdminNotifications,
-                ...sameSectionIds,
-              ]),
-            ];
-
-            setViewedAdminNotifications(
-              updatedViewed
-            );
-
-            setAdminNotifications((prev) =>
-              prev.filter(
-                (item) =>
-                  item.section !== n.section
-              )
-            );
-
-            setNotifOpen(false);
-
-          }}
-        >
-          View
-        </button>
-
-      </div>
-    ))}
-
-  </div>
-)}
+              {notifOpen && (
+                <div className={styles.notifPanel}>
+                  <div className={styles.notifHead}>
+                    <div className={styles.notifHeading}>
+                      <h3>Notifications</h3>
+                      <span className={styles.notifCount}>{adminNotifications.length}</span>
+                    </div>
+                    <button className={styles.notifClose} onClick={() => setNotifOpen(false)}>✕</button>
+                  </div>
+                  {adminNotifications.map((n) => (
+                    <div key={n.id} className={styles.notifItem}>
+                      <div className={styles.notifIco} style={{ background: "rgba(99,102,241,0.1)", color: "#6366f1" }}>
+                        <Icon d={IC.bell} size={14} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div className={styles.notifTxt}><strong>{n.type}</strong><br />{n.name}</div>
+                        <div className={styles.notifTime}>{n.workspace}</div>
+                      </div>
+                      <button className={styles.viewBtn} onClick={() => {
+                        setSection(n.section);
+                        const sameSectionIds = adminNotifications.filter((item) => item.section === n.section).map((item) => item.id);
+                        const updatedViewed = [...new Set([...viewedAdminNotifications, ...sameSectionIds])];
+                        setViewedAdminNotifications(updatedViewed);
+                        setAdminNotifications((prev) => prev.filter((item) => item.section !== n.section));
+                        setNotifOpen(false);
+                      }}>View</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -1272,29 +1532,19 @@ useState([]);
             <section className={styles.overview}>
               <div className={styles.statsGrid}>
                 {STATS.map((s, i) => (
-                  <button
-                    key={i}
-                    className={styles.statCard}
-                    style={{ "--ac": s.color }}
+                  <button key={i} className={styles.statCard} style={{ "--ac": s.color }}
                     onClick={() => navigate("/enterprise")}
                   >
                     <div className={styles.statTop}>
-                      <div
-                        className={styles.statIco}
-                        style={{ background: `${s.color}18`, color: s.color }}
-                      >
+                      <div className={styles.statIco} style={{ background: `${s.color}18`, color: s.color }}>
                         <Icon d={s.icon} size={18} />
                       </div>
-                      <span
-                        className={`${styles.trend} ${s.up ? styles.trendUp : styles.trendDn}`}
-                      >
+                      <span className={`${styles.trend} ${s.up ? styles.trendUp : styles.trendDn}`}>
                         <Icon d={s.up ? IC.arrowUp : IC.arrowDown} size={10} />
                         {s.trend}%
                       </span>
                     </div>
-                    <div className={styles.statVal} style={{ color: s.color }}>
-                      {s.value}
-                    </div>
+                    <div className={styles.statVal} style={{ color: s.color }}>{s.value}</div>
                     <div className={styles.statLbl}>{s.label}</div>
                     <SparkBar data={s.spark} color={s.color} />
                     <div className={styles.statClick}>Click to explore</div>
@@ -1303,9 +1553,7 @@ useState([]);
               </div>
 
               <div className={styles.chartsRow}>
-                <div className={styles.chartPanel}>
-                  <WeeklyChart data={CHART_DATA} />
-                </div>
+                <div className={styles.chartPanel}><WeeklyChart data={CHART_DATA} /></div>
                 <div className={styles.donutPanel}>
                   <div className={styles.panelHead}>
                     <h3 className={styles.panelTitle}>Space Mix</h3>
@@ -1321,53 +1569,21 @@ useState([]);
                     <h3 className={styles.panelTitle}>Recent Support Tickets</h3>
                     <p className={styles.panelSub}>Latest issues raised by users</p>
                   </div>
-                  <button
-                    className={styles.viewAllBtn}
-                    onClick={() => setSection("tickets")}
-                  >
-                    View All
-                  </button>
+                  <button className={styles.viewAllBtn} onClick={() => setSection("tickets")}>View All</button>
                 </div>
-
                 <div className={styles.ticketList}>
                   {MOCK_TICKETS.slice(0, 4).map((t, i) => (
                     <div key={i} className={styles.ticketRow}>
                       <span className={styles.ticketId}>{t.id}</span>
                       <div className={styles.ticketMain}>
                         <span className={styles.ticketSubject}>{t.subject}</span>
-                        <span className={styles.ticketUser}>
-                          <Icon d={IC.users} size={10} /> {t.user}
-                        </span>
+                        <span className={styles.ticketUser}><Icon d={IC.users} size={10} /> {t.user}</span>
                       </div>
-                      <span
-                        className={`${styles.pri} ${
-                          t.priority === "high"
-                            ? styles.priHigh
-                            : t.priority === "medium"
-                            ? styles.priMed
-                            : styles.priLow
-                        }`}
-                      >
-                        {t.priority}
+                      <span className={`${styles.pri} ${t.priority === "high" ? styles.priHigh : t.priority === "medium" ? styles.priMed : styles.priLow}`}>{t.priority}</span>
+                      <span className={`${styles.statusBadge} ${t.status === "open" ? styles.stOpen : t.status === "inprogress" ? styles.stProg : styles.stDone}`}>
+                        {t.status === "open" ? "Open" : t.status === "inprogress" ? "In Progress" : "Resolved"}
                       </span>
-                      <span
-                        className={`${styles.statusBadge} ${
-                          t.status === "open"
-                            ? styles.stOpen
-                            : t.status === "inprogress"
-                            ? styles.stProg
-                            : styles.stDone
-                        }`}
-                      >
-                        {t.status === "open"
-                          ? "Open"
-                          : t.status === "inprogress"
-                          ? "In Progress"
-                          : "Resolved"}
-                      </span>
-                      <span className={styles.ticketTime}>
-                        <Icon d={IC.clock} size={10} /> {t.time}
-                      </span>
+                      <span className={styles.ticketTime}><Icon d={IC.clock} size={10} /> {t.time}</span>
                     </div>
                   ))}
                 </div>
@@ -1375,29 +1591,19 @@ useState([]);
             </section>
           )}
 
-          {/* ── Unified Management Section ── */}
+          {/* ── UNIFIED Management Section ── */}
           {section === "management" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
-                <div
-                  className={styles.secIco}
-                  style={{ background: "#6366f118", color: "#6366f1" }}
-                >
+                <div className={styles.secIco} style={{ background: "#6366f118", color: "#6366f1" }}>
                   <Icon d={IC.users} size={18} />
                 </div>
                 <div>
-                  <h2 className={styles.secTitle}>Management</h2>
-                  <p className={styles.secSub}>
-                    Manage users and owners from one place.
-                  </p>
+                  <h2 className={styles.secTitle}>User & Owner Management</h2>
+                  <p className={styles.secSub}>Create, edit, delete users and owners — all in one place.</p>
                 </div>
               </div>
-              <ManagementPanel
-                defaultTab={mgmtDefaultTab}
-                owners={owners}
-                showToast={showToast}
-                onOwnerCreated={fetchOwners}
-              />
+              <UnifiedManagementPanel showToast={showToast} />
             </section>
           )}
 
@@ -1405,270 +1611,58 @@ useState([]);
           {section === "workspaces" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
-                <div
-                  className={styles.secIco}
-                  style={{ background: "#f59e0b18", color: "#f59e0b" }}
-                >
+                <div className={styles.secIco} style={{ background: "#f59e0b18", color: "#f59e0b" }}>
                   <Icon d={IC.workspace} size={18} />
                 </div>
                 <div>
                   <h2 className={styles.secTitle}>Workspaces</h2>
-                  <p className={styles.secSub}>
-                    Owner filtered workspace details view in admin dashboard.
-                  </p>
+                  <p className={styles.secSub}>Owner filtered workspace details view in admin dashboard.</p>
                 </div>
-                <span className={styles.countPill}>
-                  {ownerFilter
-                    ? `${filteredWS.length} for ${ownerFilter}`
-                    : `${filteredWS.length} Filtered`}
-                </span>
+                <span className={styles.countPill}>{ownerFilter ? `${filteredWS.length} for ${ownerFilter}` : `${filteredWS.length} Filtered`}</span>
               </div>
 
               {/* Add / Edit Form */}
               <div className={styles.formCard}>
                 <div className={styles.formHead}>
-                  <span className={styles.formHeadIco}>
-                    <Icon d={editId ? IC.edit : IC.add} size={13} />
-                  </span>
+                  <span className={styles.formHeadIco}><Icon d={editId ? IC.edit : IC.add} size={13} /></span>
                   <span>{editId ? `Editing Workspace #${editId}` : "Add New Workspace"}</span>
                 </div>
-
                 <div className={styles.formGrid}>
-             
-                {/* Workspace Type */}
-
-<select
-  className={styles.selectField}
-  value={form.name}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      name: e.target.value,
-    })
-  }
->
-
-  <option value="">
-    Select Workspace Type
-  </option>
-
-  {WORKSPACE_TYPES.map((type) => (
-
-    <option
-      key={type}
-      value={type}
-    >
-
-      {type}
-
-    </option>
-
-  ))}
-
-</select>
-
-{/* Location */}
-
-<select
-  className={styles.selectField}
-  value={form.city}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      city: e.target.value,
-    })
-  }
->
-
-  <option value="">
-    Select Location
-  </option>
-
-  {LOCATIONS.map((loc) => (
-
-    <option
-      key={loc}
-      value={loc}
-    >
-
-      {loc}
-
-    </option>
-
-  ))}
-
-</select>
-
-{/* Location Area */}
-
-<input
-  className={styles.inp}
-  placeholder="Location Area"
-  value={form.location}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      location: e.target.value,
-    })
-  }
-/>
-
-{/* Price */}
-
-<input
-  className={styles.inp}
-  placeholder="Price"
-  value={form.price}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      price: e.target.value,
-    })
-  }
-/>
-
-{/* Description */}
-
-<input
-  className={styles.inp}
-  placeholder="Description"
-  value={form.description}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      description: e.target.value,
-    })
-  }
-/>
-
-{/* Image URL */}
-
-<input
-  className={styles.inp}
-  placeholder="Image URL"
-  value={form.image}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      image: e.target.value,
-    })
-  }
-/>
-{/* Amenities */}
-
-<div className={styles.fieldGroup}>
-
-  {/* <label>
-    Amenities
-  </label> */}
-
-  <div
-    className={styles.amenitiesGrid}
-  >
-
-    {amenities.map((a) => (
-
-      <label
-        key={a.id}
-        className={
-          styles.amenityItem
-        }
-      >
-
-        <input
-
-          type="checkbox"
-
-          checked={
-            form.amenities?.includes(
-              a.id
-            )
-          }
-
-          onChange={(e) => {
-
-            if (e.target.checked) {
-
-              setForm({
-
-                ...form,
-
-                amenities: [
-
-                  ...(form.amenities || []),
-
-                  a.id,
-
-                ],
-
-              });
-
-            } else {
-
-              setForm({
-
-                ...form,
-
-                amenities:
-
-                  form.amenities.filter(
-
-                    (id) =>
-                      id !== a.id
-
-                  ),
-
-              });
-
-            }
-
-          }}
-
-        />
-
-        {a.name}
-
-      </label>
-
-    ))}
-
-  </div>
-
-</div>
-                  {/* <select
-                    className={styles.selectField}
-                    value={form.isavailable ? "available" : "unavailable"}
-                    onChange={(e) =>
-                      setForm({ ...form, isavailable: e.target.value === "available" })
-                    }
-                  >
-                    <option value="available">Available</option>
-                    <option value="unavailable">Unavailable</option>
-                  </select> */}
+                  <select className={styles.selectField} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}>
+                    <option value="">Select Workspace Type</option>
+                    {WORKSPACE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                  </select>
+                  <select className={styles.selectField} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>
+                    <option value="">Select Location</option>
+                    {LOCATIONS.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
+                  </select>
+                  <input className={styles.inp} placeholder="Location Area" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+                  <input className={styles.inp} placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+                  <input className={styles.inp} placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                  <input className={styles.inp} placeholder="Image URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
+                  <div className={styles.fieldGroup}>
+                    <div className={styles.amenitiesGrid}>
+                      {amenities.map((a) => (
+                        <label key={a.id} className={styles.amenityItem}>
+                          <input type="checkbox" checked={form.amenities?.includes(a.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) setForm({ ...form, amenities: [...(form.amenities || []), a.id] });
+                              else setForm({ ...form, amenities: form.amenities.filter((id) => id !== a.id) });
+                            }}
+                          />
+                          {a.name}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-
                 <div className={styles.formActs}>
                   <button className={styles.btnPrimary} onClick={handleSubmit}>
                     <Icon d={editId ? IC.edit : IC.add} size={13} />
                     {editId ? "Update Workspace" : "Add Workspace"}
                   </button>
-
                   {editId && (
-                    <button
-                      className={styles.btnGhost}
-                      onClick={() => {
-                        setEditId(null);
-                        setForm({
-                          name: "",
-                          city: "",
-                          location: "",
-                          price: "",
-                          image: "",
-                          description: "",
-                          isavailable: true,
-                        });
-                      }}
-                    >
+                    <button className={styles.btnGhost} onClick={() => { setEditId(null); setForm({ name: "", city: "", location: "", price: "", image: "", description: "", isavailable: true }); }}>
                       Cancel
                     </button>
                   )}
@@ -1676,59 +1670,22 @@ useState([]);
               </div>
 
               {/* Filters */}
-              <div
-                className={styles.tableBar}
-                style={{ gap: "12px", flexWrap: "wrap" }}
-              >
+              <div className={styles.tableBar} style={{ gap: "12px", flexWrap: "wrap" }}>
                 <div className={styles.tableSearch}>
                   <Icon d={IC.search} size={13} />
-                  <input
-                    className={styles.searchInp}
-                    placeholder="Search workspace, city, owner..."
-                    value={searchQ}
-                    onChange={(e) => setSearchQ(e.target.value)}
-                  />
+                  <input className={styles.searchInp} placeholder="Search workspace, city, owner..." value={searchQ} onChange={(e) => setSearchQ(e.target.value)} />
                 </div>
-
-                <select
-                  className={styles.selectField}
-                  value={ownerFilter}
-                  onChange={(e) => setOwnerFilter(e.target.value)}
-                >
+                <select className={styles.selectField} value={ownerFilter} onChange={(e) => setOwnerFilter(e.target.value)}>
                   <option value="">All Owners</option>
-                  {ownerOptions.map((owner) => (
-                    <option key={owner} value={owner}>
-                      {owner}
-                    </option>
-                  ))}
+                  {ownerOptions.map((owner) => <option key={owner} value={owner}>{owner}</option>)}
                 </select>
-
-                <select
-                  className={styles.selectField}
-                  value={workspaceTypeFilter}
-                  onChange={(e) => setWorkspaceTypeFilter(e.target.value)}
-                >
+                <select className={styles.selectField} value={workspaceTypeFilter} onChange={(e) => setWorkspaceTypeFilter(e.target.value)}>
                   <option value="">All Types</option>
-                  {workspaceTypeOptions.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
+                  {workspaceTypeOptions.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>
-
-                <button
-                  className={styles.btnGhost}
-                  onClick={() => {
-                    setSearchQ("");
-                    setOwnerFilter("");
-                    setWorkspaceTypeFilter("");
-                    window.location.hash = "workspaces";
-                  }}
-                >
-                  <Icon d={IC.refresh} size={13} />
-                  Reset Filters
+                <button className={styles.btnGhost} onClick={() => { setSearchQ(""); setOwnerFilter(""); setWorkspaceTypeFilter(""); window.location.hash = "workspaces"; }}>
+                  <Icon d={IC.refresh} size={13} /> Reset Filters
                 </button>
-
                 <span className={styles.tableCount}>{filteredWS.length} records</span>
               </div>
 
@@ -1737,151 +1694,49 @@ useState([]);
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Owner Name</th>
-                      <th>Workspace Type</th>
-                      <th>Name</th>
-                      <th>City</th>
-                      <th>Location</th>
-                      <th>Price</th>
-                      <th>Approval</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                      <th>#</th><th>Owner Name</th><th>Workspace Type</th><th>Name</th>
+                      <th>City</th><th>Location</th><th>Price</th><th>Approval</th><th>Status</th><th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredWS.map((item, i) => {
-                      const ownerName =
-                        item.ownername ||
-                        item.owner_name ||
-                        item.owner?.username ||
-                        item.owner?.name ||
-                        "No Owner";
-
-                      const workspaceType =
-                        item.usertype ||
-                        item.workspace_type ||
-                        item.workspacetype ||
-                        item.category ||
-                        item.name ||
-                        "-";
-
+                      const ownerName = item.ownername || item.owner_name || item.owner?.username || item.owner?.name || "No Owner";
+                      const workspaceType = item.usertype || item.workspace_type || item.workspacetype || item.category || item.name || "-";
                       const isActive = item.isavailable !== false;
-
                       return (
-                        <tr
-                          key={item.id}
-                          style={
-                            !isActive
-                              ? { opacity: 0.55, background: "rgba(0,0,0,0.02)" }
-                              : {}
-                          }
-                        >
-                          <td className={styles.tdSerial}>
-                            {String(i + 1).padStart(2, "0")}
-                          </td>
+                        <tr key={item.id} style={!isActive ? { opacity: 0.55, background: "rgba(0,0,0,0.02)" } : {}}>
+                          <td className={styles.tdSerial}>{String(i + 1).padStart(2, "0")}</td>
                           <td className={styles.tdBold}>{ownerName}</td>
                           <td className={styles.tdMuted}>{workspaceType}</td>
                           <td className={styles.tdBold}>{item.name}</td>
                           <td>{item.city}</td>
                           <td className={styles.tdMuted}>{item.location}</td>
                           <td className={styles.tdAccent}>{item.price}</td>
-
-                          {/* Approval column */}
+                          <td>{item.is_approved ? <span className={styles.approvedBadge}>Approved</span> : <span className={styles.pendingBadge}>Pending</span>}</td>
                           <td>
-                            {item.is_approved ? (
-                              <span className={styles.approvedBadge}>Approved</span>
-                            ) : (
-                              <span className={styles.pendingBadge}>Pending</span>
-                            )}
+                            {isActive
+                              ? <span className={styles.approvedBadge} style={{ background: "#10b98118", color: "#10b981", border: "1px solid #10b98130" }}>Active</span>
+                              : <span className={styles.pendingBadge} style={{ background: "#6b728018", color: "#6b7280", border: "1px solid #6b728030" }}>Inactive</span>
+                            }
                           </td>
-
-                          {/* Active / Inactive status column */}
-                          <td>
-                            {isActive ? (
-                              <span
-                                className={styles.approvedBadge}
-                                style={{ background: "#10b98118", color: "#10b981", border: "1px solid #10b98130" }}
-                              >
-                                Active
-                              </span>
-                            ) : (
-                              <span
-                                className={styles.pendingBadge}
-                                style={{ background: "#6b728018", color: "#6b7280", border: "1px solid #6b728030" }}
-                              >
-                                Inactive
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Actions — icons only */}
                           <td>
                             <div className={styles.actCell}>
-
-                              {/* Edit icon */}
-                              <button
-                                className={styles.editBtn}
-                                title="Edit Workspace"
-                                onClick={() => handleEdit(item)}
-                                style={{ padding: "5px 7px" }}
-                              >
-                                <Icon d={IC.edit} size={13} />
-                              </button>
-
-                              {/* Approve / Reject icon */}
-                              {!item.is_approved ? (
-                                <button
-                                  className={styles.approveBtn}
-                                  title="Approve Workspace"
-                                  onClick={() => handleApprove(item.id)}
-                                  style={{ padding: "5px 7px" }}
-                                >
-                                  <Icon d={IC.approveCircle} size={13} />
-                                </button>
-                              ) : (
-                                <button
-                                  className={styles.rejectBtn}
-                                  title="Reject / Revoke Approval"
-                                  onClick={() => handleReject(item.id)}
-                                  style={{ padding: "5px 7px" }}
-                                >
-                                  <Icon d={IC.rejectCircle} size={13} />
-                                </button>
-                              )}
-
-                              {/* Active / Inactive toggle icon */}
-                              <button
-                                title={isActive ? "Set Inactive (hide from website)" : "Set Active (show on website)"}
-                                onClick={() => handleToggleActive(item)}
-                                style={{
-                                  padding: "5px 7px",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  borderRadius: "6px",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  background: isActive ? "#10b98118" : "#6b728018",
-                                  color: isActive ? "#10b981" : "#6b7280",
-                                  transition: "all 0.18s ease",
-                                }}
-                              >
+                              <button className={styles.editBtn} title="Edit Workspace" onClick={() => handleEdit(item)} style={{ padding: "5px 7px" }}><Icon d={IC.edit} size={13} /></button>
+                              {!item.is_approved
+                                ? <button className={styles.approveBtn} title="Approve Workspace" onClick={() => handleApprove(item.id)} style={{ padding: "5px 7px" }}><Icon d={IC.approveCircle} size={13} /></button>
+                                : <button className={styles.rejectBtn} title="Reject / Revoke Approval" onClick={() => handleReject(item.id)} style={{ padding: "5px 7px" }}><Icon d={IC.rejectCircle} size={13} /></button>
+                              }
+                              <button title={isActive ? "Set Inactive" : "Set Active"} onClick={() => handleToggleActive(item)}
+                                style={{ padding: "5px 7px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", border: "none", cursor: "pointer", background: isActive ? "#10b98118" : "#6b728018", color: isActive ? "#10b981" : "#6b7280", transition: "all 0.18s ease" }}>
                                 <Icon d={isActive ? IC.eyeOn : IC.eyeOff} size={13} />
                               </button>
-
                             </div>
                           </td>
                         </tr>
                       );
                     })}
-
                     {filteredWS.length === 0 && (
-                      <tr>
-                        <td colSpan={10} className={styles.tdEmpty}>
-                          No workspaces found for selected owner/type filters
-                        </td>
-                      </tr>
+                      <tr><td colSpan={10} className={styles.tdEmpty}>No workspaces found for selected owner/type filters</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -1893,192 +1748,79 @@ useState([]);
           {section === "categories" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
-                <div
-                  className={styles.secIco}
-                  style={{ background: "#6366f118", color: "#6366f1" }}
-                >
-                  <Icon d={IC.category} size={18} />
-                </div>
+                <div className={styles.secIco} style={{ background: "#6366f118", color: "#6366f1" }}><Icon d={IC.category} size={18} /></div>
                 <div>
                   <h2 className={styles.secTitle}>Workspace Categories</h2>
-                  <p className={styles.secSub}>
-                    Create and manage categories and pricing tiers.
-                  </p>
+                  <p className={styles.secSub}>Create and manage categories and pricing tiers.</p>
                 </div>
                 <span className={styles.countPill}>{categories.length} Total</span>
               </div>
 
               <div className={styles.formCard}>
                 <div className={styles.formHead}>
-                  <span className={styles.formHeadIco}>
-                    <Icon d={IC.add} size={13} />
-                  </span>
+                  <span className={styles.formHeadIco}><Icon d={IC.add} size={13} /></span>
                   <span>Add New Category</span>
                 </div>
-
                 <div className={styles.formGrid}>
-                  <input
-                    className={styles.inp}
-                    placeholder="Category Name"
-                    value={catForm.name}
-                    onChange={(e) => setCatForm({ ...catForm, name: e.target.value })}
-                  />
-
-                  <select
-                    className={styles.inp}
-                    value={catForm.owner}
-                    onChange={(e) => setCatForm({ ...catForm, owner: e.target.value })}
-                  >
+                  <input className={styles.inp} placeholder="Category Name" value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} />
+                  <select className={styles.inp} value={catForm.owner} onChange={(e) => setCatForm({ ...catForm, owner: e.target.value })}>
                     <option value="">Assign Owner</option>
-                    {owners.map((o) => (
-                      <option key={o.id} value={o.id}>
-                        {o.username}
-                      </option>
-                    ))}
+                    {owners.map((o) => <option key={o.id} value={o.id}>{o.username}</option>)}
                   </select>
-
-                  <select
-                    className={styles.inp}
-                    value={catForm.category}
-                    onChange={(e) =>
-                      setCatForm({ ...catForm, category: e.target.value })
-                    }
-                  >
+                  <select className={styles.inp} value={catForm.category} onChange={(e) => setCatForm({ ...catForm, category: e.target.value })}>
                     <option value="">Select Category Type</option>
                     <option value="daypass">Day Pass</option>
                     <option value="meeting">Meeting Rooms</option>
                     <option value="fixed">Fixed Seats</option>
                     <option value="cabin">Cabins</option>
                   </select>
-
-                  <input
-                    className={styles.inp}
-                    placeholder="Description"
-                    value={catForm.description}
-                    onChange={(e) =>
-                      setCatForm({ ...catForm, description: e.target.value })
-                    }
-                  />
-                  <input
-                    className={styles.inp}
-                    placeholder="Image URL"
-                    value={catForm.image}
-                    onChange={(e) => setCatForm({ ...catForm, image: e.target.value })}
-                  />
-                  <input
-                    className={styles.inp}
-                    placeholder="Hourly Price"
-                    value={catForm.hourlyprice}
-                    onChange={(e) =>
-                      setCatForm({ ...catForm, hourlyprice: e.target.value })
-                    }
-                  />
-                  <input
-                    className={styles.inp}
-                    placeholder="Daily Price"
-                    value={catForm.dailyprice}
-                    onChange={(e) =>
-                      setCatForm({ ...catForm, dailyprice: e.target.value })
-                    }
-                  />
-                  <input
-                    className={styles.inp}
-                    placeholder="Monthly Price"
-                    value={catForm.monthlyprice}
-                    onChange={(e) =>
-                      setCatForm({ ...catForm, monthlyprice: e.target.value })
-                    }
-                  />
-                  <select
-                    className={styles.inp}
-                    value={String(catForm.isavailable)}
-                    onChange={(e) =>
-                      setCatForm({ ...catForm, isavailable: e.target.value === "true" })
-                    }
-                  >
+                  <input className={styles.inp} placeholder="Description" value={catForm.description} onChange={(e) => setCatForm({ ...catForm, description: e.target.value })} />
+                  <input className={styles.inp} placeholder="Image URL" value={catForm.image} onChange={(e) => setCatForm({ ...catForm, image: e.target.value })} />
+                  <input className={styles.inp} placeholder="Hourly Price" value={catForm.hourlyprice} onChange={(e) => setCatForm({ ...catForm, hourlyprice: e.target.value })} />
+                  <input className={styles.inp} placeholder="Daily Price" value={catForm.dailyprice} onChange={(e) => setCatForm({ ...catForm, dailyprice: e.target.value })} />
+                  <input className={styles.inp} placeholder="Monthly Price" value={catForm.monthlyprice} onChange={(e) => setCatForm({ ...catForm, monthlyprice: e.target.value })} />
+                  <select className={styles.inp} value={String(catForm.isavailable)} onChange={(e) => setCatForm({ ...catForm, isavailable: e.target.value === "true" })}>
                     <option value="true">Available</option>
                     <option value="false">Not Available</option>
                   </select>
                 </div>
-
                 <div className={styles.formActs}>
-                  <button className={styles.btnPrimary} onClick={handleAddCat}>
-                    <Icon d={IC.add} size={13} />
-                    Add Category
-                  </button>
+                  <button className={styles.btnPrimary} onClick={handleAddCat}><Icon d={IC.add} size={13} /> Add Category</button>
                 </div>
               </div>
 
               <div className={styles.catGrid}>
                 {categories.length === 0 ? (
                   <div className={styles.emptyState}>
-                    <div className={styles.emptyIcon}>
-                      <Icon d={IC.category} size={32} />
-                    </div>
+                    <div className={styles.emptyIcon}><Icon d={IC.category} size={32} /></div>
                     <p className={styles.emptyTitle}>No categories yet</p>
-                    <p className={styles.emptySub}>
-                      Add your first workspace category above.
-                    </p>
+                    <p className={styles.emptySub}>Add your first workspace category above.</p>
                   </div>
                 ) : (
                   categories.map((item) => (
                     <div key={item.id} className={styles.catCard}>
-                      {item.image && (
-                        <div className={styles.catImgWrap}>
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className={styles.catImg}
-                          />
-                        </div>
-                      )}
-
+                      {item.image && <div className={styles.catImgWrap}><img src={item.image} alt={item.name} className={styles.catImg} /></div>}
                       <div className={styles.catTop}>
                         <div>
                           <h4 className={styles.catName}>{item.name}</h4>
-                          <span className={styles.catType}>
-                            {item.category?.replace("_", " ")}
-                          </span>
+                          <span className={styles.catType}>{item.category?.replace("_", " ")}</span>
                         </div>
-                        <span
-                          className={`${styles.statusBadge} ${
-                            item.isavailable ? styles.stDone : styles.stOpen
-                          }`}
-                        >
+                        <span className={`${styles.statusBadge} ${item.isavailable ? styles.stDone : styles.stOpen}`}>
                           {item.isavailable ? "Available" : "Off"}
                         </span>
                       </div>
-
-                      {item.ownername && (
-                        <div className={styles.catOwner}>
-                          <Icon d={IC.users} size={11} /> {item.ownername}
-                        </div>
-                      )}
-
-                      <p className={styles.catDesc}>
-                        {item.description || "No description provided."}
-                      </p>
-
+                      {item.ownername && <div className={styles.catOwner}><Icon d={IC.users} size={11} /> {item.ownername}</div>}
+                      <p className={styles.catDesc}>{item.description || "No description provided."}</p>
                       <div className={styles.catPrices}>
-                        {[
-                          ["Hourly", item.hourlyprice],
-                          ["Daily", item.dailyprice],
-                          ["Monthly", item.monthlyprice],
-                        ].map(([lbl, val]) => (
+                        {[["Hourly", item.hourlyprice], ["Daily", item.dailyprice], ["Monthly", item.monthlyprice]].map(([lbl, val]) => (
                           <div key={lbl} className={styles.priceBox}>
                             <span className={styles.priceLbl}>{lbl}</span>
                             <span className={styles.priceVal}>{val || 0}</span>
                           </div>
                         ))}
                       </div>
-
-                      <button
-                        className={styles.delBtn}
-                        style={{ marginTop: 12, width: "100%" }}
-                        onClick={() => handleDeleteCat(item.id)}
-                      >
-                        <Icon d={IC.trash} size={11} />
-                        Delete Category
+                      <button className={styles.delBtn} style={{ marginTop: 12, width: "100%" }} onClick={() => handleDeleteCat(item.id)}>
+                        <Icon d={IC.trash} size={11} /> Delete Category
                       </button>
                     </div>
                   ))
@@ -2091,71 +1833,27 @@ useState([]);
           {section === "quotation-leads" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
-                <div>
-                  <h2 className={styles.secTitle}>Quotation Leads</h2>
-                  <p className={styles.secSub}>
-                    All quotation leads with owner and location details
-                  </p>
-                </div>
+                <div><h2 className={styles.secTitle}>Quotation Leads</h2><p className={styles.secSub}>All quotation leads with owner and location details</p></div>
               </div>
               <AdminQuotationLeads />
             </section>
           )}
 
-          {/* Other Sections */}
-          {section === "leads" && (
-            <section className={styles.sectionWrapper}>
-              <AdminLeads />
-            </section>
-          )}
-          {section === "offerleads" && (
-            <section className={styles.section}>
-              <AdminLeadss />
-            </section>
-          )}
-          {section === "enterprise" && (
-            <section className={styles.section}>
-              <AdminDashboardEnterprise />
-            </section>
-          )}
-          {section === "hyderabad-leads" && (
-            <section className={styles.section}>
-              <AdminDashboards />
-            </section>
-          )}
-          {section === "company-leads" && (
-            <section className={styles.section}>
-              <AdminCompanyLeads />
-            </section>
-          )}
-          {section === "bookings" && (
-            <section className={styles.section}>
-              <AdminBookings />
-            </section>
-          )}
-          {section === "tickets" && (
-            <section className={styles.section}>
-              <AdminTickets />
-            </section>
-          )}
-          {section === "amenities" && (
-            <section className={styles.section}>
-              <AdminAmenities />
-            </section>
-          )}
+          {section === "leads" && <section className={styles.sectionWrapper}><AdminLeads /></section>}
+          {section === "offerleads" && <section className={styles.section}><AdminLeadss /></section>}
+          {section === "enterprise" && <section className={styles.section}><AdminDashboardEnterprise /></section>}
+          {section === "hyderabad-leads" && <section className={styles.section}><AdminDashboards /></section>}
+          {section === "company-leads" && <section className={styles.section}><AdminCompanyLeads /></section>}
+          {section === "bookings" && <section className={styles.section}><AdminBookings /></section>}
+          {section === "tickets" && <section className={styles.section}><AdminTickets /></section>}
+          {section === "amenities" && <section className={styles.section}><AdminAmenities /></section>}
 
           {/* Recent Activity Full Page */}
           {section === "activity" && (
             <section className={styles.section}>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
                 {activityTypes.map((type) => (
-                  <button
-                    key={type}
-                    className={type === actFilter ? styles.btnPrimary : styles.btnGhost}
-                    onClick={() => setActFilter(type)}
-                  >
-                    {type}
-                  </button>
+                  <button key={type} className={type === actFilter ? styles.btnPrimary : styles.btnGhost} onClick={() => setActFilter(type)}>{type}</button>
                 ))}
               </div>
               <RecentActivity activities={filteredActivity} />
@@ -2166,9 +1864,7 @@ useState([]);
 
       {/* Toast */}
       {toast && (
-        <div
-          className={`${styles.toast} ${toast.type === "error" ? styles.toastErr : ""}`}
-        >
+        <div className={`${styles.toast} ${toast.type === "error" ? styles.toastErr : ""}`}>
           <span className={styles.toastIcon}>•</span>
           {toast.msg}
         </div>
