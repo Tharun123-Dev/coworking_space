@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axiosInstance from "../Services/Axios";
 import "../Styles/MyOrders.css";
-import Footer from "../Components/Footer";
+// import Footer from "../Components/Footer"; // Footer removed as per requirement
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -16,11 +16,12 @@ function MyOrders() {
   const [ticketErrors, setTicketErrors] = useState({});
   const [tickets, setTickets] = useState([]);
 
-  const [showCancel, setShowCancel] = useState(false);
-  const [cancelSubmitting, setCancelSubmitting] = useState(false);
-  const [cancelError, setCancelError] = useState("");
-  const [reason, setReason] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  // ── Cancel booking state (commented out as per requirement) ──
+  // const [showCancel, setShowCancel] = useState(false);
+  // const [cancelSubmitting, setCancelSubmitting] = useState(false);
+  // const [cancelError, setCancelError] = useState("");
+  // const [reason, setReason] = useState("");
+  // const [selectedOrder, setSelectedOrder] = useState(null);
 
   const [ticket, setTicket] = useState({
     type: "",
@@ -47,7 +48,7 @@ function MyOrders() {
     const handleResize = () => {
       const mobile = window.innerWidth <= MOBILE_BREAKPOINT;
       setIsMobileView(mobile);
-      if (!mobile) setSidebarOpen(false);
+      // Do NOT auto-close sidebar on resize — sidebar is always fixed open on desktop
     };
 
     window.addEventListener("resize", handleResize);
@@ -80,30 +81,31 @@ function MyOrders() {
     return "confirmed";
   };
 
-  const pendingOrdersForCancel = useMemo(() => {
-    return orders.filter((item) => {
-      const bookingStatus = String(item.status || "").toLowerCase();
-      const paymentStatus = String(item.payment_status || "").toUpperCase();
-      const cancelStatus = String(item.cancel_status || "").toUpperCase();
-
-      return (
-        bookingStatus === "confirmed" &&
-        paymentStatus !== "REFUNDED" &&
-        bookingStatus !== "cancelled" &&
-        cancelStatus !== "PENDING"
-      );
-    });
-  }, [orders]);
+  // ── pendingOrdersForCancel (kept for potential future use) ──
+  // const pendingOrdersForCancel = useMemo(() => {
+  //   return orders.filter((item) => {
+  //     const bookingStatus = String(item.status || "").toLowerCase();
+  //     const paymentStatus = String(item.payment_status || "").toUpperCase();
+  //     const cancelStatus = String(item.cancel_status || "").toUpperCase();
+  //     return (
+  //       bookingStatus === "confirmed" &&
+  //       paymentStatus !== "REFUNDED" &&
+  //       bookingStatus !== "cancelled" &&
+  //       cancelStatus !== "PENDING"
+  //     );
+  //   });
+  // }, [orders]);
 
   const selectedTicketBooking = useMemo(
     () => orders.find((o) => String(o.id) === String(ticket.booking_id)),
     [orders, ticket.booking_id]
   );
 
-  const selectedCancelOrderData = useMemo(
-    () => pendingOrdersForCancel.find((o) => String(o.id) === String(selectedOrder)),
-    [pendingOrdersForCancel, selectedOrder]
-  );
+  // ── selectedCancelOrderData (commented out with cancel feature) ──
+  // const selectedCancelOrderData = useMemo(
+  //   () => pendingOrdersForCancel.find((o) => String(o.id) === String(selectedOrder)),
+  //   [pendingOrdersForCancel, selectedOrder]
+  // );
 
   const resetTicketForm = () => {
     setTicket({
@@ -130,98 +132,88 @@ function MyOrders() {
     setTimeout(resetTicketForm, 200);
   };
 
-  const openCancelModal = () => {
-    setShowCancel(true);
-    setSelectedOrder(null);
-    setReason("");
-    setCancelError("");
-    setSidebarOpen(false);
-  };
+  // ── Cancel modal handlers (commented out as per requirement) ──
+  // const openCancelModal = () => {
+  //   setShowCancel(true);
+  //   setSelectedOrder(null);
+  //   setReason("");
+  //   setCancelError("");
+  //   setSidebarOpen(false);
+  // };
 
-  const closeCancelModal = () => {
-    setShowCancel(false);
-    setSelectedOrder(null);
-    setReason("");
-    setCancelError("");
-    setCancelSubmitting(false);
-  };
+  // const closeCancelModal = () => {
+  //   setShowCancel(false);
+  //   setSelectedOrder(null);
+  //   setReason("");
+  //   setCancelError("");
+  //   setCancelSubmitting(false);
+  // };
 
-  const submitCancel = async () => {
-    if (!selectedOrder) {
-      setCancelError("Please select an order to cancel.");
-      return;
-    }
-    if (!reason.trim()) {
-      setCancelError("Please enter the cancellation reason.");
-      return;
-    }
-    if (reason.trim().length < 8) {
-      setCancelError("Reason should be at least 8 characters.");
-      return;
-    }
-
-    try {
-      setCancelSubmitting(true);
-      setCancelError("");
-      await axiosInstance.post("cart/booking/cancel-request/", {
-        booking_id: selectedOrder,
-        reason: reason.trim(),
-      });
-      alert("Cancel request sent to owner successfully");
-      closeCancelModal();
-      fetchOrders();
-      fetchTickets();
-    } catch (error) {
-      setCancelError("Failed to send cancel request. Please try again.");
-    } finally {
-      setCancelSubmitting(false);
-    }
-  };
+  // const submitCancel = async () => {
+  //   if (!selectedOrder) {
+  //     setCancelError("Please select an order to cancel.");
+  //     return;
+  //   }
+  //   if (!reason.trim()) {
+  //     setCancelError("Please enter the cancellation reason.");
+  //     return;
+  //   }
+  //   if (reason.trim().length < 8) {
+  //     setCancelError("Reason should be at least 8 characters.");
+  //     return;
+  //   }
+  //   try {
+  //     setCancelSubmitting(true);
+  //     setCancelError("");
+  //     await axiosInstance.post("cart/booking/cancel-request/", {
+  //       booking_id: selectedOrder,
+  //       reason: reason.trim(),
+  //     });
+  //     alert("Cancel request sent to owner successfully");
+  //     closeCancelModal();
+  //     fetchOrders();
+  //     fetchTickets();
+  //   } catch (error) {
+  //     setCancelError("Failed to send cancel request. Please try again.");
+  //   } finally {
+  //     setCancelSubmitting(false);
+  //   }
+  // };
 
   const handleTicketChange = (e) => {
     const { name, value } = e.target;
-
     setTicket((prev) =>
       name === "type" ? { ...prev, type: value, booking_id: "" } : { ...prev, [name]: value }
     );
-
     setTicketErrors((prev) => ({ ...prev, [name]: "" }));
     setTicketSuccess("");
   };
 
   const validateTicket = () => {
     const errors = {};
-
     if (!ticket.type) errors.type = "Please select ticket type";
     if (ticket.type === "booking" && !ticket.booking_id) errors.booking_id = "Please select a booking";
     if (!ticket.issue_type) errors.issue_type = "Please select issue category";
-
     if (!ticket.subject.trim()) errors.subject = "Please enter ticket subject";
     else if (ticket.subject.trim().length < 5) errors.subject = "Subject should be at least 5 characters";
-
     if (!ticket.message.trim()) errors.message = "Please describe your issue";
     else if (ticket.message.trim().length < 15) errors.message = "Description should be at least 15 characters";
-
     setTicketErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const submitTicket = () => {
     if (!validateTicket()) return;
-
     setTicketSubmitting(true);
-
     const payload = {
       issue_type: ticket.issue_type,
       message: ticket.message,
       priority: ticket.priority,
       subject: ticket.subject,
     };
-
     if (ticket.type === "booking") {
       payload.booking_id = ticket.booking_id;
     }
-
     axiosInstance
       .post("leads/tickets/create/", payload)
       .then(() => {
@@ -240,13 +232,10 @@ function MyOrders() {
       name: item.workspace || "Workspace",
       workspace: item.workspace || "Workspace",
       location: item.location || "-",
-      amenities:
-item.amenities || [],
+      amenities: item.amenities || [],
       city: item.city || "Hyderabad",
       area: item.area || item.location || "-",
-      image:
-        item.image ||
-        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800",
+      image: item.image || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800",
       rating: item.rating || 4.8,
       reviews: item.reviews || 120,
       price: item.price || item.total_price || 0,
@@ -261,10 +250,58 @@ item.amenities || [],
     setShowWorkspaceDetails(true);
   };
 
-  const navItems = [
-    { id: "orders", label: "My Orders", icon: "📦", count: orders.length },
-    { id: "tickets", label: "Support Tickets", icon: "🎫", count: tickets.length },
-  ];
+  // ── Nav items — Cancel Booking removed ──
+const viewedOrders =
+  JSON.parse(
+    localStorage.getItem(
+      "viewed_orders"
+    ) || "[]"
+  );
+
+const viewedTickets =
+  JSON.parse(
+    localStorage.getItem(
+      "viewed_tickets"
+    ) || "[]"
+  );
+
+const newOrdersCount =
+  orders.filter(
+    (o) =>
+      !viewedOrders.includes(o.id)
+  ).length;
+
+const newTicketsCount =
+  tickets.filter(
+    (t) =>
+      !viewedTickets.includes(t.id)
+  ).length;
+
+const navItems = [
+
+  {
+    id: "orders",
+
+    label: "My Orders",
+
+    icon: "📦",
+
+    count: newOrdersCount,
+  },
+
+  {
+    id: "tickets",
+
+    label: "Support Tickets",
+
+    icon: "🎫",
+
+    count: newTicketsCount,
+  },
+
+];
+
+  /* ────────────────────────── RENDER HELPERS ────────────────────────── */
 
   const renderOrdersDesktop = () => (
     <div className="mo-table-wrap">
@@ -276,10 +313,9 @@ item.amenities || [],
               <th>Location</th>
               <th>Date</th>
               <th>Slot</th>
-              
               <th>Additional Amenities</th>
               <th>Status</th>
-              <th> Total Price</th>
+              <th>Total Price</th>
               <th>Payment</th>
             </tr>
           </thead>
@@ -287,7 +323,6 @@ item.amenities || [],
             {orders.map((item) => {
               const paymentStatus = String(item.payment_status || "").toUpperCase();
               const isRefunded = paymentStatus === "REFUNDED";
-
               return (
                 <tr key={item.id}>
                   <td>
@@ -319,50 +354,21 @@ item.amenities || [],
                         : "Full Day"}
                     </span>
                   </td>
-        
                   <td>
-
-  {
-
-    item.amenities?.length > 0
-
-    ?
-
-    item.amenities.map(
-      (a, i) => (
-
-      <div
-        key={i}
-        className="mo-amenityRow"
-      >
-
-        {a.title}
-
-        •
-
-        {a.persons} Person
-
-        •
-
-        ₹{a.total}
-
-      </div>
-
-    ))
-
-    :
-
-    "-"
-
-  }
-
-</td>
+                    {item.amenities?.length > 0
+                      ? item.amenities.map((a, i) => (
+                          <div key={i} className="mo-amenityRow">
+                            {a.title} • {a.persons} Person • ₹{a.total}
+                          </div>
+                        ))
+                      : "-"}
+                  </td>
                   <td>
                     <span className={`mo-status mo-status--${getStatusClass(item.status)}`}>
                       {item.status || "-"}
                     </span>
                   </td>
-                            <td><span className="mo-price">₹{item.price || item.total_price || 0}</span></td>
+                  <td><span className="mo-price">₹{item.price || item.total_price || 0}</span></td>
                   <td>
                     {isRefunded ? (
                       <span className="mo-payment mo-payment--refunded">💰 Refunded</span>
@@ -384,7 +390,6 @@ item.amenities || [],
       {orders.map((item) => {
         const paymentStatus = String(item.payment_status || "").toUpperCase();
         const isRefunded = paymentStatus === "REFUNDED";
-
         return (
           <div className="mo-order-card" key={item.id}>
             <div className="mo-order-card-top">
@@ -398,18 +403,15 @@ item.amenities || [],
               ) : (
                 <div className="mo-order-card-img mo-thumb--empty">?</div>
               )}
-
               <div className="mo-order-card-info">
                 <div className="mo-order-card-name">{item.workspace}</div>
                 <div className="mo-order-card-city">{item.city || item.location || "-"}</div>
                 <div className="mo-order-card-date">{item.date || "-"}</div>
               </div>
-
               <div className="mo-order-card-price">
                 ₹{item.price || item.total_price || 0}
               </div>
             </div>
-
             <div className="mo-order-card-bottom">
               <span className="mo-slot">
                 {item.booking_type === "month"
@@ -418,11 +420,9 @@ item.amenities || [],
                   ? item.slot_time
                   : "Full Day"}
               </span>
-
               <span className={`mo-status mo-status--${getStatusClass(item.status)}`}>
                 {item.status || "-"}
               </span>
-
               {isRefunded ? (
                 <span className="mo-payment mo-payment--refunded">💰 Refunded</span>
               ) : (
@@ -430,34 +430,14 @@ item.amenities || [],
               )}
             </div>
             {item.amenities?.length > 0 && (
-
-  <div className="mo-mobileAmenities">
-
-    {item.amenities.map(
-      (a, i) => (
-
-      <div
-        key={i}
-        className="mo-mobileAmenity"
-      >
-
-        {a.title}
-
-        •
-
-        {a.persons} Person
-
-        •
-
-        ₹{a.total}
-
-      </div>
-
-    ))}
-
-  </div>
-
-)}
+              <div className="mo-mobileAmenities">
+                {item.amenities.map((a, i) => (
+                  <div key={i} className="mo-mobileAmenity">
+                    {a.title} • {a.persons} Person • ₹{a.total}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
@@ -489,18 +469,14 @@ item.amenities || [],
                         src={t.image}
                         alt={t.workspace || "workspace"}
                         className="mo-thumb"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/60";
-                        }}
+                        onError={(e) => { e.target.src = "https://via.placeholder.com/60"; }}
                       />
                     ) : (
                       <div className="mo-thumb mo-thumb--empty">?</div>
                     )}
                     <div>
                       <div className="mo-ws-name">{t.workspace !== "-" ? t.workspace : t.category}</div>
-                      <div className="mo-ws-sub">
-                        {t.workspace !== "-" ? "Workspace" : "Category"}
-                      </div>
+                      <div className="mo-ws-sub">{t.workspace !== "-" ? "Workspace" : "Category"}</div>
                     </div>
                   </div>
                 </td>
@@ -542,14 +518,11 @@ item.amenities || [],
                 src={t.image}
                 alt={t.workspace || "workspace"}
                 className="mo-order-card-img"
-                onError={(e) => {
-                  e.target.src = "https://via.placeholder.com/60";
-                }}
+                onError={(e) => { e.target.src = "https://via.placeholder.com/60"; }}
               />
             ) : (
               <div className="mo-order-card-img mo-thumb--empty">?</div>
             )}
-
             <div className="mo-order-card-info">
               <div className="mo-order-card-name">
                 {t.workspace !== "-" ? t.workspace : t.category}
@@ -558,7 +531,6 @@ item.amenities || [],
               <div className="mo-order-card-date">{t.date || "-"}</div>
             </div>
           </div>
-
           <div className="mo-order-card-bottom">
             <span className={`mo-status mo-status--${getStatusClass(t.booking_status)}`}>
               {t.booking_status || "-"}
@@ -570,7 +542,6 @@ item.amenities || [],
               {t.issue_type || "-"}
             </span>
           </div>
-
           <div className="mo-mobile-note">
             {t.admin_note && t.admin_note !== "-" ? t.admin_note : "Pending"}
           </div>
@@ -579,10 +550,13 @@ item.amenities || [],
     </div>
   );
 
+  /* ────────────────────────── MAIN RENDER ────────────────────────── */
+
   return (
     <div className="mo-page">
       <div className="mo-layout">
-        {/* ── Sidebar ── */}
+
+        {/* ── Sidebar — always fixed, never hidden on desktop ── */}
         <aside className={`mo-sidebar ${sidebarOpen ? "mo-sidebar--open" : ""}`}>
           <div className="mo-sidebar-brand">
             <span className="mo-brand-icon">◈</span>
@@ -595,10 +569,41 @@ item.amenities || [],
               <button
                 key={item.id}
                 className={`mo-nav-item ${activeSection === item.id ? "mo-nav-item--active" : ""}`}
-                onClick={() => {
-                  setActiveSection(item.id);
-                  setSidebarOpen(false);
-                }}
+               onClick={() => {
+
+  setActiveSection(item.id);
+
+  setSidebarOpen(false);
+
+  if (item.id === "orders") {
+
+    localStorage.setItem(
+      "viewed_orders",
+
+      JSON.stringify(
+        orders.map(
+          (o) => o.id
+        )
+      )
+    );
+
+  }
+
+  if (item.id === "tickets") {
+
+    localStorage.setItem(
+      "viewed_tickets",
+
+      JSON.stringify(
+        tickets.map(
+          (t) => t.id
+        )
+      )
+    );
+
+  }
+
+}}
               >
                 <span className="mo-nav-icon">{item.icon}</span>
                 <span className="mo-nav-text">{item.label}</span>
@@ -609,14 +614,16 @@ item.amenities || [],
 
           <div className="mo-sidebar-actions">
             <p className="mo-nav-label">Quick Actions</p>
+            {/* Raise Ticket button */}
             <button className="mo-action-btn mo-action-btn--ticket" onClick={openTicketModal}>
               <span>🎫</span>
               <span>Raise Ticket</span>
             </button>
-            <button className="mo-action-btn mo-action-btn--cancel" onClick={openCancelModal}>
+            {/* Cancel Booking button — commented out as per requirement */}
+            {/* <button className="mo-action-btn mo-action-btn--cancel" onClick={openCancelModal}>
               <span>🚫</span>
               <span>Cancel Booking</span>
-            </button>
+            </button> */}
           </div>
 
           <div className="mo-sidebar-footer">
@@ -630,20 +637,23 @@ item.amenities || [],
           </div>
         </aside>
 
-        {/* ── Mobile overlay ── */}
+        {/* ── Mobile overlay (backdrop when sidebar open) ── */}
         {sidebarOpen && isMobileView && (
           <div className="mo-overlay" onClick={() => setSidebarOpen(false)} />
         )}
 
-        {/* ── Main column (topbar + content + footer) ── */}
+        {/* ── Main column ── */}
         <div className="mo-main">
+
           {/* Sticky topbar */}
           <header className="mo-topbar">
+            {/* 3-dot hamburger — visible only on mobile */}
             <button
               className="mo-hamburger"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               aria-label="Toggle sidebar"
             >
+              {/* Three dots rendered via CSS — see .mo-hamburger span */}
               <span></span>
               <span></span>
               <span></span>
@@ -654,20 +664,24 @@ item.amenities || [],
               <p>Track your workspace bookings and support tickets</p>
             </div>
 
+            {/* Desktop topbar action — Cancel Order button removed */}
             {!isMobileView && (
               <div className="mo-topbar-actions">
                 <button className="mo-topbar-btn mo-topbar-btn--ticket" onClick={openTicketModal}>
                   🎫 Raise Ticket
                 </button>
-                <button className="mo-topbar-btn mo-topbar-btn--cancel" onClick={openCancelModal}>
+                {/* Cancel Order button commented out as per requirement */}
+                {/* <button className="mo-topbar-btn mo-topbar-btn--cancel" onClick={openCancelModal}>
                   🚫 Cancel Order
-                </button>
+                </button> */}
               </div>
             )}
           </header>
 
           {/* Page content */}
           <main className="mo-content">
+
+            {/* ── Orders Section ── */}
             {activeSection === "orders" && (
               <section className="mo-section">
                 <div className="mo-section-header">
@@ -698,6 +712,7 @@ item.amenities || [],
               </section>
             )}
 
+            {/* ── Tickets Section ── */}
             {activeSection === "tickets" && (
               <section className="mo-section">
                 <div className="mo-section-header">
@@ -722,136 +737,23 @@ item.amenities || [],
                 )}
               </section>
             )}
+
           </main>
 
-          {/* ── Footer lives inside .mo-main so it is always to the right of sidebar ── */}
-          <Footer />
+          {/* Footer removed as per requirement */}
+          {/* <Footer /> */}
+
         </div>
       </div>
 
-      {/* ── Cancel Modal ── */}
-      {showCancel && (
+      {/* ── Cancel Booking Modal — fully commented out as per requirement ── */}
+      {/* {showCancel && (
         <div className="mo-modal-overlay" onClick={closeCancelModal}>
           <div className="mo-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="mo-modal-head">
-              <div>
-                <span className="mo-modal-badge">Cancel Booking</span>
-                <h3>Request Order Cancellation</h3>
-                <p>Only confirmed bookings with no pending cancel request are shown.</p>
-              </div>
-              <button className="mo-modal-close" onClick={closeCancelModal}>✕</button>
-            </div>
-
-            <div className="mo-live-strip">
-              <span className="mo-live-dot"></span>
-              <span>Booking cancellation support</span>
-              <span className="mo-live-sep"></span>
-              <span>Refunded & already-cancelled orders are hidden</span>
-            </div>
-
-            {cancelError && <div className="mo-error-box">{cancelError}</div>}
-
-            <div className="mo-modal-body">
-              <h4 className="mo-sub-heading">Select Booking to Cancel</h4>
-
-              {pendingOrdersForCancel.length === 0 ? (
-                <div className="mo-empty">
-                  <div className="mo-empty-icon">🚫</div>
-                  <h3>No eligible orders</h3>
-                  <p>Only confirmed, non-refunded, non-cancelled bookings appear here.</p>
-                </div>
-              ) : (
-                <div className="mo-cancel-list">
-                  {pendingOrdersForCancel.map((item) => {
-                    const isSelected = String(selectedOrder) === String(item.id);
-
-                    return (
-                      <label
-                        key={item.id}
-                        className={`mo-cancel-card ${isSelected ? "mo-cancel-card--selected" : ""}`}
-                      >
-                        <input
-                          type="radio"
-                          name="cancelOrder"
-                          checked={isSelected}
-                          onChange={() => {
-                            setSelectedOrder(item.id);
-                            setCancelError("");
-                          }}
-                        />
-                        <img src={item.image} alt={item.workspace} className="mo-cancel-img" />
-                        <div className="mo-cancel-info">
-                          <div className="mo-cancel-top">
-                            <strong>{item.workspace}</strong>
-                            <strong className="mo-cancel-price">₹{item.price || item.total_price}</strong>
-                          </div>
-                          <div className="mo-cancel-meta">
-                            <span><b>Date:</b> {item.date || "-"}</span>
-                            <span><b>Location:</b> {item.location || "-"}</span>
-                            <span><b>Duration:</b> {item.duration || 1} day</span>
-                            <span><b>Status:</b> {item.status || "-"}</span>
-                            <span><b>Payment:</b> {item.payment_status || "PENDING"}</span>
-                          </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-
-              {selectedCancelOrderData && (
-                <div className="mo-summary-card">
-                  <p className="mo-summary-title">Selected Booking Details</p>
-                  <div className="mo-summary-grid">
-                    {[
-                      ["Workspace", selectedCancelOrderData.workspace],
-                      ["Location", selectedCancelOrderData.location],
-                      ["Date", selectedCancelOrderData.date],
-                      ["Duration", `${selectedCancelOrderData.duration || 1} day`],
-                      ["Amount", `₹${selectedCancelOrderData.price || selectedCancelOrderData.total_price || 0}`],
-                      ["Status", selectedCancelOrderData.status],
-                    ].map(([label, value]) => (
-                      <div key={label} className="mo-summary-item">
-                        <span className="mo-summary-label">{label}</span>
-                        <strong>{value || "-"}</strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="mo-field">
-                <label>Cancellation Reason</label>
-                <textarea
-                  value={reason}
-                  onChange={(e) => {
-                    setReason(e.target.value);
-                    setCancelError("");
-                  }}
-                  placeholder="Explain why you want to cancel this booking..."
-                  rows="4"
-                  className={cancelError ? "mo-field-error" : ""}
-                />
-                <div className="mo-field-meta">
-                  <span>Minimum 8 characters</span>
-                  <span>{reason.length}/500</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mo-modal-footer">
-              <button className="mo-btn mo-btn--ghost" onClick={closeCancelModal}>Close</button>
-              <button
-                className={`mo-btn mo-btn--danger ${cancelSubmitting ? "mo-btn--loading" : ""}`}
-                onClick={submitCancel}
-                disabled={cancelSubmitting}
-              >
-                {cancelSubmitting ? "Submitting..." : "Submit Cancel Request"}
-              </button>
-            </div>
+            ... cancel modal content ...
           </div>
         </div>
-      )}
+      )} */}
 
       {/* ── Ticket Modal ── */}
       {showTicket && (
@@ -1029,19 +931,16 @@ item.amenities || [],
                 className="mo-detail-hero-img"
               />
               <div className="mo-detail-hero-grad"></div>
-
               <button
                 className="mo-modal-close mo-modal-close--hero"
                 onClick={() => setShowWorkspaceDetails(false)}
               >
                 ✕
               </button>
-
               <div className="mo-detail-hero-badges">
                 <span className="mo-hero-badge">1-Day Booking</span>
                 <span className="mo-hero-badge">⭐ {selectedWorkspaceCard.rating}</span>
               </div>
-
               <div className="mo-detail-hero-info">
                 <h2>{selectedWorkspaceCard.name}</h2>
                 <p>{selectedWorkspaceCard.location}, {selectedWorkspaceCard.city}</p>
@@ -1077,7 +976,6 @@ item.amenities || [],
                       </div>
                     ))}
                   </div>
-
                   <div className="mo-location-card">
                     {[
                       ["Workspace", selectedWorkspaceCard.name],
@@ -1098,66 +996,21 @@ item.amenities || [],
                 </div>
               )}
 
-           {activeTab === "amenities" && (
-
-  <div className="mo-amenities-grid">
-
-    {
-
-      selectedWorkspaceCard
-      ?.amenities
-      ?.length > 0
-
-      ?
-
-      selectedWorkspaceCard.amenities.map(
-        (a, i) => (
-
-        <div
-          key={i}
-          className="mo-amenity-card"
-        >
-
-          <span className="mo-amenity-icon">
-            ☕
-          </span>
-
-          <div>
-
-            <p>
-              {a.title}
-            </p>
-
-            <span>
-
-              {a.persons}
-              Person
-
-              •
-
-              ₹{a.total}
-
-            </span>
-
-          </div>
-
-        </div>
-
-      ))
-
-      :
-
-      <div className="mo-noAmenities">
-
-        No additional amenities
-
-      </div>
-
-    }
-
-  </div>
-
-)}
+              {activeTab === "amenities" && (
+                <div className="mo-amenities-grid">
+                  {selectedWorkspaceCard?.amenities?.length > 0
+                    ? selectedWorkspaceCard.amenities.map((a, i) => (
+                        <div key={i} className="mo-amenity-card">
+                          <span className="mo-amenity-icon">☕</span>
+                          <div>
+                            <p>{a.title}</p>
+                            <span>{a.persons} Person • ₹{a.total}</span>
+                          </div>
+                        </div>
+                      ))
+                    : <div className="mo-noAmenities">No additional amenities</div>}
+                </div>
+              )}
 
               {activeTab === "pricing" && (
                 <div>
@@ -1168,7 +1021,6 @@ item.amenities || [],
                     </div>
                     <p>Booking date: {selectedWorkspaceCard.date}</p>
                   </div>
-
                   <div className="mo-includes">
                     {[
                       "Full-day hot desk access",
