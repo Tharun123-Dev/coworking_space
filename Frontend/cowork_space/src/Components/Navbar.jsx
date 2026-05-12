@@ -213,14 +213,40 @@ export default function Navbar() {
               )}
             </div>
 
-            {token ? (
-              <>
-                <div className={styles.avatar}>{(username||"U").charAt(0).toUpperCase()}</div>
-                <span className={styles.hiText}>Hi, {username||"User"}</span>
-                <button className={styles.ghostBtn} onClick={() => navigate("/my-orders")}>MY Orders</button>
-                <button className={styles.ghostBtn} onClick={handleLogout}>Logout</button>
-              </>
-            ) : (
+           {token ? (
+  <>
+    <div className={styles.avatar}>
+      {(username || "U")
+        .charAt(0)
+        .toUpperCase()}
+    </div>
+
+    <span className={styles.hiText}>
+      Hi, {username || "User"}
+    </span>
+
+    {/* SHOW ONLY FOR USER */}
+
+    {localStorage.getItem("role") ===
+      "user" && (
+      <button
+        className={styles.ghostBtn}
+        onClick={() =>
+          navigate("/my-orders")
+        }
+      >
+        MY Orders
+      </button>
+    )}
+
+    <button
+      className={styles.ghostBtn}
+      onClick={handleLogout}
+    >
+      Logout
+    </button>
+  </>
+) : (
               <button className={styles.getStarted} onClick={() => navigate("/auth")}>
                 Get Started
               </button>
@@ -366,10 +392,18 @@ export default function Navbar() {
                 <span>›</span>
               </div>
 
-              <button className={styles.mOrderBtn} onClick={() => { navigate("/my-orders"); closeDrawer(); }}>
-                My Orders
-              </button>
-
+    {localStorage.getItem("role") ===
+  "user" && (
+  <button
+    className={styles.mOrderBtn}
+    onClick={() => {
+      navigate("/my-orders");
+      closeDrawer();
+    }}
+  >
+    My Orders
+  </button>
+)}
               <button className={styles.mLogoutBtn} onClick={handleLogout}>
                 Logout
               </button>
