@@ -290,7 +290,6 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
   const [ownerForm, setOwnerForm] = useState(ownerFormInit);
   const [editOwnerId, setEditOwnerId] = useState(null);
 
-  // Sync if parent changes initialRoleFilter (e.g. clicking stat card again)
   useEffect(() => {
     setRoleFilter(initialRoleFilter);
     setActiveStat(initialRoleFilter === "owners" ? "owners" : "all");
@@ -794,6 +793,8 @@ export default function AdminDashboard() {
     image: "", description: "", amenities: [], isavailable: true,
   });
   const [editId, setEditId] = useState(null);
+  // ── NEW: toggle Add Workspace form visibility ─────────────────────────────
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const [catForm, setCatForm] = useState({
     name: "", category: "", description: "", image: "",
@@ -801,7 +802,6 @@ export default function AdminDashboard() {
   });
 
   const [section, setSection] = useState("overview");
-  // managementFilter controls which tab is pre-selected when opening management from a stat card
   const [managementFilter, setManagementFilter] = useState("all");
 
   const [sideOpen, setSideOpen] = useState(true);
@@ -821,11 +821,31 @@ export default function AdminDashboard() {
     return JSON.parse(localStorage.getItem("adminViewedNotifications")) || [];
   });
 
-  const buildAdminNotifications = (company = [], hyd = [], offer = []) => {
+  const buildAdminNotifications = (company = [], hyd = [], offer = [], workspaces=[]) => {
     let items = [];
     company.forEach((l) => items.push({ id: `company-${l.id}`, type: "Company Lead", name: l.name, workspace: l.company || "-", section: "company-leads", time: "New Lead" }));
     hyd.forEach((l) => items.push({ id: `hyd-${l.id}`, type: "Hyderabad Lead", name: l.name, workspace: l.workspace_type, section: "hyderabad-leads", time: "New Lead" }));
     offer.forEach((l) => items.push({ id: `offer-${l.id}`, type: "Offer Lead", name: l.name, workspace: l.workspace_type, section: "offerleads", time: "New Lead" }));
+    // Workspace Notifications
+workspaces.forEach((w) =>
+
+  items.push({
+
+    id: `workspace-${w.id}`,
+
+    type: "Workspace Added",
+
+    name: w.name,
+
+    workspace: w.location || "-",
+
+    section: "workspaces",
+
+    time: "New Workspace",
+
+  })
+
+);
     const filtered = items.filter((item) => !viewedAdminNotifications.includes(item.id));
     setAdminNotifications(filtered);
   };
@@ -853,7 +873,35 @@ export default function AdminDashboard() {
     axiosInstance.get("owners")
       .then((r) => setOwners(Array.isArray(r.data) ? r.data : []))
       .catch(() => setOwners([]));
+  const [companyLeads, setCompanyLeads] = useState([]);
+const [hydLeads, setHydLeads] = useState([]);
+const [offerLeads, setOfferLeads] = useState([]);
 
+useEffect(() => {
+
+  buildAdminNotifications(
+
+    companyLeads,
+
+    hydLeads,
+
+    offerLeads,
+
+    workspaces
+
+  );
+
+}, [
+
+  companyLeads,
+
+  hydLeads,
+
+  offerLeads,
+
+  workspaces,
+
+]);
   useEffect(() => {
     fetchOwners();
     fetchWS();
@@ -867,7 +915,9 @@ export default function AdminDashboard() {
       axiosInstance.get("hyderabad/admin/"),
       axiosInstance.get("leads/offers/admin/leads/"),
     ]).then(([c, h, o]) => {
-      buildAdminNotifications(c.data || [], h.data || [], o.data || []);
+     setCompanyLeads(c.data || []);
+setHydLeads(h.data || []);
+setOfferLeads(o.data || []);
     });
 
     const syncFromHash = () => {
@@ -914,6 +964,7 @@ export default function AdminDashboard() {
     req.then(() => {
       showToast(editId ? "Updated successfully" : "Workspace added successfully");
       setEditId(null);
+      setShowAddForm(false);
       setForm({ name: "", city: "", location: "", price: "", image: "", description: "", isavailable: true });
       fetchWS();
     }).catch(() => showToast("Operation failed", "error"));
@@ -922,6 +973,7 @@ export default function AdminDashboard() {
   const handleEdit = (item) => {
     setForm({ name: item.name || "", city: item.city || "", location: item.location || "", price: item.price || "", image: item.image || "", description: item.description || "", isavailable: item.isavailable ?? true });
     setEditId(item.id);
+    setShowAddForm(true);
     setSection("workspaces");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -999,8 +1051,6 @@ export default function AdminDashboard() {
 
   const filteredActivity = actFilter === "all" ? RECENT_ACTIVITIES : RECENT_ACTIVITIES.filter((a) => a.type === actFilter);
 
-  // ─── Overview stats — navigate INSIDE dashboard ───────────────────────────
-  // These use real data from API calls. Each card opens the relevant section.
   const STATS = [
     {
       label: "Total Workspaces",
@@ -1013,43 +1063,20 @@ export default function AdminDashboard() {
       hint: "View all workspaces",
       onClick: () => setSection("workspaces"),
     },
-
     {
-  label: "Total Categories",
-  value: WORKSPACE_TYPES.length,
-  color: "#6366f1",
-  spark: SPARKS.cat,
-  trend: 8,
-  up: true,
-  icon: IC.category,
-  hint: "View all categories",
-
-  onClick: () => {
-
-    setWorkspaceTypeFilter("");
-    setSection("workspaces");
-
-  },
-
-},
-// {
-//   label: "Workspace Types",
-//   value: WORKSPACE_TYPES.length,
-//   color: "#8b5cf6",
-//   spark: SPARKS.cat,
-//   trend: 10,
-//   up: true,
-//   icon: IC.workspace,
-//   hint: "View workspace types",
-
-//   onClick: () => {
-
-//     setWorkspaceTypeFilter("");
-//     setSection("workspaces");
-
-//   },
-
-
+      label: "Total Categories",
+      value: WORKSPACE_TYPES.length,
+      color: "#6366f1",
+      spark: SPARKS.cat,
+      trend: 8,
+      up: true,
+      icon: IC.category,
+      hint: "View all categories",
+      onClick: () => {
+        setWorkspaceTypeFilter("");
+        setSection("workspaces");
+      },
+    },
     {
       label: "Total Owners",
       value: owners.length,
@@ -1085,15 +1112,25 @@ export default function AdminDashboard() {
     closeMob();
   };
 
-  const handleWorkspaceTypeStat = (
-  type
-) => {
+  const handleWorkspaceTypeStat = (type) => {
+    setWorkspaceTypeFilter(type);
+    setSection("workspaces");
+  };
 
-  setWorkspaceTypeFilter(type);
-
-  setSection("workspaces");
-
-};
+  // ── Workspace toolbar select style ────────────────────────────────────────
+  const wsSelectStyle = {
+    padding: "0 10px",
+    height: "36px",
+    borderRadius: "8px",
+    border: "1.5px solid var(--border, #e5e7eb)",
+    fontSize: "12px",
+    color: "#333",
+    background: "#fff",
+    outline: "none",
+    cursor: "pointer",
+    minWidth: "120px",
+    maxWidth: "160px",
+  };
 
   return (
     <div className={styles.root}>
@@ -1246,33 +1283,20 @@ export default function AdminDashboard() {
           {/* ── Dashboard Overview ── */}
           {section === "overview" && (
             <section className={styles.overview}>
-              {/* ── Real-data Stats Grid ── */}
               <div className={styles.statsGrid}>
                 {STATS.map((s, i) => (
                   <button
                     key={i}
                     className={styles.statCard}
                     style={{ "--ac": s.color }}
-                   onClick={() => {
-
-  if (
-    s.label ===
-    "Workspace Types"
-  ) {
-
-    setWorkspaceTypeFilter("");
-
-    setSection("workspaces");
-
-  }
-
-  else {
-
-    s.onClick();
-
-  }
-
-}}
+                    onClick={() => {
+                      if (s.label === "Workspace Types") {
+                        setWorkspaceTypeFilter("");
+                        setSection("workspaces");
+                      } else {
+                        s.onClick();
+                      }
+                    }}
                     title={s.hint}
                   >
                     <div className={styles.statTop}>
@@ -1292,8 +1316,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-
-              {/* ── Extra Quick-Action Stats Row (Users / Bookings / Tickets / Activity) ── */}
+              {/* ── Extra Quick-Action Stats Row ── */}
               <div style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
@@ -1395,7 +1418,6 @@ export default function AdminDashboard() {
                   <p className={styles.secSub}>Create, edit, delete users and owners — all in one place.</p>
                 </div>
               </div>
-              {/* Pass managementFilter so the panel opens on the right tab */}
               <UnifiedManagementPanel showToast={showToast} initialRoleFilter={managementFilter} />
             </section>
           )}
@@ -1403,6 +1425,7 @@ export default function AdminDashboard() {
           {/* ── Workspaces ── */}
           {section === "workspaces" && (
             <section className={styles.section}>
+              {/* ── Section Header ── */}
               <div className={styles.secHead}>
                 <div className={styles.secIco} style={{ background: "#f59e0b18", color: "#f59e0b" }}>
                   <Icon d={IC.workspace} size={18} />
@@ -1414,75 +1437,194 @@ export default function AdminDashboard() {
                 <span className={styles.countPill}>{ownerFilter ? `${filteredWS.length} for ${ownerFilter}` : `${filteredWS.length} Filtered`}</span>
               </div>
 
-              {/* Add / Edit Form */}
-              <div className={styles.formCard}>
-                <div className={styles.formHead}>
-                  <span className={styles.formHeadIco}><Icon d={editId ? IC.edit : IC.add} size={13} /></span>
-                  <span>{editId ? `Editing Workspace #${editId}` : "Add New Workspace"}</span>
-                </div>
-                <div className={styles.formGrid}>
-                  <select className={styles.selectField} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}>
-                    <option value="">Select Workspace Type</option>
-                    {WORKSPACE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-                  </select>
-                  <select className={styles.selectField} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>
-                    <option value="">Select Location</option>
-                    {LOCATIONS.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
-                  </select>
-                  <input className={styles.inp} placeholder="Location Area" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-                  <input className={styles.inp} placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-                  <input className={styles.inp} placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-                  <input className={styles.inp} placeholder="Image URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
-                  <div className={styles.fieldGroup}>
-                    <div className={styles.amenitiesGrid}>
-                      {amenities.map((a) => (
-                        <label key={a.id} className={styles.amenityItem}>
-                          <input type="checkbox" checked={form.amenities?.includes(a.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) setForm({ ...form, amenities: [...(form.amenities || []), a.id] });
-                              else setForm({ ...form, amenities: form.amenities.filter((id) => id !== a.id) });
-                            }}
-                          />
-                          {a.name}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.formActs}>
-                  <button className={styles.btnPrimary} onClick={handleSubmit}>
-                    <Icon d={editId ? IC.edit : IC.add} size={13} />
-                    {editId ? "Update Workspace" : "Add Workspace"}
-                  </button>
-                  {editId && (
-                    <button className={styles.btnGhost} onClick={() => { setEditId(null); setForm({ name: "", city: "", location: "", price: "", image: "", description: "", isavailable: true }); }}>
-                      Cancel
+              {/* ── UNIFIED TOOLBAR: Add Workspace btn + Search + Filters in ONE LINE ── */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "16px",
+                flexWrap: "wrap",
+              }}>
+                {/* Add / Cancel button */}
+                <button
+                  onClick={() => {
+                    if (showAddForm && editId) {
+                      setEditId(null);
+                      setForm({ name: "", city: "", location: "", price: "", image: "", description: "", isavailable: true });
+                    }
+                    setShowAddForm((p) => !p);
+                  }}
+                  title={showAddForm ? "Close form" : editId ? "Editing workspace" : "Add new workspace"}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    height: "36px",
+                    padding: "0 14px",
+                    borderRadius: "8px",
+                    border: "none",
+                    background: showAddForm ? "#f43f5e" : "#f59e0b",
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                    transition: "background 0.18s",
+                  }}
+                >
+                  <Icon d={showAddForm ? IC.close : editId ? IC.edit : IC.add} size={13} />
+                  {showAddForm ? "Close Form" : editId ? "Editing…" : "Add Workspace"}
+                </button>
+
+                {/* Search input */}
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  flex: "1",
+                  minWidth: "160px",
+                  height: "36px",
+                  padding: "0 10px",
+                  borderRadius: "8px",
+                  border: "1.5px solid var(--border, #e5e7eb)",
+                  background: "#fff",
+                }}>
+                  <Icon d={IC.search} size={13} />
+                  <input
+                    style={{ border: "none", outline: "none", fontSize: "12px", color: "#000", width: "100%", background: "transparent" }}
+                    placeholder="Search workspace, city, owner..."
+                    value={searchQ}
+                    onChange={(e) => setSearchQ(e.target.value)}
+                  />
+                  {searchQ && (
+                    <button style={{ border: "none", background: "none", cursor: "pointer", color: "#aaa", padding: 0, display: "flex" }} onClick={() => setSearchQ("")}>
+                      <Icon d={IC.close} size={11} />
                     </button>
                   )}
                 </div>
-              </div>
 
-              {/* Filters */}
-              <div className={styles.tableBar} style={{ gap: "12px", flexWrap: "wrap" }}>
-                <div className={styles.tableSearch}>
-                  <Icon d={IC.search} size={13} />
-                  <input className={styles.searchInp} placeholder="Search workspace, city, owner..." value={searchQ} onChange={(e) => setSearchQ(e.target.value)} />
-                </div>
-                <select className={styles.selectField} value={ownerFilter} onChange={(e) => setOwnerFilter(e.target.value)}>
+                {/* All Owners select */}
+                <select
+                  style={wsSelectStyle}
+                  value={ownerFilter}
+                  onChange={(e) => setOwnerFilter(e.target.value)}
+                >
                   <option value="">All Owners</option>
-                  {ownerOptions.map((owner) => <option key={owner} value={owner}>{owner}</option>)}
+                  {ownerOptions.map((owner) => (
+                    <option key={owner} value={owner}>{owner}</option>
+                  ))}
                 </select>
-                <select className={styles.selectField} value={workspaceTypeFilter} onChange={(e) => setWorkspaceTypeFilter(e.target.value)}>
+
+                {/* All Types select */}
+                <select
+                  style={wsSelectStyle}
+                  value={workspaceTypeFilter}
+                  onChange={(e) => setWorkspaceTypeFilter(e.target.value)}
+                >
                   <option value="">All Types</option>
-                  {workspaceTypeOptions.map((type) => <option key={type} value={type}>{type}</option>)}
+                  {workspaceTypeOptions.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
                 </select>
-                <button className={styles.btnGhost} onClick={() => { setSearchQ(""); setOwnerFilter(""); setWorkspaceTypeFilter(""); window.location.hash = "workspaces"; }}>
-                  <Icon d={IC.refresh} size={13} /> Reset Filters
+
+                {/* Reset button */}
+                <button
+                  className={styles.btnGhost}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    height: "36px",
+                    padding: "0 12px",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                  onClick={() => {
+                    setSearchQ("");
+                    setOwnerFilter("");
+                    setWorkspaceTypeFilter("");
+                    window.location.hash = "workspaces";
+                  }}
+                >
+                  <Icon d={IC.refresh} size={13} /> Reset
                 </button>
-                <span className={styles.tableCount}>{filteredWS.length} records</span>
+
+                {/* Record count pill */}
+                <span style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "0 10px",
+                  height: "36px",
+                  borderRadius: "20px",
+                  background: "var(--badge-bg, #f3f4f6)",
+                  color: "var(--muted, #888)",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}>
+                  {filteredWS.length} records
+                </span>
               </div>
 
-              {/* Table */}
+              {/* ── Collapsible Add / Edit Form ── */}
+              {showAddForm && (
+                <div className={styles.formCard} style={{ marginBottom: "16px" }}>
+                  <div className={styles.formHead}>
+                    <span className={styles.formHeadIco}><Icon d={editId ? IC.edit : IC.add} size={13} /></span>
+                    <span>{editId ? `Editing Workspace #${editId}` : "Add New Workspace"}</span>
+                  </div>
+                  <div className={styles.formGrid}>
+                    <select className={styles.selectField} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}>
+                      <option value="">Select Workspace Type</option>
+                      {WORKSPACE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                    </select>
+                    <select className={styles.selectField} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}>
+                      <option value="">Select Location</option>
+                      {LOCATIONS.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
+                    </select>
+                    <input className={styles.inp} placeholder="Location Area" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+                    <input className={styles.inp} placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+                    <input className={styles.inp} placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                    <input className={styles.inp} placeholder="Image URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
+                    <div className={styles.fieldGroup}>
+                      <div className={styles.amenitiesGrid}>
+                        {amenities.map((a) => (
+                          <label key={a.id} className={styles.amenityItem}>
+                            <input type="checkbox" checked={form.amenities?.includes(a.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) setForm({ ...form, amenities: [...(form.amenities || []), a.id] });
+                                else setForm({ ...form, amenities: form.amenities.filter((id) => id !== a.id) });
+                              }}
+                            />
+                            {a.name}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.formActs}>
+                    <button className={styles.btnPrimary} onClick={handleSubmit}>
+                      <Icon d={editId ? IC.edit : IC.add} size={13} />
+                      {editId ? "Update Workspace" : "Add Workspace"}
+                    </button>
+                    {editId && (
+                      <button className={styles.btnGhost} onClick={() => {
+                        setEditId(null);
+                        setShowAddForm(false);
+                        setForm({ name: "", city: "", location: "", price: "", image: "", description: "", isavailable: true });
+                      }}>
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Table ── */}
               <div className={styles.tableWrap}>
                 <table className={styles.table}>
                   <thead>
