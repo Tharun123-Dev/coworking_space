@@ -272,30 +272,30 @@ function SparkBar({ data, color }) {
 }
 
 // ─── UNIFIED MANAGEMENT PANEL ─────────────────────────────────────────────────
-// Replaces AdminUsers + CreateOwner completely. All logic lives here.
-function UnifiedManagementPanel({ showToast }) {
-  // ── Data state ──
+function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
   const [users, setUsers] = useState([]);
   const [owners, setOwners] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ── Search / Filter ──
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all"); // all | users | owners | admins
+  const [roleFilter, setRoleFilter] = useState(initialRoleFilter);
+  const [activeStat, setActiveStat] = useState(initialRoleFilter === "owners" ? "owners" : "all");
 
-  // ── Form mode: null | "addUser" | "addOwner" | "editUser" | "editOwner" ──
   const [formMode, setFormMode] = useState(null);
 
-  // ── User form ──
   const [userForm, setUserForm] = useState({ username: "", email: "", phone: "", password: "" });
   const [editUserId, setEditUserId] = useState(null);
 
-  // ── Owner form ──
   const ownerFormInit = { username: "", email: "", password: "", location: "" };
   const [ownerForm, setOwnerForm] = useState(ownerFormInit);
   const [editOwnerId, setEditOwnerId] = useState(null);
 
-  // ── Fetch ──
+  // Sync if parent changes initialRoleFilter (e.g. clicking stat card again)
+  useEffect(() => {
+    setRoleFilter(initialRoleFilter);
+    setActiveStat(initialRoleFilter === "owners" ? "owners" : "all");
+  }, [initialRoleFilter]);
+
   const fetchUsers = () => {
     axiosInstance.get("leads/users/all/")
       .then((r) => setUsers(Array.isArray(r.data) ? r.data : []))
@@ -313,39 +313,18 @@ function UnifiedManagementPanel({ showToast }) {
     fetchOwners();
   }, []);
 
-  // ── Stats ──
   const activeUsers = users.filter((u) => u.is_active !== false).length;
   const adminUsers = users.filter((u) => u.is_admin || u.is_superuser).length;
-  const verifiedOwners = owners.filter((o) => o.is_verified || o.verified).length;
 
-  // ── Combined + filtered list ──
   const combined = useMemo(() => {
     const q = search.toLowerCase().trim();
-const ownerEmails = owners.map(
-  (o) => o.email?.toLowerCase()
-);
-
-const filteredUsers = users.filter(
-  (u) =>
-    !ownerEmails.includes(
-      u.email?.toLowerCase()
-    )
-);
-
-const uList = filteredUsers.map(
-  (u) => ({
-    ...u,
-    _type: "user",
-  })
-);
-
-const oList = owners.map(
-  (o) => ({
-    ...o,
-    _type: "owner",
-  })
-);
+    const ownerEmails = owners.map((o) => o.email?.toLowerCase());
+    const filteredUsers = users.filter((u) => !ownerEmails.includes(u.email?.toLowerCase()));
+    const uList = filteredUsers.map((u) => ({ ...u, _type: "user" }));
+    const oList = owners.map((o) => ({ ...o, _type: "owner" }));
     let merged = [...uList, ...oList];
+
+    if (activeStat === "owners") merged = oList;
 
     if (roleFilter === "users") merged = uList;
     else if (roleFilter === "owners") merged = oList;
@@ -359,9 +338,8 @@ const oList = owners.map(
       );
     }
     return merged;
-  }, [users, owners, search, roleFilter]);
+  }, [users, owners, search, roleFilter, activeStat]);
 
-  // ── Reset forms ──
   const resetForms = () => {
     setFormMode(null);
     setUserForm({ username: "", email: "", phone: "", password: "" });
@@ -370,7 +348,6 @@ const oList = owners.map(
     setEditOwnerId(null);
   };
 
-  // ── Open edit ──
   const openEditUser = (u) => {
     setEditUserId(u.id);
     setUserForm({
@@ -396,26 +373,18 @@ const oList = owners.map(
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ── Create User ──
   const handleCreateUser = async () => {
-    if (!userForm.username || !userForm.email) {
-      showToast("Username and email are required", "error");
-      return;
-    }
+    if (!userForm.username || !userForm.email) { showToast("Username and email are required", "error"); return; }
     try {
       setLoading(true);
       await axiosInstance.post("leads/users/create/", userForm);
       showToast("User created successfully");
       resetForms();
       fetchUsers();
-    } catch {
-      showToast("Failed to create user", "error");
-    } finally {
-      setLoading(false);
-    }
+    } catch { showToast("Failed to create user", "error"); }
+    finally { setLoading(false); }
   };
 
-  // ── Update User ──
   const handleUpdateUser = async () => {
     try {
       setLoading(true);
@@ -428,30 +397,22 @@ const oList = owners.map(
       showToast("User updated successfully");
       resetForms();
       fetchUsers();
-    } catch {
-      showToast("Failed to update user", "error");
-    } finally {
-      setLoading(false);
-    }
+    } catch { showToast("Failed to update user", "error"); }
+    finally { setLoading(false); }
   };
 
-  // ── Delete User ──
   const handleDeleteUser = async (id) => {
     if (!window.confirm("Delete this user?")) return;
     try {
       await axiosInstance.delete(`leads/users/delete/${id}/`);
       showToast("User deleted");
       fetchUsers();
-    } catch {
-      showToast("Failed to delete user", "error");
-    }
+    } catch { showToast("Failed to delete user", "error"); }
   };
 
-  // ── Create Owner ──
   const handleCreateOwner = async () => {
     if (!ownerForm.username || !ownerForm.email || !ownerForm.password) {
-      showToast("Username, email and password are required", "error");
-      return;
+      showToast("Username, email and password are required", "error"); return;
     }
     try {
       setLoading(true);
@@ -459,381 +420,181 @@ const oList = owners.map(
       showToast("Owner created successfully");
       resetForms();
       fetchOwners();
-    } catch {
-      showToast("Failed to create owner", "error");
-    } finally {
-      setLoading(false);
-    }
+    } catch { showToast("Failed to create owner", "error"); }
+    finally { setLoading(false); }
   };
 
-  // ── Update Owner ──
   const handleUpdateOwner = async () => {
     try {
       setLoading(true);
-      const payload = {
-        username: ownerForm.username,
-        email: ownerForm.email,
-        location: ownerForm.location,
-      };
+      const payload = { username: ownerForm.username, email: ownerForm.email, location: ownerForm.location };
       if (ownerForm.password.trim()) payload.password = ownerForm.password;
       await axiosInstance.put(`owners/update/${editOwnerId}/`, payload);
       showToast("Owner updated successfully");
       resetForms();
       fetchOwners();
-    } catch {
-      showToast("Failed to update owner", "error");
-    } finally {
-      setLoading(false);
-    }
+    } catch { showToast("Failed to update owner", "error"); }
+    finally { setLoading(false); }
   };
 
-  // ── Delete Owner ──
   const handleDeleteOwner = async (id) => {
     if (!window.confirm("Delete this owner?")) return;
     try {
       await axiosInstance.delete(`owners/delete/${id}/`);
       showToast("Owner deleted");
       fetchOwners();
-    } catch {
-      showToast("Failed to delete owner", "error");
-    }
+    } catch { showToast("Failed to delete owner", "error"); }
   };
 
   const isUserForm = formMode === "addUser" || formMode === "editUser";
   const isOwnerForm = formMode === "addOwner" || formMode === "editOwner";
   const isEditMode = formMode === "editUser" || formMode === "editOwner";
 
-  // ── Inline styles (no extra CSS file needed) ──
   const S = {
-    // Stats row
     statsRow: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
       gap: "12px",
       marginBottom: "20px",
     },
-    statCard: (color) => ({
-      // background: `${color}10`,
-      border: `1px solid ${color}25`,
+    statCard: (color, active) => ({
+      border: `1px solid ${active ? color : color + "25"}`,
       borderRadius: "12px",
       padding: "14px 16px",
       display: "flex",
       flexDirection: "column",
       gap: "6px",
+      cursor: "pointer",
+      background: active ? `${color}08` : "transparent",
+      transition: "all 0.18s",
     }),
     statIco: (color) => ({
       width: 36,
       height: 36,
       borderRadius: "8px",
       background: `${color}18`,
-      color:"black",
+      color: "black",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       marginBottom: "4px",
     }),
-  statVal: () => ({
-  fontSize: "22px",
-  fontWeight: 700,
-  color: "#000",
-  lineHeight: 1,
-}),
-  statLbl: {
-  fontSize: "11px",
-  color: "#000",
-  fontWeight: 600,
-  textTransform: "uppercase",
-  letterSpacing: "0.04em",
-},
-
-    // Action bar
-    actionBar: {
-      display: "flex",
-      gap: "10px",
-      marginBottom: "20px",
-      flexWrap: "wrap",
-    },
+    statVal: () => ({ fontSize: "22px", fontWeight: 700, color: "#000", lineHeight: 1 }),
+    statLbl: { fontSize: "11px", color: "#000", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" },
+    actionBar: { display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" },
     addUserBtn: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "6px",
-      padding: "8px 16px",
-      borderRadius: "8px",
-      border: "none",
-      background: "#6366f1",
-      // color: "#fff",
-      fontWeight: 600,
-      fontSize: "13px",
-      cursor: "pointer",
-      transition: "opacity 0.18s",
+      display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px",
+      borderRadius: "8px", border: "none", background: "#6366f1", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "opacity 0.18s",
     },
     addOwnerBtn: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "6px",
-      padding: "8px 16px",
-      borderRadius: "8px",
-      border: "none",
-      background: "#f59e0b",
-      // color: "#fff",
-      fontWeight: 600,
-      fontSize: "13px",
-      cursor: "pointer",
-      transition: "opacity 0.18s",
+      display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px",
+      borderRadius: "8px", border: "none", background: "#f59e0b", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "opacity 0.18s",
     },
-
-    // Form card
     formCard: (accent) => ({
-      background: "var(--card-bg, #fff)",
-      border: `1.5px solid ${accent}30`,
-      borderRadius: "12px",
-      padding: "20px",
-      marginBottom: "20px",
-      boxShadow: `0 2px 12px ${accent}08`,
+      background: "var(--card-bg, #fff)", border: `1.5px solid ${accent}30`, borderRadius: "12px",
+      padding: "20px", marginBottom: "20px", boxShadow: `0 2px 12px ${accent}08`,
     }),
     formTitle: (accent) => ({
-      fontSize: "15px",
-      fontWeight: 700,
-      color: accent,
-      marginBottom: "16px",
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
+      fontSize: "15px", fontWeight: 700, color: accent, marginBottom: "16px",
+      display: "flex", alignItems: "center", gap: "8px",
     }),
     formGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-      gap: "12px",
-      marginBottom: "16px",
+      display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+      gap: "12px", marginBottom: "16px",
     },
- inp: {
-  padding: "9px 12px",
-  borderRadius: "8px",
-  border: "1.5px solid var(--border, #e5e7eb)",
-  fontSize: "13px",
-  width: "100%",
-  outline: "none",
-  color: "#000",
-  background: "#fff",
-  boxSizing: "border-box",
-},
-    checkRow: {
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      fontSize: "13px",
-      // color: "var(--text, #1f2937)",
-      padding: "9px 0",
+    inp: {
+      padding: "9px 12px", borderRadius: "8px", border: "1.5px solid var(--border, #e5e7eb)",
+      fontSize: "13px", width: "100%", outline: "none", color: "#000", background: "#fff", boxSizing: "border-box",
     },
-    formActions: {
-      display: "flex",
-      gap: "10px",
-      flexWrap: "wrap",
-    },
+    checkRow: { display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", padding: "9px 0" },
+    formActions: { display: "flex", gap: "10px", flexWrap: "wrap" },
     submitBtn: (color) => ({
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "6px",
-      padding: "9px 18px",
-      borderRadius: "8px",
-      border: "none",
-      background: color,
-      color: "#fff",
-      fontWeight: 600,
-      fontSize: "13px",
-      cursor: "pointer",
+      display: "inline-flex", alignItems: "center", gap: "6px", padding: "9px 18px",
+      borderRadius: "8px", border: "none", background: color, color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer",
     }),
-cancelBtn: {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "6px",
-  padding: "9px 18px",
-  borderRadius: "8px",
-  border: "1.5px solid #000",
-  background: "#fff",
-  color: "#000",
-  fontWeight: 600,
-  fontSize: "13px",
-  cursor: "pointer",
-},
-    // Filter + search bar
-    filterBar: {
-      display: "flex",
-      gap: "10px",
-      marginBottom: "14px",
-      flexWrap: "wrap",
-      alignItems: "center",
+    cancelBtn: {
+      display: "inline-flex", alignItems: "center", gap: "6px", padding: "9px 18px",
+      borderRadius: "8px", border: "1.5px solid #000", background: "#fff", color: "#000", fontWeight: 600, fontSize: "13px", cursor: "pointer",
     },
+    filterBar: { display: "flex", gap: "10px", marginBottom: "14px", flexWrap: "wrap", alignItems: "center" },
     searchWrap: {
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      background: "var(--card-bg, #fff)",
-      border: "1.5px solid var(--border, #e5e7eb)",
-      borderRadius: "8px",
-      padding: "7px 12px",
-      flex: "1",
-      minWidth: "200px",
+      display: "flex", alignItems: "center", gap: "8px", background: "var(--card-bg, #fff)",
+      border: "1.5px solid var(--border, #e5e7eb)", borderRadius: "8px", padding: "7px 12px", flex: "1", minWidth: "200px",
     },
-     searchInp: {
-      border: "none",
-      outline: "none",
-      // background: "transparent",
-      fontSize: "13px",
-      color:"black",
-      width: "100%",
-    },
+    searchInp: { border: "none", outline: "none", fontSize: "13px", color: "black", width: "100%", background: "transparent" },
     roleBtn: (active) => ({
-      padding: "7px 14px",
-      borderRadius: "8px",
+      padding: "7px 14px", borderRadius: "8px",
       border: active ? "none" : "1.5px solid var(--border, #e5e7eb)",
       background: active ? "#6366f1" : "transparent",
-      // color: active ? "#fff" : "var(--text, #555)",
-      fontWeight: 600,
-      fontSize: "12px",
-      cursor: "pointer",
-      transition: "all 0.18s",
+      color: active ? "#fff" : "#555",
+      fontWeight: 600, fontSize: "12px", cursor: "pointer", transition: "all 0.18s",
     }),
-
-    // Table
-    tableWrap: {
-      overflowX: "auto",
-      borderRadius: "12px",
-      border: "1.5px solid var(--border, #e5e7eb)",
-    },
-    table: {
-      width: "100%",
-      borderCollapse: "collapse",
-      fontSize: "13px",
-    },
+    tableWrap: { overflowX: "auto", borderRadius: "12px", border: "1.5px solid var(--border, #e5e7eb)" },
+    table: { width: "100%", borderCollapse: "collapse", fontSize: "13px" },
     th: {
-      padding: "11px 14px",
-      textAlign: "left",
-      // background: "var(--th-bg, #f8f9fa)",
-      color: "var(--muted, #252020)",
-      fontWeight: 600,
-      fontSize: "11px",
-      textTransform: "uppercase",
-      letterSpacing: "0.04em",
-      borderBottom: "1.5px solid var(--border, #e5e7eb)",
-      whiteSpace: "nowrap",
+      padding: "11px 14px", textAlign: "left", color: "var(--muted, #252020)", fontWeight: 600,
+      fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em",
+      borderBottom: "1.5px solid var(--border, #e5e7eb)", whiteSpace: "nowrap",
     },
-  td: {
-  padding: "11px 14px",
-  borderBottom: "1px solid var(--border-light, #f3f4f6)",
-  color: "#000",
-  verticalAlign: "middle",
-},
+    td: { padding: "11px 14px", borderBottom: "1px solid var(--border-light, #f3f4f6)", color: "#000", verticalAlign: "middle" },
     avatarCell: (color) => ({
-      width: 32,
-      height: 32,
-      borderRadius: "50%",
-      background: `${color}20`,
-      color,
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontWeight: 700,
-      fontSize: "13px",
-      flexShrink: 0,
+      width: 32, height: 32, borderRadius: "50%", background: `${color}20`, color,
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      fontWeight: 700, fontSize: "13px", flexShrink: 0,
     }),
     userBadge: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "4px",
-      padding: "3px 9px",
-      borderRadius: "20px",
-      background: "#6366f115",
-      color: "#6366f1",
-      fontSize: "11px",
-      fontWeight: 600,
-      border: "1px solid #6366f125",
+      display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px",
+      borderRadius: "20px", background: "#6366f115", color: "#6366f1", fontSize: "11px", fontWeight: 600, border: "1px solid #6366f125",
     },
     ownerBadge: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "4px",
-      padding: "3px 9px",
-      borderRadius: "20px",
-      background: "#f59e0b15",
-      color: "#f59e0b",
-      fontSize: "11px",
-      fontWeight: 600,
-      border: "1px solid #f59e0b25",
+      display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px",
+      borderRadius: "20px", background: "#f59e0b15", color: "#f59e0b", fontSize: "11px", fontWeight: 600, border: "1px solid #f59e0b25",
     },
     adminBadge: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "4px",
-      padding: "3px 9px",
-      borderRadius: "20px",
-      background: "#10b98115",
-      color: "#10b981",
-      fontSize: "11px",
-      fontWeight: 600,
-      border: "1px solid #10b98125",
+      display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px",
+      borderRadius: "20px", background: "#10b98115", color: "#10b981", fontSize: "11px", fontWeight: 600, border: "1px solid #10b98125",
     },
- editBtn: {
-  padding: "5px 10px",
-  borderRadius: "6px",
-  border: "none",
-  background: "#6366f115",
-  color: "#000",
-  cursor: "pointer",
-  fontSize: "12px",
-  fontWeight: 600,
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "4px",
-},
+    editBtn: {
+      padding: "5px 10px", borderRadius: "6px", border: "none", background: "#6366f115",
+      color: "#000", cursor: "pointer", fontSize: "12px", fontWeight: 600,
+      display: "inline-flex", alignItems: "center", gap: "4px",
+    },
     delBtn: {
-      padding: "5px 10px",
-      borderRadius: "6px",
-      border: "none",
-      background: "#f43f5e15",
-      color: "#f43f5e",
-      cursor: "pointer",
-      fontSize: "12px",
-      fontWeight: 600,
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "4px",
+      padding: "5px 10px", borderRadius: "6px", border: "none", background: "#f43f5e15",
+      color: "#f43f5e", cursor: "pointer", fontSize: "12px", fontWeight: 600,
+      display: "inline-flex", alignItems: "center", gap: "4px",
     },
-    emptyRow: {
-      padding: "40px",
-      textAlign: "center",
-      color: "var(--muted, #aaa)",
-      fontSize: "14px",
-    },
+    emptyRow: { padding: "40px", textAlign: "center", color: "var(--muted, #aaa)", fontSize: "14px" },
     countBadge: {
-      display: "inline-flex",
-      alignItems: "center",
-      padding: "3px 10px",
-      borderRadius: "20px",
-      background: "var(--badge-bg, #f3f4f6)",
-      color: "var(--muted, #888)",
-      fontSize: "11px",
-      fontWeight: 600,
-      marginLeft: "8px",
+      display: "inline-flex", alignItems: "center", padding: "3px 10px",
+      borderRadius: "20px", background: "var(--badge-bg, #f3f4f6)", color: "var(--muted, #888)", fontSize: "11px", fontWeight: 600, marginLeft: "8px",
     },
   };
+
+  const statsConfig = [
+    { label: "Total Users", value: users.length, color: "#6366f1", icon: IC.users, filterKey: "all", statKey: "all" },
+    { label: "Total Owners", value: owners.length, color: "#f59e0b", icon: IC.owners, filterKey: "owners", statKey: "owners" },
+    { label: "Active Users", value: activeUsers, color: "#10b981", icon: IC.check, filterKey: "users", statKey: "users" },
+    { label: "Admin Users", value: adminUsers, color: "#f43f5e", icon: IC.shield, filterKey: "admins", statKey: "admins" },
+  ];
 
   return (
     <div>
       {/* ── Stats Row ── */}
       <div style={S.statsRow}>
-        {[
-          { label: "Total Users", value: users.length, color: "#6366f1", icon: IC.users },
-          { label: "Total Owners", value: owners.length, color: "#f59e0b", icon: IC.owners },
-          { label: "Active Users", value: activeUsers, color: "#10b981", icon: IC.check },
-          { label: "Admin Users", value: adminUsers, color: "#f43f5e", icon: IC.shield },
-          { label: "Verified Owners", value: verifiedOwners, color: "#8b5cf6", icon: IC.approveCircle },
-        ].map((s, i) => (
-          <div key={i} style={S.statCard(s.color)}>
+        {statsConfig.map((s, i) => (
+          <div
+            key={i}
+            style={S.statCard(s.color, activeStat === s.statKey)}
+            onClick={() => {
+              setActiveStat(s.statKey);
+              setRoleFilter(s.filterKey);
+            }}
+          >
             <div style={S.statIco(s.color)}>
               <Icon d={s.icon} size={17} />
             </div>
-            <div style={S.statVal(s.color)}>{s.value}</div>
+            <div style={S.statVal()}>{s.value}</div>
             <div style={S.statLbl}>{s.label}</div>
           </div>
         ))}
@@ -842,36 +603,22 @@ cancelBtn: {
       {/* ── Action Buttons ── */}
       <div style={S.actionBar}>
         <button
-          style={{
-            ...S.addUserBtn,
-            opacity: formMode === "addUser" ? 0.75 : 1,
-            outline: formMode === "addUser" ? "2px solid #6366f1" : "none",
-          }}
-          onClick={() => {
-            resetForms();
-            setFormMode(formMode === "addUser" ? null : "addUser");
-          }}
+          style={{ ...S.addUserBtn, opacity: formMode === "addUser" ? 0.75 : 1, outline: formMode === "addUser" ? "2px solid #6366f1" : "none" }}
+          onClick={() => { resetForms(); setFormMode(formMode === "addUser" ? null : "addUser"); }}
         >
           <Icon d={IC.userPlus} size={14} />
           {formMode === "addUser" ? "Close Form" : "Add User"}
         </button>
         <button
-          style={{
-            ...S.addOwnerBtn,
-            opacity: formMode === "addOwner" ? 0.75 : 1,
-            outline: formMode === "addOwner" ? "2px solid #f59e0b" : "none",
-          }}
-          onClick={() => {
-            resetForms();
-            setFormMode(formMode === "addOwner" ? null : "addOwner");
-          }}
+          style={{ ...S.addOwnerBtn, opacity: formMode === "addOwner" ? 0.75 : 1, outline: formMode === "addOwner" ? "2px solid #f59e0b" : "none" }}
+          onClick={() => { resetForms(); setFormMode(formMode === "addOwner" ? null : "addOwner"); }}
         >
           <Icon d={IC.owners} size={14} />
           {formMode === "addOwner" ? "Close Form" : "Add Owner"}
         </button>
       </div>
 
-      {/* ── Inline Form: User (Add or Edit) ── */}
+      {/* ── Inline Form: User ── */}
       {isUserForm && (
         <div style={S.formCard("#6366f1")}>
           <div style={S.formTitle("#6366f1")}>
@@ -879,64 +626,30 @@ cancelBtn: {
             {isEditMode ? `Edit User — ${userForm.username}` : "Add New User"}
           </div>
           <div style={S.formGrid}>
-            <input
-              style={S.inp}
-              placeholder="Username *"
-              value={userForm.username}
-              onChange={(e) => setUserForm({ ...userForm, username: e.target.value })}
-            />
-            <input
-              style={S.inp}
-              placeholder="Email *"
-              type="email"
-              value={userForm.email}
-              onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-            />
-            <input
-              style={S.inp}
-              placeholder="Phone"
-              value={userForm.phone || ""}
-              onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
-            />
+            <input style={S.inp} placeholder="Username *" value={userForm.username} onChange={(e) => setUserForm({ ...userForm, username: e.target.value })} />
+            <input style={S.inp} placeholder="Email *" type="email" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} />
+            <input style={S.inp} placeholder="Phone" value={userForm.phone || ""} onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })} />
             {!isEditMode && (
-              <input
-                style={S.inp}
-                placeholder="Password *"
-                type="password"
-                value={userForm.password}
-                onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-              />
+              <input style={S.inp} placeholder="Password *" type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} />
             )}
           </div>
           {isEditMode && (
             <label style={S.checkRow}>
-              <input
-                type="checkbox"
-                checked={userForm.is_admin || false}
-                onChange={(e) => setUserForm({ ...userForm, is_admin: e.target.checked })}
-                style={{ width: 16, height: 16, accentColor: "#6366f1" }}
-              />
+              <input type="checkbox" checked={userForm.is_admin || false} onChange={(e) => setUserForm({ ...userForm, is_admin: e.target.checked })} style={{ width: 16, height: 16, accentColor: "#6366f1" }} />
               Grant Admin Access
             </label>
           )}
           <div style={S.formActions}>
-            <button
-              style={S.submitBtn("#6366f1")}
-              disabled={loading}
-              onClick={isEditMode ? handleUpdateUser : handleCreateUser}
-            >
+            <button style={S.submitBtn("#6366f1")} disabled={loading} onClick={isEditMode ? handleUpdateUser : handleCreateUser}>
               <Icon d={isEditMode ? IC.check : IC.add} size={13} />
               {loading ? "Saving..." : isEditMode ? "Update User" : "Create User"}
             </button>
-            <button style={S.cancelBtn} onClick={resetForms}>
-              <Icon d={IC.close} size={13} />
-              Cancel
-            </button>
+            <button style={S.cancelBtn} onClick={resetForms}><Icon d={IC.close} size={13} /> Cancel</button>
           </div>
         </div>
       )}
 
-      {/* ── Inline Form: Owner (Add or Edit) ── */}
+      {/* ── Inline Form: Owner ── */}
       {isOwnerForm && (
         <div style={S.formCard("#f59e0b")}>
           <div style={S.formTitle("#f59e0b")}>
@@ -944,24 +657,9 @@ cancelBtn: {
             {isEditMode ? `Edit Owner — ${ownerForm.username}` : "Add New Owner"}
           </div>
           <div style={S.formGrid}>
-            <input
-              style={S.inp}
-              placeholder="Username *"
-              value={ownerForm.username}
-              onChange={(e) => setOwnerForm({ ...ownerForm, username: e.target.value })}
-            />
-            <input
-              style={S.inp}
-              placeholder="Email *"
-              type="email"
-              value={ownerForm.email}
-              onChange={(e) => setOwnerForm({ ...ownerForm, email: e.target.value })}
-            />
-            <select
-              style={S.inp}
-              value={ownerForm.location}
-              onChange={(e) => setOwnerForm({ ...ownerForm, location: e.target.value })}
-            >
+            <input style={S.inp} placeholder="Username *" value={ownerForm.username} onChange={(e) => setOwnerForm({ ...ownerForm, username: e.target.value })} />
+            <input style={S.inp} placeholder="Email *" type="email" value={ownerForm.email} onChange={(e) => setOwnerForm({ ...ownerForm, email: e.target.value })} />
+            <select style={S.inp} value={ownerForm.location} onChange={(e) => setOwnerForm({ ...ownerForm, location: e.target.value })}>
               <option value="">Select Location</option>
               <option value="Hitech City">Hitech City</option>
               <option value="Madhapur">Madhapur</option>
@@ -969,72 +667,46 @@ cancelBtn: {
               <option value="Kondapur">Kondapur</option>
               <option value="Financial District">Financial District</option>
             </select>
-            <input
-              style={S.inp}
-              placeholder={isEditMode ? "New Password (leave blank to keep)" : "Password *"}
-              type="password"
-              value={ownerForm.password}
-              onChange={(e) => setOwnerForm({ ...ownerForm, password: e.target.value })}
-            />
+            <input style={S.inp} placeholder={isEditMode ? "New Password (leave blank to keep)" : "Password *"} type="password" value={ownerForm.password} onChange={(e) => setOwnerForm({ ...ownerForm, password: e.target.value })} />
           </div>
           <div style={S.formActions}>
-            <button
-              style={S.submitBtn("#f59e0b")}
-              disabled={loading}
-              onClick={isEditMode ? handleUpdateOwner : handleCreateOwner}
-            >
+            <button style={S.submitBtn("#f59e0b")} disabled={loading} onClick={isEditMode ? handleUpdateOwner : handleCreateOwner}>
               <Icon d={isEditMode ? IC.check : IC.add} size={13} />
               {loading ? "Saving..." : isEditMode ? "Update Owner" : "Create Owner"}
             </button>
-            <button style={S.cancelBtn} onClick={resetForms}>
-              <Icon d={IC.close} size={13} />
-              Cancel
-            </button>
+            <button style={S.cancelBtn} onClick={resetForms}><Icon d={IC.close} size={13} /> Cancel</button>
           </div>
         </div>
       )}
 
-      {/* ── Filter + Search Bar ── */}
+      {/* ── Filter + Search ── */}
       <div style={S.filterBar}>
-        {/* Role filter pills */}
         {[
           { key: "all", label: "All" },
           { key: "users", label: "Users" },
           { key: "owners", label: "Owners" },
           { key: "admins", label: "Admins" },
         ].map((r) => (
-          <button
-            key={r.key}
-            style={S.roleBtn(roleFilter === r.key)}
-            onClick={() => setRoleFilter(r.key)}
-          >
+          <button key={r.key} style={S.roleBtn(roleFilter === r.key)} onClick={() => { setRoleFilter(r.key); setActiveStat(r.key); }}>
             {r.label}
           </button>
         ))}
-
-        {/* Search */}
+        <button style={S.roleBtn(false)} onClick={() => { setActiveStat("all"); setRoleFilter("all"); }}>
+          Show All
+        </button>
         <div style={S.searchWrap}>
           <Icon d={IC.search} size={13} />
-          <input
-            style={S.searchInp}
-            placeholder="Search by name, email, phone, location..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <input style={S.searchInp} placeholder="Search by name, email, phone, location..." value={search} onChange={(e) => setSearch(e.target.value)} />
           {search && (
-            <button
-              style={{ border: "none", background: "none", cursor: "pointer", color: "var(--muted,#aaa)", padding: 0 }}
-              onClick={() => setSearch("")}
-            >
+            <button style={{ border: "none", background: "none", cursor: "pointer", color: "var(--muted,#aaa)", padding: 0 }} onClick={() => setSearch("")}>
               <Icon d={IC.close} size={12} />
             </button>
           )}
         </div>
-
         <span style={S.countBadge}>{combined.length} records</span>
       </div>
 
-      {/* ── Combined Table ── */}
+      {/* ── Table ── */}
       <div style={S.tableWrap}>
         <table style={S.table}>
           <thead>
@@ -1050,9 +722,7 @@ cancelBtn: {
           <tbody>
             {combined.length === 0 ? (
               <tr>
-                <td colSpan={6} style={S.emptyRow}>
-                  No records found for the selected filter / search.
-                </td>
+                <td colSpan={6} style={S.emptyRow}>No records found for the selected filter / search.</td>
               </tr>
             ) : (
               combined.map((item, i) => {
@@ -1060,75 +730,41 @@ cancelBtn: {
                 const isAdmin = !isOwner && (item.is_admin || item.is_superuser);
                 const accent = isOwner ? "#f59e0b" : isAdmin ? "#10b981" : "#6366f1";
                 const initial = (item.username || "?").charAt(0).toUpperCase();
-                const phoneOrLoc = isOwner
-                  ? item.location || "-"
-                  : item.phone || "-";
-
+                const phoneOrLoc = isOwner ? item.location || "-" : item.phone || "-";
                 return (
-                  <tr
-                    key={`${item._type}-${item.id}`}
-                    style={{
-                      background: i % 2 === 0 ? "transparent" : "var(--row-alt, rgba(0,0,0,0.01))",
-                      transition: "background 0.15s",
-                    }}
-                  >
-                   <td style={{ ...S.td, color: "#000", fontSize: "12px" }}>
-                      {String(i + 1).padStart(2, "0")}
-                    </td>
-
+                  <tr key={`${item._type}-${item.id}`} style={{ background: i % 2 === 0 ? "transparent" : "var(--row-alt, rgba(0,0,0,0.01))", transition: "background 0.15s" }}>
+                    <td style={{ ...S.td, color: "#000", fontSize: "12px" }}>{String(i + 1).padStart(2, "0")}</td>
                     <td style={S.td}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <div style={S.avatarCell(accent)}>{initial}</div>
-                       <span style={{ fontWeight: 600, color: "#000" }}>
-  {item.username}
-</span>
+                        <span style={{ fontWeight: 600, color: "#000" }}>{item.username}</span>
                       </div>
                     </td>
-
-                   <td style={{ ...S.td, color: "#000", fontWeight: 600, fontSize: "12px" }}>
+                    <td style={{ ...S.td, color: "#000", fontWeight: 600, fontSize: "12px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                        <Icon d={IC.mail} size={11} />
-                        {item.email}
+                        <Icon d={IC.mail} size={11} />{item.email}
                       </div>
                     </td>
-
-                  <td style={{ ...S.td, color: "#000", fontWeight: 600, fontSize: "12px" }}>
+                    <td style={{ ...S.td, color: "#000", fontWeight: 600, fontSize: "12px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                        <Icon d={isOwner ? IC.mapPin : IC.phone} size={11} />
-                        {phoneOrLoc}
+                        <Icon d={isOwner ? IC.mapPin : IC.phone} size={11} />{phoneOrLoc}
                       </div>
                     </td>
-
                     <td style={S.td}>
                       {isOwner ? (
-                        <span style={S.ownerBadge}>
-                          <Icon d={IC.owners} size={10} /> Owner
-                        </span>
+                        <span style={S.ownerBadge}><Icon d={IC.owners} size={10} /> Owner</span>
                       ) : isAdmin ? (
-                        <span style={S.adminBadge}>
-                          <Icon d={IC.shield} size={10} /> Admin
-                        </span>
+                        <span style={S.adminBadge}><Icon d={IC.shield} size={10} /> Admin</span>
                       ) : (
-                        <span style={S.userBadge}>
-                          <Icon d={IC.users} size={10} /> User
-                        </span>
+                        <span style={S.userBadge}><Icon d={IC.users} size={10} /> User</span>
                       )}
                     </td>
-
                     <td style={S.td}>
                       <div style={{ display: "flex", gap: "6px" }}>
-                        <button
-                          style={S.editBtn}
-                          title="Edit"
-                          onClick={() => isOwner ? openEditOwner(item) : openEditUser(item)}
-                        >
+                        <button style={S.editBtn} title="Edit" onClick={() => isOwner ? openEditOwner(item) : openEditUser(item)}>
                           <Icon d={IC.edit} size={12} /> Edit
                         </button>
-                        <button
-                          style={S.delBtn}
-                          title="Delete"
-                          onClick={() => isOwner ? handleDeleteOwner(item.id) : handleDeleteUser(item.id)}
-                        >
+                        <button style={S.delBtn} title="Delete" onClick={() => isOwner ? handleDeleteOwner(item.id) : handleDeleteUser(item.id)}>
                           <Icon d={IC.trash} size={12} /> Delete
                         </button>
                       </div>
@@ -1157,7 +793,6 @@ export default function AdminDashboard() {
     name: "", city: "", location: "", price: "",
     image: "", description: "", amenities: [], isavailable: true,
   });
-
   const [editId, setEditId] = useState(null);
 
   const [catForm, setCatForm] = useState({
@@ -1166,6 +801,9 @@ export default function AdminDashboard() {
   });
 
   const [section, setSection] = useState("overview");
+  // managementFilter controls which tab is pre-selected when opening management from a stat card
+  const [managementFilter, setManagementFilter] = useState("all");
+
   const [sideOpen, setSideOpen] = useState(true);
   const [mobOpen, setMobOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState(null);
@@ -1274,7 +912,7 @@ export default function AdminDashboard() {
       ? axiosInstance.put(`workspaces/update/${editId}/`, form)
       : axiosInstance.post("workspaces/add/", form);
     req.then(() => {
-      showToast(editId ? "Updated successfully" : "Workspace added successfully and make a approval for visible in website");
+      showToast(editId ? "Updated successfully" : "Workspace added successfully");
       setEditId(null);
       setForm({ name: "", city: "", location: "", price: "", image: "", description: "", isavailable: true });
       fetchWS();
@@ -1361,14 +999,56 @@ export default function AdminDashboard() {
 
   const filteredActivity = actFilter === "all" ? RECENT_ACTIVITIES : RECENT_ACTIVITIES.filter((a) => a.type === actFilter);
 
+  // ─── Overview stats — navigate INSIDE dashboard ───────────────────────────
+  // These use real data from API calls. Each card opens the relevant section.
   const STATS = [
-    { label: "Total Workspaces", value: workspaces.length, color: "#f59e0b", spark: SPARKS.ws, trend: 12, up: true, icon: IC.workspace },
-    { label: "Categories", value: 9, color: "#6366f1", spark: SPARKS.cat, trend: 8, up: true, icon: IC.category },
-    { label: "Total Owners", value: owners.length, color: "#10b981", spark: SPARKS.own, trend: 3, up: true, icon: IC.owners },
+    {
+      label: "Total Workspaces",
+      value: workspaces.length,
+      color: "#f59e0b",
+      spark: SPARKS.ws,
+      trend: 12,
+      up: true,
+      icon: IC.workspace,
+      hint: "View all workspaces",
+      onClick: () => setSection("workspaces"),
+    },
+    {
+      label: "Total Categories",
+      value: categories.length,
+      color: "#6366f1",
+      spark: SPARKS.cat,
+      trend: 8,
+      up: true,
+      icon: IC.category,
+      hint: "View all categories",
+      onClick: () => setSection("categories"),
+    },
+    {
+      label: "Total Owners",
+      value: owners.length,
+      color: "#10b981",
+      spark: SPARKS.own,
+      trend: 3,
+      up: true,
+      icon: IC.owners,
+      hint: "Manage owners",
+      onClick: () => {
+        setManagementFilter("owners");
+        setSection("management");
+      },
+    },
   ];
 
   const sectionTitle = (() => {
-    const map = { overview: "Dashboard Overview", management: "User & Owner Management", workspaces: "Workspace Management", categories: "Category Management", tickets: "Support Tickets", activity: "Recent Activity" };
+    const map = {
+      overview: "Dashboard Overview",
+      management: "User & Owner Management",
+      workspaces: "Workspace Management",
+      categories: "Category Management",
+      tickets: "Support Tickets",
+      activity: "Recent Activity",
+    };
     return map[section] || "Dashboard";
   })();
 
@@ -1527,13 +1207,18 @@ export default function AdminDashboard() {
         {/* ── Page Content ── */}
         <main className={styles.content}>
 
-          {/* Dashboard Overview */}
+          {/* ── Dashboard Overview ── */}
           {section === "overview" && (
             <section className={styles.overview}>
+              {/* ── Real-data Stats Grid ── */}
               <div className={styles.statsGrid}>
                 {STATS.map((s, i) => (
-                  <button key={i} className={styles.statCard} style={{ "--ac": s.color }}
-                    onClick={() => navigate("/enterprise")}
+                  <button
+                    key={i}
+                    className={styles.statCard}
+                    style={{ "--ac": s.color }}
+                    onClick={s.onClick}
+                    title={s.hint}
                   >
                     <div className={styles.statTop}>
                       <div className={styles.statIco} style={{ background: `${s.color}18`, color: s.color }}>
@@ -1547,11 +1232,61 @@ export default function AdminDashboard() {
                     <div className={styles.statVal} style={{ color: s.color }}>{s.value}</div>
                     <div className={styles.statLbl}>{s.label}</div>
                     <SparkBar data={s.spark} color={s.color} />
-                    <div className={styles.statClick}>Click to explore</div>
+                    <div className={styles.statClick}>{s.hint}</div>
                   </button>
                 ))}
               </div>
 
+              {/* ── Extra Quick-Action Stats Row (Users / Bookings / Tickets / Activity) ── */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                gap: "12px",
+                marginBottom: "24px",
+              }}>
+                {[
+                  { label: "Manage Users", icon: IC.users, color: "#6366f1", hint: "View users & owners", onClick: () => { setManagementFilter("all"); setSection("management"); } },
+                  { label: "Manage Owners", icon: IC.owners, color: "#f59e0b", hint: "View owners only", onClick: () => { setManagementFilter("owners"); setSection("management"); } },
+                  { label: "Bookings", icon: IC.bookings, color: "#10b981", hint: "View all bookings", onClick: () => setSection("bookings") },
+                  { label: "Support Tickets", icon: IC.tickets, color: "#f43f5e", hint: "View tickets", onClick: () => setSection("tickets") },
+                  { label: "Recent Activity", icon: IC.activity, color: "#8b5cf6", hint: "See activity log", onClick: () => setSection("activity") },
+                  { label: "Amenities", icon: IC.amenities, color: "#0ea5e9", hint: "Manage amenities", onClick: () => setSection("amenities") },
+                ].map((q, i) => (
+                  <button
+                    key={i}
+                    onClick={q.onClick}
+                    title={q.hint}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "14px 16px",
+                      borderRadius: "12px",
+                      border: `1px solid ${q.color}25`,
+                      background: `${q.color}06`,
+                      cursor: "pointer",
+                      transition: "all 0.18s",
+                      textAlign: "left",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = `${q.color}14`; e.currentTarget.style.borderColor = `${q.color}50`; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = `${q.color}06`; e.currentTarget.style.borderColor = `${q.color}25`; }}
+                  >
+                    <div style={{
+                      width: 34, height: 34, borderRadius: "8px",
+                      background: `${q.color}18`, color: q.color,
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <Icon d={q.icon} size={16} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: "12px", fontWeight: 700, color: "#000", lineHeight: 1.2 }}>{q.label}</div>
+                      <div style={{ fontSize: "10px", color: "#888", marginTop: "2px" }}>{q.hint}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Charts row */}
               <div className={styles.chartsRow}>
                 <div className={styles.chartPanel}><WeeklyChart data={CHART_DATA} /></div>
                 <div className={styles.donutPanel}>
@@ -1563,6 +1298,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* Recent tickets preview */}
               <div className={styles.quickPanel}>
                 <div className={styles.quickHead}>
                   <div>
@@ -1591,7 +1327,7 @@ export default function AdminDashboard() {
             </section>
           )}
 
-          {/* ── UNIFIED Management Section ── */}
+          {/* ── Management Section ── */}
           {section === "management" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
@@ -1603,11 +1339,12 @@ export default function AdminDashboard() {
                   <p className={styles.secSub}>Create, edit, delete users and owners — all in one place.</p>
                 </div>
               </div>
-              <UnifiedManagementPanel showToast={showToast} />
+              {/* Pass managementFilter so the panel opens on the right tab */}
+              <UnifiedManagementPanel showToast={showToast} initialRoleFilter={managementFilter} />
             </section>
           )}
 
-          {/* Workspaces */}
+          {/* ── Workspaces ── */}
           {section === "workspaces" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
@@ -1736,7 +1473,7 @@ export default function AdminDashboard() {
                       );
                     })}
                     {filteredWS.length === 0 && (
-                      <tr><td colSpan={10} className={styles.tdEmpty}>No workspaces found for selected owner/type filters</td></tr>
+                      <tr><td colSpan={10} className={styles.tdEmpty}>No workspaces found for selected filters</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -1744,7 +1481,7 @@ export default function AdminDashboard() {
             </section>
           )}
 
-          {/* Categories */}
+          {/* ── Categories ── */}
           {section === "categories" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
@@ -1829,7 +1566,7 @@ export default function AdminDashboard() {
             </section>
           )}
 
-          {/* Quotation Leads */}
+          {/* ── Quotation Leads ── */}
           {section === "quotation-leads" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
@@ -1848,7 +1585,7 @@ export default function AdminDashboard() {
           {section === "tickets" && <section className={styles.section}><AdminTickets /></section>}
           {section === "amenities" && <section className={styles.section}><AdminAmenities /></section>}
 
-          {/* Recent Activity Full Page */}
+          {/* ── Recent Activity ── */}
           {section === "activity" && (
             <section className={styles.section}>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
@@ -1862,7 +1599,7 @@ export default function AdminDashboard() {
         </main>
       </div>
 
-      {/* Toast */}
+      {/* ── Toast ── */}
       {toast && (
         <div className={`${styles.toast} ${toast.type === "error" ? styles.toastErr : ""}`}>
           <span className={styles.toastIcon}>•</span>

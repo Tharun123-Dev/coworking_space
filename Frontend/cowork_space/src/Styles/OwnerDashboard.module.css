@@ -1590,6 +1590,59 @@
   border-radius:12px;
 
 }
+.activeBadge{
+  background:#dcfce7;
+  color:#166534;
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:600;
+}
+
+.inactiveBadge{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:600;
+}
+
+.actionBtns{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.activeBtn{
+  border:none;
+  background:#16a34a;
+  color:#fff;
+  padding:7px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:600;
+}
+
+.inactiveBtn{
+  border:none;
+  background:#dc2626;
+  color:#fff;
+  padding:7px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:600;
+}
+
+@media(max-width:768px){
+
+  .actionBtns{
+    flex-direction:column;
+  }
+
+}
 @media(max-width:768px){
 
   .amenitiesTable th,

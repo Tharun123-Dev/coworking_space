@@ -27,6 +27,7 @@ const NAV_GROUPS = [
     label: "Overview",
     single: true,
   },
+  
   {
     key: "workspacesGroup",
     icon: "🏢",
@@ -38,6 +39,12 @@ const NAV_GROUPS = [
       { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
     ],
   },
+  {
+  key: "manageUsers",
+  icon: "👥",
+  label: "Manage Users",
+  single: true,
+},
   {
     key: "slotsGroup",
     icon: "⏰",
@@ -150,7 +157,21 @@ function OwnerDashboard() {
   const [workspaceSearch, setWorkspaceSearch] = useState("");
   const [suggestSearch, setSuggestSearch] = useState("");
   const [editOfferId, setEditOfferId] = useState(null);
+  const [users, setUsers] = useState([]);
 
+const [userForm, setUserForm] = useState({
+  username: "",
+  email: "",
+  password: "",
+  phone: "",
+  location: "",
+});
+
+const [editUserId, setEditUserId] =
+  useState(null);
+
+const [userSearch, setUserSearch] =
+  useState("");
   // ─── APPROVED WORKSPACES ──────────────────────────────────────────────────
   const approvedWorkspaces = useMemo(
     () => workspaces.filter(w => w.is_approved === true),
@@ -170,6 +191,27 @@ function OwnerDashboard() {
     setMobileSidebarOpen(false);
     if (groupKey) setOpenGroups(prev => ({ ...prev, [groupKey]: true }));
   };
+
+  const fetchUsers = () => {
+
+  axiosInstance
+    .get("accounts/owner/users/")
+    .then((res) => {
+
+      setUsers(
+        Array.isArray(res.data)
+          ? res.data
+          : []
+      );
+
+    })
+    .catch((err) => {
+
+      console.log(err);
+
+    });
+
+};
 
   const fetchOfferLeads = () => axiosInstance.get("leads/offers/leads/owner/").then(res => setOfferLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Offer leads fetch error:", err));
   const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(""), 3000); };
@@ -205,7 +247,7 @@ function OwnerDashboard() {
   const handleDeleteOffer = (id) => { if (!window.confirm("Delete this workspace?")) return; axiosInstance.delete(`workspaces/offers/delete/${id}/`).then(() => fetchOfferWorkspaces()).catch(err => console.error(err)); };
   const handleAddOfferWorkspace = () => {
     const request = editOfferId ? axiosInstance.put(`workspaces/offers/update/${editOfferId}/`, { ...offerForm, area: ownerCity }) : axiosInstance.post("workspaces/offers/create/", { ...offerForm, area: ownerCity });
-    request.then(() => { fetchOfferWorkspaces(); setEditOfferId(null); setOfferForm({ building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] }); alert(editOfferId ? "Workspace updated successfully" : "Offer workspace added successfully"); }).catch(err => console.error(err));
+    request.then(() => { fetchOfferWorkspaces(); setEditOfferId(null); setOfferForm({ building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] }); alert(editOfferId ? "Workspace updated successfully" : "Offer workspace added successfully and waiting for an admin approval.."); }).catch(err => console.error(err));
   };
 
   const handleAddAmenity = () => {
@@ -253,14 +295,117 @@ function OwnerDashboard() {
   useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads]);
   useEffect(() => { localStorage.setItem("viewedNotifications", JSON.stringify(viewedNotifications)); }, [viewedNotifications]);
   useEffect(() => {
-    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchQuotationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
+    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchUsers();fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchQuotationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
   }, [fetchBookings, fetchCancelRequests]);
   useEffect(() => { const loc = localStorage.getItem("user_location"); if (loc) setOwnerCity(loc); }, []);
   useEffect(() => { const handleResize = () => { if (window.innerWidth > 640) setMobileSidebarOpen(false); }; window.addEventListener("resize", handleResize); return () => window.removeEventListener("resize", handleResize); }, []);
 
   const mergedBookings = useMemo(() => bookings.map(b => { const ls = localStates[b.id] || {}; return { ...b, ...ls }; }), [bookings, localStates]);
   const bookingStats = useMemo(() => ({ total: mergedBookings.length, confirmed: mergedBookings.filter(b => b.status === "confirmed").length, pending: mergedBookings.filter(b => b.status === "pending").length, cancelled: mergedBookings.filter(b => b.status === "cancelled").length }), [mergedBookings]);
+  const handleUserSubmit = () => {
 
+  if (
+    !userForm.username ||
+    !userForm.email
+  ) {
+
+    alert("Fill required fields");
+    return;
+
+  }
+
+  const request = editUserId
+
+    ? axiosInstance.put(
+        `accounts/users/update/${editUserId}/`,
+        userForm
+      )
+
+    : axiosInstance.post(
+        "accounts/users/create/",
+        userForm
+      );
+
+  request
+    .then(() => {
+
+      fetchUsers();
+
+      setUserForm({
+        username: "",
+        email: "",
+        password: "",
+        phone: "",
+        location: "",
+      });
+
+      setEditUserId(null);
+
+      alert(
+        editUserId
+          ? "User Updated"
+          : "User Created"
+      );
+
+    })
+
+    .catch((err) => {
+
+      console.log(err);
+
+    });
+
+};
+
+const handleEditUser = (u) => {
+
+  setUserForm({
+
+    username: u.username || "",
+
+    email: u.email || "",
+
+    password: "",
+
+    phone: u.phone || "",
+
+    location: u.location || "",
+
+  });
+
+  setEditUserId(u.id);
+
+  setActiveSection("manageUsers");
+
+};
+
+const handleInactiveUser = (
+  user
+) => {
+
+  axiosInstance
+    .put(
+      `accounts/users/update/${user.id}/`,
+      {
+        ...user,
+        is_active:
+          !user.is_active,
+      }
+    )
+
+    .then(() => {
+
+      fetchUsers();
+
+    })
+
+    .catch((err) => {
+
+      console.log(err);
+
+    });
+
+};
   const resetWorkspaceForm = () => { setForm({ name: "", city: "", location: "", price: "", image: "", description: "", amenities: [] }); setEditId(null); };
   const resetMonthlyForm = () => { setMonthlyForm({ workspace_id: "", year: new Date().getFullYear(), months: [], capacity: 50, price: "" }); setEditMonthId(null); };
   const resetSlotForm = () => { setSlotForm({ workspace_id: "", date: "", slot_type: "hour", start_time: 9, end_time: 18, capacity: 50, price: "" }); setEditSlotId(null); };
@@ -531,7 +676,7 @@ function OwnerDashboard() {
       </div>
     </div>
   );
-
+  
   const renderOfferWorkspaces = () => (
     <div className={styles.sectionBody}>
       <div className={styles.formCard}>
@@ -556,7 +701,304 @@ function OwnerDashboard() {
       </div>
     </div>
   );
+  const renderManageUsers = () => {
 
+  const filteredUsers =
+    users.filter((u) =>
+      [
+        u.username,
+        u.email,
+        u.phone,
+        u.location,
+      ]
+        .filter(Boolean)
+        .some((f) =>
+          f
+            .toLowerCase()
+            .includes(
+              userSearch.toLowerCase()
+            )
+        )
+    );
+
+  return (
+
+    <div className={styles.sectionBody}>
+
+      <div className={styles.formCard}>
+
+        <h3 className={styles.formTitle}>
+          {editUserId
+            ? "Edit User"
+            : "Add User"}
+        </h3>
+
+        <div className={styles.formGrid}>
+
+          <div className={styles.fieldGroup}>
+            <label>Username</label>
+            <input
+              value={userForm.username}
+              onChange={(e) =>
+                setUserForm({
+                  ...userForm,
+                  username:
+                    e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label>Email</label>
+            <input
+              value={userForm.email}
+              onChange={(e) =>
+                setUserForm({
+                  ...userForm,
+                  email:
+                    e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label>Phone</label>
+            <input
+              value={userForm.phone}
+              onChange={(e) =>
+                setUserForm({
+                  ...userForm,
+                  phone:
+                    e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label>Location</label>
+            <input
+              value={userForm.location}
+              onChange={(e) =>
+                setUserForm({
+                  ...userForm,
+                  location:
+                    e.target.value,
+                })
+              }
+            />
+          </div>
+
+          {!editUserId && (
+
+            <div className={styles.fieldGroup}>
+              <label>Password</label>
+              <input
+                type="password"
+                value={userForm.password}
+                onChange={(e) =>
+                  setUserForm({
+                    ...userForm,
+                    password:
+                      e.target.value,
+                  })
+                }
+              />
+            </div>
+
+          )}
+
+        </div>
+
+        <div className={styles.formActions}>
+
+          <button
+            className={
+              styles.submitBtn
+            }
+            onClick={
+              handleUserSubmit
+            }
+          >
+            {editUserId
+              ? "Update User"
+              : "Add User"}
+          </button>
+
+          {editUserId && (
+
+            <button
+              className={
+                styles.cancelBtn
+              }
+              onClick={() => {
+
+                setEditUserId(
+                  null
+                );
+
+                setUserForm({
+                  username: "",
+                  email: "",
+                  phone: "",
+                  location: "",
+                  password: "",
+                });
+
+              }}
+            >
+              Cancel
+            </button>
+
+          )}
+
+        </div>
+
+      </div>
+
+      <div className={styles.tableTopBar}>
+
+        <input
+          className={
+            styles.searchInput
+          }
+          placeholder="Search users..."
+          value={userSearch}
+          onChange={(e) =>
+            setUserSearch(
+              e.target.value
+            )
+          }
+        />
+
+      </div>
+
+      <div className={styles.tableWrap}>
+
+        <table className={styles.table}>
+
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            {filteredUsers.map(
+              (u, i) => (
+
+                <tr key={u.id}>
+
+                  <td>{i + 1}</td>
+
+                  <td>
+                    {u.username}
+                  </td>
+
+                  <td>{u.email}</td>
+
+                  <td>
+                    {u.phone || "-"}
+                  </td>
+
+                  <td>
+                    {u.location ||
+                      "-"}
+                  </td>
+
+                  <td>
+
+                    {u.is_active ? (
+
+                      <span
+                        className={
+                          styles.activeBadge
+                        }
+                      >
+                        Active
+                      </span>
+
+                    ) : (
+
+                      <span
+                        className={
+                          styles.inactiveBadge
+                        }
+                      >
+                        Inactive
+                      </span>
+
+                    )}
+
+                  </td>
+
+                  <td>
+
+                    <div
+                      className={
+                        styles.actionBtns
+                      }
+                    >
+
+                      <button
+                        className={
+                          styles.editBtn
+                        }
+                        onClick={() =>
+                          handleEditUser(
+                            u
+                          )
+                        }
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className={
+                          u.is_active
+                            ? styles.inactiveBtn
+                            : styles.activeBtn
+                        }
+                        onClick={() =>
+                          handleToggleUserStatus(
+                            u
+                          )
+                        }
+                      >
+                        {u.is_active
+                          ? "Inactive"
+                          : "Active"}
+                      </button>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+              )
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  );
+
+};
   const renderSuggestedWorkspaces = () => (
     <div className={styles.sectionBody}>
       <div className={styles.formCard}><h3 className={styles.formTitle}>Suggested Workspaces</h3><p className={styles.helperText}>View workspaces added by other managers. This is only for reference.</p></div>
@@ -977,6 +1419,9 @@ function OwnerDashboard() {
 
         <div className={styles.content}>
           {activeSection === "overview" && renderOverview()}
+          {activeSection ===
+  "manageUsers" &&
+  renderManageUsers()}
           {activeSection === "workspaces" && renderWorkspaces()}
           {activeSection === "offerWorkspaces" && renderOfferWorkspaces()}
           {activeSection === "slots" && renderSlots()}
