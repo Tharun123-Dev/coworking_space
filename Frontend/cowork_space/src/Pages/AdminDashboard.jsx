@@ -1165,60 +1165,101 @@ useState([]);
                 )}
               </button>
 
-              {notifOpen && (
-                <div className={styles.notifPanel}>
-                  <div className={styles.notifHead}>
-                    Notifications
-                    <span className={styles.notifCount}>{adminNotifications.length}</span>
-                  </div>
+{notifOpen && (
+  <div className={styles.notifPanel}>
 
-                  {adminNotifications.map((n) => (
-                    <div key={n.id} className={styles.notifItem}>
-                      <div
-                        className={styles.notifIco}
-                        style={{
-                          background: "rgba(99,102,241,0.1)",
-                          color: "#6366f1",
-                        }}
-                      >
-                        <Icon d={IC.bell} size={14} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div className={styles.notifTxt}>
-                          <strong>{n.type}</strong>
-                          <br />
-                          {n.name}
-                        </div>
-                        <div className={styles.notifTime}>{n.workspace}</div>
-                      </div>
-                      <button
-                        className={styles.viewBtn}
-                        onClick={() => {
-                          setSection(n.section);
+    <div className={styles.notifHead}>
 
-                          const sameSectionIds = adminNotifications
-                            .filter((item) => item.section === n.section)
-                            .map((item) => item.id);
+      <div className={styles.notifHeading}>
 
-                          const updatedViewed = [
-                            ...new Set([...viewedAdminNotifications, ...sameSectionIds]),
-                          ];
+        <h3>Notifications</h3>
 
-                          setViewedAdminNotifications(updatedViewed);
+        <span className={styles.notifCount}>
+          {adminNotifications.length}
+        </span>
 
-                          setAdminNotifications((prev) =>
-                            prev.filter((item) => item.section !== n.section)
-                          );
+      </div>
 
-                          setNotifOpen(false);
-                        }}
-                      >
-                        View
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+      <button
+        className={styles.notifClose}
+        onClick={() => setNotifOpen(false)}
+      >
+        ✕
+      </button>
+
+    </div>
+
+    {adminNotifications.map((n) => (
+      <div
+        key={n.id}
+        className={styles.notifItem}
+      >
+        <div
+          className={styles.notifIco}
+          style={{
+            background: "rgba(99,102,241,0.1)",
+            color: "#6366f1",
+          }}
+        >
+          <Icon d={IC.bell} size={14} />
+        </div>
+
+        <div style={{ flex: 1 }}>
+          <div className={styles.notifTxt}>
+            <strong>{n.type}</strong>
+            <br />
+            {n.name}
+          </div>
+
+          <div className={styles.notifTime}>
+            {n.workspace}
+          </div>
+        </div>
+
+        <button
+          className={styles.viewBtn}
+          onClick={() => {
+
+            setSection(n.section);
+
+            const sameSectionIds =
+              adminNotifications
+                .filter(
+                  (item) =>
+                    item.section === n.section
+                )
+                .map((item) => item.id);
+
+            const updatedViewed = [
+              ...new Set([
+                ...viewedAdminNotifications,
+                ...sameSectionIds,
+              ]),
+            ];
+
+            setViewedAdminNotifications(
+              updatedViewed
+            );
+
+            setAdminNotifications((prev) =>
+              prev.filter(
+                (item) =>
+                  item.section !== n.section
+              )
+            );
+
+            setNotifOpen(false);
+
+          }}
+        >
+          View
+        </button>
+
+      </div>
+    ))}
+
+  </div>
+)}
             </div>
           </div>
         </header>
