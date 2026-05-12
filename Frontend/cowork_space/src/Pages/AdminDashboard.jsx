@@ -1013,17 +1013,43 @@ export default function AdminDashboard() {
       hint: "View all workspaces",
       onClick: () => setSection("workspaces"),
     },
+
     {
-      label: "Total Categories",
-      value: categories.length,
-      color: "#6366f1",
-      spark: SPARKS.cat,
-      trend: 8,
-      up: true,
-      icon: IC.category,
-      hint: "View all categories",
-      onClick: () => setSection("categories"),
-    },
+  label: "Total Categories",
+  value: WORKSPACE_TYPES.length,
+  color: "#6366f1",
+  spark: SPARKS.cat,
+  trend: 8,
+  up: true,
+  icon: IC.category,
+  hint: "View all categories",
+
+  onClick: () => {
+
+    setWorkspaceTypeFilter("");
+    setSection("workspaces");
+
+  },
+
+},
+// {
+//   label: "Workspace Types",
+//   value: WORKSPACE_TYPES.length,
+//   color: "#8b5cf6",
+//   spark: SPARKS.cat,
+//   trend: 10,
+//   up: true,
+//   icon: IC.workspace,
+//   hint: "View workspace types",
+
+//   onClick: () => {
+
+//     setWorkspaceTypeFilter("");
+//     setSection("workspaces");
+
+//   },
+
+
     {
       label: "Total Owners",
       value: owners.length,
@@ -1058,6 +1084,16 @@ export default function AdminDashboard() {
     setSection(group.section || "overview");
     closeMob();
   };
+
+  const handleWorkspaceTypeStat = (
+  type
+) => {
+
+  setWorkspaceTypeFilter(type);
+
+  setSection("workspaces");
+
+};
 
   return (
     <div className={styles.root}>
@@ -1217,7 +1253,26 @@ export default function AdminDashboard() {
                     key={i}
                     className={styles.statCard}
                     style={{ "--ac": s.color }}
-                    onClick={s.onClick}
+                   onClick={() => {
+
+  if (
+    s.label ===
+    "Workspace Types"
+  ) {
+
+    setWorkspaceTypeFilter("");
+
+    setSection("workspaces");
+
+  }
+
+  else {
+
+    s.onClick();
+
+  }
+
+}}
                     title={s.hint}
                   >
                     <div className={styles.statTop}>
@@ -1236,6 +1291,7 @@ export default function AdminDashboard() {
                   </button>
                 ))}
               </div>
+
 
               {/* ── Extra Quick-Action Stats Row (Users / Bookings / Tickets / Activity) ── */}
               <div style={{
