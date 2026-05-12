@@ -192,27 +192,27 @@ const [userSearch, setUserSearch] =
     if (groupKey) setOpenGroups(prev => ({ ...prev, [groupKey]: true }));
   };
 
-  const fetchUsers = () => {
+const fetchUsers = async () => {
 
-  axiosInstance
-    .get("accounts/owner/users/")
-    .then((res) => {
+  try {
 
-      setUsers(
-        Array.isArray(res.data)
-          ? res.data
-          : []
-      );
+    const res = await axiosInstance.get(
+      "accounts/owner/users/"
+    );
 
-    })
-    .catch((err) => {
+  
 
-      console.log(err);
+    setUsers(res.data);
 
-    });
+  } catch (err) {
+
+    console.log(err);
+
+   
+
+  }
 
 };
-
   const fetchOfferLeads = () => axiosInstance.get("leads/offers/leads/owner/").then(res => setOfferLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Offer leads fetch error:", err));
   const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(""), 3000); };
   const pulse = (id) => { setAnimatingId(id); setTimeout(() => setAnimatingId(null), 600); };
@@ -317,12 +317,12 @@ const [userSearch, setUserSearch] =
   const request = editUserId
 
     ? axiosInstance.put(
-        `accounts/users/update/${editUserId}/`,
+       `accounts/update-user/${editUserId}/`,
         userForm
       )
 
     : axiosInstance.post(
-        "accounts/users/create/",
+          "accounts/create-user/",
         userForm
       );
 
@@ -383,19 +383,34 @@ const handleInactiveUser = (
   user
 ) => {
 
-  axiosInstance
-    .put(
-      `accounts/users/update/${user.id}/`,
+axiosInstance.put(
+  `accounts/update-user/${user.id}/`,
       {
-        ...user,
+
+        username:
+          user.username,
+
+        email:
+          user.email,
+
+        phone:
+          user.phone,
+
         is_active:
           !user.is_active,
+
       }
     )
 
     .then(() => {
 
       fetchUsers();
+
+      alert(
+        user.is_active
+          ? "User Inactivated"
+          : "User Activated"
+      );
 
     })
 
@@ -547,6 +562,12 @@ const handleInactiveUser = (
           <div className={`${styles.fieldGroup} ${styles.fullWidth}`}><label>Description</label><textarea rows="3" placeholder="Describe this workspace…" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
           <div className={`${styles.fieldGroup} ${styles.fullWidth}`}><label>Select Amenities</label><div className={styles.amenitiesBox}>{amenitiesList.length === 0 ? <p>No amenities found</p> : amenitiesList.map(a => <label key={a.id} className={styles.amenityChip}><input type="checkbox" value={a.id} checked={form.amenities.includes(a.id)} onChange={e => { if (e.target.checked) setForm({ ...form, amenities: [...form.amenities, a.id] }); else setForm({ ...form, amenities: form.amenities.filter(id => id !== a.id) }); }} />{a.name}</label>)}</div></div>
           <div className={`${styles.fieldGroup} ${styles.fullWidth}`}><label>Image URL</label><input placeholder="https://…" value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} /></div>
+          <div className={styles.managementHeader}>
+  <h2>Manage Users</h2>
+  <p>
+    Add, edit and manage users
+  </p>
+</div>
         </div>
         <div className={styles.formActions}>
           <button className={styles.submitBtn} onClick={handleSubmit}>{editId ? "Update Workspace" : "Add Workspace"}</button>
@@ -701,25 +722,46 @@ const handleInactiveUser = (
       </div>
     </div>
   );
-  const renderManageUsers = () => {
+ const renderManageUsers = () => {
 
   const filteredUsers =
-    users.filter((u) =>
-      [
-        u.username,
-        u.email,
-        u.phone,
-        u.location,
-      ]
-        .filter(Boolean)
-        .some((f) =>
-          f
-            .toLowerCase()
-            .includes(
-              userSearch.toLowerCase()
-            )
-        )
-    );
+
+    Array.isArray(users)
+
+      ? users.filter((u) => {
+
+          const search =
+            userSearch.toLowerCase();
+
+          return (
+
+            (u.username || "")
+              .toLowerCase()
+              .includes(search)
+
+            ||
+
+            (u.email || "")
+              .toLowerCase()
+              .includes(search)
+
+            ||
+
+            (u.phone || "")
+              .toLowerCase()
+              .includes(search)
+
+            ||
+
+            (u.location || "")
+              .toLowerCase()
+              .includes(search)
+
+          );
+
+        })
+
+      : [];
 
   return (
 
@@ -737,8 +779,10 @@ const handleInactiveUser = (
 
           <div className={styles.fieldGroup}>
             <label>Username</label>
+
             <input
               value={userForm.username}
+
               onChange={(e) =>
                 setUserForm({
                   ...userForm,
@@ -751,8 +795,10 @@ const handleInactiveUser = (
 
           <div className={styles.fieldGroup}>
             <label>Email</label>
+
             <input
               value={userForm.email}
+
               onChange={(e) =>
                 setUserForm({
                   ...userForm,
@@ -765,8 +811,10 @@ const handleInactiveUser = (
 
           <div className={styles.fieldGroup}>
             <label>Phone</label>
+
             <input
               value={userForm.phone}
+
               onChange={(e) =>
                 setUserForm({
                   ...userForm,
@@ -779,8 +827,10 @@ const handleInactiveUser = (
 
           <div className={styles.fieldGroup}>
             <label>Location</label>
+
             <input
               value={userForm.location}
+
               onChange={(e) =>
                 setUserForm({
                   ...userForm,
@@ -794,10 +844,14 @@ const handleInactiveUser = (
           {!editUserId && (
 
             <div className={styles.fieldGroup}>
+
               <label>Password</label>
+
               <input
                 type="password"
+
                 value={userForm.password}
+
                 onChange={(e) =>
                   setUserForm({
                     ...userForm,
@@ -806,6 +860,7 @@ const handleInactiveUser = (
                   })
                 }
               />
+
             </div>
 
           )}
@@ -815,41 +870,47 @@ const handleInactiveUser = (
         <div className={styles.formActions}>
 
           <button
-            className={
-              styles.submitBtn
-            }
+            className={styles.submitBtn}
+
             onClick={
               handleUserSubmit
             }
           >
+
             {editUserId
               ? "Update User"
               : "Add User"}
+
           </button>
 
           {editUserId && (
 
             <button
-              className={
-                styles.cancelBtn
-              }
+              className={styles.cancelBtn}
+
               onClick={() => {
 
-                setEditUserId(
-                  null
-                );
+                setEditUserId(null);
 
                 setUserForm({
+
                   username: "",
+
                   email: "",
+
                   phone: "",
+
                   location: "",
+
                   password: "",
+
                 });
 
               }}
             >
+
               Cancel
+
             </button>
 
           )}
@@ -860,18 +921,23 @@ const handleInactiveUser = (
 
       <div className={styles.tableTopBar}>
 
-        <input
-          className={
-            styles.searchInput
-          }
-          placeholder="Search users..."
-          value={userSearch}
-          onChange={(e) =>
-            setUserSearch(
-              e.target.value
-            )
-          }
-        />
+        <div className={styles.searchWrap}>
+
+          <input
+            className={styles.searchInput}
+
+            placeholder="Search users..."
+
+            value={userSearch}
+
+            onChange={(e) =>
+              setUserSearch(
+                e.target.value
+              )
+            }
+          />
+
+        </div>
 
       </div>
 
@@ -880,112 +946,149 @@ const handleInactiveUser = (
         <table className={styles.table}>
 
           <thead>
+
             <tr>
+
               <th>#</th>
+
               <th>Username</th>
+
               <th>Email</th>
+
               <th>Phone</th>
+
               <th>Location</th>
+
               <th>Status</th>
+
               <th>Actions</th>
+
             </tr>
+
           </thead>
 
           <tbody>
 
-            {filteredUsers.map(
-              (u, i) => (
+            {filteredUsers.length > 0 ? (
 
-                <tr key={u.id}>
+              filteredUsers.map(
+                (u, i) => (
 
-                  <td>{i + 1}</td>
+                  <tr key={u.id}>
 
-                  <td>
-                    {u.username}
-                  </td>
+                    <td>{i + 1}</td>
 
-                  <td>{u.email}</td>
+                    <td>
+                      {u.username}
+                    </td>
 
-                  <td>
-                    {u.phone || "-"}
-                  </td>
+                    <td>
+                      {u.email}
+                    </td>
 
-                  <td>
-                    {u.location ||
-                      "-"}
-                  </td>
+                    <td>
+                      {u.phone || "-"}
+                    </td>
 
-                  <td>
+                    <td>
+                      {u.location || "-"}
+                    </td>
 
-                    {u.is_active ? (
+                    <td>
 
-                      <span
+                      {u.is_active ? (
+
+                        <span
+                          className={
+                            styles.activeBadge
+                          }
+                        >
+                          Active
+                        </span>
+
+                      ) : (
+
+                        <span
+                          className={
+                            styles.inactiveBadge
+                          }
+                        >
+                          Inactive
+                        </span>
+
+                      )}
+
+                    </td>
+
+                    <td>
+
+                      <div
                         className={
-                          styles.activeBadge
+                          styles.actionBtns
                         }
                       >
-                        Active
-                      </span>
 
-                    ) : (
+                        <button
+                          className={
+                            styles.editBtn
+                          }
 
-                      <span
-                        className={
-                          styles.inactiveBadge
-                        }
-                      >
-                        Inactive
-                      </span>
+                          onClick={() =>
+                            handleEditUser(u)
+                          }
+                        >
+                          Edit
+                        </button>
 
-                    )}
+                        <button
+                          className={
+                            u.is_active
+                              ? styles.inactiveBtn
+                              : styles.activeBtn
+                          }
 
-                  </td>
+                          onClick={() =>
+                            handleInactiveUser(u)
+                          }
+                        >
 
-                  <td>
+                          {u.is_active
+                            ? "Inactive"
+                            : "Active"}
 
-                    <div
-                      className={
-                        styles.actionBtns
-                      }
-                    >
+                        </button>
 
-                      <button
-                        className={
-                          styles.editBtn
-                        }
-                        onClick={() =>
-                          handleEditUser(
-                            u
-                          )
-                        }
-                      >
-                        Edit
-                      </button>
+                      </div>
 
-                      <button
-                        className={
-                          u.is_active
-                            ? styles.inactiveBtn
-                            : styles.activeBtn
-                        }
-                        onClick={() =>
-                          handleToggleUserStatus(
-                            u
-                          )
-                        }
-                      >
-                        {u.is_active
-                          ? "Inactive"
-                          : "Active"}
-                      </button>
+                    </td>
 
-                    </div>
+                  </tr>
 
-                  </td>
-
-                </tr>
-
+                )
               )
+
+            ) : (
+
+              <tr>
+
+                <td
+                  colSpan="7"
+
+                  style={{
+                    textAlign:
+                      "center",
+
+                    padding:
+                      "20px",
+                  }}
+                >
+
+                  No Users Found
+
+                </td>
+
+              </tr>
+
             )}
 
           </tbody>

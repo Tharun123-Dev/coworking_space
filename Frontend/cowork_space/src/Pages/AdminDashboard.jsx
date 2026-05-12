@@ -574,7 +574,7 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
     { label: "Total Users", value: users.length, color: "#6366f1", icon: IC.users, filterKey: "all", statKey: "all" },
     { label: "Total Owners", value: owners.length, color: "#f59e0b", icon: IC.owners, filterKey: "owners", statKey: "owners" },
     { label: "Active Users", value: activeUsers, color: "#10b981", icon: IC.check, filterKey: "users", statKey: "users" },
-    { label: "Admin Users", value: adminUsers, color: "#f43f5e", icon: IC.shield, filterKey: "admins", statKey: "admins" },
+    // { label: "Admin Users", value: adminUsers, color: "#f43f5e", icon: IC.shield, filterKey: "admins", statKey: "admins" },
   ];
 
   return (
@@ -690,9 +690,9 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
             {r.label}
           </button>
         ))}
-        <button style={S.roleBtn(false)} onClick={() => { setActiveStat("all"); setRoleFilter("all"); }}>
+        {/* <button style={S.roleBtn(false)} onClick={() => { setActiveStat("all"); setRoleFilter("all"); }}>
           Show All
-        </button>
+        </button> */}
         <div style={S.searchWrap}>
           <Icon d={IC.search} size={13} />
           <input style={S.searchInp} placeholder="Search by name, email, phone, location..." value={search} onChange={(e) => setSearch(e.target.value)} />

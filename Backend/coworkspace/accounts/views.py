@@ -12,7 +12,7 @@ from .email_service import send_owner_email
 from .serializers import RegisterSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from workspaces.models import ActivityLog
-
+from rest_framework.permissions import IsAuthenticated
 # REGISTER
 @api_view(['POST'])
 def register(request):
@@ -324,3 +324,131 @@ def reset_password(request):
     profile.save()
 
     return Response({"message": "Password reset successful"})
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_user(request):
+
+    data = request.data
+
+    user = User.objects.create_user(
+
+        username=data.get("username"),
+
+        email=data.get("email"),
+
+        password=data.get("password"),
+
+    )
+
+    # ✅ PROFILE UPDATE
+    profile = Profile.objects.get(
+        user=user
+    )
+
+    profile.phone = data.get(
+        "phone",
+        ""
+    )
+
+    profile.location = data.get(
+        "location",
+        ""
+    )
+
+    profile.role = "user"
+    profile.created_by = request.user
+    
+    profile.save()
+
+    return Response({
+        "message": "User created"
+    })
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_user(request, pk):
+
+    try:
+        user = User.objects.get(id=pk)
+
+        user.username = request.data.get(
+            "username",
+            user.username
+        )
+
+        user.email = request.data.get(
+            "email",
+            user.email
+        )
+
+        user.is_active = request.data.get(
+            "is_active",
+            user.is_active
+        )
+
+        user.save()
+
+        profile = user.profile
+
+        profile.phone = request.data.get(
+            "phone",
+            profile.phone
+        )
+
+        profile.location = request.data.get(
+            "location",
+            profile.location
+        )
+
+        profile.save()
+
+        return Response({
+            "message": "Updated"
+        })
+
+    except User.DoesNotExist:
+
+        return Response(
+            {"error": "User not found"},
+            status=404
+        )
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def owner_users(request):
+
+    users = User.objects.filter(
+        profile__created_by=request.user,
+        profile__role="user"
+    )
+
+    data = []
+
+    for u in users:
+
+        data.append({
+
+            "id": u.id,
+
+            "username": u.username,
+
+            "email": u.email,
+
+            "phone": (
+                u.profile.phone
+                if hasattr(u, "profile")
+                else ""
+            ),
+
+            "location": (
+                u.profile.location
+                if hasattr(u, "profile")
+                else ""
+            ),
+
+            "is_active":
+                u.is_active,
+
+        })
+
+    return Response(data)

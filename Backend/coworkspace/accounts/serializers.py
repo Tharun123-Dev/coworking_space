@@ -63,3 +63,60 @@ class RegisterSerializer(serializers.ModelSerializer):
         profile.save()
 
         return user
+    
+class UserListSerializer(
+    serializers.ModelSerializer
+):
+
+    phone =serializers.SerializerMethodField()
+
+    location =serializers.SerializerMethodField()
+
+    role =serializers.SerializerMethodField()
+
+    class Meta:
+
+        model = User
+
+        fields = [
+
+            "id",
+
+            "username",
+
+            "email",
+
+            "phone",
+
+            "location",
+
+            "role",
+
+            "is_active",
+
+            "is_staff",
+
+            "is_superuser",
+
+        ]
+
+    def get_phone(self, obj):
+
+        try:
+            return obj.profile.phone
+        except:
+            return ""
+
+    def get_location(self, obj):
+
+        try:
+            return obj.profile.location
+        except:
+            return ""
+
+    def get_role(self, obj):
+
+        try:
+            return obj.profile.role
+        except:
+            return "user"
