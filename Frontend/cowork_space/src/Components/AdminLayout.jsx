@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 function AdminLayout() {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Outlet />
       {/* No Footer & No Carousel */}
     </>

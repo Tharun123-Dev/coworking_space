@@ -13,7 +13,6 @@ const WORKSPACE_TYPES = [
   "Hot Desk","Dedicated Desk","Private Office Space","Private Cabin",
   "Meeting Room","Board Room","Event Space","Podcast","Virtual Office",
 ];
-
 const MONTH_OPTIONS = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
@@ -35,6 +34,11 @@ const NAV_GROUPS = [
     children: [
       { key: "workspaces", icon: "🏗️", label: "Workspaces" },
       { key: "offerWorkspaces", icon: "🔥", label: "Offer Workspaces" },
+      {
+  key: "offerCoupons",
+  icon: "🎟️",
+  label: "Offer Coupons",
+},
       { key: "additionalAmenities", icon: "☕", label: "Additional Amenities" },
       { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
     ],
@@ -104,6 +108,20 @@ const SVG = {
 
 function OwnerDashboard() {
   const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    const role = localStorage.getItem("role");
+
+    localStorage.clear();
+
+    if (role === "admin") {
+      window.location.href = "/auth?type=admin";
+    } else if (role === "owner") {
+      window.location.href = "/auth?type=owner";
+    } else {
+      window.location.href = "/auth?type=user";
+    }
+  };
 
   const [workspaces, setWorkspaces] = useState([]);
   const [offerWorkspaces, setOfferWorkspaces] = useState([]);
@@ -153,6 +171,16 @@ function OwnerDashboard() {
   const [editId, setEditId] = useState(null);
   const [slotForm, setSlotForm] = useState({ workspace_id: "", date: "", slot_type: "hour", start_time: 9, end_time: 18, capacity: 50, price: "" });
   const [offerForm, setOfferForm] = useState({ area: "", building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] });
+  const [offerCoupons, setOfferCoupons] =
+  useState([]);
+
+const [couponForm, setCouponForm] =
+  useState({
+    workspace: "",
+    coupon_code: "",
+    discount_percentage: "",
+    capacity: "",
+  });
   const [editSlotId, setEditSlotId] = useState(null);
   const [workspaceSearch, setWorkspaceSearch] = useState("");
   const [suggestSearch, setSuggestSearch] = useState("");
@@ -220,6 +248,33 @@ const fetchUsers = async () => {
   const fetchWorkspaces = () => axiosInstance.get("workspaces/?owner=true").then(res => setWorkspaces(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Workspace fetch error:", err));
   const fetchAllWorkspaces = () => axiosInstance.get("workspaces/").then(res => setAllWorkspaces(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("All workspaces fetch error:", err));
   const fetchOfferWorkspaces = () => axiosInstance.get("workspaces/offers/owner/").then(res => setOfferWorkspaces(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Offer workspace fetch error:", err));
+  const fetchOfferCoupons = () => {
+
+  axiosInstance
+    .get(
+      "workspaces/offer-coupons/owner/"
+    )
+
+    .then((res) => {
+
+      setOfferCoupons(
+        Array.isArray(res.data)
+          ? res.data
+          : []
+      );
+
+    })
+
+    .catch((err) => {
+
+      console.log(
+        "Coupons Fetch Error",
+        err
+      );
+
+    });
+
+};
   const fetchAdditionalAmenities = () => {
     axiosInstance
       .get("workspaces/additional-amenities/owner/")
@@ -249,6 +304,54 @@ const fetchUsers = async () => {
     const request = editOfferId ? axiosInstance.put(`workspaces/offers/update/${editOfferId}/`, { ...offerForm, area: ownerCity }) : axiosInstance.post("workspaces/offers/create/", { ...offerForm, area: ownerCity });
     request.then(() => { fetchOfferWorkspaces(); setEditOfferId(null); setOfferForm({ building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] }); alert(editOfferId ? "Workspace updated successfully" : "Offer workspace added successfully and waiting for an admin approval.."); }).catch(err => console.error(err));
   };
+
+  const handleAddCoupon = () => {
+
+  if (
+    !couponForm.workspace ||
+    !couponForm.coupon_code ||
+    !couponForm.discount_percentage ||
+    !couponForm.capacity
+  ) {
+
+    alert(
+      "Please fill all coupon fields"
+    );
+
+    return;
+  }
+
+  axiosInstance
+
+    .post(
+      "workspaces/offer-coupons/create/",
+      couponForm
+    )
+
+    .then(() => {
+
+      fetchOfferCoupons();
+
+      setCouponForm({
+        workspace: "",
+        coupon_code: "",
+        discount_percentage: "",
+        capacity: "",
+      });
+
+      alert(
+        "Coupon Added Successfully"
+      );
+
+    })
+
+    .catch((err) => {
+
+      console.log(err);
+
+    });
+
+};
 
   const handleAddAmenity = () => {
     if (!amenityForm.workspace || !amenityForm.title || !amenityForm.price) { alert("Please fill required fields"); return; }
@@ -295,7 +398,7 @@ const fetchUsers = async () => {
   useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads]);
   useEffect(() => { localStorage.setItem("viewedNotifications", JSON.stringify(viewedNotifications)); }, [viewedNotifications]);
   useEffect(() => {
-    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchUsers();fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchQuotationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
+    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchOfferCoupons();fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchUsers();fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchQuotationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
   }, [fetchBookings, fetchCancelRequests]);
   useEffect(() => { const loc = localStorage.getItem("user_location"); if (loc) setOwnerCity(loc); }, []);
   useEffect(() => { const handleResize = () => { if (window.innerWidth > 640) setMobileSidebarOpen(false); }; window.addEventListener("resize", handleResize); return () => window.removeEventListener("resize", handleResize); }, []);
@@ -705,7 +808,39 @@ axiosInstance.put(
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}><label>Area</label><input type="text" value={ownerCity} readOnly className={styles.readonlyInput} /></div>
           <div className={styles.fieldGroup}><label>Building</label><input value={offerForm.building} onChange={e => setOfferForm({ ...offerForm, building: e.target.value })} /></div>
-          <div className={styles.fieldGroup}><label>Workspace Type</label><input value={offerForm.type} onChange={e => setOfferForm({ ...offerForm, type: e.target.value })} /></div>
+          <div className={styles.fieldGroup}>
+  <label>Workspace Type</label>
+
+  <select
+    value={offerForm.type}
+    onChange={(e) =>
+      setOfferForm({
+        ...offerForm,
+        type: e.target.value,
+      })
+    }
+  >
+    <option value="">
+      Select Workspace
+    </option>
+
+    {approvedWorkspaces.map((ws) => (
+      <option
+        key={ws.id}
+        value={
+          ws.workspacename ||
+          ws.name ||
+          ws.title
+        }
+      >
+        {ws.city} | {ws.location} |{" "}
+        {ws.workspacename ||
+          ws.name ||
+          ws.title}
+      </option>
+    ))}
+  </select>
+</div>
           <div className={styles.fieldGroup}><label>Original Price</label><input type="number" value={offerForm.original_price} onChange={e => setOfferForm({ ...offerForm, original_price: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Offer Price</label><input type="number" value={offerForm.offer_price} onChange={e => setOfferForm({ ...offerForm, offer_price: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Seats</label><input type="number" value={offerForm.seats} onChange={e => setOfferForm({ ...offerForm, seats: e.target.value })} /></div>
@@ -717,11 +852,469 @@ axiosInstance.put(
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead><tr><th>Area</th><th>Building</th><th>Type</th><th>Price</th><th>Offer</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>{offerWorkspaces.map(item => (<tr key={item.id}><td>{item.area}</td><td>{item.building}</td><td>{item.type}</td><td>₹{item.original_price}</td><td>₹{item.offer_price}</td><td>{item.is_approved ? <span className={styles.approvedBadge}>Approved</span> : <span className={styles.pendingBadge}>Pending</span>}</td><td><div className={styles.actionBtns}><button className={styles.editBtn} onClick={() => handleEditOffer(item)}>Edit</button><button className={styles.deleteBtn} onClick={() => handleDeleteOffer(item.id)}>Delete</button></div></td></tr>))}</tbody>
+          <tbody>{offerWorkspaces.map(item => (<tr key={item.id}><td>{item.area}</td><td>{item.building}</td>
+<td>
+
+  {(() => {
+
+    const matchedWorkspace =
+      workspaces.find((w) => {
+
+        const workspaceName =
+          (
+            w.workspacename ||
+            w.name ||
+            w.title ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+
+        const offerType =
+          (
+            item.type ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+
+        return (
+          workspaceName ===
+          offerType
+        );
+      });
+
+    return (
+
+      <div className={styles.workspaceInfo}>
+
+        <strong className={styles.workspaceTitle}>
+          {item.type}
+        </strong>
+
+        <small className={styles.workspaceLocation}>
+
+          {
+            matchedWorkspace?.city ||
+            item.area ||
+            "Hyderabad"
+          }
+
+          {" | "}
+
+          {
+            matchedWorkspace?.location ||
+            `${item.building} Street 5`
+          }
+
+          {" | "}
+
+          {item.type}
+
+        </small>
+
+      </div>
+
+    );
+
+  })()}
+
+</td>
+<td>₹{item.original_price}</td><td>₹{item.offer_price}</td><td>{item.is_approved ? <span className={styles.approvedBadge}>Approved</span> : <span className={styles.pendingBadge}>Pending</span>}</td><td><div className={styles.actionBtns}><button className={styles.editBtn} onClick={() => handleEditOffer(item)}>Edit</button><button className={styles.deleteBtn} onClick={() => handleDeleteOffer(item.id)}>Delete</button></div></td></tr>))}</tbody>
         </table>
       </div>
     </div>
   );
+
+
+
+  const renderOfferCoupons =
+  () => (
+
+  <div className={styles.sectionBody}>
+
+    <div className={styles.formCard}>
+
+      <h3 className={styles.formTitle}>
+        🎟 Offer Coupons
+      </h3>
+
+      <div className={styles.formGrid}>
+
+        <div className={styles.fieldGroup}>
+
+          <label>
+            Select Workspace
+          </label>
+
+          <select
+            value={
+              couponForm.workspace
+            }
+
+            onChange={(e) =>
+              setCouponForm({
+                ...couponForm,
+                workspace:
+                  e.target.value,
+              })
+            }
+          >
+
+            <option value="">
+              Select Workspace
+            </option>
+
+            {offerWorkspaces.map(
+              (ws) => (
+
+            <option
+  key={ws.id}
+  value={ws.id}
+>
+
+  {ws.area}
+
+  {" | "}
+
+  {
+
+
+    ws.building ||
+
+    "No Location"
+  }
+
+  {" | "}
+
+ 
+
+
+
+  {ws.type}
+
+</option>
+              )
+            )}
+
+          </select>
+
+        </div>
+
+        <div className={styles.fieldGroup}>
+
+          <label>
+            Coupon Code
+          </label>
+
+          <input
+            placeholder="CLAIM50"
+
+            value={
+              couponForm.coupon_code
+            }
+
+            onChange={(e) =>
+              setCouponForm({
+                ...couponForm,
+                coupon_code:
+                  e.target.value,
+              })
+            }
+          />
+
+        </div>
+
+        <div className={styles.fieldGroup}>
+
+          <label>
+            Discount %
+          </label>
+
+          <select
+            value={
+              couponForm.discount_percentage
+            }
+
+            onChange={(e) =>
+              setCouponForm({
+                ...couponForm,
+                discount_percentage:
+                  e.target.value,
+              })
+            }
+          >
+
+            <option value="">
+              Select %
+            </option>
+
+            <option value="10">
+              10%
+            </option>
+
+            <option value="25">
+              25%
+            </option>
+
+            <option value="50">
+              50%
+            </option>
+
+            <option value="75">
+              75%
+            </option>
+
+            <option value="100">
+              100%
+            </option>
+
+          </select>
+
+        </div>
+
+        <div className={styles.fieldGroup}>
+
+          <label>
+            Coupon Capacity
+          </label>
+
+          <input
+            type="number"
+
+            placeholder="2"
+
+            value={
+              couponForm.capacity
+            }
+
+            onChange={(e) =>
+              setCouponForm({
+                ...couponForm,
+                capacity:
+                  e.target.value,
+              })
+            }
+          />
+
+        </div>
+
+      </div>
+
+      <button
+        className={styles.submitBtn}
+
+        onClick={
+          handleAddCoupon
+        }
+      >
+
+        Add Coupon
+
+      </button>
+
+    </div>
+
+    <div className={styles.tableWrap}>
+
+      <table className={styles.table}>
+
+        <thead>
+
+          <tr>
+
+            <th>Workspace</th>
+
+            <th>Coupon</th>
+
+            <th>Discount</th>
+
+            <th>Capacity</th>
+
+            <th>Used</th>
+
+            <th>Left</th>
+
+            <th>Status</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {offerCoupons.map(
+            (item) => {
+
+              const left =
+                Number(
+                  item.capacity
+                ) -
+                Number(
+                  item.used_count || 0
+                );
+
+              return (
+
+                <tr key={item.id}>
+
+                  <td>
+
+  {(() => {
+
+    const matchedWorkspace =
+      offerWorkspaces.find(
+        (w) =>
+          w.id ===
+          item.workspace
+      );
+
+    return (
+
+      <div className={styles.workspaceInfo}>
+
+        <strong
+          className={styles.workspaceTitle}
+        >
+          {
+            matchedWorkspace?.type ||
+            item.workspace_name
+          }
+        </strong>
+
+        <small
+          className={styles.workspaceLocation}
+        >
+
+          <span
+            className={styles.cityText}
+          >
+            {
+              matchedWorkspace?.area ||
+              "No City"
+            }
+          </span>
+
+          <span
+            className={styles.separator}
+          >
+            |
+          </span>
+
+          <span
+            className={styles.locationText}
+          >
+            {
+              matchedWorkspace?.location ||
+
+              matchedWorkspace?.building ||
+
+              "No Location"
+            }
+          </span>
+
+          <span
+            className={styles.separator}
+          >
+            |
+          </span>
+
+          {
+            matchedWorkspace?.type ||
+            item.workspace_name
+          }
+
+        </small>
+
+      </div>
+
+    );
+
+  })()}
+
+</td>
+
+                  <td>
+
+                    <span
+                      className={
+                        styles.couponCode
+                      }
+                    >
+
+                      {
+                        item.coupon_code
+                      }
+
+                    </span>
+
+                  </td>
+
+                  <td>
+
+                    {
+                      item.discount_percentage
+                    }%
+
+                  </td>
+
+                  <td>
+                    {item.capacity}
+                  </td>
+
+                  <td>
+                    {
+                      item.used_count || 0
+                    }
+                  </td>
+
+                  <td>
+
+                    {left}
+
+                  </td>
+
+                  <td>
+
+                    {left > 0 ? (
+
+                      <span
+                        className={
+                          styles.activeBadge
+                        }
+                      >
+                        Active
+                      </span>
+
+                    ) : (
+
+                      <span
+                        className={
+                          styles.inactiveBadge
+                        }
+                      >
+                        Expired
+                      </span>
+
+                    )}
+
+                  </td>
+
+                </tr>
+
+              );
+
+            }
+          )}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+);
  const renderManageUsers = () => {
 
   const filteredUsers =
@@ -1125,7 +1718,11 @@ axiosInstance.put(
             <label>Workspace</label>
             <select value={slotForm.workspace_id} onChange={e => setSlotForm({ ...slotForm, workspace_id: e.target.value })}>
               <option value="">Select Workspace</option>
-              {approvedWorkspaces.map(w => (<option key={w.id} value={w.id}>{w.name} — {w.city}</option>))}
+             {approvedWorkspaces.map((w) => (
+  <option key={w.id} value={w.id}>
+    {w.name} • {w.city} • {w.location}
+  </option>
+))}
             </select>
             {approvedWorkspaces.length === 0 && <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>No approved workspaces yet. Workspaces must be approved by admin before creating slots.</small>}
           </div>
@@ -1140,7 +1737,72 @@ axiosInstance.put(
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead><tr><th>Workspace</th><th>Date</th><th>Type</th><th>Time</th><th>Capacity</th><th>Price</th><th>Actions</th></tr></thead>
-          <tbody>{slots.map(s => (<tr key={s.id}><td><strong>{s.workspace_name}</strong></td><td>{s.date}</td><td>{s.slot_type === "hour" ? "Hourly" : "Full Day"}</td><td>{s.slot_type === "hour" ? `${s.start_time} – ${s.end_time}` : "All Day"}</td><td>{s.capacity}</td><td className={styles.priceCell}>₹{s.price}</td><td><button onClick={() => handleEditSlot(s)} className={styles.editBtn}>Edit</button><button onClick={() => deleteSlot(s.id)} className={styles.deleteBtn}>Delete</button></td></tr>))}</tbody>
+          <tbody>
+  {slots.map((s) => (
+    <tr key={s.id}>
+ <td>
+  <strong>
+    {
+      workspaces.find(
+        (w) =>
+          w.name?.trim() ===
+          s.workspace_name?.trim()
+      )?.city || "No City"
+    }
+
+    {" | "}
+
+    {
+      workspaces.find(
+        (w) =>
+          w.name?.trim() ===
+          s.workspace_name?.trim()
+      )?.location || "No Location"
+    }
+
+    {" | "}
+
+    {s.workspace_name}
+  </strong>
+</td>
+      <td>{s.date}</td>
+
+      <td>
+        {s.slot_type === "hour"
+          ? "Hourly"
+          : "Full Day"}
+      </td>
+
+      <td>
+        {s.slot_type === "hour"
+          ? `${s.start_time} – ${s.end_time}`
+          : "All Day"}
+      </td>
+
+      <td>{s.capacity}</td>
+
+      <td className={styles.priceCell}>
+        ₹{s.price}
+      </td>
+
+      <td>
+        <button
+          onClick={() => handleEditSlot(s)}
+          className={styles.editBtn}
+        >
+          Edit
+        </button>
+
+        <button
+          onClick={() => deleteSlot(s.id)}
+          className={styles.deleteBtn}
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
         </table>
         {slots.length === 0 && <div className={styles.empty}>No slots yet.</div>}
       </div>
@@ -1156,7 +1818,11 @@ axiosInstance.put(
             <label>Workspace</label>
             <select value={monthlyForm.workspace_id} onChange={e => setMonthlyForm({ ...monthlyForm, workspace_id: e.target.value })} disabled={!!editMonthId}>
               <option value="">Select Workspace</option>
-              {approvedWorkspaces.map(w => (<option key={w.id} value={w.id}>{w.name} — {w.city}</option>))}
+             {approvedWorkspaces.map((w) => (
+  <option key={w.id} value={w.id}>
+    {w.city} •{w.name}•{w.location}
+  </option>
+))}
             </select>
             {approvedWorkspaces.length === 0 && <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>No approved workspaces yet. Workspaces must be approved by admin before creating monthly slots.</small>}
           </div>
@@ -1170,7 +1836,31 @@ axiosInstance.put(
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead><tr><th>Workspace</th><th>City</th><th>Month</th><th>Year</th><th>Capacity</th><th>Booked</th><th>Price</th><th>Actions</th></tr></thead>
-          <tbody>{monthlySlots.map(s => (<tr key={s.id}><td>{s.workspace_name}</td><td>{s.city}</td><td>{MONTH_OPTIONS[Number(s.month) - 1] || s.month}</td><td>{s.year}</td><td>{s.capacity}</td><td>{s.booked}</td><td>₹{s.price}</td><td><button className={styles.editBtn} onClick={() => handleEditMonth(s)}>Edit</button><button className={styles.deleteBtn} onClick={() => deleteMonthlySlot(s.id)}>Delete</button></td></tr>))}</tbody>
+          <tbody>{monthlySlots.map(s => (<tr key={s.id}><td>
+  <strong>
+    {
+      workspaces.find(
+        (w) =>
+          w.name?.trim() ===
+          s.workspace_name?.trim()
+      )?.city || "No City"
+    }
+
+    {" | "}
+
+    {
+      workspaces.find(
+        (w) =>
+          w.name?.trim() ===
+          s.workspace_name?.trim()
+      )?.location || "No Location"
+    }
+
+    {" | "}
+
+    {s.workspace_name}
+  </strong>
+</td><td>{s.city}</td><td>{MONTH_OPTIONS[Number(s.month) - 1] || s.month}</td><td>{s.year}</td><td>{s.capacity}</td><td>{s.booked}</td><td>₹{s.price}</td><td><button className={styles.editBtn} onClick={() => handleEditMonth(s)}>Edit</button><button className={styles.deleteBtn} onClick={() => deleteMonthlySlot(s.id)}>Delete</button></td></tr>))}</tbody>
         </table>
         {monthlySlots.length === 0 && <div className={styles.empty}>No monthly slots yet.</div>}
       </div>
@@ -1190,7 +1880,30 @@ axiosInstance.put(
         {loadingBookings ? <div className={styles.empty}>Loading bookings…</div> : mergedBookings.length === 0 ? <div className={styles.empty}><div>📋</div><p>No bookings yet</p></div> : (
           <table className={styles.table}>
             <thead><tr><th>Workspace</th><th>Customer</th><th>City</th><th>Date</th><th>Slot</th><th>Additional Amenities</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody>{mergedBookings.map(item => { const isConfirmed = item.status === "confirmed"; const isCancelled = item.status === "cancelled"; const isPulsing = animatingId === item.id; return (<tr key={item.id} className={isPulsing ? styles.rowPulse : ""}><td><div className={styles.bookingWorkspace} onClick={() => openBookingModal(item)}><img src={item.image} alt={item.workspace} className={styles.bookingThumb} /><span className={styles.bookingWorkspaceTitle}>{item.workspace}</span></div></td><td>{item.user}</td><td>{item.city}</td><td>{item.date}</td><td><div><strong>{item.slot_type}</strong><br /><small>{item.slot_time}</small></div></td><td>
+            <tbody>{mergedBookings.map(item => { const isConfirmed = item.status === "confirmed"; const isCancelled = item.status === "cancelled"; const isPulsing = animatingId === item.id; return (<tr key={item.id} className={isPulsing ? styles.rowPulse : ""}><td><div className={styles.bookingWorkspace} onClick={() => openBookingModal(item)}><img src={item.image} alt={item.workspace} className={styles.bookingThumb} /><span className={styles.bookingWorkspaceTitle}>{item.workspace}</span></div></td><td>{item.user}</td>
+            <span >
+  {
+    workspaces.find(
+      (w) =>
+        w.name?.trim() ===
+        item.workspace?.trim()
+    )?.city || "No City"
+  }
+
+  {" | "}
+
+  {
+    workspaces.find(
+      (w) =>
+        w.name?.trim() ===
+        item.workspace?.trim()
+    )?.location || "No Location"
+  }
+
+  {" | "}
+
+  {item.workspace}
+</span><td>{item.date}</td><td><div><strong>{item.slot_type}</strong><br /><small>{item.slot_time}</small></div></td><td>
               {Array.isArray(item.amenities) && item.amenities.length > 0
                 ? <div className={styles.bookingAmenities}>{item.amenities.map((a, i) => (<div key={i} className={styles.bookingAmenityItem}><span>☕</span><div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div></div>))}</div>
                 : <span className={styles.noAmenities}>No Amenities</span>}
@@ -1256,16 +1969,352 @@ axiosInstance.put(
   );
 
   const renderOfferLeads = () => (
-    <div className={styles.sectionBody}>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead><tr><th>Workspace</th><th>Name</th><th>Phone</th><th>Email</th><th>Location</th><th>Team Size</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>{offerLeads.map(item => (<tr key={item.id}><td><div className={styles.workspaceInfo}><strong>{item.workspace_type}</strong><small>{item.offer_workspace}</small></div></td><td><strong>{item.name}</strong></td><td>{item.phone}</td><td>{item.email}</td><td><span className={styles.statusPill}>{item.preferred_location}</span></td><td>{item.team_size}</td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateOfferLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="New">New</option><option value="Contacted">Contacted</option><option value="Interested">Interested</option><option value="Converted">Converted</option></select></td></tr>))}</tbody>
-        </table>
-        {offerLeads.length === 0 && <div className={styles.empty}>No Offer Leads Yet</div>}
-      </div>
-    </div>
-  );
+  <div className={styles.sectionBody}>
+   <div className={styles.tableWrap}>
+
+  <table className={styles.table}>
+
+    <thead>
+
+      <tr>
+
+        <th>Workspace</th>
+
+        <th>Name</th>
+
+        <th>Phone</th>
+
+        <th>Email</th>
+
+        <th>Preferred Location</th>
+
+        <th>Team Size</th>
+
+        <th>Price Details</th>
+
+        <th>Coupon</th>
+
+        <th>Discount</th>
+
+        <th>Final Price</th>
+
+        <th>Status</th>
+
+        <th>Action</th>
+
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      {offerLeads.map((item) => {
+
+        const matchedWorkspace =
+          offerWorkspaces.find(
+            (w) =>
+
+              (
+                w.type || ""
+              )
+                .trim()
+                .toLowerCase()
+
+              ===
+
+              (
+                item.workspace_type || ""
+              )
+                .trim()
+                .toLowerCase()
+          );
+
+        const matchedCoupon =
+          offerCoupons.find(
+            (c) =>
+
+              (
+                c.coupon_code || ""
+              )
+                .trim()
+                .toLowerCase()
+
+              ===
+
+              (
+                item.coupon_code || ""
+              )
+                .trim()
+                .toLowerCase()
+          );
+
+        const remainingCoupons =
+
+          Number(
+            matchedCoupon?.capacity || 0
+          )
+
+          -
+
+          Number(
+            matchedCoupon?.used_count || 0
+          );
+
+        return (
+
+          <tr key={item.id}>
+
+            <td>
+
+              <div className={styles.workspaceInfo}>
+
+                <strong
+                  className={
+                    styles.workspaceTitle
+                  }
+                >
+
+                  {
+                    matchedWorkspace?.type ||
+
+                    item.workspace_type ||
+
+                    "Workspace"
+                  }
+
+                </strong>
+
+                <small
+                  className={
+                    styles.workspaceLocation
+                  }
+                >
+
+                  <span
+                    className={
+                      styles.cityText
+                    }
+                  >
+
+                    {
+                      matchedWorkspace?.area ||
+
+                      item.preferred_location ||
+
+                      "Hyderabad"
+                    }
+
+                  </span>
+
+                  <span
+                    className={
+                      styles.separator
+                    }
+                  >
+                    |
+                  </span>
+
+                  <span
+                    className={
+                      styles.locationText
+                    }
+                  >
+
+                    {
+                      matchedWorkspace?.building
+
+                      
+                    }
+
+                  </span>
+
+                  <span
+                    className={
+                      styles.separator
+                    }
+                  >
+                    |
+                  </span>
+
+                  {
+                    matchedWorkspace?.type ||
+
+                    item.workspace_type
+                  }
+
+                </small>
+
+              </div>
+
+            </td>
+
+            <td>
+              <strong>
+                {item.name}
+              </strong>
+            </td>
+
+            <td>
+              {item.phone}
+            </td>
+
+            <td>
+              {item.email}
+            </td>
+
+            <td>
+
+              <span
+                className={
+                  styles.statusPill
+                }
+              >
+
+                {
+                  item.preferred_location
+                }
+
+              </span>
+
+            </td>
+
+            <td>
+              {item.team_size}
+            </td>
+
+            <td>
+
+              <div
+                className={
+                  styles.priceInfo
+                }
+              >
+
+                <small>
+
+                  Original:
+                  ₹
+
+                  {
+                    item.original_price ||
+
+                    matchedWorkspace?.original_price ||
+
+                    0
+                  }
+
+                </small>
+
+                <strong
+                  className={
+                    styles.finalPrice
+                  }
+                >
+
+                  ₹
+
+                  {
+                    item.final_price ||
+
+                    matchedWorkspace?.offer_price ||
+
+                    0
+                  }
+
+                </strong>
+
+              </div>
+
+            </td>
+
+         <td>
+  {lead.coupon_code || "No Coupon"}
+</td>
+
+<td>
+  {lead.discount_percentage
+    ? `${lead.discount_percentage}%`
+    : "-"}
+</td>
+
+<td>
+  {lead.final_price
+    ? `₹${lead.final_price}`
+    : "-"}
+</td>
+
+            <td>
+
+              <span
+
+                className={
+
+                  item.status ===
+                  "Converted"
+
+                    ? styles.activeBadge
+
+                    : styles.pendingBadge
+                }
+              >
+
+                {item.status}
+
+              </span>
+
+            </td>
+
+            <td>
+
+              <select
+
+                value={item.status}
+
+                onChange={(e) =>
+                  updateOfferLeadStatus(
+                    item.id,
+                    e.target.value
+                  )
+                }
+
+                className={
+                  styles.statusSelect
+                }
+              >
+
+                <option value="New">
+                  New
+                </option>
+
+                <option value="Contacted">
+                  Contacted
+                </option>
+
+                <option value="Interested">
+                  Interested
+                </option>
+
+                <option value="Converted">
+                  Converted
+                </option>
+
+              </select>
+
+            </td>
+
+          </tr>
+
+        );
+
+      })}
+
+    </tbody>
+
+  </table>
+
+</div>
+  </div>
+);
 
   const renderCustomisationLeads = () => (
     <div className={styles.sectionBody}>
@@ -1479,6 +2528,14 @@ axiosInstance.put(
               <div><strong>{companyLeads.length}</strong><span>Leads</span></div>
               <div><strong>{slots.length}</strong><span>Slots</span></div>
             </div>
+            <button
+  className={styles.logoutBtn}
+  onClick={handleLogout}
+>
+  {/* <span className={styles.logoutIcon}>↩</span> */}
+
+  {!sidebarCollapsed && <span>Logout</span>}
+</button>
           </div>
         )}
       </aside>
@@ -1527,6 +2584,11 @@ axiosInstance.put(
   renderManageUsers()}
           {activeSection === "workspaces" && renderWorkspaces()}
           {activeSection === "offerWorkspaces" && renderOfferWorkspaces()}
+          {
+  activeSection ===
+    "offerCoupons" &&
+    renderOfferCoupons()
+}
           {activeSection === "slots" && renderSlots()}
           {activeSection === "monthlySlots" && renderMonthlySlots()}
           {activeSection === "bookings" && renderBookings()}
@@ -1545,18 +2607,31 @@ axiosInstance.put(
               </div>
 
               <div className={styles.amenityFormGrid}>
-                <select
-                  className={`${styles.amenitySelect} ${!amenityForm.workspace ? styles.placeholderSelect : ""}`}
-                  value={amenityForm.workspace}
-                  onChange={(e) => setAmenityForm({ ...amenityForm, workspace: e.target.value })}
-                >
-                  <option value="" disabled hidden>Select Workspace</option>
-                  {approvedWorkspaces.map((ws) => (
-                    <option key={ws.id} value={ws.id}>
-                      {ws.workspacename || ws.name || ws.title || `Workspace ${ws.id}`}
-                    </option>
-                  ))}
-                </select>
+ <select
+  className={`${styles.amenitySelect} ${
+    !amenityForm.workspace
+      ? styles.placeholderSelect
+      : ""
+  }`}
+  value={amenityForm.workspace}
+  onChange={(e) =>
+    setAmenityForm({
+      ...amenityForm,
+      workspace: e.target.value,
+    })
+  }
+>
+  <option value="" disabled hidden>
+    Select Workspace
+  </option>
+
+  {approvedWorkspaces.map((ws) => (
+    <option key={ws.id} value={ws.id}>
+      {ws.city} | {ws.location} |{" "}
+      {ws.workspacename || ws.name || ws.title}
+    </option>
+  ))}
+</select>
                 {approvedWorkspaces.length === 0 && (
                   <small style={{ color: "#f87171", gridColumn: "1 / -1" }}>
                     No approved workspaces yet. Workspaces must be approved by admin before adding amenities.
@@ -1586,7 +2661,31 @@ axiosInstance.put(
                   <tbody>
                     {additionalAmenities.map((item) => (
                       <tr key={item.id}>
-                        <td>{item.workspace_name}</td>
+                        <td>
+  <strong>
+    {
+      workspaces.find(
+        (w) =>
+          w.name?.trim() ===
+          item.workspace_name?.trim()
+      )?.city || "No City"
+    }
+
+    {" | "}
+
+    {
+      workspaces.find(
+        (w) =>
+          w.name?.trim() ===
+          item.workspace_name?.trim()
+      )?.location || "No Location"
+    }
+
+    {" | "}
+
+    {item.workspace_name}
+  </strong>
+</td>
                         <td>{item.title}</td>
                         <td>{item.description}</td>
                         <td>₹{item.price}</td>

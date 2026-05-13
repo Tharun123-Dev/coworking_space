@@ -88,14 +88,8 @@ function AdminBookings() {
   const bookingPriceLabel = useMemo(() => {
     if (!selectedBooking) return "";
 
-    if (selectedBooking.booking_type === "month") {
-      return "Monthly Booking";
-    }
-
-    if ((selectedBooking.slot_type || "").toLowerCase() === "hourly") {
-      return "Hourly Booking";
-    }
-
+    if (selectedBooking.booking_type === "month") return "Monthly Booking";
+    if ((selectedBooking.slot_type || "").toLowerCase() === "hourly") return "Hourly Booking";
     return "Full Day Booking";
   }, [selectedBooking]);
 
@@ -114,10 +108,12 @@ function AdminBookings() {
     return "Per Day";
   };
 
+  const displayPrice = (item) => item?.total_price || item?.price || 0;
+
   return (
     <div className="admin-bookings">
       <div className="admin-bookings-shell">
-        <div className="header">
+        <div className="admin-bookings-header">
           <div className="header-copy">
             <p className="admin-badge">Admin Panel</p>
             <h2>Admin Booking Tracking</h2>
@@ -193,7 +189,7 @@ function AdminBookings() {
         ) : (
           <>
             <div className="table-wrapper">
-              <table>
+              <table className="admin-bookings-table">
                 <thead>
                   <tr>
                     <th>Image</th>
@@ -209,6 +205,7 @@ function AdminBookings() {
                     <th>Status</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {filteredBookings.map((item) => (
                     <tr key={item.id}>
@@ -234,14 +231,31 @@ function AdminBookings() {
                       </td>
 
                       <td>{item.user || "-"}</td>
+
                       <td>
                         <strong className="ws-name">{item.workspace || "-"}</strong>
                       </td>
+
                       <td>
                         <span className="location-chip">📍 {item.location || "-"}</span>
                       </td>
-                      <td>{item.city || "-"}</td>
+
+                     <td>
+  <strong className="ws-name">
+    {item.city || "No City"}
+
+    {" | "}
+
+    {item.location || "No Location"}
+
+    {" | "}
+
+    {item.workspace || "-"}
+  </strong>
+</td>
+
                       <td>{item.date || "-"}</td>
+
                       <td>
                         <div className="duration-chip">
                           <strong>
@@ -254,86 +268,31 @@ function AdminBookings() {
                           </small>
                         </div>
                       </td>
-<td>
 
-{
-
-Array.isArray(item.amenities) &&
-item.amenities.length > 0
-
-?
-
-<div className="booking-amenities">
-
-  {
-
-    item.amenities.map(
-      (a, i) => (
-
-      <div
-        key={i}
-        className="booking-amenity-item"
-      >
-
-        <span>
-          ☕
-        </span>
-
-        <div>
-
-          <strong>
-            {a.title}
-          </strong>
-
-          <small>
-
-            {a.persons}
-            Person
-
-            •
-
-            ₹{a.total}
-
-          </small>
-
-        </div>
-
-      </div>
-
-    ))
-
-  }
-
-</div>
-
-:
-
-<span className="no-amenities">
-
-No Amenities
-
-</span>
-
-}
-
-</td>
-
-<td>
-
-  <span className="price-text">
-
-    ₹{
-      item.total_price ||
-      item.price ||
-      0
-    }
-
-  </span>
-
-</td>
                       <td>
-                        <span className="price-text">₹{item.price || 0}</span>
+                        {Array.isArray(item.amenities) && item.amenities.length > 0 ? (
+                          <div className="booking-amenities">
+                            {item.amenities.map((a, i) => (
+                              <div key={i} className="booking-amenity-item">
+                                <span>☕</span>
+                                <div>
+                                  <strong>{a.title}</strong>
+                                  <small>
+                                    {a.persons} Person • ₹{a.total}
+                                  </small>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="no-amenities">No Amenities</span>
+                        )}
                       </td>
+
+                      <td>
+                        <span className="price-text">₹{displayPrice(item)}</span>
+                      </td>
+
                       <td>
                         <span className={`status ${getStatusClass(item.status)}`}>
                           <span className="status-dot" />
@@ -364,7 +323,7 @@ No Amenities
                   <div className="mobile-card-body">
                     <div className="mobile-card-top">
                       <strong className="ws-name">{item.workspace || "-"}</strong>
-                      <span className="price-text">₹{item.price || 0}</span>
+                      <span className="price-text">₹{displayPrice(item)}</span>
                     </div>
 
                     <span className="location-chip">📍 {item.location || "-"}</span>
@@ -383,42 +342,17 @@ No Amenities
                         </div>
                       ))}
                     </div>
-   {
 
-Array.isArray(item.amenities) &&
-item.amenities.length > 0 && (
+                    {Array.isArray(item.amenities) && item.amenities.length > 0 && (
+                      <div className="mobile-amenities">
+                        {item.amenities.map((a, i) => (
+                          <div key={i} className="mobile-amenity-item">
+                            ☕ {a.title} • {a.persons} Person • ₹{a.total}
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-<div className="mobile-amenities">
-
-  {
-
-    item.amenities.map(
-      (a, i) => (
-
-      <div
-        key={i}
-        className="mobile-amenity-item"
-      >
-
-        ☕ {a.title}
-
-        •
-
-        {a.persons} Person
-
-        •
-
-        ₹{a.total}
-
-      </div>
-
-    ))
-
-  }
-
-</div>
-
-)}
                     <button
                       className="mobile-detail-btn"
                       type="button"
@@ -516,68 +450,30 @@ item.amenities.length > 0 && (
 
                         <div className="workspace-price-row">
                           <div className="workspace-price-block">
-                            <strong>₹{selectedBooking.price || 0}</strong>
+                            <strong>₹{displayPrice(selectedBooking)}</strong>
                             <span>{billingType(selectedBooking)}</span>
                           </div>
                           <span className="duration-tag">{bookingPriceLabel}</span>
                         </div>
-{
 
-Array.isArray(
-  selectedBooking?.amenities
-) &&
+                        {Array.isArray(selectedBooking.amenities) &&
+                          selectedBooking.amenities.length > 0 && (
+                            <div className="modal-amenities">
+                              <h4>Additional Amenities</h4>
+                              {selectedBooking.amenities.map((a, i) => (
+                                <div key={i} className="modal-amenity-item">
+                                  <span>☕</span>
+                                  <div>
+                                    <strong>{a.title}</strong>
+                                    <small>
+                                      {a.persons} Person • ₹{a.total}
+                                    </small>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
 
-selectedBooking.amenities
-.length > 0 && (
-
-<div className="modal-amenities">
-
-  <h4>
-    Additional Amenities
-  </h4>
-
-  {
-
-    selectedBooking.amenities.map(
-      (a, i) => (
-
-      <div
-        key={i}
-        className="modal-amenity-item"
-      >
-
-        <span>
-          ☕
-        </span>
-
-        <div>
-
-          <strong>
-            {a.title}
-          </strong>
-
-          <small>
-
-            {a.persons}
-            Person
-
-            •
-
-            ₹{a.total}
-
-          </small>
-
-        </div>
-
-      </div>
-
-    ))
-
-  }
-
-</div>
-
-)}
                         <div className="workspace-added-strip">
                           Booking tracked in admin panel
                         </div>
@@ -636,7 +532,7 @@ selectedBooking.amenities
                   <div className="workspace-info-grid">
                     <div className="info-card">
                       <span className="info-label">Price</span>
-                      <strong>₹{selectedBooking.price || 0}</strong>
+                      <strong>₹{displayPrice(selectedBooking)}</strong>
                     </div>
 
                     <div className="info-card">
@@ -657,7 +553,7 @@ selectedBooking.amenities
                     <div className="info-card full">
                       <span className="info-label">Summary</span>
                       <p className="pricing-summary">
-                        This workspace booking is priced at ₹{selectedBooking.price || 0} for{" "}
+                        This workspace booking is priced at ₹{displayPrice(selectedBooking)} for{" "}
                         {bookingDurationText(selectedBooking)}. This preview helps admins inspect
                         the same booking card information in a clean and organized format.
                       </p>

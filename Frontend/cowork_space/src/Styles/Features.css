@@ -41,6 +41,7 @@
     radial-gradient(ellipse 55% 45% at 92% 85%, rgba(184,137,42,0.08) 0%, transparent 55%),
     linear-gradient(160deg, #f9f8f5 0%, #d9d8d3 40%, #e8e8e7 70%, #F7F2E8 100%);
     margin-top: -50px;
+    margin-bottom: 50px;
 } 
 
 /* ── Background Orbs ── */

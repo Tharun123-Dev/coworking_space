@@ -1393,3 +1393,81 @@ def delete_additional_amenity(
             status=404
 
         )
+    
+from .models import OfferCoupon
+from .serializers import OfferCouponSerializer
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def owner_offer_coupons(request):
+
+    coupons =OfferCoupon.objects.filter(
+            workspace__owner=request.user
+        ).order_by("-id")
+
+    serializer =OfferCouponSerializer(
+            coupons,
+            many=True
+        )
+
+    return Response(serializer.data)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_offer_coupon(request):
+
+    serializer =OfferCouponSerializer(
+            data=request.data
+        )
+
+    if serializer.is_valid():
+
+        serializer.save()
+
+        return Response(
+            serializer.data
+        )
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
+
+from .models import OfferCoupon
+from .serializers import OfferCouponSerializer
+
+
+@api_view(["GET"])
+def public_offer_coupons(request):
+
+    coupons = OfferCoupon.objects.filter(
+        is_active=True
+    )
+
+    serializer = OfferCouponSerializer(
+        coupons,
+        many=True
+    )
+
+    return Response(serializer.data)
+
+@api_view(["PATCH"])
+def use_offer_coupon(request, pk):
+
+    try:
+        coupon = OfferCoupon.objects.get(id=pk)
+
+        coupon.used_count += 1
+
+        coupon.save()
+
+        return Response({
+            "message": "Coupon updated"
+        })
+
+    except OfferCoupon.DoesNotExist:
+
+        return Response(
+            {"error": "Coupon not found"},
+            status=404
+        )

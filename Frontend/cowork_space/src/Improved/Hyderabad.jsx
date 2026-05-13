@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "./Hyderabad.css";
 import axiosInstance from "../Services/Axios";
+import { useNavigate, useLocation } from "react-router-dom";
 
+
+const workspaceType = location.state?.workspaceType;
 // ── 8 workspace types matching Yuzi Hub ──────────────────────
 const workspaces = [
   {
@@ -81,7 +84,7 @@ function ContactModal({ onClose, preselect }) {
 ];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
+  const navigate = useNavigate();
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -275,6 +278,20 @@ function ContactModal({ onClose, preselect }) {
 
 // ── Main WorkspaceSection ─────────────────────────────────────
 export default function WorkspaceSection() {
+
+
+  const navigate = useNavigate();
+const [selectedType, setSelectedType] = useState("All");
+
+const location = useLocation();
+
+const workspaceType = location.state?.workspaceType;
+
+useEffect(() => {
+  if (workspaceType) {
+    setSelectedType(workspaceType);
+  }
+}, [workspaceType]);
   const [active, setActive] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPreselect, setModalPreselect] = useState("");
@@ -344,12 +361,38 @@ export default function WorkspaceSection() {
                 ))}
               </div>
             </div>
-            <button
-              className="ws-bar-btn"
-              onClick={() => openModal(current.label)}
-            >
-              Contact Now
-            </button>
+          <div
+  style={{
+    display: "flex",
+    gap: "12px",
+    alignItems: "center",
+  }}
+>
+  <button
+    className="ws-bar-btn"
+    onClick={() => openModal(current.label)}
+  >
+    Contact Now
+  </button>
+
+ <button
+  className="ws-bar-btn"
+  onClick={() =>
+    navigate("/Enterprise", {
+      state: {
+        workspaceType: current.label,
+      },
+    })
+  }
+  style={{
+    background: "linear-gradient(135deg, #16a34a, #15803d)",
+    boxShadow: "0 8px 20px rgba(22,163,74,0.35)",
+    transition: "0.3s ease",
+  }}
+>
+  Book Now
+</button>
+</div>
           </div>
         </div>
       </div>

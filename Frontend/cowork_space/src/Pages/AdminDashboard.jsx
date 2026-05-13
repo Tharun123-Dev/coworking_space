@@ -782,7 +782,19 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
 // ─── Admin Dashboard (Main) ───────────────────────────────────────────────────
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const handleLogout = () => {
+  const role = localStorage.getItem("role");
 
+  localStorage.clear();
+
+  if (role === "admin") {
+    window.location.href = "/auth?type=admin";
+  } else if (role === "owner") {
+    window.location.href = "/auth?type=owner";
+  } else {
+    window.location.href = "/auth?type=user";
+  }
+};
   const [owners, setOwners] = useState([]);
   const [workspaces, setWorkspaces] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -1214,6 +1226,18 @@ setOfferLeads(o.data || []);
               <div className={styles.onlineDot} />
             </div>
           )}
+          <div className={styles.logoutWrap}>
+  <button
+    className={styles.logoutBtn}
+    onClick={handleLogout}
+  >
+    <Icon d={IC.logout} size={16} />
+
+    {(sideOpen || mobOpen) && (
+      <span>Logout</span>
+    )}
+  </button>
+</div>
         </div>
       </aside>
 

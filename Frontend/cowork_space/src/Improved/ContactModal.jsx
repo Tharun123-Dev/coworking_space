@@ -14,28 +14,36 @@ const EMPTY_FORM = {
 
 function validate(form) {
   const e = {};
-  if (!form.name.trim())
+
+  if (!form.name.trim()) {
     e.name = "Full name is required.";
-  else if (!/^[a-zA-Z\s'-]{2,60}$/.test(form.name.trim()))
+  } else if (!/^[a-zA-Z\s'-]{2,60}$/.test(form.name.trim())) {
     e.name = "Name must be 2–60 letters only.";
+  }
 
-  if (!form.email.trim())
+  if (!form.email.trim()) {
     e.email = "Email address is required.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
     e.email = "Enter a valid email address.";
+  }
 
-  if (!form.phone.trim())
+  if (!form.phone.trim()) {
     e.phone = "Phone number is required.";
-  else if (!/^[6-9]\d{9}$/.test(form.phone.trim()))
+  } else if (!/^[6-9]\d{9}$/.test(form.phone.trim())) {
     e.phone = "Enter a valid 10-digit Indian mobile number.";
+  }
 
-  if (!form.team_size)
+  if (!form.team_size) {
     e.team_size = "Please select your team size.";
+  }
 
-  if (form.message.trim() && form.message.trim().length < 10)
+  if (form.message.trim() && form.message.trim().length < 10) {
     e.message = "Message should be at least 10 characters.";
-  if (form.message.trim().length > 500)
+  }
+
+  if (form.message.trim().length > 500) {
     e.message = "Message cannot exceed 500 characters.";
+  }
 
   return e;
 }
@@ -46,7 +54,9 @@ function ToastBar({ toasts }) {
     <div className="cm-toast-container">
       {toasts.map((t) => (
         <div key={t.id} className={`cm-toast cm-toast--${t.type}`}>
-          <span className="cm-toast-icon">{t.type === "success" ? "✅" : "❌"}</span>
+          <span className="cm-toast-icon">
+            {t.type === "success" ? "✅" : "❌"}
+          </span>
           <span>{t.message}</span>
         </div>
       ))}
@@ -56,25 +66,26 @@ function ToastBar({ toasts }) {
 
 /* ─── Main Component ──────────────────────────────────────────────────────── */
 const ContactModal = ({ selected, setSelected }) => {
-  const [form, setForm]       = useState(EMPTY_FORM);
-  const [errors, setErrors]   = useState({});
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
-  const [toasts, setToasts]   = useState([]);
-  const toastRef              = React.useRef(0);
+  const [toasts, setToasts] = useState([]);
+  const toastRef = React.useRef(0);
 
-  /* ── Toast helper ── */
   const addToast = (message, type = "success") => {
     const id = ++toastRef.current;
     setToasts((p) => [...p, { id, message, type }]);
-    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 4000);
+    setTimeout(() => {
+      setToasts((p) => p.filter((t) => t.id !== id));
+    }, 4000);
   };
 
-  /* ── Unchanged handlers (original logic kept) ── */
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updated = { ...form, [name]: value };
     setForm(updated);
+
     if (touched[name]) {
       const errs = validate(updated);
       setErrors((prev) => ({ ...prev, [name]: errs[name] || "" }));
@@ -91,9 +102,12 @@ const ContactModal = ({ selected, setSelected }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Touch all fields
-    const allTouched = Object.keys(EMPTY_FORM).reduce((a, k) => ({ ...a, [k]: true }), {});
+    const allTouched = Object.keys(EMPTY_FORM).reduce(
+      (a, k) => ({ ...a, [k]: true }),
+      {}
+    );
     setTouched(allTouched);
+
     const errs = validate(form);
     setErrors(errs);
 
@@ -104,20 +118,101 @@ const ContactModal = ({ selected, setSelected }) => {
 
     try {
       setLoading(true);
+
       await axiosInstance.post("leads/leadss/", {
         ...form,
-        workspace_type:    selected?.type,
+        workspace_type: selected?.type,
         preferred_location: selected?.area,
-        offer_workspace:   selected?.workspace_name || selected?.building,
+        offer_workspace: selected?.workspace_name || selected?.building,
+        coupon_code: selected?.coupon?.coupon_code,
+        discount_percentage: selected?.coupon?.discount_percentage,
+        discount_amount: selected?.coupon?.discountAmount,
+        final_price: selected?.coupon?.finalPrice,
       });
-      addToast("Lead submitted successfully! We'll be in touch soon.", "success");
+
+
+
+      if (selected?.coupon?.id) {
+        await axiosInstance.patch(
+          `workspaces/offer-coupons/${selected.coupon.id}/use/`
+        );
+        selected?.updateCouponState?.(
+  selected.coupon.id
+);
+
+       const claimedData = JSON.parse(
+
+  localStorage.getItem(
+    "claimedCouponUsers"
+  ) || "[]"
+
+);
+
+const alreadyClaimed =
+  claimedData.some(
+    (item) =>
+
+      item.couponId ===
+        selected?.coupon?.id &&
+
+      (
+
+        item.email ===
+          form.email
+            ?.trim()
+            .toLowerCase()
+
+        ||
+
+        item.phone ===
+          form.phone?.trim()
+
+      )
+  );
+
+if (alreadyClaimed) {
+
+  addToast(
+
+    "This email or phone already claimed this coupon",
+
+    "error"
+
+  );
+
+  setLoading(false);
+
+  return;
+
+}
+
+        claimedData.push({
+          couponId: selected?.coupon?.id,
+          email: form.email?.trim().toLowerCase(),
+          phone: form.phone?.trim(),
+        });
+
+        localStorage.setItem(
+          "claimedCouponUsers",
+          JSON.stringify(claimedData)
+        );
+      }
+
+      addToast(
+        "Lead submitted successfully! We'll be in touch soon.",
+        "success"
+      );
+
       setForm(EMPTY_FORM);
       setErrors({});
       setTouched({});
       setSelected(null);
     } catch (error) {
       console.log(error);
-      const msg = error?.response?.data?.message || error?.response?.data?.error || "Error submitting form. Please try again.";
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Error submitting form. Please try again.";
       addToast(msg, "error");
     } finally {
       setLoading(false);
@@ -126,9 +221,14 @@ const ContactModal = ({ selected, setSelected }) => {
 
   if (!selected) return null;
 
-  /* ── Field helpers ── */
   const fc = (name) =>
-    `cm-input${touched[name] && errors[name] ? " cm-input--err" : touched[name] && !errors[name] && form[name] ? " cm-input--ok" : ""}`;
+    `cm-input${
+      touched[name] && errors[name]
+        ? " cm-input--err"
+        : touched[name] && !errors[name] && form[name]
+        ? " cm-input--ok"
+        : ""
+    }`;
 
   const charCount = form.message.trim().length;
 
@@ -136,26 +236,34 @@ const ContactModal = ({ selected, setSelected }) => {
     <div className="cmModalOverlay">
       <ToastBar toasts={toasts} />
 
-      {/* Original decorative elements — untouched */}
       <div className="cmBackgroundGlow cmGlowOne" />
       <div className="cmBackgroundGlow cmGlowTwo" />
       <div className="cmBackgroundGrid" />
 
       <Reveal>
-        <button className="cmBackButton" onClick={() => setSelected(null)}>
+        <button
+          className="cmBackButton"
+          type="button"
+          onClick={() => setSelected(null)}
+        >
           <span>←</span> Back
         </button>
       </Reveal>
 
       <div className="cmModalShell">
-
-        {/* ── LEFT INFO PANEL ── */}
         <div className="cmInfoPanel">
-          <Reveal><p className="cmMiniTag">Contact</p></Reveal>
-          <Reveal><h2 className="cmTitle">Get in Touch</h2></Reveal>
+          <Reveal>
+            <p className="cmMiniTag">Contact</p>
+          </Reveal>
+
+          <Reveal>
+            <h2 className="cmTitle">Get in Touch</h2>
+          </Reveal>
+
           <Reveal>
             <p className="cmDescription">
-              Reach out to us to explore workspace options tailored for your business and team size.
+              Reach out to us to explore workspace options tailored for your
+              business and team size.
             </p>
           </Reveal>
 
@@ -166,12 +274,14 @@ const ContactModal = ({ selected, setSelected }) => {
                 <p>{selected?.area}</p>
               </div>
             </Reveal>
+
             <Reveal>
               <div className="cmInfoItem">
                 <span className="cmInfoIcon">🏢</span>
                 <p>{selected?.workspace_name || selected?.building}</p>
               </div>
             </Reveal>
+
             <Reveal>
               <div className="cmInfoItem">
                 <span className="cmInfoIcon">💺</span>
@@ -188,58 +298,104 @@ const ContactModal = ({ selected, setSelected }) => {
             </div>
           </Reveal>
 
-          {/* Progress indicator */}
           <Reveal>
             <div className="cm-progress">
               <div className="cm-progress-step cm-progress-step--done">
-                <span>1</span><p>Choose Workspace</p>
+                <span>1</span>
+                <p>Choose Workspace</p>
               </div>
+
               <div className="cm-progress-line cm-progress-line--done" />
+
               <div className="cm-progress-step cm-progress-step--active">
-                <span>2</span><p>Your Details</p>
+                <span>2</span>
+                <p>Your Details</p>
               </div>
+
               <div className="cm-progress-line" />
+
               <div className="cm-progress-step">
-                <span>3</span><p>Confirmed</p>
+                <span>3</span>
+                <p>Confirmed</p>
               </div>
             </div>
           </Reveal>
         </div>
 
-        {/* ── RIGHT FORM PANEL ── */}
         <div className="cmFormPanel">
           <Reveal>
             <h3 className="cmFormTitle">Send a Message</h3>
-            <p className="cm-form-sub">Fields marked <span className="cm-req-star">*</span> are required</p>
+            <p className="cm-form-sub">
+              Fields marked <span className="cm-req-star">*</span> are required
+            </p>
           </Reveal>
 
-          <form className="cmForm" onSubmit={handleSubmit} noValidate>
+          <div className="coupon-summary-box">
+            <div className="coupon-summary-row">
+              <span>Original Price</span>
+              <strong className="old-price">
+                ₹{selected?.coupon?.originalPrice || selected?.original_price}
+              </strong>
+            </div>
 
-            {/* Read-only row */}
+            <div className="coupon-summary-row">
+              <span>Discount</span>
+              <strong className="green-text">
+                {selected?.coupon?.discount_percentage || 0}% OFF
+              </strong>
+            </div>
+
+            <div className="coupon-summary-row">
+              <span>Final Price</span>
+              <strong className="final-price-text">
+                ₹{selected?.coupon?.finalPrice || selected?.offer_price}
+              </strong>
+            </div>
+
+            {selected?.coupon && (
+              <div className="coupon-code-box">
+                🎟 Coupon: <strong>{selected?.coupon?.coupon_code}</strong>
+              </div>
+            )}
+          </div>
+
+          <form className="cmForm" onSubmit={handleSubmit} noValidate>
             <div className="cm-readonly-row">
               <div className="cmFieldGroup">
                 <label>Preferred Location</label>
                 <Reveal>
                   <div className="cm-readonly-field">
                     <span>📍</span>
-                    <input type="text" value={selected?.area || ""} readOnly tabIndex={-1} />
+                    <input
+                      type="text"
+                      value={selected?.area || ""}
+                      readOnly
+                      tabIndex={-1}
+                    />
                   </div>
                 </Reveal>
               </div>
+
               <div className="cmFieldGroup">
                 <label>Workspace</label>
                 <Reveal>
                   <div className="cm-readonly-field">
                     <span>💺</span>
-                    <input type="text" value={selected?.type || ""} readOnly tabIndex={-1} />
+                    <input
+                      type="text"
+                      value={selected?.type || ""}
+                      readOnly
+                      tabIndex={-1}
+                    />
                   </div>
                 </Reveal>
               </div>
             </div>
 
-            {/* Name */}
             <div className="cmFieldGroup">
-              <label>Name <span className="cm-req-star">*</span></label>
+              <label>
+                Name <span className="cm-req-star">*</span>
+              </label>
               <Reveal>
                 <div className="cm-field-wrap">
                   <input
@@ -253,15 +409,20 @@ const ContactModal = ({ selected, setSelected }) => {
                     maxLength={60}
                     autoComplete="name"
                   />
-                  {touched.name && errors.name  && <span className="cm-err">⚠ {errors.name}</span>}
-                  {touched.name && !errors.name && form.name.trim() && <span className="cm-ok">✓ Looks good</span>}
+                  {touched.name && errors.name && (
+                    <span className="cm-err">⚠ {errors.name}</span>
+                  )}
+                  {touched.name && !errors.name && form.name.trim() && (
+                    <span className="cm-ok">✓ Looks good</span>
+                  )}
                 </div>
               </Reveal>
             </div>
 
-            {/* Email */}
             <div className="cmFieldGroup">
-              <label>Email <span className="cm-req-star">*</span></label>
+              <label>
+                Email <span className="cm-req-star">*</span>
+              </label>
               <Reveal>
                 <div className="cm-field-wrap">
                   <input
@@ -275,15 +436,20 @@ const ContactModal = ({ selected, setSelected }) => {
                     maxLength={100}
                     autoComplete="email"
                   />
-                  {touched.email && errors.email  && <span className="cm-err">⚠ {errors.email}</span>}
-                  {touched.email && !errors.email && form.email.trim() && <span className="cm-ok">✓ Valid email</span>}
+                  {touched.email && errors.email && (
+                    <span className="cm-err">⚠ {errors.email}</span>
+                  )}
+                  {touched.email && !errors.email && form.email.trim() && (
+                    <span className="cm-ok">✓ Valid email</span>
+                  )}
                 </div>
               </Reveal>
             </div>
 
-            {/* Phone */}
             <div className="cmFieldGroup">
-              <label>Phone <span className="cm-req-star">*</span></label>
+              <label>
+                Phone <span className="cm-req-star">*</span>
+              </label>
               <Reveal>
                 <div className="cm-field-wrap">
                   <input
@@ -300,15 +466,20 @@ const ContactModal = ({ selected, setSelected }) => {
                     inputMode="numeric"
                     autoComplete="tel"
                   />
-                  {touched.phone && errors.phone  && <span className="cm-err">⚠ {errors.phone}</span>}
-                  {touched.phone && !errors.phone && form.phone.trim() && <span className="cm-ok">✓ Valid number</span>}
+                  {touched.phone && errors.phone && (
+                    <span className="cm-err">⚠ {errors.phone}</span>
+                  )}
+                  {touched.phone && !errors.phone && form.phone.trim() && (
+                    <span className="cm-ok">✓ Valid number</span>
+                  )}
                 </div>
               </Reveal>
             </div>
 
-            {/* Team Size */}
             <div className="cmFieldGroup">
-              <label>Team Size <span className="cm-req-star">*</span></label>
+              <label>
+                Team Size <span className="cm-req-star">*</span>
+              </label>
               <Reveal>
                 <div className="cm-field-wrap">
                   <select
@@ -324,15 +495,20 @@ const ContactModal = ({ selected, setSelected }) => {
                     <option>6-10</option>
                     <option>10+</option>
                   </select>
-                  {touched.team_size && errors.team_size  && <span className="cm-err">⚠ {errors.team_size}</span>}
-                  {touched.team_size && !errors.team_size && form.team_size && <span className="cm-ok">✓ Selected</span>}
+                  {touched.team_size && errors.team_size && (
+                    <span className="cm-err">⚠ {errors.team_size}</span>
+                  )}
+                  {touched.team_size && !errors.team_size && form.team_size && (
+                    <span className="cm-ok">✓ Selected</span>
+                  )}
                 </div>
               </Reveal>
             </div>
 
-            {/* Message */}
             <div className="cmFieldGroup cmFieldFull">
-              <label>Message <span className="cm-optional">(optional)</span></label>
+              <label>
+                Message <span className="cm-optional">(optional)</span>
+              </label>
               <Reveal>
                 <div className="cm-field-wrap">
                   <textarea
@@ -341,31 +517,53 @@ const ContactModal = ({ selected, setSelected }) => {
                     value={form.message}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`cm-input cm-textarea${touched.message && errors.message ? " cm-input--err" : touched.message && !errors.message && form.message.trim() ? " cm-input--ok" : ""}`}
+                    className={`cm-input cm-textarea${
+                      touched.message && errors.message
+                        ? " cm-input--err"
+                        : touched.message &&
+                          !errors.message &&
+                          form.message.trim()
+                        ? " cm-input--ok"
+                        : ""
+                    }`}
                     maxLength={500}
                   />
                   <div className="cm-msg-meta">
-                    {touched.message && errors.message
-                      ? <span className="cm-err">⚠ {errors.message}</span>
-                      : touched.message && !errors.message && form.message.trim()
-                        ? <span className="cm-ok">✓ Great detail</span>
-                        : <span />
-                    }
-                    <span className={`cm-char-count${charCount > 450 ? " cm-char-warn" : ""}`}>{charCount}/500</span>
+                    {touched.message && errors.message ? (
+                      <span className="cm-err">⚠ {errors.message}</span>
+                    ) : touched.message && !errors.message && form.message.trim() ? (
+                      <span className="cm-ok">✓ Great detail</span>
+                    ) : (
+                      <span />
+                    )}
+
+                    <span
+                      className={`cm-char-count${
+                        charCount > 450 ? " cm-char-warn" : ""
+                      }`}
+                    >
+                      {charCount}/500
+                    </span>
                   </div>
                 </div>
               </Reveal>
             </div>
 
             <Reveal>
-              <button type="submit" className="cmSubmitButton" disabled={loading}>
-                {loading
-                  ? <><span className="cm-spinner" /> Submitting…</>
-                  : "Submit Enquiry →"
-                }
+              <button
+                type="submit"
+                className="cmSubmitButton"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="cm-spinner" /> Submitting…
+                  </>
+                ) : (
+                  "Submit Enquiry →"
+                )}
               </button>
             </Reveal>
-
           </form>
         </div>
       </div>

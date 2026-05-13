@@ -25,7 +25,7 @@ function HomeLayout() {
       <Home />
       <Hyderabad/>
          <Feature />
-      <Compaines/>
+      {/* <Compaines/> */}
 
       {/* <HydCards/> */}
    

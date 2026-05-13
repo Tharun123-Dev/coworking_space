@@ -16,7 +16,6 @@ from .models import BusinessEnterpriseLead,SupportTicket
 from bookings.models import Booking
 from datetime import datetime
 from workspaces.models import ActivityLog
-from workspaces.models import OfferWorkspace
 @api_view(["POST"])
 def createe_lead(request):
 
@@ -49,13 +48,31 @@ def createe_lead(request):
         offer_workspace=data.get(
             "offer_workspace"
         ),
+
+        coupon_code=data.get(
+            "coupon_code"
+        ),
+
+        discount_percentage=data.get(
+            "discount_percentage"
+        ),
+
+        discount_amount=data.get(
+            "discount_amount"
+        ),
+
+        final_price=data.get(
+            "final_price"
+        ),
+
     )
 
     return Response({
+
         "message":
         "Lead created successfully"
-    })
 
+    })
 @api_view(['POST'])
 def create_lead(request):
     try:
@@ -1035,18 +1052,34 @@ def create_modern_lead(request):
         "message":
         "Lead saved successfully"
     })
+
+
+
+
+from rest_framework.response import Response
+from rest_framework.decorators import (
+    api_view,
+    permission_classes
+)
+from rest_framework.permissions import (
+    IsAuthenticated
+)
+
+from workspaces.models import (
+    OfferWorkspace,
+    OfferCoupon
+)
+
+from .models import Leadss
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def owner_offer_leads(request):
 
-    owner_location = (
-        request.user.profile.location
-    )
-
     leads = Leadss.objects.filter(
-        preferred_location=
-        owner_location
-    ).order_by("-id")
+        preferred_location__iexact=request.user.profile.location
+    ).order_by("-created_at")
 
     data = []
 
@@ -1058,25 +1091,38 @@ def owner_offer_leads(request):
 
             "name": l.name,
 
-            "phone": l.phone,
-
             "email": l.email,
 
-            "team_size":
-                l.team_size,
+            "phone": l.phone,
 
-            "offer_workspace":
-                l.offer_workspace,
+            "workspace_type": l.workspace_type,
 
-            "preferred_location":
-                l.preferred_location,
+            "preferred_location": l.preferred_location,
 
-            "status":
-                l.status,
+            "team_size": l.team_size,
+
+            "message": l.message,
+
+            "offer_workspace": l.offer_workspace,
+
+            # ✅ Coupon Details
+            "coupon_code": l.coupon_code,
+
+            "discount_percentage": l.discount_percentage,
+
+            "discount_amount": l.discount_amount,
+
+            "final_price": l.final_price,
+
+            "status": l.status,
+
+            "created_at": l.created_at,
+
         })
 
     return Response(data)
 @api_view(["PUT"])
+
 @permission_classes([IsAuthenticated])
 def update_offer_lead_status(
     request,

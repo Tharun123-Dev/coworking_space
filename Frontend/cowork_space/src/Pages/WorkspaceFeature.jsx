@@ -13,12 +13,7 @@ const PHRASES = [
 ];
 
 const FEATURES = [
-  {
-    icon: "🎨",
-    bg: "bgPurple",
-    title: "Custom Interior Design",
-    sub: "Craft your office aesthetic — from furniture to flooring",
-  },
+
   {
     icon: "🏷️",
     bg: "bgBlue",

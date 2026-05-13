@@ -322,6 +322,40 @@ class AdditionalAmenity(models.Model):
             f"{self.title}"
 
         )
+    
+
+class OfferCoupon(models.Model):
+
+    workspace = models.ForeignKey(
+        OfferWorkspace,
+        on_delete=models.CASCADE,
+        related_name="coupons"
+    )
+
+    coupon_code = models.CharField(
+        max_length=100
+    )
+
+    discount_percentage = models.IntegerField()
+
+    capacity = models.IntegerField(
+        default=1
+    )
+
+    used_count = models.IntegerField(
+        default=0
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.coupon_code
 
 
 

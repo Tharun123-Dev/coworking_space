@@ -42,6 +42,7 @@ import AdminDashboards from "./Improved/AdminHyd";
 import AdminAmenities from "./Pages/AdminAmenities";
 import ForgotPassword from "./Pages/ForgotPassword";
 import AdminOfferLeads from "./Improved/AdminOfferLeads";
+import GetAQuote from "./Improved/GetQuote";
 // import SlotBookingPage from "./Pages/Slotbookingpage";
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
     <Route path="/special-contact/:id" element={<SpecialContact />} />
     <Route path="/speciall-contact/:id" element={<CompanyContact />} />
     <Route path="/business-enterprise/:name" element={<BusinessEnterpriseContact />} />
+        <Route path="/getquote" element={<GetAQuote/>} />
      {/* <Route path="/slot-booking" element={<SlotBookingPage/>} /> */}
   </Route>
 
@@ -104,6 +106,7 @@ function App() {
     <Route path="/company-leads" element={<CompanyOwnerleads />} />
     <Route path="/recent-activity" element={<RecentActivity />} />
     <Route path="/amenities" element={<AdminAmenities/>} />
+    
     
   </Route>
   

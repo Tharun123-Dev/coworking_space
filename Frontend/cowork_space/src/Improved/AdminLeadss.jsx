@@ -383,9 +383,31 @@ function AdminOfferWorkspace() {
                         </div>
                       </td>
 
-                      <td data-label="Location">
-                        <span className={styles.locationTag}>📍 {item.area || "—"}</span>
-                      </td>
+                     <td data-label="Type">
+  <div className={styles.workspaceInfo}>
+    <span className={styles.cityText}>
+      {item.area || "No City"}
+    </span>
+
+    <span className={styles.separator}>
+      |
+    </span>
+
+ <span className={styles.locationText}>
+  {item.workspace_location ||
+    item.location ||
+    "Hitech City Street 1"}
+</span>
+
+    <span className={styles.separator}>
+      |
+    </span>
+
+    <span className={styles.typePill}>
+      {item.type || "—"}
+    </span>
+  </div>
+</td>
 
                       <td data-label="Building">
                         <strong className={styles.buildingName}>{item.building || "—"}</strong>

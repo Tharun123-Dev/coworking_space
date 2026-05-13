@@ -288,7 +288,43 @@ function AdminOfferLeads() {
                     {(currentPage - 1) * PAGE_SIZE + index + 1}
                   </td>
                   <td>{item.owner_name || "—"}</td>
-                  <td>{item.workspace_type || "—"}</td>
+                  <td>
+
+  <div className={styles.workspaceInfo}>
+
+    <strong className={styles.workspaceTitle}>
+      {item.workspace_type || "—"}
+    </strong>
+
+    <small className={styles.workspaceLocation}>
+
+      <span className={styles.cityText}>
+        Hyderabad
+      </span>
+
+      <span className={styles.separator}>
+        |
+      </span>
+
+      <span className={styles.locationText}>
+        {
+          item.preferred_location
+            ? `${item.preferred_location} Street 5`
+            : "No Location"
+        }
+      </span>
+
+      <span className={styles.separator}>
+        |
+      </span>
+
+      {item.workspace_type}
+
+    </small>
+
+  </div>
+
+</td>
                   <td>{item.preferred_location || "—"}</td>
                   <td className={styles.nameCell}>{item.name || "—"}</td>
                   <td>

@@ -3,7 +3,22 @@ from .models import Workspace, WorkspaceCategory
 
 from rest_framework import serializers
 from .models import Workspace, Amenity
+from .models import OfferCoupon
 
+class OfferCouponSerializer(
+    serializers.ModelSerializer
+):
+
+    workspace_name =serializers.CharField(
+            source="workspace.type",
+            read_only=True
+        )
+
+    class Meta:
+
+        model = OfferCoupon
+
+        fields = "__all__"
 class AmenitySerializer(serializers.ModelSerializer):
     icon_display = serializers.SerializerMethodField()
 

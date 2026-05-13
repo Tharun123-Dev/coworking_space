@@ -20,7 +20,29 @@ class Leadss(models.Model):
     name = models.CharField(
         max_length=100
     )
+    coupon_code = models.CharField(
+    max_length=100,
+    blank=True,
+    null=True
+)
 
+    discount_percentage = models.IntegerField(
+    default=0,
+    blank=True,
+    null=True
+)
+
+    discount_amount = models.FloatField(
+    default=0,
+    blank=True,
+    null=True
+)
+
+    final_price = models.FloatField(
+    default=0,
+    blank=True,
+    null=True
+)
     email = models.EmailField()
 
     phone = models.CharField(

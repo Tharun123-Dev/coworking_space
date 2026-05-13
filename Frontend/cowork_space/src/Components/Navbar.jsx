@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import GetAQuote from "../Improved/GetQuote";
 import styles from "../Styles/Navbar.module.css";
 
 const WORKSPACE_TYPES = [
@@ -247,8 +248,8 @@ export default function Navbar() {
     </button>
   </>
 ) : (
-              <button className={styles.getStarted} onClick={() => navigate("/auth")}>
-                Get Started
+              <button className={styles.getStarted} onClick={() => navigate("/getquote")}>
+                Get A Quote
               </button>
             )}
 
