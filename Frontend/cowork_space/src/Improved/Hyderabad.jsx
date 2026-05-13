@@ -375,7 +375,7 @@ useEffect(() => {
     Contact Now
   </button>
 
- <button
+<button
   className="ws-bar-btn"
   onClick={() =>
     navigate("/Enterprise", {
@@ -385,8 +385,12 @@ useEffect(() => {
     })
   }
   style={{
-    background: "linear-gradient(135deg, #16a34a, #15803d)",
-    boxShadow: "0 8px 20px rgba(22,163,74,0.35)",
+    background:
+      "linear-gradient(135deg, #16a34a, #15803d)",
+
+    boxShadow:
+      "0 8px 20px rgba(22,163,74,0.35)",
+
     transition: "0.3s ease",
   }}
 >

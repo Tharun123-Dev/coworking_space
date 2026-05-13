@@ -21,7 +21,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #f6d78b;
+  background: #ab81f5;
   opacity: 0.5;
   top: calc(var(--i) * 5.5%);
   left: calc(var(--i) * 5.2%);

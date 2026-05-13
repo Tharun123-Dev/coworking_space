@@ -383,30 +383,68 @@ function AdminOfferWorkspace() {
                         </div>
                       </td>
 
-                     <td data-label="Type">
+ <td data-label="Workspace">
+
   <div className={styles.workspaceInfo}>
-    <span className={styles.cityText}>
-      {item.area || "No City"}
-    </span>
 
-    <span className={styles.separator}>
-      |
-    </span>
+    <strong className={styles.workspaceTitle}>
 
- <span className={styles.locationText}>
-  {item.workspace_location ||
-    item.location ||
-    "Hitech City Street 1"}
-</span>
+      {item.type ||
+        item.workspace_type ||
+        "Workspace"}
 
-    <span className={styles.separator}>
-      |
-    </span>
+    </strong>
 
-    <span className={styles.typePill}>
-      {item.type || "—"}
-    </span>
+    <small className={styles.workspaceLocation}>
+
+      {/* CITY */}
+
+      <span className={styles.cityText}>
+
+        {item.area ||
+          item.preferred_location ||
+          "Hyderabad"}
+
+      </span>
+
+      <span className={styles.separator}>
+        |
+      </span>
+
+      {/* WORKSPACE LOCATION / BUILDING */}
+
+      <span className={styles.locationText}>
+
+        {item.workspace_location ||
+
+          item.location ||
+
+          item.building ||
+
+          item.offer_workspace ||
+
+          "No Location"}
+
+      </span>
+
+      <span className={styles.separator}>
+        |
+      </span>
+
+      {/* WORKSPACE TYPE */}
+
+      <span className={styles.typePill}>
+
+        {item.type ||
+          item.workspace_type ||
+          "Meeting Room"}
+
+      </span>
+
+    </small>
+
   </div>
+
 </td>
 
                       <td data-label="Building">

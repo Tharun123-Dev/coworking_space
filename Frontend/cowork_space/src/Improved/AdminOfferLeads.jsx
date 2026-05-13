@@ -276,9 +276,13 @@ function AdminOfferLeads() {
                 <th>Phone</th>
                 <th>Email</th>
                 <th>Team Size</th>
+                         <th>Coupon</th>
+<th>Discount</th>
+<th>Final Price</th>
                 <th>Status</th>
                 <th>Update</th>
                 <th>Delete</th>
+       
               </tr>
             </thead>
             <tbody>
@@ -338,6 +342,57 @@ function AdminOfferLeads() {
                     </a>
                   </td>
                   <td className={styles.centerCell}>{item.team_size ?? "—"}</td>
+                  <td>
+
+  <div className={styles.couponBox}>
+
+    <strong className={styles.couponCode}>
+
+      {item.coupon_code || "No Coupon"}
+
+    </strong>
+
+  </div>
+
+</td>
+
+<td>
+
+  <div className={styles.discountInfo}>
+
+    <strong className={styles.discountText}>
+
+      {item.discount_percentage
+        ? `${item.discount_percentage}% OFF`
+        : "-"}
+
+    </strong>
+
+    <small>
+
+      Save ₹
+      {item.discount_amount || 0}
+
+    </small>
+
+  </div>
+
+</td>
+
+<td>
+
+  <div className={styles.finalPriceBox}>
+
+    <strong className={styles.finalPrice}>
+
+      ₹
+      {item.final_price || 0}
+
+    </strong>
+
+  </div>
+
+</td>
                   <td>
                     <span className={`${styles.badge} ${styles[STATUS_COLORS[item.status]]}`}>
                       {item.status}

@@ -13,6 +13,8 @@ function buildMonthMatrix(year, month) {
   return cells;
 }
 
+
+
 const MONTH_NAMES = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
@@ -83,6 +85,22 @@ function HyderabadWorkspaces() {
   const navigate = useNavigate();
   const location = useLocation();
 
+
+  const workspaceType =
+    location.state?.workspaceType;
+
+
+  useEffect(() => {
+
+    if (workspaceType) {
+
+      setSelectedType(
+        workspaceType
+      );
+
+    }
+
+  }, [workspaceType]);
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);

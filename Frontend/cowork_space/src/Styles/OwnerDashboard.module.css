@@ -1355,7 +1355,64 @@
   font-size:12px;
   font-weight:700;
 }
+/* Coupon Column */
+.couponBox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
+.couponCode {
+  background: linear-gradient(135deg, #ff7b00, #ffb347);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-block;
+  width: fit-content;
+  letter-spacing: 0.5px;
+}
+
+.remainingCoupons {
+  font-size: 11px;
+  color: #777;
+  font-weight: 500;
+}
+
+/* Discount Column */
+.discountInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.discountText {
+  color: #0f9d58;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.discountInfo small {
+  color: #666;
+  font-size: 12px;
+}
+
+/* Final Price Column */
+.finalPriceBox {
+  display: flex;
+  align-items: center;
+}
+
+.finalPrice {
+  color: #1a73e8;
+  font-size: 16px;
+  font-weight: 800;
+  background: #eef4ff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #d6e4ff;
+}
 .inactiveBadge{
   background:#fee2e2;
   color:#991b1b;
@@ -1792,6 +1849,543 @@
   display:flex;
   gap:8px;
   flex-wrap:wrap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   OVERVIEW — EXTENDED STAT GRID
+═══════════════════════════════════════════════════════════ */
+
+.overviewWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.overviewStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.clickableStat {
+  cursor: pointer;
+  position: relative;
+}
+
+.clickableStat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.statArrow {
+  margin-left: auto;
+  font-size: 16px;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* Extra stat card color variants */
+.indigo  { border-color: #6366f1; }
+.teal    { border-color: #14b8a6; }
+.purple  { border-color: #a855f7; }
+.cyan    { border-color: #06b6d4; }
+.blue    { border-color: #3b82f6; }
+.orange  { border-color: #f97316; }
+.pink    { border-color: #ec4899; }
+.rose    { border-color: #f43f5e; }
+
+.overviewBottomRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+}
+
+.wsTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.wsTypeChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: #f5f7fb;
+  border: 1px solid #e8ecf2;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.wsTypeChip:hover {
+  background: #ebf3ff;
+  border-color: #4f8cff;
+}
+
+.wsTypeCount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a2235;
+}
+
+.wsTypeName {
+  font-size: 10px;
+  color: #8a96a8;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1.3;
+}
+
+.workspaceTypeSummary {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.workspaceTypeSummary h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a2235;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MANAGE USERS — NEW DESIGN
+═══════════════════════════════════════════════════════════ */
+
+/* Page header */
+.muPageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.muPageTitle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.muTitleIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.muPageTitle h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a2235;
+}
+
+.muPageTitle p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: #8a96a8;
+}
+
+.muAddBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.muAddBtn:hover {
+  background: #2d6ee6;
+  transform: translateY(-1px);
+}
+
+/* Stats row */
+.muStatsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.muStatCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px 20px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+
+.muStatCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.muStatActive { border-color: #6366f1; }
+.muStatGreen  { border-color: #10b981; }
+.muStatRed    { border-color: #ef4444; }
+
+.muStatIcon {
+  font-size: 22px;
+}
+
+.muStatNum {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a2235;
+  line-height: 1;
+}
+
+.muStatLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a96a8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* Form panel */
+.muFormPanel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1.5px solid #dde3ef;
+  animation: slideDown 0.22s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.muFormPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.muFormPanelHeader h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a2235;
+  margin: 0;
+}
+
+.muFormClose {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s;
+}
+
+.muFormClose:hover {
+  background: #e2e8f0;
+}
+
+.muFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+/* Filter bar */
+.muFilterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.muTabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.muTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1.5px solid #dde3ef;
+  border-radius: 999px;
+  background: #fff;
+  color: #4a5568;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.muTab:hover {
+  border-color: #4f8cff;
+  color: #2563eb;
+}
+
+.muTabActive {
+  background: #eff6ff;
+  border-color: #4f8cff;
+  color: #2563eb;
+}
+
+.muTabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.muSearchWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  max-width: 500px;
+  background: #fff;
+  border: 1.5px solid #dde3ef;
+  border-radius: 10px;
+  padding: 0 14px;
+  transition: border-color 0.18s;
+}
+
+.muSearchWrap:focus-within {
+  border-color: #4f8cff;
+  box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.12);
+}
+
+.muSearchIcon {
+  font-size: 14px;
+  flex-shrink: 0;
+  color: #94a3b8;
+}
+
+.muSearchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  font-size: 13.5px;
+  color: #1a2235;
+  background: transparent;
+}
+
+.muSearchInput::placeholder {
+  color: #94a3b8;
+}
+
+.muRecordCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Table cells */
+.muUserCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.muAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.muEmailCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.muEmailIcon {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.muPhoneCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  color: #4a5568;
+}
+
+.muPhoneIcon {
+  margin-right: 4px;
+}
+
+/* Action buttons */
+.muActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.muEditBtn {
+  border: none;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.18s, transform 0.15s;
+}
+
+.muEditBtn:hover {
+  background: #dbeafe;
+  transform: translateY(-1px);
+}
+
+.muActiveBtn {
+  border: none;
+  background: #dcfce7;
+  color: #166534;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.18s;
+}
+
+.muActiveBtn:hover {
+  background: #bbf7d0;
+}
+
+.muInactiveBtn {
+  border: none;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.18s;
+}
+
+.muInactiveBtn:hover {
+  background: #fecaca;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE OVERRIDES
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1280px) {
+  .overviewStatsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .overviewBottomRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .overviewStatsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .muStatsRow {
+    grid-template-columns: 1fr 1fr;
+  }
+  .muFormGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .wsTypeGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .overviewStatsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .overviewBottomRow {
+    grid-template-columns: 1fr;
+  }
+  .muStatsRow {
+    grid-template-columns: 1fr;
+  }
+  .muFormGrid {
+    grid-template-columns: 1fr;
+  }
+  .muFilterBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .muSearchWrap {
+    max-width: 100%;
+    width: 100%;
+  }
+  .muPageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .muAddBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  .wsTypeGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .muActions {
+    flex-direction: column;
+  }
 }
 
 .activeBtn{

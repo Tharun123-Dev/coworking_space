@@ -390,18 +390,41 @@ body {
   font-size: 13px;
   font-weight: 700;
   position: sticky;
-  top: 0;
+  top: -15px;
   background: var(--gq-white);
   z-index: 2;
 }
-
 .gq-clear-sm {
   background: transparent;
   color: var(--gq-gold-dark);
   font-size: 12px;
   font-weight: 700;
+  border: 1px solid var(--gq-gold-dark);
+  border-radius: 30px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
 
+.gq-clear-sm:hover {
+  background: var(--gq-gold-dark);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(212, 160, 23, 0.25);
+  transform: translateY(-1px);
+}
+
+.gq-clear-sm:active {
+  transform: scale(0.96);
+}
+
+.gq-clear-sm:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.2);
+}
 /* LOCATION DROPDOWN TEXT FIX */
 .gq-drop-item {
   display: flex;
@@ -564,6 +587,31 @@ body {
   color: var(--gq-danger);
   font-size: 13px;
   font-weight: 700;
+  border: 1px solid var(--gq-danger);
+  border-radius: 50px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gq-clear-btn:hover {
+  background: var(--gq-danger);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.25);
+}
+
+.gq-clear-btn:active {
+  transform: scale(0.96);
+}
+
+.gq-clear-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.2);
 }
 
 .gq-empty {

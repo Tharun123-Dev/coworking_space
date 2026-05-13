@@ -194,7 +194,7 @@ function Footer() {
           <div className={styles.bottomContainer}>
             <Reveal>
               <p className={styles.copyright}>
-                © 2026 WorkHub Co‑working Spaces Pvt Ltd. All rights reserved. GST: 36ABCDE1234F1Z5
+               © 2026 CoWork Spaces Pvt Ltd. All rights reserved. GST: 36ABCDE1234F1Z5 | Developed by Future Invo Solutions
               </p>
             </Reveal>
 

@@ -125,6 +125,21 @@ function HyderabadWorkspaces() {
 
 ] = useState([]);
 
+
+const workspaceType =
+  location.state?.workspaceType;
+
+useEffect(() => {
+
+  if (workspaceType) {
+
+    setSelectedType(
+      workspaceType
+    );
+
+  }
+
+}, [workspaceType]);
 const [
 
   selectedAmenities,

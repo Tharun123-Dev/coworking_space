@@ -1072,13 +1072,25 @@ from workspaces.models import (
 
 from .models import Leadss
 
-
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def owner_offer_leads(request):
 
+    from accounts.models import Profile
+
+    profile = Profile.objects.filter(
+        user=request.user
+    ).first()
+
+    owner_location = (
+        profile.location
+        if profile
+        else ""
+    )
+
     leads = Leadss.objects.filter(
-        preferred_location__iexact=request.user.profile.location
+        preferred_location__iexact=
+        owner_location
     ).order_by("-created_at")
 
     data = []
@@ -1095,32 +1107,43 @@ def owner_offer_leads(request):
 
             "phone": l.phone,
 
-            "workspace_type": l.workspace_type,
-
-            "preferred_location": l.preferred_location,
-
             "team_size": l.team_size,
 
-            "message": l.message,
+            "workspace_type":
+                l.workspace_type,
 
-            "offer_workspace": l.offer_workspace,
+            "preferred_location":
+                l.preferred_location,
 
-            # ✅ Coupon Details
-            "coupon_code": l.coupon_code,
+            "offer_workspace":
+                l.offer_workspace,
 
-            "discount_percentage": l.discount_percentage,
+            "message":
+                l.message,
 
-            "discount_amount": l.discount_amount,
+            # ✅ COUPON DETAILS
+            "coupon_code":
+                l.coupon_code,
 
-            "final_price": l.final_price,
+            "discount_percentage":
+                l.discount_percentage,
 
-            "status": l.status,
+            "discount_amount":
+                l.discount_amount,
 
-            "created_at": l.created_at,
+            "final_price":
+                l.final_price,
+
+            "status":
+                l.status,
+
+            "created_at":
+                l.created_at,
 
         })
 
     return Response(data)
+
 @api_view(["PUT"])
 
 @permission_classes([IsAuthenticated])
@@ -1148,13 +1171,29 @@ def admin_offer_workspace_leads(
     id
 ):
 
-    workspace = OfferWorkspace.objects.get(
-        id=id
-    )
+    try:
+
+        workspace = OfferWorkspace.objects.get(
+            id=id
+        )
+
+    except OfferWorkspace.DoesNotExist:
+
+        return Response(
+            {
+                "error":
+                "Workspace not found"
+            },
+            status=404
+        )
+
+    # ✅ FILTER LEADS
 
     leads = Leadss.objects.filter(
-        preferred_location=
+
+        preferred_location__iexact=
         workspace.area
+
     ).order_by("-id")
 
     data = []
@@ -1166,18 +1205,22 @@ def admin_offer_workspace_leads(
         owner_name = "-"
 
         profile = Profile.objects.filter(
+
             location__iexact=
             l.preferred_location
+
         ).first()
 
         if profile:
+
             owner_name = (
                 profile.user.username
             )
 
         data.append({
 
-            "id": l.id,
+            "id":
+                l.id,
 
             "owner_name":
                 owner_name,
@@ -1191,17 +1234,37 @@ def admin_offer_workspace_leads(
             "preferred_location":
                 l.preferred_location,
 
-            "name": l.name,
+            "name":
+                l.name,
 
-            "phone": l.phone,
+            "phone":
+                l.phone,
 
-            "email": l.email,
+            "email":
+                l.email,
 
             "team_size":
                 l.team_size,
 
+            # ✅ COUPON DETAILS
+            "coupon_code":
+                l.coupon_code,
+
+            "discount_percentage":
+                l.discount_percentage,
+
+            "discount_amount":
+                l.discount_amount,
+
+            "final_price":
+                l.final_price,
+
             "status":
                 l.status,
+
+            "created_at":
+                l.created_at,
+
         })
 
     return Response(data)
