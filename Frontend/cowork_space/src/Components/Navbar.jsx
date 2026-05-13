@@ -82,18 +82,21 @@ export default function Navbar() {
     closeDrawer();
   };
 
-  const goToType = (typeLabel) => {
-    navigate(`/Enterprise?type=${encodeURIComponent(typeLabel)}`);
-    setWsOpen(false);
-    closeDrawer();
-  };
+ const goToType = (typeLabel) => {
 
-  const goToLocation = (loc) => {
-    navigate(`/Enterprise?location=${encodeURIComponent(loc)}`);
-    setGalOpen(false);
-    setMLocOpen(false);
-    closeDrawer();
-  };
+  navigate("/Enterprise", {
+
+    state: {
+      workspaceType: typeLabel,
+    },
+
+  });
+
+  setWsOpen(false);
+
+  closeDrawer();
+};
+
 
   const handleLogout = () => {
     ["access","refresh","is_admin","username"].forEach((k) => localStorage.removeItem(k));
