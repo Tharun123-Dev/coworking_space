@@ -1410,8 +1410,9 @@ def owner_offer_coupons(request):
             many=True
         )
 
+  
     return Response(serializer.data)
-
+from .models import OfferCoupon
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_offer_coupon(request):
@@ -1469,5 +1470,33 @@ def use_offer_coupon(request, pk):
 
         return Response(
             {"error": "Coupon not found"},
+            status=404
+        )
+    
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_coupon(request, id):
+
+    try:
+
+        coupon = OfferCoupon.objects.get(
+            id=id
+        )
+
+        coupon.delete()
+
+        return Response({
+            "message":
+            "Coupon deleted"
+        })
+
+    except OfferCoupon.DoesNotExist:
+
+        return Response(
+            {
+                "error":
+                "Coupon not found"
+            },
             status=404
         )

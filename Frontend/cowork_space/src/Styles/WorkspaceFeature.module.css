@@ -308,7 +308,7 @@
 @media (max-width: 860px) {
   .wrapper { flex-direction: column; gap: 34px; align-items: stretch; }
   .leftPanel { max-width: 100%; }
-  .formCard { flex: unset; width: 100%; }
+  .formCard { flex: unset; width: 100%; margin-top: -20px;}
   .leftPanel h1 { font-size: 26px; }
   .typedText { min-width: 180px; }
 }
@@ -316,7 +316,7 @@
   .specialPage { padding: 28px 16px 40px; }
   .navbar { padding: 12px 18px; }
   .leftPanel h1 { font-size: 21px; }
-  .formCard { padding: 22px 18px; }
+  .formCard { padding: 22px 18px;margin-top: -20px; }
   .typingLine { font-size: 15px; }
   .brand { font-size: 17px; }
 }

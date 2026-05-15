@@ -3,9 +3,7 @@ import "./Hyderabad.css";
 import axiosInstance from "../Services/Axios";
 import { useNavigate, useLocation } from "react-router-dom";
 
-
-const workspaceType = location.state?.workspaceType;
-// ── 8 workspace types matching Yuzi Hub ──────────────────────
+// ── 8 workspace types ─────────────────────────────────────────
 const workspaces = [
   {
     id: "hot-desk",
@@ -72,19 +70,16 @@ function ContactModal({ onClose, preselect }) {
     phone: "",
     email: "",
     workspace_type: preselect || "",
-     preferred_location: "",
+    preferred_location: "",
     company_size: "",
     notes: "",
   });
-  const locations = [
-  "Hitech City",
-  "Madhapur",
-  "Gachibowli",
-  "Kondapur",
-];
+
+  const locations = ["Hitech City", "Madhapur", "Gachibowli", "Kondapur"];
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const navigate = useNavigate();
+
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -129,8 +124,8 @@ function ContactModal({ onClose, preselect }) {
             <div className="wm-success-icon">✓</div>
             <h3>Request Received!</h3>
             <p>
-              Our team will reach out within <strong>12 hours</strong> with options
-              tailored to your needs.
+              Our team will reach out within <strong>12 hours</strong> with
+              options tailored to your needs.
             </p>
             <div className="wm-success-note">
               📞 Expect a call from +91 6309383826
@@ -233,22 +228,20 @@ function ContactModal({ onClose, preselect }) {
                   </select>
                 </div>
                 <div className="wm-field">
-  <label>Preferred Location</label>
-
-  <select
-    name="preferred_location"
-    value={formData.preferred_location}
-    onChange={handleChange}
-  >
-    <option value="">Select Location</option>
-
-    {locations.map((loc) => (
-      <option key={loc} value={loc}>
-        {loc}
-      </option>
-    ))}
-  </select>
-</div>
+                  <label>Preferred Location</label>
+                  <select
+                    name="preferred_location"
+                    value={formData.preferred_location}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Location</option>
+                    {locations.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="wm-field">
@@ -278,29 +271,25 @@ function ContactModal({ onClose, preselect }) {
 
 // ── Main WorkspaceSection ─────────────────────────────────────
 export default function WorkspaceSection() {
-
-
   const navigate = useNavigate();
-const [selectedType, setSelectedType] = useState("All");
+  const location = useLocation();
+  const workspaceType = location.state?.workspaceType;
 
-const location = useLocation();
-
-const workspaceType = location.state?.workspaceType;
-
-useEffect(() => {
-  if (workspaceType) {
-    setSelectedType(workspaceType);
-  }
-}, [workspaceType]);
+  const [selectedType, setSelectedType] = useState("All");
   const [active, setActive] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPreselect, setModalPreselect] = useState("");
 
   useEffect(() => {
+    if (workspaceType) {
+      setSelectedType(workspaceType);
+    }
+  }, [workspaceType]);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setActive((prev) => (prev + 1) % workspaces.length);
     }, 3500);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -352,7 +341,6 @@ useEffect(() => {
             <div className="ws-bar-left">
               <span className="ws-bar-type">{current.label}</span>
               <span className="ws-bar-tagline">{current.tagline}</span>
-              {/* ── Amenities ── */}
               <div className="ws-amenities">
                 {current.amenities.map((item) => (
                   <span key={item} className="ws-amenity-tag">
@@ -361,42 +349,27 @@ useEffect(() => {
                 ))}
               </div>
             </div>
-          <div
-  style={{
-    display: "flex",
-    gap: "12px",
-    alignItems: "center",
-  }}
->
-  <button
-    className="ws-bar-btn"
-    onClick={() => openModal(current.label)}
-  >
-    Contact Now
-  </button>
 
-<button
-  className="ws-bar-btn"
-  onClick={() =>
-    navigate("/Enterprise", {
-      state: {
-        workspaceType: current.label,
-      },
-    })
-  }
-  style={{
-    background:
-      "linear-gradient(135deg, #16a34a, #15803d)",
+            {/* ── Buttons group — uses CSS class for responsive layout ── */}
+            <div className="ws-bar-buttons">
+              <button
+                className="ws-bar-btn"
+                onClick={() => openModal(current.label)}
+              >
+                Contact Now
+              </button>
 
-    boxShadow:
-      "0 8px 20px rgba(22,163,74,0.35)",
-
-    transition: "0.3s ease",
-  }}
->
-  Book Now
-</button>
-</div>
+              <button
+                className="ws-bar-btn ws-bar-btn--green"
+                onClick={() =>
+                  navigate("/Enterprise", {
+                    state: { workspaceType: current.label },
+                  })
+                }
+              >
+                Book Now
+              </button>
+            </div>
           </div>
         </div>
       </div>

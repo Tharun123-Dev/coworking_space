@@ -198,17 +198,38 @@ const handleApplyCoupon = (coupon) => {
     originalPrice -
     discountAmount;
 
-  setSelectedCoupon({
+setSelectedCoupon({
 
-    ...coupon,
+  ...coupon,
 
-    originalPrice,
+  originalPrice,
 
-    discountAmount,
+  discountAmount,
 
-    finalPrice,
+  finalPrice,
 
-  });
+});
+
+// ✅ AUTO SCROLL DOWN
+
+setTimeout(() => {
+
+  const element = document.querySelector(
+    ".selected-coupon-box"
+  );
+
+  if (element) {
+
+    element.scrollIntoView({
+
+      behavior: "smooth",
+      block: "center",
+
+    });
+
+  }
+
+}, 100);
 
 };
 

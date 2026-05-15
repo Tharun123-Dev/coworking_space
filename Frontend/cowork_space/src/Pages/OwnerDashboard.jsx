@@ -41,7 +41,7 @@ const NAV_GROUPS = [
   {
     key: "leadsGroup", icon: "🏷️", label: "Leads",
     children: [
-      { key: "companyLeads", icon: "🏷️", label: "Company Leads" },
+      // { key: "companyLeads", icon: "🏷️", label: "Company Leads" },
       { key: "hyderabadLeads", icon: "📍", label: "Hyderabad Leads" },
       { key: "offerLeads", icon: "🔥", label: "Offer Leads" },
       { key: "customisationLeads", icon: "🎨", label: "Customisation Leads" },
@@ -67,10 +67,52 @@ const SVG = {
   eyeOff: "M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94 M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19 M1 1l22 22",
 };
 
-// Avatar initials helper
 const getInitials = (name = "") => name.trim().charAt(0).toUpperCase() || "U";
 const AVATAR_COLORS = ["#6366f1","#f59e0b","#10b981","#3b82f6","#ec4899","#8b5cf6","#14b8a6","#f97316"];
 const getAvatarColor = (name = "") => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+
+// ─── ACCORDION SECTION WRAPPER ─────────────────────────────────────────────
+function AccordionSection({ title, icon, isOpen, onToggle, openLabel = "+ Add New", closeLabel = "✕ Close", children }) {
+  return (
+    <div className={styles.accordSection}>
+      <div className={styles.accordHeader} onClick={onToggle}>
+        <div className={styles.accordTitleRow}>
+          <span className={styles.accordDot} />
+          <span className={styles.accordTitle}>{icon && <span style={{ marginRight: 8 }}>{icon}</span>}{title}</span>
+        </div>
+        <button className={`${styles.accordToggleBtn} ${isOpen ? styles.accordToggleBtnOpen : ""}`} onClick={e => { e.stopPropagation(); onToggle(); }}>
+          {isOpen ? closeLabel : openLabel}
+        </button>
+      </div>
+      {isOpen && (
+        <div className={styles.accordBody}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── LEAD FILTER BAR ───────────────────────────────────────────────────────
+function LeadFilterBar({ search, onSearch, filterTab, onFilter, tabs, counts, placeholder = "Search leads..." }) {
+  return (
+    <div className={styles.leadFilterBar}>
+      <div className={styles.leadTabs}>
+        {tabs.map(([key, label]) => (
+          <button key={key} className={`${styles.leadTab} ${filterTab === key ? styles.leadTabActive : ""}`} onClick={() => onFilter(key)}>
+            {label}
+            <span className={styles.leadTabBadge}>{counts[key] ?? 0}</span>
+          </button>
+        ))}
+      </div>
+      <div className={styles.leadSearchWrap}>
+        <span className={styles.leadSearchIcon}>🔍</span>
+        <input className={styles.leadSearchInput} placeholder={placeholder} value={search} onChange={e => onSearch(e.target.value)} />
+        {search && <button className={styles.leadSearchClear} onClick={() => onSearch("")}>✕</button>}
+      </div>
+    </div>
+  );
+}
 
 function OwnerDashboard() {
   const navigate = useNavigate();
@@ -131,9 +173,29 @@ function OwnerDashboard() {
   const [userForm, setUserForm] = useState({ username: "", email: "", password: "", phone: "", location: "" });
   const [editUserId, setEditUserId] = useState(null);
   const [userSearch, setUserSearch] = useState("");
-  // NEW: manage users UI state
   const [showUserForm, setShowUserForm] = useState(false);
-  const [userFilterTab, setUserFilterTab] = useState("all"); // all | active | inactive
+  const [userFilterTab, setUserFilterTab] = useState("all");
+  const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
+  const [hoveredGroup, setHoveredGroup] = useState(null);
+
+  // ── ACCORDION OPEN STATES ──
+  const [showOfferForm, setShowOfferForm] = useState(false);
+  const [showCouponForm, setShowCouponForm] = useState(false);
+  const [showAmenityForm, setShowAmenityForm] = useState(false);
+  const [showSlotForm, setShowSlotForm] = useState(false);
+  const [showMonthlyForm, setShowMonthlyForm] = useState(false);
+
+  // ── LEAD FILTER STATES ──
+  const [companyLeadSearch, setCompanyLeadSearch] = useState("");
+  const [companyLeadFilter, setCompanyLeadFilter] = useState("all");
+  const [hyderabadLeadSearch, setHyderabadLeadSearch] = useState("");
+  const [hyderabadLeadFilter, setHyderabadLeadFilter] = useState("all");
+  const [offerLeadSearch, setOfferLeadSearch] = useState("");
+  const [offerLeadFilter, setOfferLeadFilter] = useState("all");
+  const [customLeadSearch, setCustomLeadSearch] = useState("");
+  const [customLeadFilter, setCustomLeadFilter] = useState("all");
+  const [quotationLeadSearch, setQuotationLeadSearch] = useState("");
+  const [quotationLeadFilter, setQuotationLeadFilter] = useState("all");
 
   const approvedWorkspaces = useMemo(() => workspaces.filter(w => w.is_approved === true), [workspaces]);
   const setBusy = (id, value) => setBusyMap(prev => ({ ...prev, [id]: value }));
@@ -176,18 +238,67 @@ function OwnerDashboard() {
   const fetchCustomisationLeads = () => axiosInstance.get("leads/modern-leads/owner/").then(res => setCustomisationLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Customisation leads fetch error:", err));
   const fetchQuotationLeads = () => axiosInstance.get("leads/quotation-leads/owner/").then(res => setQuotationLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Quotation leads fetch error:", err));
 
-  const handleEditOffer = (item) => { setOfferForm({ building: item.building, type: item.type, original_price: item.original_price, offer_price: item.offer_price, seats: item.seats, floor: item.floor, image: item.image, amenities: item.amenities || [] }); setEditOfferId(item.id); };
+  const handleEditOffer = (item) => {
+    setOfferForm({ building: item.building, type: item.type, original_price: item.original_price, offer_price: item.offer_price, seats: item.seats, floor: item.floor, image: item.image, amenities: item.amenities || [] });
+    setEditOfferId(item.id);
+    setShowOfferForm(true);
+  };
   const handleDeleteOffer = (id) => { if (!window.confirm("Delete this workspace?")) return; axiosInstance.delete(`workspaces/offers/delete/${id}/`).then(() => fetchOfferWorkspaces()).catch(err => console.error(err)); };
   const handleAddOfferWorkspace = () => {
     const request = editOfferId ? axiosInstance.put(`workspaces/offers/update/${editOfferId}/`, { ...offerForm, area: ownerCity }) : axiosInstance.post("workspaces/offers/create/", { ...offerForm, area: ownerCity });
-    request.then(() => { fetchOfferWorkspaces(); setEditOfferId(null); setOfferForm({ building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] }); alert(editOfferId ? "Workspace updated successfully" : "Offer workspace added successfully and waiting for an admin approval.."); }).catch(err => console.error(err));
+    request.then(() => { fetchOfferWorkspaces(); setEditOfferId(null); setOfferForm({ building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] }); setShowOfferForm(false); alert(editOfferId ? "Workspace updated successfully" : "Offer workspace added successfully and waiting for an admin approval.."); }).catch(err => console.error(err));
   };
 
   const handleAddCoupon = () => {
     if (!couponForm.workspace || !couponForm.coupon_code || !couponForm.discount_percentage || !couponForm.capacity) { alert("Please fill all coupon fields"); return; }
-    axiosInstance.post("workspaces/offer-coupons/create/", couponForm).then(() => { fetchOfferCoupons(); setCouponForm({ workspace: "", coupon_code: "", discount_percentage: "", capacity: "" }); alert("Coupon Added Successfully"); }).catch(err => console.log(err));
+    axiosInstance.post("workspaces/offer-coupons/create/", couponForm).then(() => { fetchOfferCoupons(); setCouponForm({ workspace: "", coupon_code: "", discount_percentage: "", capacity: "" }); setShowCouponForm(false); alert("Coupon Added Successfully"); }).catch(err => console.log(err));
   };
+  const handleEditCoupon = (coupon) => {
 
+  setEditCoupon(coupon);
+
+  setCouponCode(coupon.coupon_code);
+
+  setDiscountPercentage(
+    coupon.discount_percentage
+  );
+
+  setMaxClaims(coupon.max_claims);
+
+};
+const handleDeleteCoupon = async (id) => {
+
+  const confirmDelete =
+    window.confirm(
+      "Delete this coupon?"
+    );
+
+  if (!confirmDelete) return;
+
+  try {
+
+    const response =
+      await axiosInstance.delete(
+        `/workspaces/coupon/${id}/`
+      );
+
+    console.log(response.data);
+
+    // ✅ REMOVE FROM UI
+
+    setCoupons((prev) =>
+      prev.filter(
+        (item) => item.id !== id
+      )
+    );
+
+  } catch (err) {
+
+    console.log(err);
+
+  }
+
+};
   const handleAddAmenity = () => {
     if (!amenityForm.workspace || !amenityForm.title || !amenityForm.price) { alert("Please fill required fields"); return; }
     const existsInAdminAmenities = amenitiesList.some((a) => a.name?.trim().toLowerCase() === amenityForm.title.trim().toLowerCase());
@@ -195,7 +306,7 @@ function OwnerDashboard() {
     const alreadyExists = additionalAmenities.some((a) => a.workspace === Number(amenityForm.workspace) && a.title?.trim().toLowerCase() === amenityForm.title.trim().toLowerCase() && a.price_type === amenityForm.price_type);
     if (alreadyExists) { alert(`"${amenityForm.title}" already exists for this workspace`); return; }
     const request = editAmenityId ? axiosInstance.put(`workspaces/additional-amenities/update/${editAmenityId}/`, amenityForm) : axiosInstance.post("workspaces/additional-amenities/create/", amenityForm);
-    request.then(() => { fetchAdditionalAmenities(); setAmenityForm({ workspace: "", title: "", description: "", price: "", price_type: "full_day" }); setEditAmenityId(null); alert(editAmenityId ? "Amenity Updated" : "Amenity Added"); }).catch(err => console.log(err));
+    request.then(() => { fetchAdditionalAmenities(); setAmenityForm({ workspace: "", title: "", description: "", price: "", price_type: "full_day" }); setEditAmenityId(null); setShowAmenityForm(false); alert(editAmenityId ? "Amenity Updated" : "Amenity Added"); }).catch(err => console.log(err));
   };
 
   const handleDeleteAmenity = (id) => {
@@ -240,13 +351,7 @@ function OwnerDashboard() {
   const handleUserSubmit = () => {
     if (!userForm.username || !userForm.email) { alert("Fill required fields"); return; }
     const request = editUserId ? axiosInstance.put(`accounts/update-user/${editUserId}/`, userForm) : axiosInstance.post("accounts/create-user/", userForm);
-    request.then(() => {
-      fetchUsers();
-      setUserForm({ username: "", email: "", password: "", phone: "", location: "" });
-      setEditUserId(null);
-      setShowUserForm(false);
-      alert(editUserId ? "User Updated" : "User Created");
-    }).catch(err => console.log(err));
+    request.then(() => { fetchUsers(); setUserForm({ username: "", email: "", password: "", phone: "", location: "" }); setEditUserId(null); setShowUserForm(false); alert(editUserId ? "User Updated" : "User Created"); }).catch(err => console.log(err));
   };
 
   const handleEditUser = (u) => {
@@ -262,9 +367,9 @@ function OwnerDashboard() {
       .catch(err => console.log(err));
   };
 
-  const resetWorkspaceForm = () => { setForm({ name: "", city: "", location: "", price: "", image: "", description: "", amenities: [] }); setEditId(null); };
-  const resetMonthlyForm = () => { setMonthlyForm({ workspace_id: "", year: new Date().getFullYear(), months: [], capacity: 50, price: "" }); setEditMonthId(null); };
-  const resetSlotForm = () => { setSlotForm({ workspace_id: "", date: "", slot_type: "hour", start_time: 9, end_time: 18, capacity: 50, price: "" }); setEditSlotId(null); };
+  const resetWorkspaceForm = () => { setForm({ name: "", city: "", location: "", price: "", image: "", description: "", amenities: [] }); setEditId(null); setShowWorkspaceForm(false); };
+  const resetMonthlyForm = () => { setMonthlyForm({ workspace_id: "", year: new Date().getFullYear(), months: [], capacity: 50, price: "" }); setEditMonthId(null); setShowMonthlyForm(false); };
+  const resetSlotForm = () => { setSlotForm({ workspace_id: "", date: "", slot_type: "hour", start_time: 9, end_time: 18, capacity: 50, price: "" }); setEditSlotId(null); setShowSlotForm(false); };
 
   const getAmenityLabel = (amenity) => {
     if (typeof amenity === "object" && amenity !== null) return amenity.name || "Amenity";
@@ -318,6 +423,7 @@ function OwnerDashboard() {
   const handleEdit = (item) => {
     setForm({ name: item.name || "", city: item.city || "", location: item.location || "", price: item.price || "", image: item.image || "", description: item.description || "", amenities: Array.isArray(item.amenities) ? item.amenities.map(a => typeof a === "object" ? a.id : a) : [] });
     setEditId(item.id);
+    setShowWorkspaceForm(true);
     setActiveSection("workspaces");
     setMobileSidebarOpen(false);
   };
@@ -326,7 +432,7 @@ function OwnerDashboard() {
     const isCurrentlyActive = item.isavailable !== false;
     const newStatus = !isCurrentlyActive;
     axiosInstance.put(`workspaces/update/${item.id}/`, { ...item, isavailable: newStatus, is_approved: newStatus ? item.is_approved : false, amenities: Array.isArray(item.amenities) ? item.amenities.map(a => (typeof a === "object" ? a.id : a)) : [] })
-      .then(() => { showToast(newStatus ? "✅ Workspace set to Active — now visible on website" : "🚫 Workspace set to Inactive — hidden from website"); fetchWorkspaces(); })
+      .then(() => { showToast(newStatus ? "✅ Workspace set to Active" : "🚫 Workspace set to Inactive"); fetchWorkspaces(); })
       .catch(() => showToast("❌ Failed to update workspace status"));
   };
 
@@ -335,24 +441,67 @@ function OwnerDashboard() {
   const filteredMyWorkspaces = useMemo(() => { const q = workspaceSearch.toLowerCase().trim(); if (!q) return workspaces; return workspaces.filter(w => (w.name || "").toLowerCase().includes(q) || (w.city || "").toLowerCase().includes(q) || (w.location || "").toLowerCase().includes(q)); }, [workspaces, workspaceSearch]);
   const filteredSuggestedWorkspaces = useMemo(() => { const q = suggestSearch.toLowerCase().trim(); if (!q) return suggestedWorkspaces; return suggestedWorkspaces.filter(w => { const ownerName = (w.owner_name || w.ownername || "").toLowerCase(); return ownerName.includes(q) || (w.name || "").toLowerCase().includes(q) || (w.city || "").toLowerCase().includes(q) || (w.location || "").toLowerCase().includes(q); }); }, [suggestedWorkspaces, suggestSearch]);
 
-  // ─── TOTAL LEADS COUNT ────────────────────────────────────────────────────
   const totalLeads = companyLeads.length + hyderabadLeads.length + offerLeads.length + customisationLeads.length + quotationLeads.length;
+
+  // ─── FILTERED LEADS ────────────────────────────────────────────────────────
+  const filteredCompanyLeads = useMemo(() => {
+    const q = companyLeadSearch.toLowerCase();
+    return companyLeads.filter(l => {
+      const matchFilter = companyLeadFilter === "all" || l.status?.toLowerCase() === companyLeadFilter.toLowerCase();
+      const matchSearch = !q || (l.name||"").toLowerCase().includes(q) || (l.email||"").toLowerCase().includes(q) || (l.phone||"").toLowerCase().includes(q) || (l.company||"").toLowerCase().includes(q) || (l.preferred_location||"").toLowerCase().includes(q);
+      return matchFilter && matchSearch;
+    });
+  }, [companyLeads, companyLeadSearch, companyLeadFilter]);
+
+  const filteredHyderabadLeads = useMemo(() => {
+    const q = hyderabadLeadSearch.toLowerCase();
+    return hyderabadLeads.filter(l => {
+      const matchFilter = hyderabadLeadFilter === "all" || l.status?.toLowerCase() === hyderabadLeadFilter.toLowerCase();
+      const matchSearch = !q || (l.name||"").toLowerCase().includes(q) || (l.email||"").toLowerCase().includes(q) || (l.phone||"").toLowerCase().includes(q) || (l.workspace_type||"").toLowerCase().includes(q) || (l.preferred_location||"").toLowerCase().includes(q);
+      return matchFilter && matchSearch;
+    });
+  }, [hyderabadLeads, hyderabadLeadSearch, hyderabadLeadFilter]);
+
+  const filteredOfferLeads = useMemo(() => {
+    const q = offerLeadSearch.toLowerCase();
+    return offerLeads.filter(l => {
+      const matchFilter = offerLeadFilter === "all" || l.status?.toLowerCase() === offerLeadFilter.toLowerCase();
+      const matchSearch = !q || (l.name||"").toLowerCase().includes(q) || (l.email||"").toLowerCase().includes(q) || (l.phone||"").toLowerCase().includes(q) || (l.workspace_type||"").toLowerCase().includes(q) || (l.preferred_location||"").toLowerCase().includes(q);
+      return matchFilter && matchSearch;
+    });
+  }, [offerLeads, offerLeadSearch, offerLeadFilter]);
+
+  const filteredCustomLeads = useMemo(() => {
+    const q = customLeadSearch.toLowerCase();
+    return customisationLeads.filter(l => {
+      const matchFilter = customLeadFilter === "all" || l.status?.toLowerCase() === customLeadFilter.toLowerCase();
+      const matchSearch = !q || (l.name||"").toLowerCase().includes(q) || (l.email||"").toLowerCase().includes(q) || (l.phone||"").toLowerCase().includes(q) || (l.company||"").toLowerCase().includes(q) || (l.preferred_location||"").toLowerCase().includes(q);
+      return matchFilter && matchSearch;
+    });
+  }, [customisationLeads, customLeadSearch, customLeadFilter]);
+
+  const filteredQuotationLeads = useMemo(() => {
+    const q = quotationLeadSearch.toLowerCase();
+    return quotationLeads.filter(l => {
+      const matchFilter = quotationLeadFilter === "all" || l.status?.toLowerCase() === quotationLeadFilter.toLowerCase();
+      const matchSearch = !q || (l.name||"").toLowerCase().includes(q) || (l.email||"").toLowerCase().includes(q) || (l.phone||"").toLowerCase().includes(q) || (l.company||"").toLowerCase().includes(q);
+      return matchFilter && matchSearch;
+    });
+  }, [quotationLeads, quotationLeadSearch, quotationLeadFilter]);
 
   // ─── RENDER OVERVIEW ─────────────────────────────────────────────────────
   const renderOverview = () => {
     const overviewCards = [
-      { icon: "💰", value: `₹${revenue.total_revenue?.toLocaleString()}`, label: "Total Revenue", color: styles.gold, section: null },
-      { icon: "✅", value: `₹${revenue.confirmed_revenue?.toLocaleString()}`, label: "Confirmed Revenue", color: styles.green, section: "bookings" },
-      // { icon: "⏳", value: `₹${revenue.pending_revenue?.toLocaleString()}`, label: "Pending Revenue", color: styles.amber, section: "bookings" },
-      // { icon: "❌", value: revenue.cancelled_count, label: "Cancelled Bookings", color: styles.red, section: "bookings" },
-      { icon: "🏢", value: workspaces.length, label: "My Workspaces", color: styles.indigo, section: "workspaces" },
-      { icon: "✔️", value: approvedWorkspaces.length, label: "Approved Workspaces", color: styles.teal, section: "workspaces" },
-      { icon: "⏰", value: slots.length, label: "Total Slots", color: styles.purple, section: "slots" },
-      { icon: "📅", value: monthlySlots.length, label: "Monthly Slots", color: styles.cyan, section: "monthlySlots" },
-      { icon: "📋", value: mergedBookings.length, label: "Total Bookings", color: styles.blue, section: "bookings" },
-      { icon: "🏷️", value: totalLeads, label: "Total Leads", color: styles.orange, section: "companyLeads" },
-      { icon: "👥", value: Array.isArray(users) ? users.length : 0, label: "Total Users", color: styles.pink, section: "manageUsers" },
-      { icon: "🔥", value: offerWorkspaces.length, label: "Offer Workspaces", color: styles.rose, section: "offerWorkspaces" },
+      { value: `₹${revenue.total_revenue?.toLocaleString()}`, label: "Total Revenue", sub: "All time earnings", section: null, accent: "#b8922a", icon: "💰" },
+      { value: `₹${revenue.confirmed_revenue?.toLocaleString()}`, label: "Confirmed Revenue", sub: "Paid & settled", section: "bookings", accent: "#16a34a", icon: "✅" },
+      { value: workspaces.length, label: "My Workspaces", sub: "Listed spaces", section: "workspaces", accent: "#6366f1", icon: "🏗️" },
+      { value: approvedWorkspaces.length, label: "Approved Workspaces", sub: "Live on platform", section: "workspaces", accent: "#14b8a6", icon: "✔️" },
+      { value: slots.length, label: "Total Slots", sub: "Bookable hours", section: "slots", accent: "#a855f7", icon: "⏰" },
+      { value: monthlySlots.length, label: "Monthly Slots", sub: "Active months", section: "monthlySlots", accent: "#06b6d4", icon: "📅" },
+      { value: mergedBookings.length, label: "Total Bookings", sub: "All reservations", section: "bookings", accent: "#3b82f6", icon: "📋" },
+      { value: totalLeads, label: "Total Leads", sub: "Inquiries received", section: "companyLeads", accent: "#f97316", icon: "🏷️" },
+      { value: Array.isArray(users) ? users.length : 0, label: "Total Users", sub: "Registered members", section: "manageUsers", accent: "#ec4899", icon: "👥" },
+      { value: offerWorkspaces.length, label: "Offer Workspaces", sub: "Active deals", section: "offerWorkspaces", accent: "#f43f5e", icon: "🔥" },
     ];
 
     return (
@@ -361,15 +510,24 @@ function OwnerDashboard() {
           {overviewCards.map((card, i) => (
             <div
               key={i}
-              className={`${styles.statCard} ${card.color} ${card.section ? styles.clickableStat : ""}`}
-              onClick={() => card.section && handleNav(card.section, card.section === "slots" ? "slotsGroup" : card.section === "monthlySlots" ? "slotsGroup" : card.section === "companyLeads" ? "leadsGroup" : card.section === "offerWorkspaces" ? "workspacesGroup" : undefined)}
+              className={`${styles.statCardNew} ${card.section ? styles.clickableStat : ""}`}
+              style={{ "--card-accent": card.accent, animationDelay: `${i * 0.07}s` }}
+              onClick={() => card.section && handleNav(card.section,
+                card.section === "slots" || card.section === "monthlySlots" ? "slotsGroup" :
+                card.section === "companyLeads" ? "leadsGroup" :
+                card.section === "offerWorkspaces" ? "workspacesGroup" : undefined
+              )}
             >
-              <span className={styles.statIcon}>{card.icon}</span>
-              <div>
-                <p className={styles.statValue}>{card.value}</p>
-                <p className={styles.statLabel}>{card.label}</p>
+              <div className={styles.statCardAccentBar} style={{ background: card.accent }} />
+              <div className={styles.statCardBody}>
+                <div className={styles.statCardIcon} style={{ background: card.accent + "20", color: card.accent }}>{card.icon}</div>
+                <p className={styles.statCardValue}>{card.value}</p>
+                <p className={styles.statCardLabel}>{card.label}</p>
+                <p className={styles.statCardSub}>{card.sub}</p>
               </div>
-              {card.section && <span className={styles.statArrow}>→</span>}
+              {card.section && (
+                <div className={styles.statCardArrow} style={{ color: card.accent }}>→</div>
+              )}
             </div>
           ))}
         </div>
@@ -420,7 +578,6 @@ function OwnerDashboard() {
 
     return (
       <div className={styles.sectionBody}>
-        {/* Page title row */}
         <div className={styles.muPageHeader}>
           <div className={styles.muPageTitle}>
             <div className={styles.muTitleIcon}>👥</div>
@@ -437,7 +594,6 @@ function OwnerDashboard() {
           </button>
         </div>
 
-        {/* Stats row */}
         <div className={styles.muStatsRow}>
           <div className={`${styles.muStatCard} ${styles.muStatActive}`} onClick={() => setUserFilterTab("all")}>
             <div className={styles.muStatIcon}>👤</div>
@@ -456,7 +612,6 @@ function OwnerDashboard() {
           </div>
         </div>
 
-        {/* Inline Add / Edit Form */}
         {showUserForm && (
           <div className={styles.muFormPanel}>
             <div className={styles.muFormPanelHeader}>
@@ -464,27 +619,12 @@ function OwnerDashboard() {
               <button className={styles.muFormClose} onClick={() => { setShowUserForm(false); setEditUserId(null); }}>✕</button>
             </div>
             <div className={styles.muFormGrid}>
-              <div className={styles.fieldGroup}>
-                <label>Username *</label>
-                <input placeholder="johndoe" value={userForm.username} onChange={e => setUserForm({ ...userForm, username: e.target.value })} />
-              </div>
-              <div className={styles.fieldGroup}>
-                <label>Email *</label>
-                <input placeholder="john@example.com" value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} />
-              </div>
-              <div className={styles.fieldGroup}>
-                <label>Phone</label>
-                <input placeholder="9876543210" value={userForm.phone} onChange={e => setUserForm({ ...userForm, phone: e.target.value })} />
-              </div>
-              <div className={styles.fieldGroup}>
-                <label>Location</label>
-                <input placeholder="Hyderabad" value={userForm.location} onChange={e => setUserForm({ ...userForm, location: e.target.value })} />
-              </div>
+              <div className={styles.fieldGroup}><label>Username *</label><input placeholder="johndoe" value={userForm.username} onChange={e => setUserForm({ ...userForm, username: e.target.value })} /></div>
+              <div className={styles.fieldGroup}><label>Email *</label><input placeholder="john@example.com" value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} /></div>
+              <div className={styles.fieldGroup}><label>Phone</label><input placeholder="9876543210" value={userForm.phone} onChange={e => setUserForm({ ...userForm, phone: e.target.value })} /></div>
+              <div className={styles.fieldGroup}><label>Location</label><input placeholder="Hyderabad" value={userForm.location} onChange={e => setUserForm({ ...userForm, location: e.target.value })} /></div>
               {!editUserId && (
-                <div className={styles.fieldGroup}>
-                  <label>Password *</label>
-                  <input type="password" placeholder="••••••••" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} />
-                </div>
+                <div className={styles.fieldGroup}><label>Password *</label><input type="password" placeholder="••••••••" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} /></div>
               )}
             </div>
             <div className={styles.formActions}>
@@ -494,7 +634,6 @@ function OwnerDashboard() {
           </div>
         )}
 
-        {/* Filter tabs + search */}
         <div className={styles.muFilterBar}>
           <div className={styles.muTabs}>
             {[["all","All"],["active","Active"],["inactive","Inactive"]].map(([key, label]) => (
@@ -513,17 +652,11 @@ function OwnerDashboard() {
           </div>
         </div>
 
-        {/* Users Table */}
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone / Location</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>#</th><th>Name</th><th>Email</th><th>Phone / Location</th><th>Status</th><th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -532,9 +665,7 @@ function OwnerDashboard() {
                   <td style={{ color: "#94a3b8", fontWeight: 600, fontSize: "13px" }}>{String(i + 1).padStart(2, "0")}</td>
                   <td>
                     <div className={styles.muUserCell}>
-                      <div className={styles.muAvatar} style={{ background: getAvatarColor(u.username) }}>
-                        {getInitials(u.username)}
-                      </div>
+                      <div className={styles.muAvatar} style={{ background: getAvatarColor(u.username) }}>{getInitials(u.username)}</div>
                       <strong>{u.username}</strong>
                     </div>
                   </td>
@@ -551,29 +682,18 @@ function OwnerDashboard() {
                       {!u.phone && !u.location && <span style={{ color: "#94a3b8" }}>—</span>}
                     </div>
                   </td>
-                  <td>
-                    {u.is_active
-                      ? <span className={styles.activeBadge}>Active</span>
-                      : <span className={styles.inactiveBadge}>Inactive</span>}
-                  </td>
+                  <td>{u.is_active ? <span className={styles.activeBadge}>Active</span> : <span className={styles.inactiveBadge}>Inactive</span>}</td>
                   <td>
                     <div className={styles.muActions}>
                       <button className={styles.muEditBtn} onClick={() => handleEditUser(u)}>✏ Edit</button>
-                      <button
-                        className={u.is_active ? styles.muInactiveBtn : styles.muActiveBtn}
-                        onClick={() => handleInactiveUser(u)}
-                      >
+                      <button className={u.is_active ? styles.muInactiveBtn : styles.muActiveBtn} onClick={() => handleInactiveUser(u)}>
                         {u.is_active ? "Deactivate" : "Activate"}
                       </button>
                     </div>
                   </td>
                 </tr>
               )) : (
-                <tr>
-                  <td colSpan="6" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
-                    No users found
-                  </td>
-                </tr>
+                <tr><td colSpan="6" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>No users found</td></tr>
               )}
             </tbody>
           </table>
@@ -582,35 +702,75 @@ function OwnerDashboard() {
     );
   };
 
-  // ─── ICON BUTTON BASE ─────────────────────────────────────────────────────
   const iconBtnBase = {
     display: "inline-flex", alignItems: "center", justifyContent: "center",
     width: "32px", height: "32px", borderRadius: "6px", border: "none",
     cursor: "pointer", transition: "all 0.18s ease", flexShrink: 0,
   };
 
+  // ─── RENDER WORKSPACES ────────────────────────────────────────────────────
   const renderWorkspaces = () => (
     <div className={styles.sectionBody}>
       {toastMsg && <div className={styles.toast}>{toastMsg}</div>}
-      <div className={styles.formCard}>
-        <h3 className={styles.formTitle}>{editId ? "✏️ Edit Workspace" : "➕ Add Workspace"}</h3>
-        <div className={styles.formGrid}>
-          <div className={styles.fieldGroup}><label>Workspace Type *</label><select value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}><option value="">Select Type</option>{WORKSPACE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
-          <div className={styles.fieldGroup}><label>City *</label><select value={ownerCity} disabled><option value={ownerCity}>{ownerCity}</option></select></div>
-          <div className={styles.fieldGroup}><label>Location / Address</label><input placeholder="Enter address" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} /></div>
-          <div className={styles.fieldGroup}><label>Price (₹) *</label><input type="number" placeholder="0" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></div>
-          <div className={`${styles.fieldGroup} ${styles.fullWidth}`}><label>Description</label><textarea rows="3" placeholder="Describe this workspace…" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-          <div className={`${styles.fieldGroup} ${styles.fullWidth}`}><label>Select Amenities</label><div className={styles.amenitiesBox}>{amenitiesList.length === 0 ? <p>No amenities found</p> : amenitiesList.map(a => <label key={a.id} className={styles.amenityChip}><input type="checkbox" value={a.id} checked={form.amenities.includes(a.id)} onChange={e => { if (e.target.checked) setForm({ ...form, amenities: [...form.amenities, a.id] }); else setForm({ ...form, amenities: form.amenities.filter(id => id !== a.id) }); }} />{a.name}</label>)}</div></div>
-          <div className={`${styles.fieldGroup} ${styles.fullWidth}`}><label>Image URL</label><input placeholder="https://…" value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} /></div>
+
+      <AccordionSection
+        title={editId ? "Edit Workspace" : "Add New Workspace"}
+        isOpen={showWorkspaceForm}
+        onToggle={() => { if (showWorkspaceForm && editId) resetWorkspaceForm(); else setShowWorkspaceForm(prev => !prev); }}
+        openLabel="+ Add Workspace"
+        closeLabel={editId ? "✕ Cancel Edit" : "✕ Close Form"}
+      >
+        <div className={styles.wsFormGrid}>
+          <div className={styles.fieldGroup}>
+            <label>Workspace Type *</label>
+            <select value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}>
+              <option value="">Select Type</option>
+              {WORKSPACE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className={styles.fieldGroup}>
+            <label>City *</label>
+            <select value={ownerCity} disabled><option value={ownerCity}>{ownerCity}</option></select>
+          </div>
+          <div className={styles.fieldGroup}>
+            <label>Location / Address</label>
+            <input placeholder="Enter address" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label>Price (₹) *</label>
+            <input type="number" placeholder="0" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
+          </div>
+          <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
+            <label>Description</label>
+            <textarea rows="3" placeholder="Describe this workspace…" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+          </div>
+          <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
+            <label>Select Amenities</label>
+            <div className={styles.amenitiesBox}>
+              {amenitiesList.length === 0 ? <p>No amenities found</p> : amenitiesList.map(a => (
+                <label key={a.id} className={styles.amenityChip}>
+                  <input type="checkbox" value={a.id} checked={form.amenities.includes(a.id)}
+                    onChange={e => { if (e.target.checked) setForm({ ...form, amenities: [...form.amenities, a.id] }); else setForm({ ...form, amenities: form.amenities.filter(id => id !== a.id) }); }} />
+                  {a.name}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
+            <label>Image URL</label>
+            <input placeholder="https://…" value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} />
+          </div>
         </div>
-        <div className={styles.formActions}>
-          <button className={styles.submitBtn} onClick={handleSubmit}>{editId ? "Update Workspace" : "Add Workspace"}</button>
-          {editId && <button className={styles.cancelBtn} onClick={resetWorkspaceForm}>Cancel</button>}
+        <div className={styles.wsFormActions}>
+          <button className={styles.wsSubmitBtn} onClick={handleSubmit}>{editId ? "Update Workspace" : "Add Workspace"}</button>
+          <button className={styles.wsCancelBtn} onClick={resetWorkspaceForm}>Cancel</button>
         </div>
-      </div>
+      </AccordionSection>
+
       <div className={styles.tableTopBar}>
         <input className={styles.searchInput} placeholder="Search my workspaces..." value={workspaceSearch} onChange={e => setWorkspaceSearch(e.target.value)} />
       </div>
+
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -657,8 +817,14 @@ function OwnerDashboard() {
 
   const renderOfferWorkspaces = () => (
     <div className={styles.sectionBody}>
-      <div className={styles.formCard}>
-        <h3 className={styles.formTitle}>🔥 Add Offer Workspace</h3>
+      <AccordionSection
+        title={editOfferId ? "Edit Offer Workspace" : "Add Offer Workspace"}
+        icon="🔥"
+        isOpen={showOfferForm}
+        onToggle={() => { setShowOfferForm(prev => !prev); if (showOfferForm) { setEditOfferId(null); setOfferForm({ building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] }); } }}
+        openLabel="+ Add Offer Workspace"
+        closeLabel={editOfferId ? "✕ Cancel Edit" : "✕ Close Form"}
+      >
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}><label>Area</label><input type="text" value={ownerCity} readOnly className={styles.readonlyInput} /></div>
           <div className={styles.fieldGroup}><label>Building</label><input value={offerForm.building} onChange={e => setOfferForm({ ...offerForm, building: e.target.value })} /></div>
@@ -675,8 +841,12 @@ function OwnerDashboard() {
           <div className={styles.fieldGroup}><label>Floor</label><input value={offerForm.floor} onChange={e => setOfferForm({ ...offerForm, floor: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Image URL</label><input value={offerForm.image} onChange={e => setOfferForm({ ...offerForm, image: e.target.value })} /></div>
         </div>
-        <button className={styles.submitBtn} onClick={handleAddOfferWorkspace}>Add Offer Workspace</button>
-      </div>
+        <div className={styles.formActions}>
+          <button className={styles.submitBtn} onClick={handleAddOfferWorkspace}>{editOfferId ? "Update Offer Workspace" : "Add Offer Workspace"}</button>
+          <button className={styles.cancelBtn} onClick={() => { setShowOfferForm(false); setEditOfferId(null); setOfferForm({ building: "", type: "", original_price: "", offer_price: "", seats: "", floor: "", image: "", amenities: [] }); }}>Cancel</button>
+        </div>
+      </AccordionSection>
+
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead><tr><th>Area</th><th>Building</th><th>Type</th><th>Price</th><th>Offer</th><th>Status</th><th>Action</th></tr></thead>
@@ -692,20 +862,50 @@ function OwnerDashboard() {
 
   const renderOfferCoupons = () => (
     <div className={styles.sectionBody}>
-      <div className={styles.formCard}>
-        <h3 className={styles.formTitle}>🎟 Offer Coupons</h3>
+      <AccordionSection
+        title="Add Offer Coupon"
+        icon="🎟️"
+        isOpen={showCouponForm}
+        onToggle={() => setShowCouponForm(prev => !prev)}
+        openLabel="+ Add Coupon"
+        closeLabel="✕ Close Form"
+      >
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}><label>Select Workspace</label><select value={couponForm.workspace} onChange={e => setCouponForm({ ...couponForm, workspace: e.target.value })}><option value="">Select Workspace</option>{offerWorkspaces.map(ws => (<option key={ws.id} value={ws.id}>{ws.area} | {ws.building || "No Location"} | {ws.type}</option>))}</select></div>
           <div className={styles.fieldGroup}><label>Coupon Code</label><input placeholder="CLAIM50" value={couponForm.coupon_code} onChange={e => setCouponForm({ ...couponForm, coupon_code: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Discount %</label><select value={couponForm.discount_percentage} onChange={e => setCouponForm({ ...couponForm, discount_percentage: e.target.value })}><option value="">Select %</option><option value="10">10%</option><option value="25">25%</option><option value="50">50%</option><option value="75">75%</option><option value="100">100%</option></select></div>
           <div className={styles.fieldGroup}><label>Coupon Capacity</label><input type="number" placeholder="2" value={couponForm.capacity} onChange={e => setCouponForm({ ...couponForm, capacity: e.target.value })} /></div>
         </div>
-        <button className={styles.submitBtn} onClick={handleAddCoupon}>Add Coupon</button>
-      </div>
+        <div className={styles.formActions}>
+          <button className={styles.submitBtn} onClick={handleAddCoupon}>Add Coupon</button>
+          <button className={styles.cancelBtn} onClick={() => { setShowCouponForm(false); setCouponForm({ workspace: "", coupon_code: "", discount_percentage: "", capacity: "" }); }}>Cancel</button>
+        </div>
+      </AccordionSection>
+
       <div className={styles.tableWrap}>
         <table className={styles.table}>
-          <thead><tr><th>Workspace</th><th>Coupon</th><th>Discount</th><th>Capacity</th><th>Used</th><th>Left</th><th>Status</th></tr></thead>
-          <tbody>{offerCoupons.map(item => { const left = Number(item.capacity) - Number(item.used_count || 0); return (<tr key={item.id}><td>{(() => { const mw = offerWorkspaces.find(w => w.id === item.workspace); return (<div className={styles.workspaceInfo}><strong className={styles.workspaceTitle}>{mw?.type || item.workspace_name}</strong><small className={styles.workspaceLocation}><span className={styles.cityText}>{mw?.area || "No City"}</span><span className={styles.separator}>|</span><span className={styles.locationText}>{mw?.location || mw?.building || "No Location"}</span><span className={styles.separator}>|</span>{mw?.type || item.workspace_name}</small></div>); })()}</td><td><span className={styles.couponCode}>{item.coupon_code}</span></td><td>{item.discount_percentage}%</td><td>{item.capacity}</td><td>{item.used_count || 0}</td><td>{left}</td><td>{left > 0 ? <span className={styles.activeBadge}>Active</span> : <span className={styles.inactiveBadge}>Expired</span>}</td></tr>); })}</tbody>
+          <thead><tr><th>Workspace</th><th>Coupon</th><th>Discount</th><th>Capacity</th><th>Used</th><th>Left</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>{offerCoupons.map(item => { const left = Number(item.capacity) - Number(item.used_count || 0); return (<tr key={item.id}><td>{(() => { const mw = offerWorkspaces.find(w => w.id === item.workspace); return (<div className={styles.workspaceInfo}><strong className={styles.workspaceTitle}>{mw?.type || item.workspace_name}</strong><small className={styles.workspaceLocation}><span className={styles.cityText}>{mw?.area || "No City"}</span><span className={styles.separator}>|</span><span className={styles.locationText}>{mw?.location || mw?.building || "No Location"}</span><span className={styles.separator}>|</span>{mw?.type || item.workspace_name}</small></div>); })()}</td><td><span className={styles.couponCode}>{item.coupon_code}</span></td><td>{item.discount_percentage}%</td><td>{item.capacity}</td><td>{item.used_count || 0}</td><td>{left}</td><td>{left > 0 ? <span className={styles.activeBadge}>Active</span> : <span className={styles.inactiveBadge}>Expired</span>}</td><td>
+
+  <div className={styles.actionButtons}>
+
+    {/* <button
+      className={styles.editBtn}
+      onClick={() => handleEditCoupon(item)}
+    >
+      Edit
+    </button> */}
+
+    <button
+      className={styles.deleteBtn}
+      onClick={() => handleDeleteCoupon(item.id)}
+    >
+      Delete
+    </button>
+
+  </div>
+
+</td></tr>); })}</tbody>
         </table>
       </div>
     </div>
@@ -713,7 +913,10 @@ function OwnerDashboard() {
 
   const renderSuggestedWorkspaces = () => (
     <div className={styles.sectionBody}>
-      <div className={styles.formCard}><h3 className={styles.formTitle}>Suggested Workspaces</h3><p className={styles.helperText}>View workspaces added by other managers. This is only for reference.</p></div>
+      <div className={styles.accordSection} style={{ background: "#fff", borderRadius: "14px", padding: "20px 24px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <h3 style={{ margin: "0 0 6px", fontSize: "15px", fontWeight: 700, color: "#1a2235" }}>Suggested Workspaces</h3>
+        <p style={{ margin: 0, color: "#667085", fontSize: "13px" }}>View workspaces added by other managers. This is only for reference.</p>
+      </div>
       <div className={styles.tableTopBar}><input className={styles.searchInput} placeholder="Search by manager, workspace, city, or location..." value={suggestSearch} onChange={e => setSuggestSearch(e.target.value)} /></div>
       <div className={styles.tableWrap}>
         <table className={styles.table}>
@@ -727,8 +930,14 @@ function OwnerDashboard() {
 
   const renderSlots = () => (
     <div className={styles.sectionBody}>
-      <div className={styles.formCard}>
-        <h3 className={styles.formTitle}>{editSlotId ? "✏️ Edit Slot" : "➕ Create Slot"}</h3>
+      <AccordionSection
+        title={editSlotId ? "Edit Slot" : "Create New Slot"}
+        icon="⏰"
+        isOpen={showSlotForm}
+        onToggle={() => { if (showSlotForm && editSlotId) { resetSlotForm(); } else { setShowSlotForm(prev => !prev); } }}
+        openLabel="+ Create Slot"
+        closeLabel={editSlotId ? "✕ Cancel Edit" : "✕ Close Form"}
+      >
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}>
             <label>Workspace</label>
@@ -744,22 +953,32 @@ function OwnerDashboard() {
           {slotForm.slot_type === "hour" && (<><div className={styles.fieldGroup}><label>Start Hour</label><input type="number" placeholder="9" value={slotForm.start_time} onChange={e => setSlotForm({ ...slotForm, start_time: e.target.value })} /></div><div className={styles.fieldGroup}><label>End Hour</label><input type="number" placeholder="18" value={slotForm.end_time} onChange={e => setSlotForm({ ...slotForm, end_time: e.target.value })} /></div></>)}
           <div className={styles.fieldGroup}><label>Price (₹)</label><input type="number" placeholder="0" value={slotForm.price} onChange={e => setSlotForm({ ...slotForm, price: e.target.value })} /></div>
         </div>
-        <div className={styles.formActions}><button className={styles.submitBtn} onClick={createSlot}>{editSlotId ? "Update Slot" : "Create Slot"}</button>{editSlotId && <button className={styles.cancelBtn} onClick={resetSlotForm}>Cancel</button>}</div>
-      </div>
+        <div className={styles.formActions}>
+          <button className={styles.submitBtn} onClick={createSlot}>{editSlotId ? "Update Slot" : "Create Slot"}</button>
+          <button className={styles.cancelBtn} onClick={resetSlotForm}>Cancel</button>
+        </div>
+      </AccordionSection>
+
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead><tr><th>Workspace</th><th>Date</th><th>Type</th><th>Time</th><th>Capacity</th><th>Price</th><th>Actions</th></tr></thead>
-          <tbody>{slots.map(s => (<tr key={s.id}><td><strong>{workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.city || "No City"} | {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.location || "No Location"} | {s.workspace_name}</strong></td><td>{s.date}</td><td>{s.slot_type === "hour" ? "Hourly" : "Full Day"}</td><td>{s.slot_type === "hour" ? `${s.start_time} – ${s.end_time}` : "All Day"}</td><td>{s.capacity}</td><td className={styles.priceCell}>₹{s.price}</td><td><button onClick={() => handleEditSlot(s)} className={styles.editBtn}>Edit</button><button onClick={() => deleteSlot(s.id)} className={styles.deleteBtn}>Delete</button></td></tr>))}</tbody>
+          <tbody>{slots.map(s => (<tr key={s.id}><td><strong>{workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.city || "No City"} | {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.location || "No Location"} | {s.workspace_name}</strong></td><td>{s.date}</td><td>{s.slot_type === "hour" ? "Hourly" : "Full Day"}</td><td>{s.slot_type === "hour" ? `${s.start_time} – ${s.end_time}` : "All Day"}</td><td>{s.capacity}</td><td className={styles.priceCell}>₹{s.price}</td><td><button onClick={() => { handleEditSlot(s); setShowSlotForm(true); }} className={styles.editBtn}>Edit</button><button onClick={() => deleteSlot(s.id)} className={styles.deleteBtn}>Delete</button></td></tr>))}</tbody>
         </table>
-        {slots.length === 0 && <div className={styles.empty}>No slots yet.</div>}
+        {slots.length === 0 && <div className={styles.empty}>No slots yet. Create one above!</div>}
       </div>
     </div>
   );
 
   const renderMonthlySlots = () => (
     <div className={styles.sectionBody}>
-      <div className={styles.formCard}>
-        <h3 className={styles.formTitle}>{editMonthId ? "✏️ Edit Monthly Slot" : "📆 Create Monthly Slots"}</h3>
+      <AccordionSection
+        title={editMonthId ? "Edit Monthly Slot" : "Create Monthly Slots"}
+        icon="📅"
+        isOpen={showMonthlyForm}
+        onToggle={() => { if (showMonthlyForm && editMonthId) { resetMonthlyForm(); } else { setShowMonthlyForm(prev => !prev); } }}
+        openLabel="+ Create Monthly Slots"
+        closeLabel={editMonthId ? "✕ Cancel Edit" : "✕ Close Form"}
+      >
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}><label>Workspace</label><select value={monthlyForm.workspace_id} onChange={e => setMonthlyForm({ ...monthlyForm, workspace_id: e.target.value })} disabled={!!editMonthId}><option value="">Select Workspace</option>{approvedWorkspaces.map(w => (<option key={w.id} value={w.id}>{w.city} •{w.name}•{w.location}</option>))}</select>{approvedWorkspaces.length === 0 && <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>No approved workspaces yet.</small>}</div>
           <div className={styles.fieldGroup}><label>Year</label><input type="number" value={monthlyForm.year} onChange={e => setMonthlyForm({ ...monthlyForm, year: e.target.value })} disabled={!!editMonthId} /></div>
@@ -767,14 +986,17 @@ function OwnerDashboard() {
           <div className={styles.fieldGroup}><label>Capacity</label><input type="number" value={monthlyForm.capacity} onChange={e => setMonthlyForm({ ...monthlyForm, capacity: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Price per Seat</label><input type="number" value={monthlyForm.price} onChange={e => setMonthlyForm({ ...monthlyForm, price: e.target.value })} /></div>
         </div>
-        <div className={styles.formActions}>{editMonthId ? (<><button className={styles.submitBtn} onClick={updateMonthlySlot}>Update Monthly Slot</button><button className={styles.cancelBtn} onClick={resetMonthlyForm}>Cancel</button></>) : (<button className={styles.submitBtn} onClick={createMonthlySlots}>Create Monthly Slots</button>)}</div>
-      </div>
+        <div className={styles.formActions}>
+          {editMonthId ? (<><button className={styles.submitBtn} onClick={updateMonthlySlot}>Update Monthly Slot</button><button className={styles.cancelBtn} onClick={resetMonthlyForm}>Cancel</button></>) : (<><button className={styles.submitBtn} onClick={createMonthlySlots}>Create Monthly Slots</button><button className={styles.cancelBtn} onClick={() => setShowMonthlyForm(false)}>Cancel</button></>)}
+        </div>
+      </AccordionSection>
+
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead><tr><th>Workspace</th><th>City</th><th>Month</th><th>Year</th><th>Capacity</th><th>Booked</th><th>Price</th><th>Actions</th></tr></thead>
-          <tbody>{monthlySlots.map(s => (<tr key={s.id}><td><strong>{workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.city || "No City"} | {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.location || "No Location"} | {s.workspace_name}</strong></td><td>{s.city}</td><td>{MONTH_OPTIONS[Number(s.month) - 1] || s.month}</td><td>{s.year}</td><td>{s.capacity}</td><td>{s.booked}</td><td>₹{s.price}</td><td><button className={styles.editBtn} onClick={() => handleEditMonth(s)}>Edit</button><button className={styles.deleteBtn} onClick={() => deleteMonthlySlot(s.id)}>Delete</button></td></tr>))}</tbody>
+          <tbody>{monthlySlots.map(s => (<tr key={s.id}><td><strong>{workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.city || "No City"} | {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.location || "No Location"} | {s.workspace_name}</strong></td><td>{s.city}</td><td>{MONTH_OPTIONS[Number(s.month) - 1] || s.month}</td><td>{s.year}</td><td>{s.capacity}</td><td>{s.booked}</td><td>₹{s.price}</td><td><button className={styles.editBtn} onClick={() => { handleEditMonth(s); setShowMonthlyForm(true); }}>Edit</button><button className={styles.deleteBtn} onClick={() => deleteMonthlySlot(s.id)}>Delete</button></td></tr>))}</tbody>
         </table>
-        {monthlySlots.length === 0 && <div className={styles.empty}>No monthly slots yet.</div>}
+        {monthlySlots.length === 0 && <div className={styles.empty}>No monthly slots yet. Create one above!</div>}
       </div>
     </div>
   );
@@ -824,80 +1046,118 @@ function OwnerDashboard() {
     </div>
   );
 
-  const renderCompanyLeads = () => (
-    <div className={styles.sectionBody}>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead><tr><th>Team Size</th><th>Name</th><th>Phone</th><th>Email</th><th>Preferred Location</th><th>Preferred Workspace</th><th>Company</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>{companyLeads.map(item => (<tr key={item.id}><td>{item.team_size}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td>{item.preferred_location}</td><td>{item.workspace_type || "—"}</td><td>{item.company}</td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateCompanyLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}</tbody>
-        </table>
-        {companyLeads.length === 0 && <div className={styles.empty}><p>No company leads yet</p></div>}
-      </div>
-    </div>
-  );
+  // ─── LEADS ────────────────────────────────────────────────────────────────
+  const getLeadCounts = (leads, statusOptions) => {
+    const counts = { all: leads.length };
+    statusOptions.forEach(([key]) => { if (key !== "all") counts[key] = leads.filter(l => l.status?.toLowerCase() === key.toLowerCase()).length; });
+    return counts;
+  };
 
-  const renderHyderabadLeads = () => (
-    <div className={styles.sectionBody}>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead><tr><th>Company Size</th><th>Name</th><th>Phone</th><th>Email</th><th>Workspace Type</th><th>Preferred Location</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>{hyderabadLeads.map(item => (<tr key={item.id}><td>{item.company_size}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td>{item.workspace_type}</td><td><span className={styles.statusPill}>{item.preferred_location}</span></td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateHyderabadLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="New">New</option><option value="Contacted">Contacted</option><option value="Interested">Interested</option><option value="Converted">Converted</option></select></td></tr>))}</tbody>
-        </table>
-        {hyderabadLeads.length === 0 && <div className={styles.empty}><p>No Hyderabad leads yet</p></div>}
+  const renderCompanyLeads = () => {
+    const tabs = [["all","All"],["pending","Pending"],["contacted","Contacted"],["closed","Closed"]];
+    const counts = getLeadCounts(companyLeads, tabs);
+    return (
+      <div className={styles.sectionBody}>
+        <LeadFilterBar search={companyLeadSearch} onSearch={setCompanyLeadSearch} filterTab={companyLeadFilter} onFilter={setCompanyLeadFilter} tabs={tabs} counts={counts} placeholder="Search by name, email, phone, company, location..." />
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead><tr><th>Team Size</th><th>Name</th><th>Phone</th><th>Email</th><th>Preferred Location</th><th>Preferred Workspace</th><th>Company</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>{filteredCompanyLeads.map(item => (<tr key={item.id}><td>{item.team_size}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td>{item.preferred_location}</td><td>{item.workspace_type || "—"}</td><td>{item.company}</td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateCompanyLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}
+            {filteredCompanyLeads.length === 0 && <tr><td colSpan="9" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>No company leads found</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  const renderOfferLeads = () => (
-    <div className={styles.sectionBody}>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead><tr><th>Workspace</th><th>Name</th><th>Phone</th><th>Email</th><th>Preferred Location</th><th>Team Size</th><th>Price Details</th><th>Coupon</th><th>Discount</th><th>Final Price</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>{offerLeads.map(item => {
-            const matchedWorkspace = offerWorkspaces.find(w => (w.type || "").trim().toLowerCase() === (item.workspace_type || "").trim().toLowerCase());
-            const matchedCoupon = offerCoupons.find(c => (c.coupon_code || "").trim().toLowerCase() === (item.coupon_code || "").trim().toLowerCase());
-            const remainingCoupons = Number(matchedCoupon?.capacity || 0) - Number(matchedCoupon?.used_count || 0);
-            return (<tr key={item.id}>
-              <td><div className={styles.workspaceInfo}><strong className={styles.workspaceTitle}>{matchedWorkspace?.type || item.workspace_type || "Workspace"}</strong><small className={styles.workspaceLocation}><span className={styles.cityText}>{matchedWorkspace?.area || item.preferred_location || "Hyderabad"}</span><span className={styles.separator}>|</span><span className={styles.locationText}>{matchedWorkspace?.building}</span><span className={styles.separator}>|</span>{matchedWorkspace?.type || item.workspace_type}</small></div></td>
-              <td><strong>{item.name}</strong></td><td>{item.phone}</td><td>{item.email}</td>
-              <td><span className={styles.statusPill}>{item.preferred_location}</span></td>
-              <td>{item.team_size}</td>
-              <td><div className={styles.priceInfo}><small>Original: ₹{item.original_price || matchedWorkspace?.original_price || 0}</small></div></td>
-              <td><div className={styles.couponBox}><strong className={styles.couponCode}>{item.coupon_code || "No Coupon"}</strong>{matchedCoupon && <small className={styles.remainingCoupons}>Remaining: {remainingCoupons}</small>}</div></td>
-              <td><div className={styles.discountInfo}><strong className={styles.discountText}>{item.discount_percentage ? `${item.discount_percentage}% OFF` : "-"}</strong><small>Save ₹{item.discount_amount || 0}</small></div></td>
-              <td><div className={styles.finalPriceBox}><strong className={styles.finalPrice}>₹{item.final_price || matchedWorkspace?.offer_price || 0}</strong></div></td>
-              <td><span className={item.status === "Converted" ? styles.activeBadge : styles.pendingBadge}>{item.status}</span></td>
-              <td><select value={item.status} onChange={e => updateOfferLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="New">New</option><option value="Contacted">Contacted</option><option value="Interested">Interested</option><option value="Converted">Converted</option></select></td>
-            </tr>);
-          })}</tbody>
-        </table>
+  const renderHyderabadLeads = () => {
+    const tabs = [["all","All"],["New","New"],["Contacted","Contacted"],["Interested","Interested"],["Converted","Converted"]];
+    const counts = getLeadCounts(hyderabadLeads, tabs);
+    return (
+      <div className={styles.sectionBody}>
+        <LeadFilterBar search={hyderabadLeadSearch} onSearch={setHyderabadLeadSearch} filterTab={hyderabadLeadFilter} onFilter={setHyderabadLeadFilter} tabs={tabs} counts={counts} placeholder="Search by name, email, phone, workspace type..." />
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead><tr><th>Company Size</th><th>Name</th><th>Phone</th><th>Email</th><th>Workspace Type</th><th>Preferred Location</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>{filteredHyderabadLeads.map(item => (<tr key={item.id}><td>{item.company_size}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td>{item.workspace_type}</td><td><span className={styles.statusPill}>{item.preferred_location}</span></td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateHyderabadLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="New">New</option><option value="Contacted">Contacted</option><option value="Interested">Interested</option><option value="Converted">Converted</option></select></td></tr>))}
+            {filteredHyderabadLeads.length === 0 && <tr><td colSpan="8" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>No Hyderabad leads found</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  const renderCustomisationLeads = () => (
-    <div className={styles.sectionBody}>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead><tr><th>Company</th><th>Name</th><th>Phone</th><th>Email</th><th>Preferred Location</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>{customisationLeads.map(item => (<tr key={item.id}><td>{item.company}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td><span className={styles.statusPill}>{item.preferred_location}</span></td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateCustomisationLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="new">New</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}</tbody>
-        </table>
-        {customisationLeads.length === 0 && <div className={styles.empty}>No Customisation Leads Yet</div>}
+  const renderOfferLeads = () => {
+    const tabs = [["all","All"],["New","New"],["Contacted","Contacted"],["Interested","Interested"],["Converted","Converted"]];
+    const counts = getLeadCounts(offerLeads, tabs);
+    return (
+      <div className={styles.sectionBody}>
+        <LeadFilterBar search={offerLeadSearch} onSearch={setOfferLeadSearch} filterTab={offerLeadFilter} onFilter={setOfferLeadFilter} tabs={tabs} counts={counts} placeholder="Search by name, email, phone, workspace..." />
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead><tr><th>Workspace</th><th>Name</th><th>Phone</th><th>Email</th><th>Preferred Location</th><th>Team Size</th><th>Price Details</th><th>Coupon</th><th>Discount</th><th>Final Price</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>{filteredOfferLeads.map(item => {
+              const matchedWorkspace = offerWorkspaces.find(w => (w.type || "").trim().toLowerCase() === (item.workspace_type || "").trim().toLowerCase());
+              const matchedCoupon = offerCoupons.find(c => (c.coupon_code || "").trim().toLowerCase() === (item.coupon_code || "").trim().toLowerCase());
+              const remainingCoupons = Number(matchedCoupon?.capacity || 0) - Number(matchedCoupon?.used_count || 0);
+              return (<tr key={item.id}>
+                <td><div className={styles.workspaceInfo}><strong className={styles.workspaceTitle}>{matchedWorkspace?.type || item.workspace_type || "Workspace"}</strong><small className={styles.workspaceLocation}><span className={styles.cityText}>{matchedWorkspace?.area || item.preferred_location || "Hyderabad"}</span><span className={styles.separator}>|</span><span className={styles.locationText}>{matchedWorkspace?.building}</span><span className={styles.separator}>|</span>{matchedWorkspace?.type || item.workspace_type}</small></div></td>
+                <td><strong>{item.name}</strong></td><td>{item.phone}</td><td>{item.email}</td>
+                <td><span className={styles.statusPill}>{item.preferred_location}</span></td>
+                <td>{item.team_size}</td>
+                <td><div className={styles.priceInfo}><small>Original: ₹{item.original_price || matchedWorkspace?.original_price || 0}</small></div></td>
+                <td><div className={styles.couponBox}><strong className={styles.couponCode}>{item.coupon_code || "No Coupon"}</strong>{matchedCoupon && <small className={styles.remainingCoupons}>Remaining: {remainingCoupons}</small>}</div></td>
+                <td><div className={styles.discountInfo}><strong className={styles.discountText}>{item.discount_percentage ? `${item.discount_percentage}% OFF` : "-"}</strong><small>Save ₹{item.discount_amount || 0}</small></div></td>
+                <td><div className={styles.finalPriceBox}><strong className={styles.finalPrice}>₹{item.final_price || matchedWorkspace?.offer_price || 0}</strong></div></td>
+                <td><span className={item.status === "Converted" ? styles.activeBadge : styles.pendingBadge}>{item.status}</span></td>
+                <td><select value={item.status} onChange={e => updateOfferLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="New">New</option><option value="Contacted">Contacted</option><option value="Interested">Interested</option><option value="Converted">Converted</option></select></td>
+              </tr>);
+            })}
+            {filteredOfferLeads.length === 0 && <tr><td colSpan="12" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>No offer leads found</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  const renderQuotationLeads = () => (
-    <div className={styles.sectionBody}>
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Company</th><th>Location</th><th>Workspace</th><th>Workspace Details</th><th>Total</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>{quotationLeads.map(item => (<tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.phone}</td><td>{item.email}</td><td>{item.company}</td><td>{item.preferred_location}</td><td>{item.workspace_type}</td><td>{item.quotation_details?.map((q, index) => (<div key={index}>{q.name} — {q.units} units</div>))}</td><td>₹{item.total_amount}</td><td>{new Date(item.created_at).toLocaleDateString()}</td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateQuotationLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}</tbody>
-        </table>
-        {quotationLeads.length === 0 && <div className={styles.empty}>No Quotation Leads Yet</div>}
+  const renderCustomisationLeads = () => {
+    const tabs = [["all","All"],["new","New"],["contacted","Contacted"],["closed","Closed"]];
+    const counts = getLeadCounts(customisationLeads, tabs);
+    return (
+      <div className={styles.sectionBody}>
+        <LeadFilterBar search={customLeadSearch} onSearch={setCustomLeadSearch} filterTab={customLeadFilter} onFilter={setCustomLeadFilter} tabs={tabs} counts={counts} placeholder="Search by name, email, phone, company, location..." />
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead><tr><th>Company</th><th>Name</th><th>Phone</th><th>Email</th><th>Preferred Location</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>{filteredCustomLeads.map(item => (<tr key={item.id}><td>{item.company}</td><td><strong>{item.name}</strong></td><td><a href={`tel:${item.phone}`} className={styles.phoneLink}>{item.phone}</a></td><td><a href={`mailto:${item.email}`} className={styles.emailLink}>{item.email}</a></td><td><span className={styles.statusPill}>{item.preferred_location}</span></td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateCustomisationLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="new">New</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}
+            {filteredCustomLeads.length === 0 && <tr><td colSpan="7" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>No customisation leads found</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const renderQuotationLeads = () => {
+    const tabs = [["all","All"],["pending","Pending"],["contacted","Contacted"],["closed","Closed"]];
+    const counts = getLeadCounts(quotationLeads, tabs);
+    return (
+      <div className={styles.sectionBody}>
+        <LeadFilterBar search={quotationLeadSearch} onSearch={setQuotationLeadSearch} filterTab={quotationLeadFilter} onFilter={setQuotationLeadFilter} tabs={tabs} counts={counts} placeholder="Search by name, email, phone, company..." />
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Company</th><th>Location</th><th>Workspace</th><th>Workspace Details</th><th>Total</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>{filteredQuotationLeads.map(item => (<tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.phone}</td><td>{item.email}</td><td>{item.company}</td><td>{item.preferred_location}</td><td>{item.workspace_type}</td><td>{item.quotation_details?.map((q, index) => (<div key={index}>{q.name} — {q.units} units</div>))}</td><td>₹{item.total_amount}</td><td>{new Date(item.created_at).toLocaleDateString()}</td><td><span className={styles.statusPill}>{item.status}</span></td><td><select value={item.status} onChange={e => updateQuotationLeadStatus(item.id, e.target.value)} className={styles.statusSelect}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select></td></tr>))}
+            {filteredQuotationLeads.length === 0 && <tr><td colSpan="11" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>No quotation leads found</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
 
   const createSlot = () => {
     if (!slotForm.workspace_id || !slotForm.date || !slotForm.price) { alert("Fill all fields"); return; }
@@ -970,8 +1230,6 @@ function OwnerDashboard() {
     transition: "transform 0.2s", transform: open ? "rotate(90deg)" : "rotate(0deg)",
     fontSize: "10px", opacity: 0.6,
   });
-
-  const [hoveredGroup, setHoveredGroup] = useState(null);
 
   return (
     <div className={styles.shell}>
@@ -1089,28 +1347,40 @@ function OwnerDashboard() {
           {activeSection === "suggestedWorkspaces" && renderSuggestedWorkspaces()}
 
           {activeSection === "additionalAmenities" && (
-            <div className={styles.sectionCard}>
-              <div className={styles.sectionHeader}><h2>Additional Amenities</h2></div>
-              <div className={styles.amenityFormGrid}>
-                <select className={`${styles.amenitySelect} ${!amenityForm.workspace ? styles.placeholderSelect : ""}`} value={amenityForm.workspace} onChange={e => setAmenityForm({ ...amenityForm, workspace: e.target.value })}>
-                  <option value="" disabled hidden>Select Workspace</option>
-                  {approvedWorkspaces.map(ws => (<option key={ws.id} value={ws.id}>{ws.city} | {ws.location} | {ws.workspacename || ws.name || ws.title}</option>))}
-                </select>
-                {approvedWorkspaces.length === 0 && <small style={{ color: "#f87171", gridColumn: "1 / -1" }}>No approved workspaces yet.</small>}
-                <input className={styles.amenityInput} type="text" placeholder="Amenity Name" value={amenityForm.title} onChange={e => setAmenityForm({ ...amenityForm, title: e.target.value })} />
-                <input className={styles.amenityInput} type="text" placeholder="Description" value={amenityForm.description} onChange={e => setAmenityForm({ ...amenityForm, description: e.target.value })} />
-                <input className={styles.amenityInput} type="number" placeholder="Price" value={amenityForm.price} onChange={e => setAmenityForm({ ...amenityForm, price: e.target.value })} />
-                <select className={styles.amenitySelect} value={amenityForm.price_type} onChange={e => setAmenityForm({ ...amenityForm, price_type: e.target.value })}>
-                  <option value="half_day">Half Day</option>
-                  <option value="full_day">Full Day</option>
-                  <option value="monthly">Monthly</option>
-                </select>
-                <button className={styles.amenityBtn} onClick={handleAddAmenity}>{editAmenityId ? "Update Amenity" : "Add Amenity"}</button>
-              </div>
+            <div className={styles.sectionBody}>
+              <AccordionSection
+                title={editAmenityId ? "Edit Amenity" : "Add Additional Amenity"}
+                icon="☕"
+                isOpen={showAmenityForm}
+                onToggle={() => { setShowAmenityForm(prev => !prev); if (showAmenityForm) { setEditAmenityId(null); setAmenityForm({ workspace: "", title: "", description: "", price: "", price_type: "full_day" }); } }}
+                openLabel="+ Add Amenity"
+                closeLabel={editAmenityId ? "✕ Cancel Edit" : "✕ Close Form"}
+              >
+                <div className={styles.amenityFormGrid}>
+                  <select className={`${styles.amenitySelect} ${!amenityForm.workspace ? styles.placeholderSelect : ""}`} value={amenityForm.workspace} onChange={e => setAmenityForm({ ...amenityForm, workspace: e.target.value })}>
+                    <option value="" disabled hidden>Select Workspace</option>
+                    {approvedWorkspaces.map(ws => (<option key={ws.id} value={ws.id}>{ws.city} | {ws.location} | {ws.workspacename || ws.name || ws.title}</option>))}
+                  </select>
+                  {approvedWorkspaces.length === 0 && <small style={{ color: "#f87171", gridColumn: "1 / -1" }}>No approved workspaces yet.</small>}
+                  <input className={styles.amenityInput} type="text" placeholder="Amenity Name" value={amenityForm.title} onChange={e => setAmenityForm({ ...amenityForm, title: e.target.value })} />
+                  <input className={styles.amenityInput} type="text" placeholder="Description" value={amenityForm.description} onChange={e => setAmenityForm({ ...amenityForm, description: e.target.value })} />
+                  <input className={styles.amenityInput} type="number" placeholder="Price" value={amenityForm.price} onChange={e => setAmenityForm({ ...amenityForm, price: e.target.value })} />
+                  <select className={styles.amenitySelect} value={amenityForm.price_type} onChange={e => setAmenityForm({ ...amenityForm, price_type: e.target.value })}>
+                    <option value="half_day">Half Day</option>
+                    <option value="full_day">Full Day</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                  <div style={{ display: "flex", gap: "10px", gridColumn: "1 / -1" }}>
+                    <button className={styles.amenityBtn} onClick={handleAddAmenity}>{editAmenityId ? "Update Amenity" : "Add Amenity"}</button>
+                    <button className={styles.wsCancelBtn} style={{ height: "54px", borderRadius: "14px" }} onClick={() => { setShowAmenityForm(false); setEditAmenityId(null); setAmenityForm({ workspace: "", title: "", description: "", price: "", price_type: "full_day" }); }}>Cancel</button>
+                  </div>
+                </div>
+              </AccordionSection>
+
               <div className={styles.amenitiesTable}>
                 <table>
                   <thead><tr><th>Workspace</th><th>Amenity</th><th>Description</th><th>Price</th><th>Type</th><th>Action</th></tr></thead>
-                  <tbody>{additionalAmenities.map(item => (<tr key={item.id}><td><strong>{workspaces.find(w => w.name?.trim() === item.workspace_name?.trim())?.city || "No City"} | {workspaces.find(w => w.name?.trim() === item.workspace_name?.trim())?.location || "No Location"} | {item.workspace_name}</strong></td><td>{item.title}</td><td>{item.description}</td><td>₹{item.price}</td><td>{item.price_type?.replace("_", " ")}</td><td><div className={styles.actionBtns}><button className={styles.editBtn} onClick={() => { setEditAmenityId(item.id); setAmenityForm({ workspace: item.workspace, title: item.title, description: item.description, price: item.price, price_type: item.price_type }); }}>Edit</button><button className={styles.deleteBtn} onClick={() => handleDeleteAmenity(item.id)}>Delete</button></div></td></tr>))}</tbody>
+                  <tbody>{additionalAmenities.map(item => (<tr key={item.id}><td><strong>{workspaces.find(w => w.name?.trim() === item.workspace_name?.trim())?.city || "No City"} | {workspaces.find(w => w.name?.trim() === item.workspace_name?.trim())?.location || "No Location"} | {item.workspace_name}</strong></td><td>{item.title}</td><td>{item.description}</td><td>₹{item.price}</td><td>{item.price_type?.replace("_", " ")}</td><td><div className={styles.actionBtns}><button className={styles.editBtn} onClick={() => { setEditAmenityId(item.id); setAmenityForm({ workspace: item.workspace, title: item.title, description: item.description, price: item.price, price_type: item.price_type }); setShowAmenityForm(true); }}>Edit</button><button className={styles.deleteBtn} onClick={() => handleDeleteAmenity(item.id)}>Delete</button></div></td></tr>))}</tbody>
                 </table>
                 {additionalAmenities.length === 0 && <div className={styles.empty}>No additional amenities yet.</div>}
               </div>
