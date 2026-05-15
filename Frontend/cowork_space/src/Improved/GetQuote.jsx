@@ -137,6 +137,14 @@ function LeadPopup({ onConfirm, onCancel }) {
   const [form,    setForm]    = useState({ name: "", email: "", phone: "" });
   const [errors,  setErrors]  = useState({});
   const [loading, setLoading] = useState(false);
+  const popupRef              = useRef(null);
+
+  // ── Scroll the popup into view as soon as it mounts ──
+  useEffect(() => {
+    if (popupRef.current) {
+      popupRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
 
   const validate = () => {
     const e = {};
@@ -163,8 +171,12 @@ function LeadPopup({ onConfirm, onCancel }) {
   ];
 
   return (
-    <div className="gq-lead-overlay" onClick={(e) => e.target === e.currentTarget && onCancel()}>
-      <div className="gq-lead-popup">
+    <div
+      className="gq-lead-overlay"
+      onClick={(e) => e.target === e.currentTarget && onCancel()}
+    >
+      {/* ref attached to popup card so scrollIntoView targets the form */}
+      <div className="gq-lead-popup" ref={popupRef}>
 
         <div className="gq-lead-top">
           <div className="gq-lead-icon-ring">
@@ -382,9 +394,9 @@ export default function GetQuote() {
           {/* Progress Steps */}
           <div className="gq-progress">
             {[
-              { label: "Location",     done: true },
-              { label: "Workspace",    done: selectedTypes.length > 0 },
-              { label: "Download",     done: canDownload },
+              { label: "Location",  done: true },
+              { label: "Workspace", done: selectedTypes.length > 0 },
+              { label: "Download",  done: canDownload },
             ].map((s, i) => (
               <React.Fragment key={i}>
                 <div className={`gq-prog-step ${s.done ? "gq-prog-step--done" : ""}`}>
@@ -611,18 +623,31 @@ export default function GetQuote() {
                               : <span className="gq-na">N/A</span>
                             }
                           </td>
+
+                          {/* ── CGST — Included tag ── */}
                           <td className="gq-tc gq-cell-tax">
-                            {row.price > 0 ? `₹${Math.round(row.price * 0.09).toLocaleString("en-IN")}` : "—"}
+                            {row.price > 0
+                              ? <span className="gq-included-tag">Included</span>
+                              : "—"
+                            }
                           </td>
+
+                          {/* ── SGST — Included tag ── */}
                           <td className="gq-tc gq-cell-tax">
-                            {row.price > 0 ? `₹${Math.round(row.price * 0.09).toLocaleString("en-IN")}` : "—"}
+                            {row.price > 0
+                              ? <span className="gq-included-tag">Included</span>
+                              : "—"
+                            }
                           </td>
+
+                          {/* ── Total — base price only ── */}
                           <td className="gq-tc">
                             {row.price > 0
                               ? <span className="gq-total-tag">₹{row.total.toLocaleString("en-IN")}.00</span>
                               : <span className="gq-cell-tax">—</span>
                             }
                           </td>
+
                           <td className="gq-tc">
                             <button className="gq-remove-btn" onClick={() => removeRow(row.name)} title="Remove">
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -666,19 +691,21 @@ export default function GetQuote() {
                     <span>Amount</span>
                     <span>₹ {subtotal.toLocaleString("en-IN")}</span>
                   </div>
+                  {/* ── CGST & SGST show Included ── */}
                   <div className="gq-summary-row">
                     <span>CGST (9%)</span>
-                    <span>₹ {cgst.toLocaleString("en-IN")}</span>
+                    <span className="gq-included-tag">Included</span>
                   </div>
                   <div className="gq-summary-row">
                     <span>SGST (9%)</span>
-                    <span>₹ {sgst.toLocaleString("en-IN")}</span>
+                    <span className="gq-included-tag">Included</span>
                   </div>
                 </div>
                 <div className="gq-summary-sep" />
+                {/* ── Total shows base subtotal only ── */}
                 <div className="gq-summary-total">
-                  <span>Total <em className="gq-gst-note">incl. GST</em></span>
-                  <span className="gq-grand-total">₹ {grandTotal.toLocaleString("en-IN")}</span>
+                  <span>Total</span>
+                  <span className="gq-grand-total">₹ {subtotal.toLocaleString("en-IN")}</span>
                 </div>
               </div>
             </div>
