@@ -96,7 +96,19 @@ export default function Navbar() {
 
   closeDrawer();
 };
+const goToLocation = (locationName) => {
+  navigate(`/Enterprise?location=${encodeURIComponent(locationName)}`);
 
+  setTimeout(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, 300);
+
+  setGalOpen(false);
+  closeDrawer();
+};
 
   const handleLogout = () => {
     ["access","refresh","is_admin","username"].forEach((k) => localStorage.removeItem(k));
@@ -165,9 +177,20 @@ export default function Navbar() {
               )}
             </div>
 
-            <button className={styles.link} onClick={scrollToCompanies}>
-              Spaces
-            </button>
+         <button
+  className={styles.link}
+  onClick={() => {
+    navigate("/");
+
+    setTimeout(() => {
+      document
+        .getElementById("spaces-section")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+  }}
+>
+  Spaces
+</button>
 
             <div className={styles.dropWrap}>
               <button className={`${styles.link} ${styles.linkDrop}`}>
@@ -333,7 +356,20 @@ export default function Navbar() {
 
           <div className={styles.mRow} onClick={scrollToCompanies}>
             <span className={styles.mRowIco}>🏢</span>
-            <span className={styles.mRowTxt}>Spaces</span>
+            <div
+  className={styles.mRow}
+  onClick={() => {
+    navigate("/");
+
+    setTimeout(() => {
+      document
+        .getElementById("spaces-section")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+
+    closeDrawer();
+  }}
+>Spaces</div>
             <span className={styles.mChev}>›</span>
           </div>
 

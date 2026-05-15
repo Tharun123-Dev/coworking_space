@@ -229,7 +229,7 @@ function SpecialContact() {
       </nav>
 
       {/* MAIN */}
-      <section className={styles.specialPage}>
+      <section id="spaces-section" className={styles.specialPage}>
         <div className={styles.wrapper}>
 
           {/* LEFT CONTENT */}

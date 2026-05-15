@@ -14,7 +14,33 @@ function HomePage() {
   const [touched, setTouched] = useState({});
   const canvasRef = useRef(null);
   const navigate = useNavigate();
+  const [typedText, setTypedText] = useState("");
+  useEffect(() => {
+  const text = "Explore Hyderabad's Finest";
+  let index = 0;
+  let deleting = false;
 
+  const interval = setInterval(() => {
+    if (!deleting) {
+      setTypedText(text.slice(0, index + 1));
+      index++;
+
+      if (index === text.length) {
+        deleting = true;
+        setTimeout(() => {}, 1000);
+      }
+    } else {
+      setTypedText(text.slice(0, index - 1));
+      index--;
+
+      if (index === 0) {
+        deleting = false;
+      }
+    }
+  }, deleting ? 60 : 120);
+
+  return () => clearInterval(interval);
+}, []);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -271,7 +297,9 @@ function HomePage() {
               </div>
 
               <h1 className={styles.heroTitle}>
-                <span className={styles.goldLayer}>Explore Hyderabad's Finest</span>
+               <span className={styles.goldLayer}>
+  {typedText}
+</span>
                 <span className={styles.glowLayer}>Coworking</span>
                 <span className={styles.mainLayer}>
                   Spaces
