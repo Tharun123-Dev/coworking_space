@@ -95,7 +95,7 @@ const SIDEBAR_GROUPS = [
     icon: IC.enterprise,
     children: [
       { id: "entbiz", label: "Hyderabad Leads", icon: IC.enterprise, section: "hyderabad-leads" },
-      { id: "company-leads", label: "Company Leads", icon: IC.leads, section: "company-leads" },
+      // { id: "company-leads", label: "Company Leads", icon: IC.leads, section: "company-leads" },
     ],
   },
   { id: "bookings", label: "Bookings", icon: IC.bookings, section: "bookings", children: null },
