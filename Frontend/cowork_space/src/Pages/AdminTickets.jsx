@@ -17,7 +17,6 @@ function AdminTickets() {
       const res = await axiosInstance.get("/leads/tickets/admin/");
       const data = Array.isArray(res.data) ? res.data : [];
 
-      // Normalize ticket fields with fallbacks
       const normalizedTickets = data.map((t) => ({
         ...t,
         username: t.username || t.user_name || t.name || "-",
@@ -74,7 +73,8 @@ function AdminTickets() {
 
   const filteredTickets = useMemo(() => {
     return tickets.filter((t) => {
-      const matchesStatus = statusFilter === "all" ? true : t.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "all" ? true : t.status === statusFilter;
 
       const matchesPriority =
         priorityFilter === "all"
@@ -105,7 +105,7 @@ function AdminTickets() {
   }, [tickets]);
 
   return (
-    <div className="adminTickets">
+    <div className="admin-tickets-layout">
       <div className="tickets-header">
         <div>
           <p className="tickets-eyebrow">Support Desk</p>
@@ -114,36 +114,35 @@ function AdminTickets() {
             Manage issues, review priorities, and update ticket progress quickly.
           </p>
         </div>
-
-        <button className="secondary-btn" onClick={fetchTickets}>
+        <button className="btn-secondary" onClick={fetchTickets}>
           Refresh
         </button>
       </div>
 
-      <div className="ticket-stats">
-        <div className="ticket-stat-card">
+      <div className="tickets-stats">
+        <div className="stat-card stat-total">
           <span>Total</span>
           <strong>{counts.total}</strong>
         </div>
-        <div className="ticket-stat-card">
+        <div className="stat-card stat-open">
           <span>Open</span>
           <strong>{counts.open}</strong>
         </div>
-        <div className="ticket-stat-card">
+        <div className="stat-card stat-pending">
           <span>Pending</span>
           <strong>{counts.pending}</strong>
         </div>
-        <div className="ticket-stat-card">
+        <div className="stat-card stat-resolved">
           <span>Resolved</span>
           <strong>{counts.resolved}</strong>
         </div>
-        <div className="ticket-stat-card">
+        <div className="stat-card stat-closed">
           <span>Closed</span>
           <strong>{counts.closed}</strong>
         </div>
       </div>
 
-      <div className="ticket-toolbar">
+      <div className="tickets-toolbar">
         <div className="toolbar-search">
           <input
             type="text"
@@ -180,8 +179,8 @@ function AdminTickets() {
         </div>
       </div>
 
-      <div className="tickets-table-card">
-        <div className="tickets-table-top">
+      <div className="tickets-table-container">
+        <div className="table-header">
           <h3>All Tickets</h3>
           <span>{filteredTickets.length} result(s)</span>
         </div>
@@ -200,42 +199,56 @@ function AdminTickets() {
                     <th>Phone</th>
                     <th>Workspace</th>
                     <th>Location</th>
-                    <th>Booking Status</th>
+                    <th>Booking</th>
                     <th>Issue</th>
                     <th>Priority</th>
-                    <th>Ticket Status</th>
+                    <th>Status</th>
                     <th>Admin Note</th>
                     <th>Update</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {filteredTickets.map((t) => (
                     <tr key={t.id}>
-                      <td>{t.username}</td>
-                      <td>{t.phone}</td>
-                      <td>{t.workspace || t.special_category || "-"}</td>
-                      <td>{t.location || "-"}</td>
-                      <td>{t.booking_status || "-"}</td>
-                      <td>{t.issue_type}</td>
-                      <td>
-                        <span className={`priority-badge priority-${(t.priority || "low").toLowerCase()}`}>
+                      <td className="cell-user">{t.username}</td>
+                      <td className="cell-phone">{t.phone}</td>
+                      <td className="cell-workspace">
+                        {t.workspace || t.special_category || "-"}
+                      </td>
+                      <td className="cell-location">
+                        {t.location || "-"}
+                      </td>
+                      <td className="cell-booking">
+                        {t.booking_status || "-"}
+                      </td>
+                      <td className="cell-issue">{t.issue_type}</td>
+                      <td className="cell-priority">
+                        <span
+                          className={`badge-priority badge-${
+                            (t.priority || "low").toLowerCase()
+                          }`}
+                        >
                           {t.priority}
                         </span>
                       </td>
-                      <td>
-                        <span className={`status-badge status-${t.status?.toLowerCase() || "open"}`}>
+                      <td className="cell-status">
+                        <span
+                          className={`badge-status badge-${
+                            (t.status || "open").toLowerCase()
+                          }`}
+                        >
                           {t.status}
                         </span>
                       </td>
-                      <td>
+                      <td className="cell-note">
                         <textarea
                           value={notes[t.id] || ""}
                           onChange={(e) => handleNoteChange(t.id, e.target.value)}
                           placeholder="Write admin note..."
+                          rows={1}
                         />
                       </td>
-                      <td>
+                      <td className="cell-action">
                         <select
                           value={t.status || "open"}
                           disabled={updatingId === t.id}
@@ -253,20 +266,25 @@ function AdminTickets() {
               </table>
             </div>
 
+            {/* Mobile Cards */}
             <div className="mobile-ticket-cards">
               {filteredTickets.map((t) => (
                 <div className="ticket-card" key={t.id}>
-                  <div className="ticket-card-top">
-                    <div>
+                  <div className="card-header">
+                    <div className="card-user">
                       <h4>{t.username}</h4>
                       <p>{t.phone}</p>
                     </div>
-                    <span className={`status-badge status-${t.status?.toLowerCase() || "open"}`}>
+                    <span
+                      className={`badge-status badge-${
+                        (t.status || "open").toLowerCase()
+                      }`}
+                    >
                       {t.status}
                     </span>
                   </div>
 
-                  <div className="ticket-card-grid">
+                  <div className="card-details">
                     <div>
                       <span>Workspace</span>
                       <p>{t.workspace || t.special_category || "-"}</p>
@@ -286,23 +304,28 @@ function AdminTickets() {
                     <div>
                       <span>Priority</span>
                       <p>
-                        <span className={`priority-badge priority-${(t.priority || "low").toLowerCase()}`}>
+                        <span
+                          className={`badge-priority badge-${
+                            (t.priority || "low").toLowerCase()
+                          }`}
+                        >
                           {t.priority}
                         </span>
                       </p>
                     </div>
                   </div>
 
-                  <div className="ticket-card-note">
+                  <div className="card-note">
                     <label>Admin Note</label>
                     <textarea
                       value={notes[t.id] || ""}
                       onChange={(e) => handleNoteChange(t.id, e.target.value)}
                       placeholder="Write admin note..."
+                      rows={2}
                     />
                   </div>
 
-                  <div className="ticket-card-actions">
+                  <div className="card-actions">
                     <select
                       value={t.status || "open"}
                       disabled={updatingId === t.id}

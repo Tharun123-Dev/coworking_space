@@ -1,27 +1,27 @@
 :root {
-  --ab-bg: #f8f7fc;
-  --ab-surface: rgba(255, 255, 255, 0.9);
-  --ab-surface-strong: #ffffff;
-  --ab-border: rgba(99, 102, 241, 0.14);
-  --ab-border-strong: rgba(99, 102, 241, 0.22);
-  --ab-text: #1f2440;
-  --ab-text-soft: #67708b;
-  --ab-text-faint: #98a0b5;
-  --ab-primary: #6366f1;
-  --ab-primary-dark: #4f46e5;
-  --ab-primary-soft: #eef2ff;
-  --ab-shadow-sm: 0 12px 30px rgba(79, 70, 229, 0.08);
-  --ab-shadow-md: 0 18px 48px rgba(79, 70, 229, 0.14);
-  --ab-shadow-lg: 0 24px 80px rgba(15, 23, 42, 0.24);
+  --ab-bg: #f5f9ff;                         /* Light blue‑tinted background */
+  --ab-surface: rgba(255, 255, 255, 0.92);  /* Very light surface */
+  --ab-surface-strong: #ffffff;            /* Pure white panels */
+  --ab-border: rgba(37, 99, 235, 0.12);     /* Soft blue border */
+  --ab-border-strong: rgba(37, 99, 235, 0.22); /* Stronger blue border */
+  --ab-text: #1e293b;                      /* Dark blue‑gray text */
+  --ab-text-soft: #475569;                 /* Medium gray‑blue */
+  --ab-text-faint: #94a3b8;               /* Soft hint text */
+  --ab-primary: #cc9e43;                   /* Main blue */
+  --ab-primary-dark: #a58f37;             /* Darker blue for hover/intents */
+  --ab-primary-soft: #eff6ff;             /* Light blue soft background */
+  --ab-shadow-sm: 0 12px 30px rgba(29, 78, 216, 0.08); /* Soft blue shadow */
+  --ab-shadow-md: 0 18px 48px rgba(29, 78, 216, 0.14);
+  --ab-shadow-lg: 0 24px 80px rgba(29, 78, 216, 0.18);
   --ab-radius-sm: 12px;
   --ab-radius-md: 18px;
   --ab-radius-lg: 24px;
   --ab-radius-xl: 30px;
-  --accent-gold: #f59e0b;
-  --accent-orange: #f97316;
-  --accent-green: #22c55e;
-  --accent-red: #ef4444;
-  --accent-blue: #3b82f6;
+  --accent-gold: #d97706;                 /* Slightly darker gold */
+  --accent-orange: #fb923c;               /* Orange accent */
+  --accent-green: #16a34a;               /* Strong green */
+  --accent-red: #dc2626;                 /* Strong red */
+  --accent-blue: #0ea5e9;                /* Secondary light blue accent */
 }
 
 *,
@@ -52,7 +52,7 @@
   gap: 18px;
   padding: 26px;
   border-radius: var(--ab-radius-xl);
-  background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 55%, #4f46e5 100%);
+  background: linear-gradient(135deg, #dcae67 0%, #e9ee5a 55%, #d0b15d 100%);
   color: #fff;
   box-shadow: var(--ab-shadow-md);
   margin-bottom: 18px;
