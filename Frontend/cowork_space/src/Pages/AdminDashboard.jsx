@@ -103,7 +103,6 @@ const SIDEBAR_GROUPS = [
   { id: "activity", label: "Recent Activity", icon: IC.activity, section: "activity", children: null },
   { id: "amenities", label: "Amenities", icon: IC.amenities, section: "amenities", children: null },
 ];
-
 const CHART_DATA = [
   { day: "Mon", bookings: 18, revenue: 42 },
   { day: "Tue", bookings: 27, revenue: 63 },
@@ -1223,7 +1222,9 @@ setOfferLeads(o.data || []);
               <div className={styles.sideAvatar}>A</div>
               <div className={styles.sideUserInfo}>
                 <p className={styles.sideName}>Admin</p>
-                <p className={styles.sideRole}>Super Admin</p>
+                <p className={styles.sideRole}>  <strong>
+    Hi {localStorage.getItem("username") || "Admin"}
+  </strong></p>
               </div>
               <div className={styles.onlineDot} />
             </div>

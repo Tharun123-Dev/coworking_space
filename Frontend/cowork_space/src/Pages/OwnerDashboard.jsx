@@ -1306,6 +1306,15 @@ const handleDeleteCoupon = async (id) => {
           </div>
           <div className={styles.headerRevenue}><span>Total Revenue</span><strong>₹{revenue.total_revenue?.toLocaleString()}</strong></div>
           <div className={styles.notificationWrap}>
+            <div className={styles.topRightSection}>
+
+  <span className={styles.managerName}>
+    Hi, {localStorage.getItem("username") || "Manager"}
+  </span>
+
+
+
+</div>
             <button className={styles.notificationBtn} onClick={() => setShowNotifications(!showNotifications)}>
               🔔
               {notifications.length > 0 && <span className={styles.notificationCount}>{notifications.length}</span>}

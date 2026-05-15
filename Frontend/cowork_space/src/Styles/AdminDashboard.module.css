@@ -3272,7 +3272,7 @@
   .notifPanel {
     width: min(300px, calc(100vw - 32px));
     right: -8px;
-    
+  
   }
   .topbar {
   position: fixed;   /* change from sticky to fixed */
