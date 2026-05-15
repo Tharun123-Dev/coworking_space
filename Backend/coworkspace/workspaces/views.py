@@ -689,6 +689,15 @@ def clear_all_activities(request):
     ActivityLog.objects.all().delete()
     return Response({"message": "All activities cleared"})
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+
+from workspaces.models import Workspace, WorkspaceSlot
+from bookings.models import Slot
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_slot(request):
@@ -703,13 +712,22 @@ def create_slot(request):
         capacity = int(request.data.get("capacity", 50))
         price = int(request.data.get("price", 0))
     except:
-        return Response({"error": "Invalid numeric values"}, status=400)
+        return Response(
+            {"error": "Invalid numeric values"},
+            status=400
+        )
 
-    workspace = get_object_or_404(Workspace, id=workspace_id)
+    workspace = get_object_or_404(
+        Workspace,
+        id=workspace_id
+    )
 
-    # 🔒 owner check
+    # 🔒 OWNER CHECK
     if workspace.owner != request.user:
-        return Response({"error": "Not allowed"}, status=403)
+        return Response(
+            {"error": "Not allowed"},
+            status=403
+        )
 
     created_slots = []
 
@@ -723,19 +741,28 @@ def create_slot(request):
 
         if start_time is None or end_time is None:
             return Response(
-                {"error": "start_time and end_time required"},
+                {
+                    "error":
+                    "start_time and end_time required"
+                },
                 status=400
             )
 
         try:
             start_time = int(start_time)
             end_time = int(end_time)
+
         except:
-            return Response({"error": "Invalid time format"}, status=400)
+            return Response(
+                {"error": "Invalid time format"},
+                status=400
+            )
 
         current = start_time
 
         while current < end_time:
+
+            # ✅ USER BOOKING SLOT
             slot = WorkspaceSlot.objects.create(
                 workspace=workspace,
                 date=date,
@@ -745,7 +772,21 @@ def create_slot(request):
                 capacity=capacity,
                 price=price
             )
+
+            # ✅ SLOT MANAGEMENT SLOT
+            Slot.objects.create(
+                workspace=workspace,
+                date=date,
+                slot_type="HOURLY",
+                time=f"{current} - {current + interval}",
+                capacity=capacity,
+                price=price,
+                booked_count=0,
+                created_by=request.user
+            )
+
             created_slots.append(slot.id)
+
             current += interval
 
     # =========================
@@ -753,6 +794,7 @@ def create_slot(request):
     # =========================
     elif slot_type == "day":
 
+        # ✅ USER BOOKING SLOT
         slot = WorkspaceSlot.objects.create(
             workspace=workspace,
             date=date,
@@ -760,16 +802,31 @@ def create_slot(request):
             capacity=capacity,
             price=price
         )
+
+        # ✅ SLOT MANAGEMENT SLOT
+        Slot.objects.create(
+            workspace=workspace,
+            date=date,
+            slot_type="FULL_DAY",
+            time="Full Day",
+            capacity=capacity,
+            price=price,
+            booked_count=0,
+            created_by=request.user
+        )
+
         created_slots.append(slot.id)
 
     else:
-        return Response({"error": "Invalid slot_type"}, status=400)
+        return Response(
+            {"error": "Invalid slot_type"},
+            status=400
+        )
 
     return Response({
         "message": "Slots created successfully",
         "slots_created": len(created_slots)
     })
-
 @api_view(['GET'])
 def get_workspace_slots(request, workspace_id):
 
@@ -783,31 +840,50 @@ def get_workspace_slots(request, workspace_id):
     data = []
 
     for s in slots:
-       data.append({
-    "id": s.id,
-    "slot_type": s.slot_type,
 
-    # ✅ FIX HERE
-  "start_time": (
-    s.start_time.strftime("%H:%M")
-    if hasattr(s.start_time, "strftime")
-    else f"{s.start_time}:00" if s.start_time is not None else None
-),
+        booked = s.booked_count or 0
+        remaining = (s.capacity or 0) - booked
 
-"end_time": (
-    s.end_time.strftime("%H:%M")
-    if hasattr(s.end_time, "strftime")
-    else f"{s.end_time}:00" if s.end_time is not None else None
-),
+        data.append({
 
-    "price": s.price,
-    "capacity": s.capacity,
-    "booked": s.booked_count,
-    "is_full": s.is_full()
-})
+            "id": s.id,
+
+            "slot_type": s.slot_type,
+
+            # ✅ START TIME
+            "start_time": (
+                s.start_time.strftime("%H:%M")
+                if hasattr(s.start_time, "strftime")
+                else f"{s.start_time}:00"
+                if s.start_time is not None
+                else None
+            ),
+
+            # ✅ END TIME
+            "end_time": (
+                s.end_time.strftime("%H:%M")
+                if hasattr(s.end_time, "strftime")
+                else f"{s.end_time}:00"
+                if s.end_time is not None
+                else None
+            ),
+
+            "price": s.price,
+
+            "capacity": s.capacity,
+
+            # ✅ BOOKED
+            "booked": booked,
+
+            # ✅ REMAINING
+            "remaining": remaining,
+
+            # ✅ FULL CHECK
+            "is_full": booked >= s.capacity
+
+        })
 
     return Response(data)
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def owner_slots(request):
@@ -1025,17 +1101,7 @@ def create_month_booking(request):
 
         slot.save()
 
-        Booking.objects.create(
-            user=request.user,
-            workspace=slot.workspace,
-            seats=seats,
-            total_price=slot.price * seats,
-            payment_id=payment_id,
-            booking_type="month",
-            status="confirmed",
-            month=slot.month,
-            year=slot.year
-        )
+       
 
     return Response({
         "message": "Multi-month booking successful",

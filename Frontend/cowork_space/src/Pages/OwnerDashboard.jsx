@@ -928,49 +928,317 @@ const handleDeleteCoupon = async (id) => {
     </div>
   );
 
-  const renderSlots = () => (
+// ─── PASTE THESE 3 FUNCTIONS to REPLACE the existing renderSlots, renderMonthlySlots, renderBookings in OwnerDashboard.jsx ───
+
+const renderSlots = () => {
+  const totalSlots = slots.length;
+  const hourlySlots = slots.filter(s => s.slot_type === "hour").length;
+  const fullDaySlots = slots.filter(s => s.slot_type === "day").length;
+  const totalCapacity = slots.reduce((sum, s) => sum + Number(s.capacity || 0), 0);
+  const totalBooked = slots.reduce(
+    (sum, s) => sum + Number(s.booked_seats ?? s.booked_slots ?? s.booked ?? s.booked_count ?? 0),
+    0
+  );
+  const totalRemaining = Math.max(totalCapacity - totalBooked, 0);
+
+  return (
     <div className={styles.sectionBody}>
+      {toastMsg && <div className={styles.toast}>{toastMsg}</div>}
+
+      <div className={styles.overviewGrid}>
+        <div className={`${styles.statCard} ${styles.gold}`}>
+          <span className={styles.statIcon}>⏰</span>
+          <div><p className={styles.statValue}>{totalSlots}</p><p className={styles.statLabel}>Total Slots</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.green}`}>
+          <span className={styles.statIcon}>🕐</span>
+          <div><p className={styles.statValue}>{hourlySlots}</p><p className={styles.statLabel}>Hourly Slots</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.amber}`}>
+          <span className={styles.statIcon}>☀️</span>
+          <div><p className={styles.statValue}>{fullDaySlots}</p><p className={styles.statLabel}>Full Day Slots</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.green}`}>
+          <span className={styles.statIcon}>✅</span>
+          <div><p className={styles.statValue}>{totalBooked}</p><p className={styles.statLabel}>Booked Seats</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.red}`}>
+          <span className={styles.statIcon}>🪑</span>
+          <div><p className={styles.statValue}>{totalRemaining}</p><p className={styles.statLabel}>Remaining Seats</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.gold}`}>
+          <span className={styles.statIcon}>👥</span>
+          <div><p className={styles.statValue}>{totalCapacity}</p><p className={styles.statLabel}>Total Capacity</p></div>
+        </div>
+      </div>
+
       <AccordionSection
         title={editSlotId ? "Edit Slot" : "Create New Slot"}
         icon="⏰"
         isOpen={showSlotForm}
-        onToggle={() => { if (showSlotForm && editSlotId) { resetSlotForm(); } else { setShowSlotForm(prev => !prev); } }}
+        onToggle={() => {
+          if (showSlotForm && editSlotId) {
+            resetSlotForm();
+          } else {
+            setShowSlotForm(prev => !prev);
+          }
+        }}
         openLabel="+ Create Slot"
         closeLabel={editSlotId ? "✕ Cancel Edit" : "✕ Close Form"}
       >
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}>
             <label>Workspace</label>
-            <select value={slotForm.workspace_id} onChange={e => setSlotForm({ ...slotForm, workspace_id: e.target.value })}>
+            <select
+              value={slotForm.workspace_id}
+              onChange={e => setSlotForm({ ...slotForm, workspace_id: e.target.value })}
+            >
               <option value="">Select Workspace</option>
-              {approvedWorkspaces.map(w => (<option key={w.id} value={w.id}>{w.name} • {w.city} • {w.location}</option>))}
+              {approvedWorkspaces.map(w => (
+                <option key={w.id} value={w.id}>
+                  {w.name} • {w.city} • {w.location}
+                </option>
+              ))}
             </select>
-            {approvedWorkspaces.length === 0 && <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>No approved workspaces yet.</small>}
+            {approvedWorkspaces.length === 0 && (
+              <small style={{ color: "#f87171", marginTop: "4px", display: "block" }}>
+                No approved workspaces yet.
+              </small>
+            )}
           </div>
-          <div className={styles.fieldGroup}><label>Date</label><input type="date" value={slotForm.date} onChange={e => setSlotForm({ ...slotForm, date: e.target.value })} /></div>
-          <div className={styles.fieldGroup}><label>Slot Type</label><select value={slotForm.slot_type} onChange={e => setSlotForm({ ...slotForm, slot_type: e.target.value })}><option value="hour">Hourly</option><option value="day">Full Day</option></select></div>
-          <div className={styles.fieldGroup}><label>Capacity</label><input type="number" placeholder="50" value={slotForm.capacity} onChange={e => setSlotForm({ ...slotForm, capacity: e.target.value })} /></div>
-          {slotForm.slot_type === "hour" && (<><div className={styles.fieldGroup}><label>Start Hour</label><input type="number" placeholder="9" value={slotForm.start_time} onChange={e => setSlotForm({ ...slotForm, start_time: e.target.value })} /></div><div className={styles.fieldGroup}><label>End Hour</label><input type="number" placeholder="18" value={slotForm.end_time} onChange={e => setSlotForm({ ...slotForm, end_time: e.target.value })} /></div></>)}
-          <div className={styles.fieldGroup}><label>Price (₹)</label><input type="number" placeholder="0" value={slotForm.price} onChange={e => setSlotForm({ ...slotForm, price: e.target.value })} /></div>
+
+          <div className={styles.fieldGroup}>
+            <label>Date</label>
+            <input
+              type="date"
+              value={slotForm.date}
+              onChange={e => setSlotForm({ ...slotForm, date: e.target.value })}
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label>Slot Type</label>
+            <select
+              value={slotForm.slot_type}
+              onChange={e => setSlotForm({ ...slotForm, slot_type: e.target.value })}
+            >
+              <option value="hour">Hourly</option>
+              <option value="day">Full Day</option>
+            </select>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label>Capacity</label>
+            <input
+              type="number"
+              placeholder="50"
+              value={slotForm.capacity}
+              onChange={e => setSlotForm({ ...slotForm, capacity: e.target.value })}
+            />
+          </div>
+
+          {slotForm.slot_type === "hour" && (
+            <>
+              <div className={styles.fieldGroup}>
+                <label>Start Hour</label>
+                <input
+                  type="number"
+                  placeholder="9"
+                  value={slotForm.start_time}
+                  onChange={e => setSlotForm({ ...slotForm, start_time: e.target.value })}
+                />
+              </div>
+              <div className={styles.fieldGroup}>
+                <label>End Hour</label>
+                <input
+                  type="number"
+                  placeholder="18"
+                  value={slotForm.end_time}
+                  onChange={e => setSlotForm({ ...slotForm, end_time: e.target.value })}
+                />
+              </div>
+            </>
+          )}
+
+          <div className={styles.fieldGroup}>
+            <label>Price (₹)</label>
+            <input
+              type="number"
+              placeholder="0"
+              value={slotForm.price}
+              onChange={e => setSlotForm({ ...slotForm, price: e.target.value })}
+            />
+          </div>
         </div>
+
         <div className={styles.formActions}>
-          <button className={styles.submitBtn} onClick={createSlot}>{editSlotId ? "Update Slot" : "Create Slot"}</button>
-          <button className={styles.cancelBtn} onClick={resetSlotForm}>Cancel</button>
+          <button className={styles.submitBtn} onClick={createSlot}>
+            {editSlotId ? "Update Slot" : "Create Slot"}
+          </button>
+          <button className={styles.cancelBtn} onClick={resetSlotForm}>
+            Cancel
+          </button>
         </div>
       </AccordionSection>
 
       <div className={styles.tableWrap}>
         <table className={styles.table}>
-          <thead><tr><th>Workspace</th><th>Date</th><th>Type</th><th>Time</th><th>Capacity</th><th>Price</th><th>Actions</th></tr></thead>
-          <tbody>{slots.map(s => (<tr key={s.id}><td><strong>{workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.city || "No City"} | {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.location || "No Location"} | {s.workspace_name}</strong></td><td>{s.date}</td><td>{s.slot_type === "hour" ? "Hourly" : "Full Day"}</td><td>{s.slot_type === "hour" ? `${s.start_time} – ${s.end_time}` : "All Day"}</td><td>{s.capacity}</td><td className={styles.priceCell}>₹{s.price}</td><td><button onClick={() => { handleEditSlot(s); setShowSlotForm(true); }} className={styles.editBtn}>Edit</button><button onClick={() => deleteSlot(s.id)} className={styles.deleteBtn}>Delete</button></td></tr>))}</tbody>
+          <thead>
+            <tr>
+              <th>Workspace</th>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Time</th>
+              <th>Capacity</th>
+              <th>Booked</th>
+              <th>Remaining</th>
+              <th>Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {slots.map(s => {
+              console.log("SLOT DATA:", s); // 👈 debug - remove after checking
+
+              const booked = Number(
+                s.booked_seats ?? s.booked_slots ?? s.booked ?? s.booked_count ?? 0
+              );
+              const capacity = Number(s.capacity || 0);
+              const remaining = Math.max(capacity - booked, 0);
+              const pct = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
+
+              return (
+                <tr key={s.id}>
+                  <td>
+                    <strong>
+                      {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.city || "No City"} |{" "}
+                      {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.location || "No Location"} |{" "}
+                      {s.workspace_name}
+                    </strong>
+                  </td>
+
+                  <td>{s.date}</td>
+
+                  <td>{s.slot_type === "hour" ? "Hourly" : "Full Day"}</td>
+
+                  <td>{s.slot_type === "hour" ? `${s.start_time} – ${s.end_time}` : "All Day"}</td>
+
+                  <td>{capacity}</td>
+
+                  <td>
+                    <span style={{
+                      display: "inline-block",
+                      padding: "2px 10px",
+                      borderRadius: "20px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      background: booked > 0 ? "#eff6ff" : "#f3f4f6",
+                      color: booked > 0 ? "#2563eb" : "#6b7280",
+                      border: `1px solid ${booked > 0 ? "#bfdbfe" : "#e5e7eb"}`
+                    }}>
+                      {booked}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <span style={{
+                        display: "inline-block",
+                        padding: "2px 10px",
+                        borderRadius: "20px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        background: remaining === 0 ? "#fef2f2" : remaining < capacity * 0.2 ? "#fff7ed" : "#f0fdf4",
+                        color: remaining === 0 ? "#dc2626" : remaining < capacity * 0.2 ? "#ea580c" : "#16a34a",
+                        border: `1px solid ${remaining === 0 ? "#fecaca" : remaining < capacity * 0.2 ? "#fed7aa" : "#bbf7d0"}`
+                      }}>
+                        {remaining === 0 ? "Full" : `${remaining} left`}
+                      </span>
+                      <div style={{
+                        height: "4px",
+                        borderRadius: "2px",
+                        background: "#e5e7eb",
+                        overflow: "hidden",
+                        width: "60px"
+                      }}>
+                        <div style={{
+                          height: "100%",
+                          width: `${pct}%`,
+                          borderRadius: "2px",
+                          background: pct >= 80 ? "#dc2626" : pct >= 50 ? "#ea580c" : "#16a34a",
+                          transition: "width 0.3s"
+                        }} />
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className={styles.priceCell}>₹{s.price}</td>
+
+                  <td>
+                    <button
+                      onClick={() => { handleEditSlot(s); setShowSlotForm(true); }}
+                      className={styles.editBtn}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteSlot(s.id)}
+                      className={styles.deleteBtn}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
         </table>
-        {slots.length === 0 && <div className={styles.empty}>No slots yet. Create one above!</div>}
+        {slots.length === 0 && (
+          <div className={styles.empty}>No slots yet. Create one above!</div>
+        )}
       </div>
     </div>
   );
+};
+const renderMonthlySlots = () => {
+  const totalMonthly = monthlySlots.length;
+  const totalMonthlyCapacity = monthlySlots.reduce((sum, s) => sum + Number(s.capacity || 0), 0);
+  const totalMonthlyBooked = monthlySlots.reduce((sum, s) => sum + Number(s.booked || 0), 0);
+  const totalMonthlyRemaining = totalMonthlyCapacity - totalMonthlyBooked;
+  const activeMonthlySlots = monthlySlots.filter(s => Number(s.booked || 0) < Number(s.capacity || 0)).length;
+  const fullMonthlySlots = monthlySlots.filter(s => Number(s.booked || 0) >= Number(s.capacity || 0)).length;
 
-  const renderMonthlySlots = () => (
+  return (
     <div className={styles.sectionBody}>
+
+      {/* ── Monthly Slot Stats ── */}
+      <div className={styles.overviewGrid}>
+        <div className={`${styles.statCard} ${styles.gold}`}>
+          <span className={styles.statIcon}>📅</span>
+          <div><p className={styles.statValue}>{totalMonthly}</p><p className={styles.statLabel}>Total Monthly Slots</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.green}`}>
+          <span className={styles.statIcon}>✅</span>
+          <div><p className={styles.statValue}>{activeMonthlySlots}</p><p className={styles.statLabel}>Available Slots</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.red}`}>
+          <span className={styles.statIcon}>🔴</span>
+          <div><p className={styles.statValue}>{fullMonthlySlots}</p><p className={styles.statLabel}>Full / Sold Out</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.amber}`}>
+          <span className={styles.statIcon}>🪑</span>
+          <div><p className={styles.statValue}>{totalMonthlyBooked}</p><p className={styles.statLabel}>Booked Seats</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.green}`}>
+          <span className={styles.statIcon}>🟢</span>
+          <div><p className={styles.statValue}>{totalMonthlyRemaining}</p><p className={styles.statLabel}>Remaining Seats</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.gold}`}>
+          <span className={styles.statIcon}>👥</span>
+          <div><p className={styles.statValue}>{totalMonthlyCapacity}</p><p className={styles.statLabel}>Total Capacity</p></div>
+        </div>
+      </div>
+
       <AccordionSection
         title={editMonthId ? "Edit Monthly Slot" : "Create Monthly Slots"}
         icon="📅"
@@ -987,64 +1255,274 @@ const handleDeleteCoupon = async (id) => {
           <div className={styles.fieldGroup}><label>Price per Seat</label><input type="number" value={monthlyForm.price} onChange={e => setMonthlyForm({ ...monthlyForm, price: e.target.value })} /></div>
         </div>
         <div className={styles.formActions}>
-          {editMonthId ? (<><button className={styles.submitBtn} onClick={updateMonthlySlot}>Update Monthly Slot</button><button className={styles.cancelBtn} onClick={resetMonthlyForm}>Cancel</button></>) : (<><button className={styles.submitBtn} onClick={createMonthlySlots}>Create Monthly Slots</button><button className={styles.cancelBtn} onClick={() => setShowMonthlyForm(false)}>Cancel</button></>)}
+          {editMonthId
+            ? (<><button className={styles.submitBtn} onClick={updateMonthlySlot}>Update Monthly Slot</button><button className={styles.cancelBtn} onClick={resetMonthlyForm}>Cancel</button></>)
+            : (<><button className={styles.submitBtn} onClick={createMonthlySlots}>Create Monthly Slots</button><button className={styles.cancelBtn} onClick={() => setShowMonthlyForm(false)}>Cancel</button></>)
+          }
         </div>
       </AccordionSection>
 
       <div className={styles.tableWrap}>
         <table className={styles.table}>
-          <thead><tr><th>Workspace</th><th>City</th><th>Month</th><th>Year</th><th>Capacity</th><th>Booked</th><th>Price</th><th>Actions</th></tr></thead>
-          <tbody>{monthlySlots.map(s => (<tr key={s.id}><td><strong>{workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.city || "No City"} | {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.location || "No Location"} | {s.workspace_name}</strong></td><td>{s.city}</td><td>{MONTH_OPTIONS[Number(s.month) - 1] || s.month}</td><td>{s.year}</td><td>{s.capacity}</td><td>{s.booked}</td><td>₹{s.price}</td><td><button className={styles.editBtn} onClick={() => { handleEditMonth(s); setShowMonthlyForm(true); }}>Edit</button><button className={styles.deleteBtn} onClick={() => deleteMonthlySlot(s.id)}>Delete</button></td></tr>))}</tbody>
+          <thead>
+            <tr>
+              <th>Workspace</th><th>City</th><th>Month</th><th>Year</th>
+              <th>Capacity</th><th>Booked</th><th>Remaining</th><th>Fill %</th><th>Price</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {monthlySlots.map(s => {
+              const booked = Number(s.booked || 0);
+              const capacity = Number(s.capacity || 0);
+              const remaining = capacity - booked;
+              const pct = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
+              const isFull = remaining <= 0;
+              return (
+                <tr key={s.id}>
+                  <td>
+                    <strong>
+                      {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.city || "No City"} |{" "}
+                      {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.location || "No Location"} |{" "}
+                      {s.workspace_name}
+                    </strong>
+                  </td>
+                  <td>{s.city}</td>
+                  <td>{MONTH_OPTIONS[Number(s.month) - 1] || s.month}</td>
+                  <td>{s.year}</td>
+                  <td>{capacity}</td>
+                  <td>
+                    <span style={{
+                      display: "inline-block", padding: "2px 10px", borderRadius: "20px",
+                      fontSize: "11px", fontWeight: 600,
+                      background: booked > 0 ? "#eff6ff" : "#f3f4f6",
+                      color: booked > 0 ? "#2563eb" : "#6b7280",
+                      border: `1px solid ${booked > 0 ? "#bfdbfe" : "#e5e7eb"}`
+                    }}>
+                      {booked}
+                    </span>
+                  </td>
+                  <td>
+                    <span style={{
+                      display: "inline-block", padding: "2px 10px", borderRadius: "20px",
+                      fontSize: "11px", fontWeight: 600,
+                      background: isFull ? "#fef2f2" : remaining < capacity * 0.2 ? "#fff7ed" : "#f0fdf4",
+                      color: isFull ? "#dc2626" : remaining < capacity * 0.2 ? "#ea580c" : "#16a34a",
+                      border: `1px solid ${isFull ? "#fecaca" : remaining < capacity * 0.2 ? "#fed7aa" : "#bbf7d0"}`
+                    }}>
+                      {isFull ? "Full" : `${remaining} left`}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <div style={{ height: "6px", borderRadius: "3px", background: "#e5e7eb", overflow: "hidden", width: "56px" }}>
+                        <div style={{ height: "100%", width: `${pct}%`, borderRadius: "3px", background: pct >= 100 ? "#dc2626" : pct >= 75 ? "#ea580c" : pct >= 50 ? "#f59e0b" : "#16a34a" }} />
+                      </div>
+                      <span style={{ fontSize: "11px", color: "#6b7280", minWidth: "30px" }}>{pct}%</span>
+                    </div>
+                  </td>
+                  <td>₹{s.price}</td>
+                  <td>
+                    <button className={styles.editBtn} onClick={() => { handleEditMonth(s); setShowMonthlyForm(true); }}>Edit</button>
+                    <button className={styles.deleteBtn} onClick={() => deleteMonthlySlot(s.id)}>Delete</button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
         </table>
         {monthlySlots.length === 0 && <div className={styles.empty}>No monthly slots yet. Create one above!</div>}
       </div>
     </div>
   );
+};
 
-  const renderBookings = () => (
+const renderBookings = () => {
+  const confirmedRevenue = mergedBookings.filter(b => b.status === "confirmed").reduce((sum, b) => sum + Number(b.total_price || 0), 0);
+  const pendingRevenue = mergedBookings.filter(b => b.status === "pending").reduce((sum, b) => sum + Number(b.total_price || 0), 0);
+
+  return (
     <div className={styles.sectionBody}>
       {toastMsg && <div className={styles.toast}>{toastMsg}</div>}
+
+      {/* ── Booking Stats ── */}
       <div className={styles.overviewGrid}>
-        <div className={`${styles.statCard} ${styles.gold}`}><span className={styles.statIcon}>📋</span><div><p className={styles.statValue}>{bookingStats.total}</p><p className={styles.statLabel}>Total</p></div></div>
-        <div className={`${styles.statCard} ${styles.green}`}><span className={styles.statIcon}>✅</span><div><p className={styles.statValue}>{bookingStats.confirmed}</p><p className={styles.statLabel}>Confirmed</p></div></div>
-        <div className={`${styles.statCard} ${styles.amber}`}><span className={styles.statIcon}>⏳</span><div><p className={styles.statValue}>{bookingStats.pending}</p><p className={styles.statLabel}>Pending</p></div></div>
-        <div className={`${styles.statCard} ${styles.red}`}><span className={styles.statIcon}>❌</span><div><p className={styles.statValue}>{bookingStats.cancelled}</p><p className={styles.statLabel}>Cancelled</p></div></div>
+        <div className={`${styles.statCard} ${styles.gold}`}>
+          <span className={styles.statIcon}>📋</span>
+          <div><p className={styles.statValue}>{bookingStats.total}</p><p className={styles.statLabel}>Total</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.green}`}>
+          <span className={styles.statIcon}>✅</span>
+          <div><p className={styles.statValue}>{bookingStats.confirmed}</p><p className={styles.statLabel}>Confirmed</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.amber}`}>
+          <span className={styles.statIcon}>⏳</span>
+          <div><p className={styles.statValue}>{bookingStats.pending}</p><p className={styles.statLabel}>Pending</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.red}`}>
+          <span className={styles.statIcon}>❌</span>
+          <div><p className={styles.statValue}>{bookingStats.cancelled}</p><p className={styles.statLabel}>Cancelled</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.green}`}>
+          <span className={styles.statIcon}>💰</span>
+          <div><p className={styles.statValue}>₹{confirmedRevenue.toLocaleString()}</p><p className={styles.statLabel}>Confirmed Revenue</p></div>
+        </div>
+        <div className={`${styles.statCard} ${styles.amber}`}>
+          <span className={styles.statIcon}>🕐</span>
+          <div><p className={styles.statValue}>₹{pendingRevenue.toLocaleString()}</p><p className={styles.statLabel}>Pending Revenue</p></div>
+        </div>
       </div>
+
       <div className={styles.tableWrap}>
-        {loadingBookings ? <div className={styles.empty}>Loading bookings…</div> : mergedBookings.length === 0 ? <div className={styles.empty}><div>📋</div><p>No bookings yet</p></div> : (
+        {loadingBookings ? (
+          <div className={styles.empty}>Loading bookings…</div>
+        ) : mergedBookings.length === 0 ? (
+          <div className={styles.empty}><div>📋</div><p>No bookings yet</p></div>
+        ) : (
           <table className={styles.table}>
-            <thead><tr><th>Workspace</th><th>Customer</th><th>City</th><th>Date</th><th>Slot</th><th>Additional Amenities</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody>{mergedBookings.map(item => { const isConfirmed = item.status === "confirmed"; const isCancelled = item.status === "cancelled"; const isPulsing = animatingId === item.id; return (<tr key={item.id} className={isPulsing ? styles.rowPulse : ""}><td><div className={styles.bookingWorkspace} onClick={() => openBookingModal(item)}><img src={item.image} alt={item.workspace} className={styles.bookingThumb} /><span className={styles.bookingWorkspaceTitle}>{item.workspace}</span></div></td><td>{item.user}</td><td><span>{workspaces.find(w => w.name?.trim() === item.workspace?.trim())?.city || "No City"} | {workspaces.find(w => w.name?.trim() === item.workspace?.trim())?.location || "No Location"} | {item.workspace}</span></td><td>{item.date}</td><td><div><strong>{item.slot_type}</strong><br /><small>{item.slot_time}</small></div></td><td>{Array.isArray(item.amenities) && item.amenities.length > 0 ? <div className={styles.bookingAmenities}>{item.amenities.map((a, i) => (<div key={i} className={styles.bookingAmenityItem}><span>☕</span><div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div></div>))}</div> : <span className={styles.noAmenities}>No Amenities</span>}</td><td className={styles.priceCell}>₹{Number(item.total_price || 0).toLocaleString()}</td><td><span className={styles.statusPill}>{item.status || "pending"}</span></td><td><div className={styles.bookingActionBox}>{isConfirmed && <span className={styles.statusPill}>✓ Confirmed</span>}{isCancelled && <span className={styles.statusPill}>✕ Cancelled</span>}{!isConfirmed && !isCancelled && <span className={styles.statusPill}>Pending</span>}</div></td></tr>); })}</tbody>
+            <thead>
+              <tr>
+                <th>Workspace</th><th>Customer</th><th>City</th><th>Date</th>
+                <th>Slot</th><th>Additional Amenities</th><th>Amount</th><th>Status</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {mergedBookings.map(item => {
+                const isConfirmed = item.status === "confirmed";
+                const isCancelled = item.status === "cancelled";
+                const isPulsing = animatingId === item.id;
+                return (
+                  <tr key={item.id} className={isPulsing ? styles.rowPulse : ""}>
+                    <td>
+                      <div className={styles.bookingWorkspace} onClick={() => openBookingModal(item)}>
+                        <img src={item.image} alt={item.workspace} className={styles.bookingThumb} />
+                        <span className={styles.bookingWorkspaceTitle}>{item.workspace}</span>
+                      </div>
+                    </td>
+                    <td>{item.user}</td>
+                    <td>
+                      <span>
+                        {workspaces.find(w => w.name?.trim() === item.workspace?.trim())?.city || "No City"} |{" "}
+                        {workspaces.find(w => w.name?.trim() === item.workspace?.trim())?.location || "No Location"} |{" "}
+                        {item.workspace}
+                      </span>
+                    </td>
+                    <td>{item.date}</td>
+                    <td><div><strong>{item.slot_type}</strong><br /><small>{item.slot_time}</small></div></td>
+                    <td>
+                      {Array.isArray(item.amenities) && item.amenities.length > 0
+                        ? <div className={styles.bookingAmenities}>{item.amenities.map((a, i) => (<div key={i} className={styles.bookingAmenityItem}><span>☕</span><div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div></div>))}</div>
+                        : <span className={styles.noAmenities}>No Amenities</span>}
+                    </td>
+                    <td className={styles.priceCell}>₹{Number(item.total_price || 0).toLocaleString()}</td>
+                    <td><span className={styles.statusPill}>{item.status || "pending"}</span></td>
+                    <td>
+                      <div className={styles.bookingActionBox}>
+                        {isConfirmed && <span className={styles.statusPill}>✓ Confirmed</span>}
+                        {isCancelled && <span className={styles.statusPill}>✕ Cancelled</span>}
+                        {!isConfirmed && !isCancelled && <span className={styles.statusPill}>Pending</span>}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
         )}
       </div>
+
       {requests.length > 0 && (
         <div className={styles.tableWrap}>
           <div className={styles.cancelRequestHead}><h3>Pending Cancel Requests</h3><span className={styles.statusPill}>{requests.length}</span></div>
           <table className={styles.table}>
             <thead><tr><th>Workspace</th><th>Customer</th><th>Amount</th><th>Reason</th><th>Action</th></tr></thead>
-            <tbody>{requests.map(r => (<tr key={r.id}><td>{r.workspace}</td><td>{r.user}</td><td><strong>₹{r.amount}</strong></td><td>{r.reason}</td><td>{r.status === "PENDING" ? <button className={styles.submitBtn} onClick={() => approveCancelRequest(r.id)}>Accept & Refund</button> : <span className={styles.statusPill}>Approved</span>}</td></tr>))}</tbody>
+            <tbody>
+              {requests.map(r => (
+                <tr key={r.id}>
+                  <td>{r.workspace}</td><td>{r.user}</td>
+                  <td><strong>₹{r.amount}</strong></td><td>{r.reason}</td>
+                  <td>
+                    {r.status === "PENDING"
+                      ? <button className={styles.submitBtn} onClick={() => approveCancelRequest(r.id)}>Accept & Refund</button>
+                      : <span className={styles.statusPill}>Approved</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       )}
+
       {selectedBooking && (
         <div className={styles.modalOverlay} onClick={closeBookingModal}>
           <div className={styles.bookingModal} onClick={e => e.stopPropagation()}>
             <button onClick={closeBookingModal} aria-label="Close" className={styles.modalCloseBtn}>✕</button>
-            <div className={styles.modalHero}><img src={selectedBooking.image} alt={selectedBooking.workspace} className={styles.modalHeroImage} /><div className={styles.modalHeroOverlay} /><div className={styles.modalHeroContent}><span className={styles.heroTag}>Premium Workspace</span><h2>{selectedBooking.workspace}</h2><p>Booked by <strong>{selectedBooking.user}</strong> on {selectedBooking.date}</p></div></div>
-            <div className={styles.modalBody}>
-              <div className={styles.modalTabs}>{["overview", "features", "pricing"].map(tab => <button key={tab} onClick={() => setBookingActiveTab(tab)} className={`${styles.modalTabBtn} ${bookingActiveTab === tab ? styles.modalTabActive : ""}`}>{tab.charAt(0).toUpperCase() + tab.slice(1)}</button>)}</div>
-              {bookingActiveTab === "overview" && (<><div className={styles.overviewMetaGrid}>{[["Customer", selectedBooking.user], ["Date", selectedBooking.date], ["Slot", `${selectedBooking.slot_type} ${selectedBooking.slot_time || ""}`], ["City", selectedBooking.city], ["Status", selectedBooking.status || "pending"]].map(([label, val]) => <div key={label} className={styles.metaCard}><span>{label}</span><strong className={label === "Status" ? getStatusClass(val) : ""}>{val}</strong></div>)}</div><div className={styles.bookingSummaryBox}><h4>Booking Summary</h4><p>This booking is for <strong>{selectedBooking.workspace}</strong>. Review the customer request and schedule details directly inside the dashboard.</p></div></>)}
-              {bookingActiveTab === "features" && <div className={styles.featureGrid}>{[["📶","High-Speed WiFi","Stable internet for work and meetings."],["🪑","Modern Setup","Comfortable desk and seating support."],["❄️","Fully Air Conditioned","Comfortable environment all day."],["☕","Refreshments","Tea, coffee and basic pantry access."]].map(([icon, title, desc]) => <div key={title} className={styles.featureCard}><div className={styles.featureIcon}>{icon}</div><h4>{title}</h4><p>{desc}</p></div>)}</div>}
-              {bookingActiveTab === "pricing" && <div className={styles.pricingCard}><span>Booking Amount</span><h2>₹{selectedBooking.total_price}</h2><p>For {selectedBooking.slot_type} {selectedBooking.slot_time} on {selectedBooking.date}</p><div className={styles.pricingList}><div>Workspace reserved for selected slot</div><div>Booking tracked inside dashboard</div><div>Direct manager visibility</div></div></div>}
-              {selectedBooking?.amenities?.length > 0 && (<div className={styles.modalAmenities}><h4>Additional Amenities</h4>{selectedBooking.amenities.map((a, i) => (<div key={i} className={styles.modalAmenityItem}><span>☕</span><div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div></div>))}</div>)}
+            <div className={styles.modalHero}>
+              <img src={selectedBooking.image} alt={selectedBooking.workspace} className={styles.modalHeroImage} />
+              <div className={styles.modalHeroOverlay} />
+              <div className={styles.modalHeroContent}>
+                <span className={styles.heroTag}>Premium Workspace</span>
+                <h2>{selectedBooking.workspace}</h2>
+                <p>Booked by <strong>{selectedBooking.user}</strong> on {selectedBooking.date}</p>
+              </div>
             </div>
-            <div className={styles.modalFooter}><div><strong>₹{selectedBooking.total_price}</strong><small>Total Booking Value</small></div><div>{selectedBooking.status === "confirmed" && <span className={styles.statusPill}>Booking Confirmed</span>}{selectedBooking.status === "cancelled" && <span className={styles.statusPill}>Booking Cancelled</span>}{selectedBooking.status !== "confirmed" && selectedBooking.status !== "cancelled" && <span className={styles.statusPill}>Pending Booking</span>}</div></div>
+            <div className={styles.modalBody}>
+              <div className={styles.modalTabs}>
+                {["overview", "features", "pricing"].map(tab => (
+                  <button key={tab} onClick={() => setBookingActiveTab(tab)} className={`${styles.modalTabBtn} ${bookingActiveTab === tab ? styles.modalTabActive : ""}`}>
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </div>
+              {bookingActiveTab === "overview" && (
+                <>
+                  <div className={styles.overviewMetaGrid}>
+                    {[["Customer", selectedBooking.user], ["Date", selectedBooking.date], ["Slot", `${selectedBooking.slot_type} ${selectedBooking.slot_time || ""}`], ["City", selectedBooking.city], ["Status", selectedBooking.status || "pending"]].map(([label, val]) => (
+                      <div key={label} className={styles.metaCard}><span>{label}</span><strong className={label === "Status" ? getStatusClass(val) : ""}>{val}</strong></div>
+                    ))}
+                  </div>
+                  <div className={styles.bookingSummaryBox}>
+                    <h4>Booking Summary</h4>
+                    <p>This booking is for <strong>{selectedBooking.workspace}</strong>. Review the customer request and schedule details directly inside the dashboard.</p>
+                  </div>
+                </>
+              )}
+              {bookingActiveTab === "features" && (
+                <div className={styles.featureGrid}>
+                  {[["📶","High-Speed WiFi","Stable internet for work and meetings."],["🪑","Modern Setup","Comfortable desk and seating support."],["❄️","Fully Air Conditioned","Comfortable environment all day."],["☕","Refreshments","Tea, coffee and basic pantry access."]].map(([icon, title, desc]) => (
+                    <div key={title} className={styles.featureCard}><div className={styles.featureIcon}>{icon}</div><h4>{title}</h4><p>{desc}</p></div>
+                  ))}
+                </div>
+              )}
+              {bookingActiveTab === "pricing" && (
+                <div className={styles.pricingCard}>
+                  <span>Booking Amount</span><h2>₹{selectedBooking.total_price}</h2>
+                  <p>For {selectedBooking.slot_type} {selectedBooking.slot_time} on {selectedBooking.date}</p>
+                  <div className={styles.pricingList}><div>Workspace reserved for selected slot</div><div>Booking tracked inside dashboard</div><div>Direct manager visibility</div></div>
+                </div>
+              )}
+              {selectedBooking?.amenities?.length > 0 && (
+                <div className={styles.modalAmenities}>
+                  <h4>Additional Amenities</h4>
+                  {selectedBooking.amenities.map((a, i) => (
+                    <div key={i} className={styles.modalAmenityItem}><span>☕</span><div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div></div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className={styles.modalFooter}>
+              <div><strong>₹{selectedBooking.total_price}</strong><small>Total Booking Value</small></div>
+              <div>
+                {selectedBooking.status === "confirmed" && <span className={styles.statusPill}>Booking Confirmed</span>}
+                {selectedBooking.status === "cancelled" && <span className={styles.statusPill}>Booking Cancelled</span>}
+                {selectedBooking.status !== "confirmed" && selectedBooking.status !== "cancelled" && <span className={styles.statusPill}>Pending Booking</span>}
+              </div>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
+};
 
   // ─── LEADS ────────────────────────────────────────────────────────────────
   const getLeadCounts = (leads, statusOptions) => {

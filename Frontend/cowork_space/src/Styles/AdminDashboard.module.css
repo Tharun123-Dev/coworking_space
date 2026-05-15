@@ -289,14 +289,18 @@
   opacity: 1;
 }
 
-.navChildren {
-  margin: 2px 0 4px 30px;
-  border-left: 1px solid rgba(201,168,76,0.2);
-  padding-left: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  animation: fadeSlide 0.22s ease;
+.navChildren{
+  max-height:0;
+  overflow:hidden;
+  opacity:0;
+  transform:translateY(-6px);
+  transition:all .3s ease;
+}
+
+.navChildrenOpen{
+  max-height:400px;
+  opacity:1;
+  transform:translateY(0);
 }
 
 @keyframes fadeSlide {

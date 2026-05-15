@@ -42,7 +42,6 @@ from workspaces.models import (
 )
 from .models import Booking
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_booking(request):
@@ -89,33 +88,23 @@ def create_booking(request):
 
                     persons = 1
 
-                # ✅ FIX DECIMAL ISSUE
-
                 price = float(
                     amenity.price
                 )
 
                 total = (
                     price
-                    *
-                    persons
+                    * persons
                 )
 
                 amenity_total += total
 
                 amenity_data.append({
 
-                    "title":
-                    amenity.title,
-
-                    "price":
-                    price,
-
-                    "persons":
-                    persons,
-
-                    "total":
-                    total
+                    "title": amenity.title,
+                    "price": price,
+                    "persons": persons,
+                    "total": total
 
                 })
 
@@ -132,10 +121,7 @@ def create_booking(request):
             if not slot_id:
 
                 return Response({
-
-                    "error":
-                    "slot_id required"
-
+                    "error": "slot_id required"
                 }, status=400)
 
             try:
@@ -150,20 +136,19 @@ def create_booking(request):
             except:
 
                 return Response({
-
-                    "error":
-                    "Invalid seats"
-
+                    "error": "Invalid seats"
                 }, status=400)
 
             if seats < 1:
 
                 return Response({
-
                     "error":
                     "Seats must be at least 1"
-
                 }, status=400)
+
+            # ======================================
+            # ✅ GET WORKSPACE SLOT
+            # ======================================
 
             slot = get_object_or_404(
                 WorkspaceSlot,
@@ -172,8 +157,7 @@ def create_booking(request):
 
             available = (
                 slot.capacity
-                -
-                slot.booked_count
+                - slot.booked_count
             )
 
             if seats > available:
@@ -184,6 +168,10 @@ def create_booking(request):
                     f"Only {available} seats left"
 
                 }, status=400)
+
+            # ======================================
+            # ✅ CREATE BOOKING
+            # ======================================
 
             booking = Booking.objects.create(
 
@@ -201,15 +189,11 @@ def create_booking(request):
 
                 total_price=
 
-                float(
-                    slot.price * seats
-                )
+                float(slot.price * seats)
 
                 +
 
-                float(
-                    amenity_total
-                ),
+                float(amenity_total),
 
                 payment_status="VERIFIED",
 
@@ -219,9 +203,35 @@ def create_booking(request):
 
             )
 
-            slot.booked_count += seats
+            # ======================================
+            # ✅ UPDATE WORKSPACE SLOT
+            # ======================================
+
+            slot.booked_count = (
+                slot.booked_count or 0
+            ) + seats
 
             slot.save()
+
+            # ======================================
+            # ✅ UPDATE SLOT MANAGEMENT TABLE
+            # ======================================
+
+            from bookings.models import Slot
+
+            slot_management = Slot.objects.filter(
+                workspace=slot.workspace,
+                date=slot.date,
+                slot_type="HOURLY"
+            ).order_by("id").first()
+
+            if slot_management:
+
+                slot_management.booked_count = (
+                    slot_management.booked_count or 0
+                ) + int(seats)
+
+                slot_management.save()
 
         # =========================
         # ✅ MONTH BOOKING
@@ -324,8 +334,7 @@ def create_booking(request):
 
                 available = (
                     mslot.capacity
-                    -
-                    mslot.booked
+                    - mslot.booked
                 )
 
                 if slot_seats > available:
@@ -338,22 +347,15 @@ def create_booking(request):
                     }, status=400)
 
                 total_price += (
-
                     float(mslot.price)
-
-                    *
-
-                    slot_seats
-
+                    * slot_seats
                 )
 
                 validated_slots.append(
-
                     (
                         mslot,
                         slot_seats
                     )
-
                 )
 
             if workspace is None:
@@ -432,7 +434,6 @@ def create_booking(request):
             "error": str(e)
 
         }, status=500)
-# ===============================
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response

@@ -83,21 +83,14 @@ const SIDEBAR_GROUPS = [
     label: "Leads",
     icon: IC.leads,
     children: [
-      { id: "view-leads", label: "View Leads", icon: IC.leads, section: "leads" },
+      { id: "view-leads", label: "Normal Leads", icon: IC.leads, section: "leads" },
       { id: "offerleads", label: "Offer Leads", icon: IC.offers, section: "offerleads" },
       { id: "enterprise", label: "Customise Leads", icon: IC.enterprise, section: "enterprise" },
       { id: "quotation-leads", label: "Quotation Leads", icon: IC.leads, section: "quotation-leads" },
-    ],
-  },
-  {
-    id: "business-group",
-    label: "Business",
-    icon: IC.enterprise,
-    children: [
       { id: "entbiz", label: "Hyderabad Leads", icon: IC.enterprise, section: "hyderabad-leads" },
-      // { id: "company-leads", label: "Company Leads", icon: IC.leads, section: "company-leads" },
     ],
   },
+
   { id: "bookings", label: "Bookings", icon: IC.bookings, section: "bookings", children: null },
   { id: "support", label: "Support", icon: IC.support, section: "tickets", children: null },
   { id: "activity", label: "Recent Activity", icon: IC.activity, section: "activity", children: null },
@@ -1186,7 +1179,7 @@ setOfferLeads(o.data || []);
               <div key={group.id}>
                 <button
                   className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
-                  onClick={() => (sideOpen || mobOpen) && toggleGroup(group.id)}
+                  onMouseEnter={() => (sideOpen || mobOpen) && setOpenGroup(group.id)}
                   title={!sideOpen && !mobOpen ? group.label : ""}
                 >
                   <span className={styles.navIco}><Icon d={group.icon} size={15} /></span>
@@ -1197,12 +1190,20 @@ setOfferLeads(o.data || []);
                     </span>
                   )}
                 </button>
-                {(sideOpen || mobOpen) && isOpen && (
-                  <div className={styles.navChildren}>
+           {(sideOpen || mobOpen) && (
+  <div
+    className={`${styles.navChildren} ${
+      isOpen ? styles.navChildrenOpen : ""
+    }`}
+    onMouseLeave={() => setOpenGroup(null)}
+  >
                     {group.children.map((child) => (
                       <button key={child.id}
                         className={`${styles.navChild} ${section === child.section ? styles.navChildActive : ""}`}
-                        onClick={() => goNav(child)}
+                       onClick={() => {
+  goNav(child);
+  setOpenGroup(null);
+}}
                       >
                         <span className={styles.childDot} />
                         <span>{child.label}</span>

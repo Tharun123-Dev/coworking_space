@@ -97,16 +97,25 @@ const handlePayment = async () => {
             });
 
             // STEP 3: CREATE BOOKING (IMPORTANT)
-            await axiosInstance.post("cart/create/", {
-              slot_id: slotId,
-              payment_id: response.razorpay_payment_id,
-            });
+           await axiosInstance.post("cart/create/", {
+
+  booking_type: "day",
+
+  slot_id: slotId,
+
+  seats: 1,
+
+  payment_id: response.razorpay_payment_id,
+
+});
 
             alert("Booking Confirmed 🎉");
+         
 
             window.location.href = "/myorders";
 
           } else {
+
             alert("Payment verification failed");
           }
         } catch (err) {
