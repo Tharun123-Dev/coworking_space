@@ -3,7 +3,7 @@ import axiosInstance from "../Services/Axios";
 import "../Styles/AddReview.css";
 import "../Improved/Chatbot.css";
 import R from "../Pages/Reveal";
-
+import { useNavigate } from "react-router-dom";
 function ReviewChatWidget() {
   const [openReview, setOpenReview] = useState(false);
   const [openChat, setOpenChat] = useState(false);
@@ -22,7 +22,7 @@ function ReviewChatWidget() {
   const [input, setInput] = useState("");
 
   const token = localStorage.getItem("access");
-
+ const navigate = useNavigate();
   // ================= FETCH REVIEWS =================
   const fetchReviews = () => {
     axiosInstance.get("reviews/all/")
@@ -61,10 +61,13 @@ function ReviewChatWidget() {
 
   // ================= ADD REVIEW =================
   const handleSubmit = () => {
-    if (!token) {
-      alert("Please login first ❌");
-      return;
-    }
+  if (!token) {
+  alert("Please login first ❌");
+
+  navigate("/auth");
+
+  return;
+}
 
     if (!form.comment) {
       alert("Write something ❌");

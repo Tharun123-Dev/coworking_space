@@ -142,7 +142,7 @@ function Auth() {
         localStorage.setItem("refresh", res.data.refresh || "");
         localStorage.setItem("username", res.data.username || formData.username);
         localStorage.setItem("role", res.data.role || "user");
-          localStorage.setItem("user_location", res.data.location);
+        localStorage.setItem("user_location", res.data.location);
         localStorage.setItem("remember_me", rememberMe ? "true" : "false");
         showPopup("success", `Welcome back, ${res.data.username || formData.username}!`);
         setTimeout(() => redirectAfterLogin(res.data.role), 800);
@@ -167,6 +167,10 @@ function Auth() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    navigate(-1);
   };
 
   const isOwnerOrAdmin = roleType === "owner" || roleType === "admin";
@@ -195,6 +199,16 @@ function Auth() {
       )}
 
       <div className={`${styles.card} ${!isLogin ? styles.cardExpanded : ""}`}>
+
+        {/* ─── CLOSE BUTTON ─── */}
+        <button
+          type="button"
+          className={styles.closeAuthBtn}
+          onClick={handleClose}
+          aria-label="Close"
+        >
+          ✕
+        </button>
 
         {/* ─── LEFT PANEL ─── */}
         <div className={styles.leftPanel}>
@@ -380,13 +394,13 @@ function Auth() {
                   <span className={styles.checkmark} />
                   <span>Remember me</span>
                 </label>
-          <button
-  type="button"
-  className={styles.forgotBtn}
-  onClick={() => navigate("/forgot-password")}
->
-  Forgot password?
-</button>
+                <button
+                  type="button"
+                  className={styles.forgotBtn}
+                  onClick={() => navigate("/forgot-password")}
+                >
+                  Forgot password?
+                </button>
               </div>
             )}
           </div>
