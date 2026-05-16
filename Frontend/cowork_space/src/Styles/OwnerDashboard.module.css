@@ -1037,6 +1037,419 @@
     inset 0 1px 1px rgba(255,255,255,0.2);
 }
 
+/* ─── HOVER NAV GROUP ──────────────────────────────────────────────── */
+.hoverGroupWrap {
+  position: relative;
+  margin: 2px 8px;
+}
+
+/* The group label row */
+.hoverGroupLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  cursor: pointer;
+  user-select: none;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  border-left: 2px solid transparent;
+}
+.hoverGroupLabel:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+.hoverGroupLabelActive {
+  background: rgba(99, 102, 241, 0.08);
+  color: #a5b4fc;
+}
+.hoverGroupLabelOpen {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+}
+.hoverGroupLabelCollapsed {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.hoverGroupLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hoverGroupIcon {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.hoverGroupText {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hoverGroupChevron {
+  font-size: 9px;
+  opacity: 0.5;
+  transition: transform 0.2s;
+}
+.hoverGroupChevronOpen {
+  transform: rotate(90deg);
+  opacity: 0.8;
+}
+
+/* Inline dropdown (expanded sidebar) */
+.hoverDropdown {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.22s ease, opacity 0.18s ease;
+  pointer-events: none;
+}
+.hoverDropdownOpen {
+  max-height: 400px;
+  opacity: 1;
+  pointer-events: all;
+}
+
+.hoverChildItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 32px;
+  border: none;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  margin: 1px 0;
+}
+.hoverChildItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+}
+.hoverChildItemActive {
+  background: rgba(99, 102, 241, 0.18) !important;
+  color: #a5b4fc !important;
+  border-left: 2px solid #818cf8 !important;
+}
+.hoverChildIcon {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* Flyout menu (collapsed sidebar) */
+.flyoutMenu {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 0;
+  background: #1a2235;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  min-width: 200px;
+  padding: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  animation: flyoutIn 0.15s ease;
+}
+@keyframes flyoutIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.flyoutTitle {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+  padding: 4px 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 4px;
+}
+.flyoutItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: none;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  border-left: 2px solid transparent;
+  transition: all 0.12s;
+}
+.flyoutItem:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #e2e8f0;
+}
+.flyoutItemActive {
+  background: rgba(99, 102, 241, 0.18) !important;
+  color: #a5b4fc !important;
+  border-left: 2px solid #818cf8 !important;
+}
+
+/* ─── SINGLE NAV ITEM (replaces inline styles) ─────────────────────── */
+.singleNavItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: none;
+  width: calc(100% - 16px);
+  text-align: left;
+  background: transparent;
+  color: #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  margin: 2px 8px;
+}
+.singleNavItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.singleNavItemActive {
+  background: rgba(99, 102, 241, 0.18) !important;
+  color: #a5b4fc !important;
+  border-left: 2px solid #818cf8 !important;
+}
+.navItemIcon {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+/* ─── PER-WORKSPACE REVENUE STYLES ─────────────────────────────────────────── */
+ 
+/* Revenue Toggle Button in workspace table */
+.wsRevenueToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1.5px solid #7c3aed;
+  background: #f5f3ff;
+  color: #7c3aed;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.wsRevenueToggleBtn:hover {
+  background: #7c3aed;
+  color: #fff;
+}
+ 
+/* Inline revenue row inside the workspace table */
+.wsRevenueRow {
+  background: linear-gradient(135deg, #faf5ff 0%, #f0fdf4 100%);
+  border-left: 4px solid #7c3aed;
+}
+.wsRevenueRow td {
+  padding: 0 !important;
+}
+.wsRevenueExpandPanel {
+  padding: 18px 24px;
+  animation: revenueFadeIn 0.22s ease;
+}
+ 
+@keyframes revenueFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+ 
+.wsRevenueTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wsRevenueTitleAccent {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7c3aed;
+  display: inline-block;
+}
+ 
+.wsRevenueGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+ 
+.wsRevenueStat {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border-top: 3px solid transparent;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+.wsRevenueStat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.wsRevenueStat::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--stat-color, #7c3aed);
+}
+ 
+.wsRevenueStatIcon {
+  font-size: 20px;
+  margin-bottom: 6px;
+  display: block;
+}
+.wsRevenueStatValue {
+  font-size: 17px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 2px;
+  line-height: 1.2;
+}
+.wsRevenueStatLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+.wsRevenueStatSub {
+  font-size: 10px;
+  color: #9ca3af;
+  margin: 2px 0 0;
+}
+ 
+/* Booking count mini badges */
+.wsRevenueBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.wsRevenueBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.wsRevenueBadgeBlue {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+.wsRevenueBadgeGreen {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+.wsRevenueBadgeAmber {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+}
+.wsRevenueBadgeRed {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+ 
+/* No data state */
+.wsRevenueEmpty {
+  text-align: center;
+  padding: 20px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+ 
+/* Loading shimmer */
+.wsRevenueLoading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 600;
+}
+.wsRevenueSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e9d5ff;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+ 
+/* Fill bar for bookings */
+.wsRevenueFillBar {
+  height: 5px;
+  border-radius: 3px;
+  background: #e5e7eb;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.wsRevenueFillBarInner {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ─── RESPONSIVE ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .flyoutMenu {
+    left: 60px;
+    top: 0;
+    min-width: 180px;
+  }
+  .hoverGroupLabel {
+    padding: 10px 12px;
+  }
+  .hoverChildItem {
+    padding: 8px 10px 8px 28px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .flyoutMenu {
+    left: 52px;
+    min-width: 160px;
+    font-size: 12px;
+  }
+}
+
 @media(max-width:640px){
   .managerName{
     padding:6px 12px;

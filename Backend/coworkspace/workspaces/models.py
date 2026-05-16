@@ -356,6 +356,60 @@ class OfferCoupon(models.Model):
 
     def __str__(self):
         return self.coupon_code
+    
+
+class WorkspaceOwnerDetails(models.Model):
+
+    workspace = models.OneToOneField(
+        Workspace,
+        on_delete=models.CASCADE,
+        related_name="owner_details"
+    )
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    owner_name = models.CharField(max_length=255)
+    owner_email = models.EmailField(blank=True, null=True)
+    owner_phone = models.CharField(max_length=20)
+
+    business_name = models.CharField(max_length=255, blank=True, null=True)
+
+    gst_number = models.CharField(max_length=100, blank=True, null=True)
+    pan_number = models.CharField(max_length=100, blank=True, null=True)
+
+    rent_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    revenue_share_pct = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0
+    )
+
+    agreement_type = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    contract_start = models.DateField(null=True, blank=True)
+    contract_end = models.DateField(null=True, blank=True)
+
+    bank_name = models.CharField(max_length=255, blank=True, null=True)
+    account_number = models.CharField(max_length=255, blank=True, null=True)
+    ifsc_code = models.CharField(max_length=100, blank=True, null=True)
+
+    notes = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 

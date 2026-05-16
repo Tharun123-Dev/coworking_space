@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    add_to_cart, get_cart, remove_item, create_booking, clear_cart,
+   admin_workspace_revenue, owner_workspace_revenue,add_to_cart, get_cart, remove_item, create_booking, clear_cart,
     owner_bookings, admin_bookings, my_orders, owner_revenue,
     cancel_request, owner_cancel_requests, approve_cancel,
 
@@ -22,6 +22,10 @@ urlpatterns = [
     # OWNER
     path("owner/bookings/", owner_bookings),
     path("owner/revenue/", owner_revenue),
+    path(
+    "owner/workspace-revenue/<int:workspace_id>/",
+    owner_workspace_revenue
+),
 
     # ADMIN
     path("admin/bookings/", admin_bookings),
@@ -37,4 +41,8 @@ urlpatterns = [
     # ✅ NEW SLOT SYSTEM
     path("slots/create/", create_slots),
     path("slots/<int:workspace_id>/", get_slots),
+    path(
+    "admin/workspace-revenue/<int:workspace_id>/",
+    admin_workspace_revenue
+),
 ]

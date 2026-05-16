@@ -1,0 +1,516 @@
+/* ─── OwnerRevenue.module.css ──────────────────────────────────────────────
+   Designed to sit inside the existing OwnerDashboard shell.
+   Palette mirrors the existing dashboard dark-gold system.
+─────────────────────────────────────────────────────────────────────────── */
+ 
+/* ── layout ── */
+.wrap {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+}
+ 
+/* ── page header ── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pageBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #b8922a18;
+  color: #b8922a;
+  border: 1px solid #b8922a30;
+  margin-bottom: 8px;
+}
+.pageTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a2235;
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+.pageSub {
+  font-size: 13px;
+  color: #667085;
+  margin: 0;
+  line-height: 1.5;
+}
+.refreshBtn {
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.refreshBtn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+ 
+/* ── summary cards ── */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+@media (max-width: 1024px) { .summaryGrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .summaryGrid { grid-template-columns: 1fr; } }
+ 
+.summaryCard {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e8edf5;
+  overflow: hidden;
+  padding: 18px 18px 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.summaryCard:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.09); }
+ 
+.summaryCardAccent {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  border-radius: 4px 0 0 4px;
+}
+.summaryCardIcon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.summaryCardBody { flex: 1; min-width: 0; }
+.summaryCardValue {
+  font-size: 20px; font-weight: 800; color: #1a2235;
+  margin: 0 0 2px; letter-spacing: -0.5px;
+}
+.summaryCardLabel {
+  font-size: 12px; font-weight: 600; color: #374151;
+  margin: 0 0 1px; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.summaryCardSub { font-size: 11px; color: #94a3b8; margin: 0; }
+ 
+/* ── controls ── */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  font-size: 18px;
+  pointer-events: none;
+}
+.searchInput {
+  width: 100%;
+  padding: 10px 40px 10px 40px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  font-size: 13px;
+  color: #1a2235;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.searchInput:focus { border-color: #b8922a; box-shadow: 0 0 0 3px #b8922a15; }
+.clearBtn {
+  position: absolute; right: 12px;
+  background: none; border: none; cursor: pointer;
+  color: #94a3b8; font-size: 13px; padding: 4px;
+}
+.clearBtn:hover { color: #374151; }
+ 
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filterTabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.filterTab {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #667085;
+  cursor: pointer;
+  transition: all 0.16s;
+}
+.filterTab:hover { border-color: #b8922a; color: #b8922a; }
+.filterTabActive {
+  background: #b8922a;
+  border-color: #b8922a;
+  color: #fff;
+}
+.sortSelect {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  outline: none;
+}
+.sortSelect:focus { border-color: #b8922a; }
+ 
+.viewToggle { display: flex; gap: 4px; margin-left: auto; }
+.viewBtn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  font-size: 16px;
+  color: #667085;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.16s;
+}
+.viewBtn:hover { border-color: #b8922a; color: #b8922a; }
+.viewBtnActive { background: #b8922a18; border-color: #b8922a; color: #b8922a; }
+ 
+.resultMeta {
+  font-size: 13px;
+  color: #667085;
+}
+.resultMeta strong { color: #1a2235; }
+.resultMeta em { font-style: normal; color: #b8922a; }
+ 
+/* ── loading / empty ── */
+.loadingBox {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; padding: 60px 0; color: #94a3b8;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #b8922a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+ 
+.emptyBox {
+  text-align: center; padding: 60px 0;
+}
+.emptyIcon { font-size: 40px; margin-bottom: 12px; }
+.emptyBox h3 { font-size: 16px; font-weight: 700; color: #1a2235; margin: 0 0 6px; }
+.emptyBox p  { font-size: 13px; color: #94a3b8; margin: 0; }
+ 
+/* ── card grid ── */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+@media (max-width: 560px) { .cardGrid { grid-template-columns: 1fr; } }
+ 
+.ownerCard {
+  position: relative;
+  background: #fff;
+  border-radius: 18px;
+  border: 1.5px solid #e8edf5;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s, border-color 0.2s;
+  padding: 0 0 16px;
+}
+.ownerCard:hover,
+.ownerCardOpen {
+  border-color: #b8922a40;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.10);
+}
+ 
+.rankBadge {
+  position: absolute;
+  top: 14px; right: 14px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.05em;
+}
+ 
+.ownerCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px 0;
+  cursor: pointer;
+  gap: 12px;
+}
+.ownerCardLeft { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ownerAvatar {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+  filter: brightness(0.88);
+}
+.ownerName { font-size: 15px; font-weight: 700; color: #1a2235; margin: 0 0 2px; }
+.ownerMeta { font-size: 11px; color: #94a3b8; margin: 0; }
+ 
+.ownerCardRight { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ownerRevenue { font-size: 18px; font-weight: 800; color: #1a2235; margin: 0; letter-spacing: -0.5px; }
+.ownerExpandIcon { color: #94a3b8; font-size: 11px; }
+ 
+/* revenue bar */
+.revenueBarTrack {
+  margin: 14px 18px 0;
+  height: 4px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.revenueBarFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+  opacity: 0.85;
+}
+ 
+/* stat pills */
+.statPillRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 12px 18px 0;
+}
+.statPill {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+ 
+/* confirm rate */
+.confirmRateRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px 0;
+}
+.confirmRateLabel { font-size: 11px; color: #94a3b8; flex-shrink: 0; }
+.confirmRateValue { font-size: 12px; font-weight: 700; color: #1a2235; flex-shrink: 0; margin-left: auto; }
+.confirmTrack {
+  flex: 1;
+  height: 5px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.confirmFill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+ 
+/* expanded bookings */
+.bookingsList {
+  margin: 14px 14px 0;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  background: #f8fafc;
+  overflow: hidden;
+}
+.bookingsListHeader {
+  padding: 10px 14px;
+  background: #f1f5f9;
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  border-bottom: 1px solid #e8edf5;
+}
+.bookingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  gap: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.14s;
+}
+.bookingRow:hover { background: #f1f5f9; }
+.bookingRow:last-child { border-bottom: none; }
+ 
+.bookingRowLeft { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bookingThumb {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #e2e8f0;
+}
+.bookingWorkspace {
+  font-size: 12px; font-weight: 700; color: #1a2235;
+  margin: 0 0 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 180px;
+}
+.bookingUser { font-size: 11px; color: #94a3b8; margin: 0; }
+ 
+.bookingRowRight { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.bookingPrice { font-size: 13px; font-weight: 800; color: #1a2235; }
+.bookingStatus {
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.moreBookings {
+  text-align: center;
+  padding: 8px;
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0;
+}
+ 
+/* ── table view ── */
+.tableWrap {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid #e8edf5;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.revenueTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+}
+.revenueTable thead tr {
+  background: #f8fafc;
+  border-bottom: 2px solid #e8edf5;
+}
+.revenueTable th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #667085;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.revenueTable td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #374151;
+  vertical-align: middle;
+}
+.revenueTable tbody tr:last-child td { border-bottom: none; }
+.revenueTable tbody tr:hover td { background: #f8fafc; }
+ 
+.rankCell { text-align: center; }
+.rankNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+ 
+.tableOwnerCell { display: flex; align-items: center; gap: 10px; }
+.tableAvatar {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+  filter: brightness(0.88);
+}
+.tableOwnerName { font-weight: 700; color: #1a2235; white-space: nowrap; }
+ 
+.wsList { display: flex; gap: 4px; flex-wrap: wrap; max-width: 200px; }
+.wsTag {
+  padding: 2px 8px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #374151;
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ 
+.numCell { text-align: center; font-weight: 700; color: #1a2235; }
+.tableBadge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.moneyCell { font-weight: 800; color: #10b981; white-space: nowrap; }
+.moneyCellAmber { font-weight: 800; color: #f59e0b; white-space: nowrap; }
+ 
+.tableTotalCell { display: flex; flex-direction: column; gap: 5px; min-width: 120px; }
+.tableTotalAmount { font-weight: 800; color: #1a2235; font-size: 14px; }
+.tableBarTrack {
+  height: 4px; background: #f1f5f9; border-radius: 4px; overflow: hidden;
+}
+.tableBarFill {
+  height: 100%; border-radius: 4px;
+  transition: width 0.6s ease; opacity: 0.8;
+}
+ 
+.rateCell { display: flex; flex-direction: column; gap: 5px; min-width: 80px; }
+.rateNum { font-size: 13px; font-weight: 800; }
+.rateTrack { height: 4px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.rateFill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+ 
+/* totals footer row */
+.totalsRow td {
+  background: #f8fafc;
+  border-top: 2px solid #e8edf5;
+  font-size: 13px;
+  padding: 12px 14px;
+}
+ 
+/* ── responsive ── */
+@media (max-width: 768px) {
+  .filterRow { flex-direction: column; align-items: flex-start; }
+  .viewToggle { margin-left: 0; }
+  .cardGrid { grid-template-columns: 1fr; }
+  .bookingWorkspace { max-width: 120px; }
+}

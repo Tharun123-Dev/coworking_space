@@ -1,617 +1,449 @@
 import { useEffect, useMemo, useState } from "react";
 import axiosInstance from "../Services/Axios";
-import "../Styles/AdminBookings.css";
+import styles from "../Styles/AdminBookings.module.css";
 
-function AdminBookings() {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("All");
+/* ─── helpers ─────────────────────────────────────────────────────────────── */
+const AVATAR_PALETTE = [
+  "#6366f1", "#f59e0b", "#10b981", "#3b82f6",
+  "#ec4899", "#8b5cf6", "#14b8a6", "#f97316",
+];
+const avatarColor = (str = "") => {
+  let t = 0; for (const c of str) t += c.charCodeAt(0);
+  return AVATAR_PALETTE[t % AVATAR_PALETTE.length];
+};
+const initials = (name = "") =>
+  name.trim().split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "?";
 
-  const [showDetails, setShowDetails] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState(null);
-  const [activeTab, setActiveTab] = useState("overview");
+const fmt = (n) => Number(n || 0).toLocaleString("en-IN");
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+const STATUS_CONFIG = {
+  confirmed: { label: "Confirmed", color: "#10b981", bg: "#10b98115", border: "#10b98130" },
+  pending:   { label: "Pending",   color: "#f59e0b", bg: "#f59e0b15", border: "#f59e0b30" },
+  cancelled: { label: "Cancelled", color: "#ef4444", bg: "#ef444415", border: "#ef444430" },
+};
+
+/* ─── component ──────────────────────────────────────────────────────────── */
+export default function OwnerRevenue() {
+  const [bookings, setBookings]   = useState([]);
+  const [loading, setLoading]     = useState(false);
+  const [search, setSearch]       = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy]       = useState("revenue"); // revenue | bookings | name
+  const [expanded, setExpanded]   = useState(null);       // owner name
+  const [view, setView]           = useState("cards");    // cards | table
+
+  useEffect(() => { fetchBookings(); }, []);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
       const res = await axiosInstance.get("cart/admin/bookings/");
       setBookings(Array.isArray(res.data) ? res.data : []);
-    } catch (error) {
-      console.error("Failed to fetch bookings:", error);
+    } catch (e) {
+      console.error("Revenue fetch error:", e);
       setBookings([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const normalizeStatus = (status = "") => status.toLowerCase().trim();
-
-  const getStatusClass = (status) => {
-    const s = normalizeStatus(status);
-    if (s === "confirmed") return "confirmed";
-    if (s === "cancelled") return "cancelled";
-    return "pending";
-  };
-
-  const stats = useMemo(
-    () => ({
-      total: bookings.length,
-      pending: bookings.filter((b) => normalizeStatus(b.status) === "pending").length,
-      confirmed: bookings.filter((b) => normalizeStatus(b.status) === "confirmed").length,
-      cancelled: bookings.filter((b) => normalizeStatus(b.status) === "cancelled").length,
-    }),
-    [bookings]
-  );
-
-  const filteredBookings = useMemo(() => {
-    return bookings.filter((item) => {
-      const query = search.toLowerCase().trim();
-
-      const matchesSearch =
-        (item.owner || "").toLowerCase().includes(query) ||
-        (item.user || "").toLowerCase().includes(query) ||
-        (item.workspace || "").toLowerCase().includes(query) ||
-        (item.location || "").toLowerCase().includes(query) ||
-        (item.city || "").toLowerCase().includes(query);
-
-      const matchesFilter =
-        filter === "All" || normalizeStatus(item.status) === filter.toLowerCase();
-
-      return matchesSearch && matchesFilter;
+  /* ── aggregate by owner ─────────────────────────────────────────────── */
+  const ownerMap = useMemo(() => {
+    const map = {};
+    bookings.forEach(b => {
+      const key = b.owner || "Unknown";
+      if (!map[key]) {
+        map[key] = {
+          owner: key,
+          total: 0, confirmed: 0, pending: 0, cancelled: 0,
+          totalRevenue: 0, confirmedRevenue: 0, pendingRevenue: 0,
+          workspaces: new Set(),
+          cities: new Set(),
+          bookings: [],
+        };
+      }
+      const price = Number(b.total_price || b.price || 0);
+      const status = (b.status || "pending").toLowerCase().trim();
+      map[key].total++;
+      map[key].totalRevenue += price;
+      map[key].bookings.push(b);
+      map[key].workspaces.add(b.workspace || "Unknown");
+      map[key].cities.add(b.city || "—");
+      if (status === "confirmed") { map[key].confirmed++; map[key].confirmedRevenue += price; }
+      else if (status === "cancelled") { map[key].cancelled++; }
+      else { map[key].pending++; map[key].pendingRevenue += price; }
     });
-  }, [bookings, search, filter]);
+    return map;
+  }, [bookings]);
 
-  const handleImageClick = (item) => {
-    setSelectedBooking(item);
-    setActiveTab("overview");
-    setShowDetails(true);
-  };
+  const owners = useMemo(() => {
+    let list = Object.values(ownerMap).map(o => ({
+      ...o,
+      workspaces: [...o.workspaces],
+      cities: [...o.cities],
+    }));
 
-  const closeModal = () => {
-    setShowDetails(false);
-    setTimeout(() => {
-      setSelectedBooking(null);
-      setActiveTab("overview");
-    }, 180);
-  };
+    // search
+    const q = search.toLowerCase().trim();
+    if (q) list = list.filter(o =>
+      o.owner.toLowerCase().includes(q) ||
+      o.workspaces.some(w => w.toLowerCase().includes(q)) ||
+      o.cities.some(c => c.toLowerCase().includes(q))
+    );
 
-  const bookingFeatures = useMemo(() => {
-    if (!selectedBooking) return [];
-    return ["1Gbps WiFi", "24/7 Access", "Air Conditioning", "Power Backup", "Parking"];
-  }, [selectedBooking]);
+    // status filter
+    if (statusFilter !== "all") {
+      list = list.filter(o => {
+        if (statusFilter === "confirmed") return o.confirmed > 0;
+        if (statusFilter === "pending")   return o.pending > 0;
+        if (statusFilter === "cancelled") return o.cancelled > 0;
+        return true;
+      });
+    }
 
-  const bookingPriceLabel = useMemo(() => {
-    if (!selectedBooking) return "";
+    // sort
+    if (sortBy === "revenue")  list.sort((a, b) => b.totalRevenue - a.totalRevenue);
+    if (sortBy === "bookings") list.sort((a, b) => b.total - a.total);
+    if (sortBy === "name")     list.sort((a, b) => a.owner.localeCompare(b.owner));
 
-    if (selectedBooking.booking_type === "month") return "Monthly Booking";
-    if ((selectedBooking.slot_type || "").toLowerCase() === "hourly") return "Hourly Booking";
-    return "Full Day Booking";
-  }, [selectedBooking]);
+    return list;
+  }, [ownerMap, search, statusFilter, sortBy]);
 
-  const bookingDurationText = (item) => {
-    if (!item) return "-";
-    if (item.booking_type === "month") return "Monthly Booking";
-    return item.slot_type && item.slot_time
-      ? `${item.slot_type} (${item.slot_time})`
-      : item.slot_type || item.slot_time || "-";
-  };
+  /* ── grand totals ───────────────────────────────────────────────────── */
+  const totals = useMemo(() => owners.reduce((acc, o) => ({
+    revenue:   acc.revenue   + o.totalRevenue,
+    confirmed: acc.confirmed + o.confirmedRevenue,
+    pending:   acc.pending   + o.pendingRevenue,
+    bookings:  acc.bookings  + o.total,
+  }), { revenue: 0, confirmed: 0, pending: 0, bookings: 0 }), [owners]);
 
-  const billingType = (item) => {
-    if (!item) return "-";
-    if (item.booking_type === "month") return "Per Month";
-    if ((item.slot_type || "").toLowerCase() === "hourly") return "Per Hour";
-    return "Per Day";
-  };
+  /* ── top owner bar widths ───────────────────────────────────────────── */
+  const maxRevenue = useMemo(() => Math.max(...owners.map(o => o.totalRevenue), 1), [owners]);
 
-  const displayPrice = (item) => item?.total_price || item?.price || 0;
-
+  /* ── render ─────────────────────────────────────────────────────────── */
   return (
-    <div className="admin-bookings">
-      <div className="admin-bookings-shell">
-        <div className="admin-bookings-header">
-          <div className="header-copy">
-            <p className="admin-badge">Admin Panel</p>
-            <h2>Admin Booking Tracking</h2>
-            <p className="admin-subtext">
-              Monitor workspace bookings, review user details, and inspect complete booking information.
-            </p>
-          </div>
-
-          <button onClick={fetchBookings} className="refresh" type="button">
-            ↻ Refresh
-          </button>
+    <div className={styles.wrap}>
+      {/* ── header ── */}
+      <div className={styles.pageHeader}>
+        <div className={styles.pageTitleBlock}>
+          <span className={styles.pageBadge}>Revenue Analytics</span>
+          <h2 className={styles.pageTitle}>Manager-wise Revenue</h2>
+          <p className={styles.pageSub}>
+            Breakdown of booking revenue, confirmation rates and workspace performance per Manager.
+          </p>
         </div>
+        <button className={styles.refreshBtn} onClick={fetchBookings} type="button">
+          ↻ Refresh
+        </button>
+      </div>
 
-        <div className="stats-bar">
-          {[
-            { label: "Total", value: stats.total, color: "var(--accent-gold)", key: "All" },
-            { label: "Pending", value: stats.pending, color: "var(--accent-orange)", key: "pending" },
-            { label: "Confirmed", value: stats.confirmed, color: "var(--accent-green)", key: "confirmed" },
-            { label: "Cancelled", value: stats.cancelled, color: "var(--accent-red)", key: "cancelled" },
-          ].map((s) => (
-            <button
-              key={s.label}
-              type="button"
-              className={`stat-pill ${filter === s.key ? "stat-pill-active" : ""}`}
-              style={{ "--pill-color": s.color }}
-              onClick={() => setFilter(s.key)}
-            >
-              <span className="stat-pill-value">{s.value}</span>
-              <span className="stat-pill-label">{s.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="controls">
-          <div className="search-wrap">
-            <span className="search-icon">⌕</span>
-            <input
-              type="text"
-              placeholder="Search owner / user / workspace / location / city..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {search && (
-              <button className="clear-btn" onClick={() => setSearch("")} type="button">
-                ✕
-              </button>
-            )}
-          </div>
-
-          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-            <option value="All">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
-
-        <div className="result-count">
-          Showing <strong>{filteredBookings.length}</strong> of <strong>{bookings.length}</strong> bookings
-        </div>
-
-        {loading ? (
-          <div className="loading-box">
-            <div className="loading-spinner"></div>
-            <p className="loading">Loading bookings...</p>
-          </div>
-        ) : filteredBookings.length === 0 ? (
-          <div className="empty-box">
-            <div className="empty-icon">📂</div>
-            <h3>No bookings found</h3>
-            <p>No bookings match your current search or filter.</p>
-          </div>
-        ) : (
-          <>
-            <div className="table-wrapper">
-              <table className="admin-bookings-table">
-                <thead>
-                  <tr>
-                    <th>Image</th>
-                    <th>Owner</th>
-                    <th>User</th>
-                    <th>Workspace</th>
-                    <th>Location</th>
-                    <th>City</th>
-                    <th>Date</th>
-                    <th>Slot</th>
-                    <th>Additional Amenities</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredBookings.map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        <img
-                          src={item.image}
-                          alt={item.workspace || "workspace"}
-                          className="owner-booking-thumb"
-                          onClick={() => handleImageClick(item)}
-                        />
-                      </td>
-
-                      <td>
-                        <div className="cell-name">
-                          <div
-                            className="cell-avatar"
-                            style={{ background: avatarBg(item.owner) }}
-                          >
-                            {initials(item.owner)}
-                          </div>
-                          <span>{item.owner || "-"}</span>
-                        </div>
-                      </td>
-
-                      <td>{item.user || "-"}</td>
-
-                      <td>
-                        <strong className="ws-name">{item.workspace || "-"}</strong>
-                      </td>
-
-                      <td>
-                        <span className="location-chip">📍 {item.location || "-"}</span>
-                      </td>
-
-                     <td>
-  <strong className="ws-name">
-    {item.city || "No City"}
-
-    {" | "}
-
-    {item.location || "No Location"}
-
-    {" | "}
-
-    {item.workspace || "-"}
-  </strong>
-</td>
-
-                      <td>{item.date || "-"}</td>
-
-                      <td>
-                        <div className="duration-chip">
-                          <strong>
-                            {item.booking_type === "month" ? "Monthly" : item.slot_type || "-"}
-                          </strong>
-                          <small>
-                            {item.booking_type === "month"
-                              ? "Monthly Booking"
-                              : item.slot_time || "-"}
-                          </small>
-                        </div>
-                      </td>
-
-                      <td>
-                        {Array.isArray(item.amenities) && item.amenities.length > 0 ? (
-                          <div className="booking-amenities">
-                            {item.amenities.map((a, i) => (
-                              <div key={i} className="booking-amenity-item">
-                                <span>☕</span>
-                                <div>
-                                  <strong>{a.title}</strong>
-                                  <small>
-                                    {a.persons} Person • ₹{a.total}
-                                  </small>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="no-amenities">No Amenities</span>
-                        )}
-                      </td>
-
-                      <td>
-                        <span className="price-text">₹{displayPrice(item)}</span>
-                      </td>
-
-                      <td>
-                        <span className={`status ${getStatusClass(item.status)}`}>
-                          <span className="status-dot" />
-                          {item.status || "pending"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* ── summary cards ── */}
+      <div className={styles.summaryGrid}>
+        {[
+          { label: "Total Revenue",     value: `₹${fmt(totals.revenue)}`,   icon: "💰", accent: "#b8922a", sub: `${owners.length} owners` },
+          { label: "Confirmed Revenue", value: `₹${fmt(totals.confirmed)}`,  icon: "✅", accent: "#10b981", sub: "Settled payments" },
+          { label: "Pending Revenue",   value: `₹${fmt(totals.pending)}`,    icon: "⏳", accent: "#f59e0b", sub: "Awaiting confirmation" },
+          { label: "Total Bookings",    value: totals.bookings,               icon: "📋", accent: "#6366f1", sub: "All reservations" },
+        ].map(card => (
+          <div key={card.label} className={styles.summaryCard} style={{ "--accent": card.accent }}>
+            <div className={styles.summaryCardAccent} />
+            <div className={styles.summaryCardIcon} style={{ background: card.accent + "20", color: card.accent }}>
+              {card.icon}
             </div>
-
-            <div className="mobile-cards">
-              {filteredBookings.map((item) => (
-                <div key={item.id} className="mobile-booking-card">
-                  <div className="mobile-card-img-wrap" onClick={() => handleImageClick(item)}>
-                    <img
-                      src={item.image}
-                      alt={item.workspace || "workspace"}
-                      className="mobile-card-img"
-                    />
-                    <span className={`status mobile-card-status ${getStatusClass(item.status)}`}>
-                      <span className="status-dot" />
-                      {item.status || "pending"}
-                    </span>
-                  </div>
-
-                  <div className="mobile-card-body">
-                    <div className="mobile-card-top">
-                      <strong className="ws-name">{item.workspace || "-"}</strong>
-                      <span className="price-text">₹{displayPrice(item)}</span>
-                    </div>
-
-                    <span className="location-chip">📍 {item.location || "-"}</span>
-
-                    <div className="mobile-card-grid">
-                      {[
-                        { label: "Owner", value: item.owner || "-" },
-                        { label: "User", value: item.user || "-" },
-                        { label: "City", value: item.city || "-" },
-                        { label: "Date", value: item.date || "-" },
-                        { label: "Slot", value: bookingDurationText(item) },
-                      ].map((row) => (
-                        <div key={row.label} className="mobile-card-row">
-                          <span className="mobile-row-label">{row.label}</span>
-                          <span className="mobile-row-value">{row.value}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {Array.isArray(item.amenities) && item.amenities.length > 0 && (
-                      <div className="mobile-amenities">
-                        {item.amenities.map((a, i) => (
-                          <div key={i} className="mobile-amenity-item">
-                            ☕ {a.title} • {a.persons} Person • ₹{a.total}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <button
-                      className="mobile-detail-btn"
-                      type="button"
-                      onClick={() => handleImageClick(item)}
-                    >
-                      View Details →
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className={styles.summaryCardBody}>
+              <p className={styles.summaryCardValue}>{card.value}</p>
+              <p className={styles.summaryCardLabel}>{card.label}</p>
+              <p className={styles.summaryCardSub}>{card.sub}</p>
             </div>
-          </>
-        )}
+          </div>
+        ))}
+      </div>
 
-        {showDetails && selectedBooking && (
-          <div className="workspace-modal-overlay" onClick={closeModal}>
-            <div className="workspace-modal" onClick={(e) => e.stopPropagation()}>
+      {/* ── controls ── */}
+      <div className={styles.controls}>
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon}>⌕</span>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Search manager, workspace, city…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className={styles.clearBtn} onClick={() => setSearch("")} type="button">✕</button>
+          )}
+        </div>
+
+        <div className={styles.filterRow}>
+          {/* status filter */}
+          <div className={styles.filterTabs}>
+            {[["all","All"],["confirmed","Confirmed"],["pending","Pending"],["cancelled","Cancelled"]].map(([key, label]) => (
               <button
+                key={key}
                 type="button"
-                className="workspace-close-btn"
-                onClick={closeModal}
-                aria-label="Close workspace details"
+                className={`${styles.filterTab} ${statusFilter === key ? styles.filterTabActive : ""}`}
+                onClick={() => setStatusFilter(key)}
               >
-                ✕
+                {label}
               </button>
+            ))}
+          </div>
 
-              <div className="workspace-hero">
-                <img
-                  src={selectedBooking.image}
-                  alt={selectedBooking.workspace || "workspace"}
-                  className="workspace-hero-image"
-                />
-                <div className="workspace-hero-gradient" />
+          {/* sort */}
+          <select className={styles.sortSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+            <option value="revenue">Sort: Revenue ↓</option>
+            <option value="bookings">Sort: Bookings ↓</option>
+            <option value="name">Sort: Name A–Z</option>
+          </select>
 
-                <div className="workspace-top-badges">
-                  <span className="hero-chip warm">📅 {bookingPriceLabel}</span>
-                  <span className="hero-chip cool">📍 {selectedBooking.city || "HYD"}</span>
-                  <span className={`hero-chip status-chip ${getStatusClass(selectedBooking.status)}`}>
-                    {selectedBooking.status || "pending"}
-                  </span>
-                </div>
+          {/* view toggle */}
+          <div className={styles.viewToggle}>
+            <button
+              type="button"
+              className={`${styles.viewBtn} ${view === "cards" ? styles.viewBtnActive : ""}`}
+              onClick={() => setView("cards")}
+              title="Card view"
+            >⊞</button>
+            <button
+              type="button"
+              className={`${styles.viewBtn} ${view === "table" ? styles.viewBtnActive : ""}`}
+              onClick={() => setView("table")}
+              title="Table view"
+            >≡</button>
+          </div>
+        </div>
+      </div>
 
-                <div className="workspace-hero-content">
-                  <span className="workspace-mini-badge">Workspace Preview</span>
-                  <h3>{selectedBooking.workspace || "Workspace"}</h3>
-                  <p>{selectedBooking.location || "Location unavailable"}</p>
-                </div>
-              </div>
+      <div className={styles.resultMeta}>
+        Showing <strong>{owners.length}</strong> Manager{owners.length !== 1 ? "s" : ""}
+        {search && <> matching <em>"{search}"</em></>}
+      </div>
 
-              <div className="workspace-modal-body">
-                <div className="workspace-tabs">
-                  {["overview", "features", "pricing"].map((tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      className={`workspace-tab ${activeTab === tab ? "active" : ""}`}
-                      onClick={() => setActiveTab(tab)}
-                    >
-                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    </button>
-                  ))}
-                </div>
+      {/* ── loading / empty ── */}
+      {loading && (
+        <div className={styles.loadingBox}>
+          <div className={styles.spinner} />
+          <p>Loading revenue data…</p>
+        </div>
+      )}
 
-                {activeTab === "overview" && (
-                  <div className="workspace-dark-card">
-                    <div className="workspace-card-inner">
-                      <div className="workspace-card-image-wrap">
-                        <img
-                          src={selectedBooking.image}
-                          alt={selectedBooking.workspace || "workspace"}
-                          className="workspace-card-image"
-                        />
-                        <div className="workspace-image-badges">
-                          <span className="mini-tag">📅 {bookingPriceLabel}</span>
-                          <span className="mini-tag">📍 {selectedBooking.city || "HYD"}</span>
-                          <span className={`mini-tag rating ${getStatusClass(selectedBooking.status)}`}>
-                            {selectedBooking.status || "pending"}
-                          </span>
-                        </div>
-                      </div>
+      {!loading && owners.length === 0 && (
+        <div className={styles.emptyBox}>
+          <div className={styles.emptyIcon}>📊</div>
+          <h3>No data found</h3>
+          <p>Try adjusting your search or filter.</p>
+        </div>
+      )}
 
-                      <div className="workspace-card-content">
-                        <h4>{selectedBooking.workspace || "Workspace"}</h4>
-                        <p className="workspace-location-line">📍 {selectedBooking.location || "-"}</p>
-                        <p className="workspace-location-line">🏢 Owner: {selectedBooking.owner || "-"}</p>
-                        <p className="workspace-location-line">👤 User: {selectedBooking.user || "-"}</p>
+      {/* ── CARD VIEW ── */}
+      {!loading && view === "cards" && owners.length > 0 && (
+        <div className={styles.cardGrid}>
+          {owners.map((o, rank) => {
+            const isOpen = expanded === o.owner;
+            const barWidth = Math.round((o.totalRevenue / maxRevenue) * 100);
+            const confirmRate = o.total > 0 ? Math.round((o.confirmed / o.total) * 100) : 0;
 
-                        <div className="feature-pill-wrap">
-                          {bookingFeatures.map((feature, index) => (
-                            <span key={index} className="feature-pill">
-                              {feature}
-                            </span>
-                          ))}
-                        </div>
-
-                        <div className="workspace-price-row">
-                          <div className="workspace-price-block">
-                            <strong>₹{displayPrice(selectedBooking)}</strong>
-                            <span>{billingType(selectedBooking)}</span>
-                          </div>
-                          <span className="duration-tag">{bookingPriceLabel}</span>
-                        </div>
-
-                        {Array.isArray(selectedBooking.amenities) &&
-                          selectedBooking.amenities.length > 0 && (
-                            <div className="modal-amenities">
-                              <h4>Additional Amenities</h4>
-                              {selectedBooking.amenities.map((a, i) => (
-                                <div key={i} className="modal-amenity-item">
-                                  <span>☕</span>
-                                  <div>
-                                    <strong>{a.title}</strong>
-                                    <small>
-                                      {a.persons} Person • ₹{a.total}
-                                    </small>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                        <div className="workspace-added-strip">
-                          Booking tracked in admin panel
-                        </div>
-
-                        <div className="workspace-actions-row">
-                          <button type="button" className="action-light-btn">
-                            Know More
-                          </button>
-                          <button type="button" className="action-green-btn">
-                            View Booking
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+            return (
+              <div key={o.owner} className={`${styles.ownerCard} ${isOpen ? styles.ownerCardOpen : ""}`}>
+                {/* rank badge */}
+                {rank < 3 && (
+                  <div className={styles.rankBadge} style={{
+                    background: rank === 0 ? "#b8922a" : rank === 1 ? "#94a3b8" : "#b87333"
+                  }}>
+                    #{rank + 1}
                   </div>
                 )}
 
-                {activeTab === "features" && (
-                  <div className="workspace-info-grid">
-                    <div className="info-card">
-                      <span className="info-label">Workspace Type</span>
-                      <strong>{selectedBooking.workspace || "-"}</strong>
+                {/* card header */}
+                <div className={styles.ownerCardHeader} onClick={() => setExpanded(isOpen ? null : o.owner)}>
+                  <div className={styles.ownerCardLeft}>
+                    <div className={styles.ownerAvatar} style={{ background: avatarColor(o.owner) }}>
+                      {initials(o.owner)}
                     </div>
-
-                    <div className="info-card">
-                      <span className="info-label">Location</span>
-                      <strong>{selectedBooking.location || "-"}</strong>
-                    </div>
-
-                    <div className="info-card">
-                      <span className="info-label">Booking Date</span>
-                      <strong>{selectedBooking.date || "-"}</strong>
-                    </div>
-
-                    <div className="info-card">
-                      <span className="info-label">Booking Status</span>
-                      <strong className={`status-text ${getStatusClass(selectedBooking.status)}`}>
-                        {selectedBooking.status || "pending"}
-                      </strong>
-                    </div>
-
-                    <div className="info-card full">
-                      <span className="info-label">Available Features</span>
-                      <div className="feature-pill-wrap modal-pills">
-                        {bookingFeatures.map((feature, index) => (
-                          <span key={index} className="feature-pill">
-                            {feature}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "pricing" && (
-                  <div className="workspace-info-grid">
-                    <div className="info-card">
-                      <span className="info-label">Price</span>
-                      <strong>₹{displayPrice(selectedBooking)}</strong>
-                    </div>
-
-                    <div className="info-card">
-                      <span className="info-label">Duration</span>
-                      <strong>{bookingDurationText(selectedBooking)}</strong>
-                    </div>
-
-                    <div className="info-card">
-                      <span className="info-label">Billing Type</span>
-                      <strong>{billingType(selectedBooking)}</strong>
-                    </div>
-
-                    <div className="info-card">
-                      <span className="info-label">Package</span>
-                      <strong>{bookingPriceLabel}</strong>
-                    </div>
-
-                    <div className="info-card full">
-                      <span className="info-label">Summary</span>
-                      <p className="pricing-summary">
-                        This workspace booking is priced at ₹{displayPrice(selectedBooking)} for{" "}
-                        {bookingDurationText(selectedBooking)}. This preview helps admins inspect
-                        the same booking card information in a clean and organized format.
+                    <div>
+                      <p className={styles.ownerName}>{o.owner}</p>
+                      <p className={styles.ownerMeta}>
+                        {o.workspaces.length} workspace{o.workspaces.length !== 1 ? "s" : ""}
+                        {" · "}{o.cities.slice(0, 2).join(", ")}{o.cities.length > 2 ? " …" : ""}
                       </p>
                     </div>
                   </div>
-                )}
-              </div>
-
-              <div className="workspace-modal-footer">
-                <div>
-                  <span className="footer-title">{selectedBooking.workspace || "-"}</span>
-                  <small>{selectedBooking.location || "-"}</small>
+                  <div className={styles.ownerCardRight}>
+                    <p className={styles.ownerRevenue}>₹{fmt(o.totalRevenue)}</p>
+                    <span className={styles.ownerExpandIcon}>{isOpen ? "▲" : "▼"}</span>
+                  </div>
                 </div>
 
-                <div className="footer-actions">
-                  <span className={`status footer-status ${getStatusClass(selectedBooking.status)}`}>
-                    <span className="status-dot" />
-                    {selectedBooking.status || "pending"}
+                {/* revenue bar */}
+                <div className={styles.revenueBarTrack}>
+                  <div className={styles.revenueBarFill} style={{ width: `${barWidth}%`, background: avatarColor(o.owner) }} />
+                </div>
+
+                {/* stat pills */}
+                <div className={styles.statPillRow}>
+                  <span className={styles.statPill} style={{ color: "#10b981", background: "#10b98112", border: "1px solid #10b98130" }}>
+                    ✅ {o.confirmed} confirmed
+                  </span>
+                  <span className={styles.statPill} style={{ color: "#f59e0b", background: "#f59e0b12", border: "1px solid #f59e0b30" }}>
+                    ⏳ {o.pending} pending
+                  </span>
+                  <span className={styles.statPill} style={{ color: "#ef4444", background: "#ef444412", border: "1px solid #ef444430" }}>
+                    ❌ {o.cancelled} cancelled
                   </span>
                 </div>
+
+                {/* confirm rate */}
+                <div className={styles.confirmRateRow}>
+                  <span className={styles.confirmRateLabel}>Confirm rate</span>
+                  <span className={styles.confirmRateValue}>{confirmRate}%</span>
+                  <div className={styles.confirmTrack}>
+                    <div className={styles.confirmFill} style={{ width: `${confirmRate}%` }} />
+                  </div>
+                </div>
+
+                {/* expanded bookings list */}
+                {isOpen && (
+                  <div className={styles.bookingsList}>
+                    <div className={styles.bookingsListHeader}>
+                      <span>Recent Bookings ({o.bookings.length})</span>
+                    </div>
+                    {o.bookings.slice(0, 8).map(b => {
+                      const s = (b.status || "pending").toLowerCase().trim();
+                      const cfg = STATUS_CONFIG[s] || STATUS_CONFIG.pending;
+                      return (
+                        <div key={b.id} className={styles.bookingRow}>
+                          <div className={styles.bookingRowLeft}>
+                            {b.image && (
+                              <img src={b.image} alt={b.workspace} className={styles.bookingThumb} />
+                            )}
+                            <div>
+                              <p className={styles.bookingWorkspace}>{b.workspace || "—"}</p>
+                              <p className={styles.bookingUser}>👤 {b.user || "—"} · 📅 {b.date || "—"}</p>
+                            </div>
+                          </div>
+                          <div className={styles.bookingRowRight}>
+                            <span className={styles.bookingPrice}>₹{fmt(b.total_price || b.price)}</span>
+                            <span
+                              className={styles.bookingStatus}
+                              style={{ color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}
+                            >
+                              {cfg.label}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {o.bookings.length > 8 && (
+                      <p className={styles.moreBookings}>+{o.bookings.length - 8} more bookings</p>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── TABLE VIEW ── */}
+      {!loading && view === "table" && owners.length > 0 && (
+        <div className={styles.tableWrap}>
+          <table className={styles.revenueTable}>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Manager</th>
+                <th>Workspaces</th>
+                <th>Cities</th>
+                <th>Total Bookings</th>
+                <th>Confirmed</th>
+                <th>Pending</th>
+                <th>Cancelled</th>
+                <th>Confirmed Revenue</th>
+                <th>Pending Revenue</th>
+                <th>Total Revenue</th>
+                <th>Confirm Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {owners.map((o, i) => {
+                const confirmRate = o.total > 0 ? Math.round((o.confirmed / o.total) * 100) : 0;
+                const barWidth = Math.round((o.totalRevenue / maxRevenue) * 100);
+                return (
+                  <tr key={o.owner}>
+                    <td className={styles.rankCell}>
+                      <span
+                        className={styles.rankNum}
+                        style={{
+                          background: i === 0 ? "#b8922a22" : i === 1 ? "#94a3b822" : i === 2 ? "#b8733322" : "transparent",
+                          color: i === 0 ? "#b8922a" : i === 1 ? "#64748b" : i === 2 ? "#b87333" : "#94a3b8",
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                    </td>
+                    <td>
+                      <div className={styles.tableOwnerCell}>
+                        <div className={styles.tableAvatar} style={{ background: avatarColor(o.owner) }}>
+                          {initials(o.owner)}
+                        </div>
+                        <span className={styles.tableOwnerName}>{o.owner}</span>
+                      </div>
+                    </td>
+                    <td className={styles.wsList}>
+                      {o.workspaces.slice(0, 2).map(w => (
+                        <span key={w} className={styles.wsTag}>{w}</span>
+                      ))}
+                      {o.workspaces.length > 2 && <span className={styles.wsTag}>+{o.workspaces.length - 2}</span>}
+                    </td>
+                    <td>{o.cities.slice(0, 2).join(", ")}{o.cities.length > 2 ? " …" : ""}</td>
+                    <td className={styles.numCell}>{o.total}</td>
+                    <td><span className={styles.tableBadge} style={{ color:"#10b981", background:"#10b98112", border:"1px solid #10b98130" }}>{o.confirmed}</span></td>
+                    <td><span className={styles.tableBadge} style={{ color:"#f59e0b", background:"#f59e0b12", border:"1px solid #f59e0b30" }}>{o.pending}</span></td>
+                    <td><span className={styles.tableBadge} style={{ color:"#ef4444", background:"#ef444412", border:"1px solid #ef444430" }}>{o.cancelled}</span></td>
+                    <td className={styles.moneyCell}>₹{fmt(o.confirmedRevenue)}</td>
+                    <td className={styles.moneyCellAmber}>₹{fmt(o.pendingRevenue)}</td>
+                    <td>
+                      <div className={styles.tableTotalCell}>
+                        <span className={styles.tableTotalAmount}>₹{fmt(o.totalRevenue)}</span>
+                        <div className={styles.tableBarTrack}>
+                          <div className={styles.tableBarFill} style={{ width: `${barWidth}%`, background: avatarColor(o.owner) }} />
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className={styles.rateCell}>
+                        <span className={styles.rateNum} style={{ color: confirmRate >= 70 ? "#10b981" : confirmRate >= 40 ? "#f59e0b" : "#ef4444" }}>
+                          {confirmRate}%
+                        </span>
+                        <div className={styles.rateTrack}>
+                          <div className={styles.rateFill} style={{
+                            width: `${confirmRate}%`,
+                            background: confirmRate >= 70 ? "#10b981" : confirmRate >= 40 ? "#f59e0b" : "#ef4444",
+                          }} />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+
+            {/* totals row */}
+            <tfoot>
+              <tr className={styles.totalsRow}>
+                <td colSpan="4"><strong>Grand Total</strong></td>
+                <td className={styles.numCell}><strong>{totals.bookings}</strong></td>
+                <td colSpan="3" />
+                <td className={styles.moneyCell}><strong>₹{fmt(totals.confirmed)}</strong></td>
+                <td className={styles.moneyCellAmber}><strong>₹{fmt(totals.pending)}</strong></td>
+                <td><strong>₹{fmt(totals.revenue)}</strong></td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
-
-/* helpers */
-const AVATAR_PALETTE = [
-  "#f4c430",
-  "#38bdf8",
-  "#8b5cf6",
-  "#22c55e",
-  "#ef4444",
-  "#ec4899",
-  "#14b8a6",
-  "#fb923c",
-];
-
-function avatarBg(str = "") {
-  let total = 0;
-  for (let char of str) total += char.charCodeAt(0);
-  return `${AVATAR_PALETTE[total % AVATAR_PALETTE.length]}22`;
-}
-
-function initials(name = "") {
-  return (
-    name
-      .trim()
-      .split(" ")
-      .filter(Boolean)
-      .map((word) => word[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "?"
-  );
-}
-
-export default AdminBookings;

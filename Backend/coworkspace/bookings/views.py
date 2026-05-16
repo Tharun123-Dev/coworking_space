@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from .models import Slot
 from workspaces.models import ActivityLog   # adjust if path different
-
+from django.db.models import Sum
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -498,16 +498,13 @@ def add_to_cart(request):
 
                     persons = 1
 
-                # ✅ FIX DECIMAL ISSUE
-
                 price = float(
                     amenity.price
                 )
 
                 total = (
                     price
-                    *
-                    persons
+                    * persons
                 )
 
                 amenity_total += total
@@ -599,6 +596,10 @@ def add_to_cart(request):
 
                 }, status=400)
 
+            # ======================================
+            # ✅ CREATE BOOKING
+            # ======================================
+
             booking = Booking.objects.create(
 
                 user=user,
@@ -633,9 +634,33 @@ def add_to_cart(request):
 
             )
 
-            slot.booked_count += seats
+            # ======================================
+            # ✅ UPDATE WORKSPACE SLOT
+            # ======================================
+
+            slot.booked_count = (
+                slot.booked_count or 0
+            ) + seats
 
             slot.save()
+
+            # ======================================
+            # ✅ UPDATE SLOT MANAGEMENT TABLE
+            # ======================================
+
+            slot_management = Slot.objects.filter(
+                workspace=slot.workspace,
+                date=slot.date,
+                slot_type="HOURLY"
+            ).order_by("id").first()
+
+            if slot_management:
+
+                slot_management.booked_count = (
+                    slot_management.booked_count or 0
+                ) + int(seats)
+
+                slot_management.save()
 
         # ==================================
         # ✅ MONTH BOOKING
@@ -782,7 +807,6 @@ def add_to_cart(request):
             str(e)
 
         }, status=500)
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_cart(request):
@@ -1011,12 +1035,58 @@ def owner_bookings(request):
         bookings = Booking.objects.filter(
             owner=request.user
         ).select_related(
-            "workspace"
+            "workspace",
+            "slot"
         ).order_by("-id")
 
         data = []
 
         for b in bookings:
+
+            # =========================
+            # ✅ SLOT TYPE & TIME
+            # =========================
+
+            if b.booking_type == "month":
+
+                slot_type = "Monthly"
+
+                slot_time = "Monthly Booking"
+
+            elif b.slot:
+
+                if b.slot.slot_type == "hour":
+
+                    slot_type = "Hourly"
+
+                    slot_time = (
+                        f"{b.slot.start_time}"
+                        f" - "
+                        f"{b.slot.end_time}"
+                    )
+
+                else:
+
+                    slot_type = "Full Day"
+
+                    slot_time = "Full Day"
+
+            else:
+
+                slot_type = "Full Day"
+
+                slot_time = "Full Day"
+
+            # =========================
+            # ✅ CAPACITY
+            # =========================
+
+            capacity = (
+                b.slot.capacity
+                if b.slot
+                and hasattr(b.slot, "capacity")
+                else 0
+            )
 
             data.append({
 
@@ -1036,7 +1106,20 @@ def owner_bookings(request):
                 if b.workspace else "",
 
                 "image":
-                b.workspace.image
+
+                (
+                    b.workspace.image.url
+
+                    if b.workspace
+                    and hasattr(
+                        b.workspace.image,
+                        "url"
+                    )
+
+                    else b.workspace.image
+
+                )
+
                 if b.workspace else "",
 
                 "city":
@@ -1050,39 +1133,57 @@ def owner_bookings(request):
                     ""
                 ),
 
+                # ✅ SLOT INFO
+
                 "slot_type":
-                getattr(
-                    b,
-                    "booking_type",
-                    "day"
-                ),
+                slot_type,
 
                 "slot_time":
+                slot_time,
 
-                (
-                    f"{b.slot.start_time}"
-                    f" - "
-                    f"{b.slot.end_time}"
-                )
+                "booking_type":
+                b.booking_type,
 
-                if hasattr(b, "slot")
-                and b.slot
+                # ✅ BOOKED SEATS
 
-                else "Monthly",
+                "seats":
+                getattr(
+                    b,
+                    "seats",
+                    1
+                ),
+
+                # ✅ TOTAL CAPACITY
+
+                "capacity":
+                capacity,
+
+                # ✅ PRICE
 
                 "total_price":
                 b.total_price,
 
+                # ✅ STATUS
+
                 "status":
                 b.status,
 
-                # ✅ ADD THIS
+                # ✅ AMENITIES
 
                 "amenities":
                 getattr(
                     b,
                     "amenities",
                     []
+                ),
+
+                # ✅ PAYMENT STATUS
+
+                "payment_status":
+                getattr(
+                    b,
+                    "payment_status",
+                    "PAID"
                 ),
 
             })
@@ -1097,7 +1198,8 @@ def owner_bookings(request):
             str(e)
 
         }, status=500)
-# ===============================
+
+#===============================
 # CONFIRM BOOKING (OWNER)
 # ===============================
 # from workspaces.models import ActivityLog
@@ -1402,6 +1504,12 @@ def my_orders(request):
 
             slot_time = "Monthly Booking"
 
+            capacity = getattr(
+                b,
+                "seats",
+                1
+            )
+
         elif slot:
 
             if slot.slot_type == "hour":
@@ -1420,11 +1528,20 @@ def my_orders(request):
 
                 slot_time = "Full Day"
 
+            # ✅ TOTAL WORKSPACE CAPACITY
+            capacity = getattr(
+                slot,
+                "capacity",
+                0
+            )
+
         else:
 
             slot_type = "Full Day"
 
             slot_time = "Full Day"
+
+            capacity = 0
 
         data.append({
 
@@ -1464,6 +1581,18 @@ def my_orders(request):
 
             "booking_type":
             b.booking_type,
+
+            # ✅ BOOKED SEATS
+            "seats":
+            getattr(
+                b,
+                "seats",
+                1
+            ),
+
+            # ✅ TOTAL CAPACITY
+            "capacity":
+            capacity,
 
             # ✅ DATE
 
@@ -1528,8 +1657,6 @@ def my_orders(request):
         })
 
     return Response(data)
-
-
 from django.db.models import Sum
 
 @api_view(['GET'])
@@ -1595,6 +1722,165 @@ def owner_revenue(request):
         amenities_revenue
 
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def owner_workspace_revenue(
+    request,
+    workspace_id
+):
+
+    try:
+
+        # =========================
+        # GET BOOKINGS
+        # =========================
+
+        bookings = Booking.objects.filter(
+
+            owner=request.user,
+
+            workspace_id=workspace_id
+
+        )
+
+        # =========================
+        # TOTAL REVENUE
+        # =========================
+
+        total_revenue = bookings.aggregate(
+
+            total=Sum("total_price")
+
+        )["total"] or 0
+
+        # =========================
+        # CONFIRMED REVENUE
+        # =========================
+
+        confirmed_revenue = bookings.filter(
+
+            status="confirmed"
+
+        ).aggregate(
+
+            total=Sum("total_price")
+
+        )["total"] or 0
+
+        # =========================
+        # PENDING REVENUE
+        # =========================
+
+        pending_revenue = bookings.filter(
+
+            status="pending"
+
+        ).aggregate(
+
+            total=Sum("total_price")
+
+        )["total"] or 0
+
+        # =========================
+        # CANCELLED REVENUE
+        # =========================
+
+        cancelled_revenue = bookings.filter(
+
+            status="cancelled"
+
+        ).aggregate(
+
+            total=Sum("total_price")
+
+        )["total"] or 0
+
+        # =========================
+        # TOTAL BOOKINGS
+        # =========================
+
+        total_bookings = bookings.count()
+
+        confirmed_bookings = bookings.filter(
+            status="confirmed"
+        ).count()
+
+        pending_bookings = bookings.filter(
+            status="pending"
+        ).count()
+
+        cancelled_bookings = bookings.filter(
+            status="cancelled"
+        ).count()
+
+        # =========================
+        # AMENITIES REVENUE
+        # =========================
+
+        amenities_revenue = 0
+
+        for booking in bookings:
+
+            amenities = getattr(
+                booking,
+                "amenities",
+                []
+            )
+
+            for a in amenities:
+
+                amenities_revenue += (
+                    a.get("total", 0)
+                )
+
+        # =========================
+        # FINAL RESPONSE
+        # =========================
+
+        return Response({
+
+            "workspace_id":
+            workspace_id,
+
+            "total_revenue":
+            total_revenue,
+
+            "confirmed_revenue":
+            confirmed_revenue,
+
+            "pending_revenue":
+            pending_revenue,
+
+            "cancelled_revenue":
+            cancelled_revenue,
+
+            "total_bookings":
+            total_bookings,
+
+            "confirmed_bookings":
+            confirmed_bookings,
+
+            "pending_bookings":
+            pending_bookings,
+
+            "cancelled_bookings":
+            cancelled_bookings,
+
+            "amenities_revenue":
+            amenities_revenue
+
+        })
+
+    except Exception as e:
+
+        return Response({
+
+            "error":
+            str(e)
+
+        }, status=500)
 
 
 from rest_framework.decorators import api_view, permission_classes
@@ -1772,25 +2058,174 @@ def get_slots(request, workspace_id):
 
     date = request.GET.get("date")
 
-    slots = Slot.objects.filter(workspace_id=workspace_id)
+    slots = Slot.objects.filter(
+        workspace_id=workspace_id
+    )
 
     if date:
-        slots = slots.filter(date=date)
+
+        slots = slots.filter(
+            date=date
+        )
 
     data = []
 
     for s in slots:
+
         data.append({
-            "id": s.id,
-            "date": s.date,
-            "time": s.time,
-            "slot_type": s.slot_type,
-            "price": s.price,
-            "capacity": s.capacity,
-            "booked": s.booked_count,
-            "available": s.capacity - s.booked_count,
-            "is_full": s.booked_count >= s.capacity
+
+            # ✅ SLOT ID
+            "id":
+            s.id,
+
+            # ✅ WORKSPACE DETAILS
+            "workspace":
+            s.workspace.name
+            if s.workspace else "",
+
+            "location":
+            s.workspace.location
+            if s.workspace else "",
+
+            "city":
+            s.workspace.city
+            if s.workspace else "",
+
+            # ✅ SLOT DETAILS
+            "date":
+            s.date,
+
+            "time":
+            s.time,
+
+            "slot_type":
+            s.slot_type,
+
+            "price":
+            s.price,
+
+            "capacity":
+            s.capacity,
+
+            "booked":
+            s.booked_count,
+
+            "available":
+            s.capacity - s.booked_count,
+
+            "is_full":
+            s.booked_count >= s.capacity
+
         })
 
     return Response(data)
 
+from django.db.models import Sum
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_workspace_revenue(
+    request,
+    workspace_id
+):
+
+    try:
+
+        # ======================
+        # GET BOOKINGS
+        # ======================
+
+        bookings = Booking.objects.filter(
+            workspace_id=workspace_id
+        )
+
+        # ======================
+        # REVENUES
+        # ======================
+
+        total_revenue = bookings.aggregate(
+            total=Sum("total_price")
+        )["total"] or 0
+
+        confirmed_revenue = bookings.filter(
+            status="confirmed"
+        ).aggregate(
+            total=Sum("total_price")
+        )["total"] or 0
+
+        pending_revenue = bookings.filter(
+            status="pending"
+        ).aggregate(
+            total=Sum("total_price")
+        )["total"] or 0
+
+        cancelled_revenue = bookings.filter(
+            status="cancelled"
+        ).aggregate(
+            total=Sum("total_price")
+        )["total"] or 0
+
+        # ======================
+        # BOOKINGS COUNT
+        # ======================
+
+        total_bookings = bookings.count()
+
+        confirmed_bookings = bookings.filter(
+            status="confirmed"
+        ).count()
+
+        pending_bookings = bookings.filter(
+            status="pending"
+        ).count()
+
+        cancelled_bookings = bookings.filter(
+            status="cancelled"
+        ).count()
+
+        # ======================
+        # RESPONSE
+        # ======================
+
+        return Response({
+
+            "workspace_id":
+            workspace_id,
+
+            "total_revenue":
+            total_revenue,
+
+            "confirmed_revenue":
+            confirmed_revenue,
+
+            "pending_revenue":
+            pending_revenue,
+
+            "cancelled_revenue":
+            cancelled_revenue,
+
+            "total_bookings":
+            total_bookings,
+
+            "confirmed_bookings":
+            confirmed_bookings,
+
+            "pending_bookings":
+            pending_bookings,
+
+            "cancelled_bookings":
+            cancelled_bookings,
+
+        })
+
+    except Exception as e:
+
+        return Response({
+
+            "error":
+            str(e)
+
+        }, status=500)

@@ -44,7 +44,7 @@ def verify_payment(request):
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Payment
-from django.contrib.auth.models import User
+
 
 @api_view(['POST'])
 def save_payment(request):

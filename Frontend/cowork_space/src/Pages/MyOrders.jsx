@@ -310,6 +310,7 @@ const navItems = [
           <thead>
             <tr>
               <th>Space</th>
+              <th>Booking Seats</th>
               <th>Location</th>
               <th>Date</th>
               <th>Slot</th>
@@ -343,6 +344,11 @@ const navItems = [
                       </div>
                     </div>
                   </td>
+                  <td>
+  <span className="mo-capacityBadge">
+    💺 {item.seats || 1}
+  </span>
+</td>
                   <td><span className="mo-location">{item.city || item.location || "-"}</span></td>
                   <td><span className="mo-date">{item.date || "-"}</span></td>
                   <td>

@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404
 from .models import Workspace,WorkspaceSlot,MonthlySlot
 from bookings.models import Booking
 from .models import AdditionalAmenity
-
+from django.contrib.auth.models import User
 from .serializers import (
     AdditionalAmenitySerializer
 )
@@ -33,30 +33,65 @@ class IsAdminOrOwner(BasePermission):
             return True
 
         return False
+    
 @api_view(['GET'])
 def get_workspaces(request):
 
     city = request.GET.get("city")
     owner_only = request.GET.get("owner")
 
+    # =========================
     # OWNER DASHBOARD
+    # =========================
     if owner_only and request.user.is_authenticated:
 
         workspaces = Workspace.objects.filter(
-            owner=request.user
-        ).prefetch_related("amenities")
 
+            owner=request.user
+
+        ).select_related(
+
+            "owner",
+            "owner_details",
+            "owner_details__owner"
+
+        ).prefetch_related(
+
+            "amenities"
+
+        )
+
+    # =========================
     # WEBSITE
+    # =========================
     else:
 
         workspaces = Workspace.objects.filter(
+
             is_approved=True,
             isavailable=True
-        ).prefetch_related("amenities")
 
+        ).select_related(
+
+            "owner",
+            "owner_details",
+            "owner_details__owner"
+
+        ).prefetch_related(
+
+            "amenities"
+
+        )
+
+    # =========================
+    # CITY FILTER
+    # =========================
     if city:
+
         workspaces = workspaces.filter(
+
             city__icontains=city
+
         )
 
     serializer = WorkspaceSerializer(
@@ -65,12 +100,19 @@ def get_workspaces(request):
     )
 
     return Response(serializer.data)
+
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def admin_workspaces(request):
 
-    workspaces = Workspace.objects.all().prefetch_related("amenities")
 
+    workspaces = Workspace.objects.select_related(
+    "owner",
+    "owner_details",
+    "owner_details__owner"
+).prefetch_related(
+    "amenities"
+)
     serializer = WorkspaceSerializer(
         workspaces,
         many=True
@@ -102,16 +144,32 @@ def add_workspace(request):
 
     data = request.data.copy()
 
-    # ✅ GET LOCATION
+    # =========================
+    # GET LOCATION
+    # =========================
     city = data.get("city")
 
-    # ✅ FIND OWNER BASED ON LOCATION
+    # =========================
+    # GET OWNER DETAILS
+    # =========================
+    owner_data = data.pop(
+        "owner_details",
+        None
+    )
+
+    # =========================
+    # FIND MANAGER BASED ON LOCATION
+    # =========================
     owner_profile = Profile.objects.filter(
+
         role="owner",
         location=city
+
     ).first()
 
-    # ✅ GET AMENITIES
+    # =========================
+    # GET AMENITIES
+    # =========================
     amenities_ids = data.pop(
         "amenities",
         []
@@ -125,22 +183,97 @@ def add_workspace(request):
 
         workspace = serializer.save(
 
-            # ✅ AUTO OWNER ASSIGN
+            # LOCATION MANAGER
             owner=owner_profile.user
-            if owner_profile else request.user,
+            if owner_profile
+            else request.user,
 
             is_approved=False
 
         )
 
-        # ✅ SET AMENITIES
+        # =========================
+        # SAVE AMENITIES
+        # =========================
         if amenities_ids:
 
             workspace.amenities.set(
                 amenities_ids
             )
 
-        # ✅ ACTIVITY LOG
+        # =========================
+        # SAVE LANDLORD DETAILS
+        # =========================
+        if owner_data:
+
+            WorkspaceOwnerDetails.objects.create(
+
+                workspace=workspace,
+
+                owner_name=owner_data.get(
+                    "owner_name"
+                ),
+
+                owner_email=owner_data.get(
+                    "owner_email"
+                ),
+
+                owner_phone=owner_data.get(
+                    "owner_phone"
+                ),
+
+                business_name=owner_data.get(
+                    "business_name"
+                ),
+
+                gst_number=owner_data.get(
+                    "gst_number"
+                ),
+
+                pan_number=owner_data.get(
+                    "pan_number"
+                ),
+
+                rent_amount=owner_data.get(
+                    "rent_amount"
+                ) or 0,
+
+                revenue_share_pct=owner_data.get(
+                    "revenue_share_pct"
+                ) or 0,
+
+                agreement_type=owner_data.get(
+                    "agreement_type"
+                ),
+
+                contract_start=owner_data.get(
+                    "contract_start"
+                ),
+
+                contract_end=owner_data.get(
+                    "contract_end"
+                ),
+
+                bank_name=owner_data.get(
+                    "bank_name"
+                ),
+
+                account_number=owner_data.get(
+                    "account_number"
+                ),
+
+                ifsc_code=owner_data.get(
+                    "ifsc_code"
+                ),
+
+                notes=owner_data.get(
+                    "notes"
+                ),
+            )
+
+        # =========================
+        # ACTIVITY LOG
+        # =========================
         ActivityLog.objects.create(
 
             user=request.user,
@@ -151,6 +284,16 @@ def add_workspace(request):
 
             message=f"{request.user.username} added workspace {workspace.name}"
 
+        )
+
+        # =========================
+        # RETURN UPDATED DATA
+        # =========================
+        workspace = Workspace.objects.select_related(
+            "owner",
+            "owner_details"
+        ).get(
+            id=workspace.id
         )
 
         return Response(
@@ -895,19 +1038,51 @@ def owner_slots(request):
     data = []
 
     for s in slots:
+
+        # ✅ BOOKED COUNT
+        booked = s.booked_count or 0
+
+        # ✅ REMAINING
+        remaining = (s.capacity or 0) - booked
+
         data.append({
+
             "id": s.id,
+
             "workspace_id": s.workspace.id,
+
             "workspace_name": s.workspace.name,
 
             "date": s.date,
+
             "slot_type": s.slot_type,
 
-            "start_time": getattr(s, "start_time", ""),
-            "end_time": getattr(s, "end_time", ""),
+            # ✅ TIME FORMAT
+            "start_time": (
+                s.start_time.strftime("%H:%M")
+                if hasattr(s.start_time, "strftime")
+                else s.start_time
+            ),
+
+            "end_time": (
+                s.end_time.strftime("%H:%M")
+                if hasattr(s.end_time, "strftime")
+                else s.end_time
+            ),
 
             "capacity": s.capacity,
+
             "price": s.price,
+
+            # ✅ IMPORTANT
+            "booked": booked,
+
+            # ✅ IMPORTANT
+            "remaining": remaining,
+
+            # ✅ IMPORTANT
+            "is_full": booked >= s.capacity,
+
         })
 
     return Response(data)
@@ -1566,3 +1741,97 @@ def delete_coupon(request, id):
             },
             status=404
         )
+from .models import WorkspaceOwnerDetails
+  
+@api_view(["POST"])
+def assign_workspace_owner(request):
+
+    data = request.data
+
+    workspace = Workspace.objects.get(id=data.get("workspace"))
+
+    owner_id = data.get("owner")
+
+    owner = None
+
+    if owner_id:
+        owner = User.objects.get(id=owner_id)
+        workspace.owner = owner
+        workspace.save()
+
+    obj, created = WorkspaceOwnerDetails.objects.update_or_create(
+
+        workspace=workspace,
+
+        defaults={
+
+            "owner": owner,
+            "owner_name": data.get("owner_name"),
+            "owner_email": data.get("owner_email"),
+            "owner_phone": data.get("owner_phone"),
+
+            "business_name": data.get("business_name"),
+
+            "gst_number": data.get("gst_number"),
+            "pan_number": data.get("pan_number"),
+
+            "rent_amount": data.get("rent_amount") or 0,
+
+            "revenue_share_pct":
+            data.get("revenue_share_pct") or 0,
+
+            "agreement_type":
+            data.get("agreement_type"),
+
+            "contract_start":
+            data.get("contract_start"),
+
+            "contract_end":
+            data.get("contract_end"),
+
+            "bank_name":
+            data.get("bank_name"),
+
+            "account_number":
+            data.get("account_number"),
+
+            "ifsc_code":
+            data.get("ifsc_code"),
+
+            "notes":
+            data.get("notes"),
+        }
+    )
+
+    return Response({
+        "message": "Owner Assigned Successfully"
+    })
+from .serializers import WorkspaceOwnerDetailsSerializer
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def workspace_owner_details(request, workspace_id):
+
+    try:
+
+        details = WorkspaceOwnerDetails.objects.select_related(
+            "owner",
+            "workspace"
+        ).get(
+            workspace_id=workspace_id
+        )
+
+        serializer = WorkspaceOwnerDetailsSerializer(
+            details
+        )
+
+        return Response(serializer.data)
+
+    except WorkspaceOwnerDetails.DoesNotExist:
+
+        return Response(
+            {
+                "error": "No owner details found"
+            },
+            status=404
+        )
+    
