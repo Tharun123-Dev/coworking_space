@@ -989,43 +989,63 @@ def get_workspace_slots(request, workspace_id):
 
         data.append({
 
-            "id": s.id,
+    "id":
+    s.id,
 
-            "slot_type": s.slot_type,
+    # ✅ WORKSPACE
+    "workspace_id":
+    s.workspace.id,
 
-            # ✅ START TIME
-            "start_time": (
-                s.start_time.strftime("%H:%M")
-                if hasattr(s.start_time, "strftime")
-                else f"{s.start_time}:00"
-                if s.start_time is not None
-                else None
-            ),
+    "workspace_name":
+    s.workspace.name,
 
-            # ✅ END TIME
-            "end_time": (
-                s.end_time.strftime("%H:%M")
-                if hasattr(s.end_time, "strftime")
-                else f"{s.end_time}:00"
-                if s.end_time is not None
-                else None
-            ),
+    # ✅ ADD THESE
+    "location":
+    s.workspace.location,
 
-            "price": s.price,
+    "city":
+    s.workspace.city,
 
-            "capacity": s.capacity,
+    # ✅ SLOT
+    "date":
+    s.date,
 
-            # ✅ BOOKED
-            "booked": booked,
+    "slot_type":
+    s.slot_type,
 
-            # ✅ REMAINING
-            "remaining": remaining,
+    # ✅ START TIME
+    "start_time": (
+        s.start_time.strftime("%H:%M")
+        if hasattr(s.start_time, "strftime")
+        else s.start_time
+    ),
 
-            # ✅ FULL CHECK
-            "is_full": booked >= s.capacity
+    # ✅ END TIME
+    "end_time": (
+        s.end_time.strftime("%H:%M")
+        if hasattr(s.end_time, "strftime")
+        else s.end_time
+    ),
 
-        })
+    "capacity":
+    s.capacity,
 
+    "price":
+    s.price,
+
+    # ✅ BOOKED
+    "booked":
+    booked,
+
+    # ✅ REMAINING
+    "remaining":
+    remaining,
+
+    # ✅ FULL
+    "is_full":
+    booked >= s.capacity,
+
+})
     return Response(data)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -1047,44 +1067,57 @@ def owner_slots(request):
 
         data.append({
 
-            "id": s.id,
+    "id":
+    s.id,
 
-            "workspace_id": s.workspace.id,
+    "workspace_id":
+    s.workspace.id,
 
-            "workspace_name": s.workspace.name,
+    "workspace_name":
+    s.workspace.name,
 
-            "date": s.date,
+    # ✅ LOCATION
+    "location":
+    s.workspace.location,
 
-            "slot_type": s.slot_type,
+    # ✅ CITY
+    "city":
+    s.workspace.city,
 
-            # ✅ TIME FORMAT
-            "start_time": (
-                s.start_time.strftime("%H:%M")
-                if hasattr(s.start_time, "strftime")
-                else s.start_time
-            ),
+    "date":
+    s.date,
 
-            "end_time": (
-                s.end_time.strftime("%H:%M")
-                if hasattr(s.end_time, "strftime")
-                else s.end_time
-            ),
+    "slot_type":
+    s.slot_type,
 
-            "capacity": s.capacity,
+    "start_time": (
+        s.start_time.strftime("%H:%M")
+        if hasattr(s.start_time, "strftime")
+        else s.start_time
+    ),
 
-            "price": s.price,
+    "end_time": (
+        s.end_time.strftime("%H:%M")
+        if hasattr(s.end_time, "strftime")
+        else s.end_time
+    ),
 
-            # ✅ IMPORTANT
-            "booked": booked,
+    "capacity":
+    s.capacity,
 
-            # ✅ IMPORTANT
-            "remaining": remaining,
+    "price":
+    s.price,
 
-            # ✅ IMPORTANT
-            "is_full": booked >= s.capacity,
+    "booked":
+    booked,
 
-        })
+    "remaining":
+    remaining,
 
+    "is_full":
+    booked >= s.capacity,
+
+})
     return Response(data)
 
 

@@ -104,7 +104,7 @@ function Auth() {
   const handleGuestLogin = async (role) => {
     const map = {
       admin: { username: "Fis", password: "Fis123" },
-      owner: { username: "owner1", password: "owner1" },
+      owner: { username: "manager1", password: "manager1" },
       user:  { username: "Tharun", password: "Tharun123" },
     };
     try {

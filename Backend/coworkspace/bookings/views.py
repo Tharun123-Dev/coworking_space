@@ -1312,6 +1312,8 @@ def cancel_booking(request, id):
 # ADMIN TRACK BOOKINGS
 # ===============================
 @api_view(['GET'])
+# ===============================
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_bookings(request):
 
@@ -1372,6 +1374,38 @@ def admin_bookings(request):
 
             slot_time = "Full Day"
 
+        # =========================
+        # ✅ CAPACITY
+        # =========================
+
+        capacity = (
+            slot.capacity
+            if (
+                slot and
+                hasattr(slot, "capacity")
+            )
+            else 0
+        )
+
+        # =========================
+        # ✅ BOOKED SEATS
+        # =========================
+
+        seats = getattr(
+            b,
+            "seats",
+            1
+        )
+
+        # =========================
+        # ✅ REMAINING
+        # =========================
+
+        remaining = max(
+            capacity - seats,
+            0
+        )
+
         data.append({
 
             "id":
@@ -1380,30 +1414,35 @@ def admin_bookings(request):
             # 👤 USERS
 
             "owner":
-
-            b.workspace.owner.username
-
-            if (
-                b.workspace
-                and
-                b.workspace.owner
-            )
-
-            else "",
+            (
+                b.workspace.owner.username
+                if (
+                    b.workspace
+                    and
+                    b.workspace.owner
+                )
+                else ""
+            ),
 
             "user":
-            b.user.username
-            if b.user else "",
+            (
+                b.user.username
+                if b.user else ""
+            ),
 
             # 🏢 WORKSPACE
 
             "workspace":
-            b.workspace.name
-            if b.workspace else "",
+            (
+                b.workspace.name
+                if b.workspace else ""
+            ),
 
             "location":
-            b.workspace.location
-            if b.workspace else "",
+            (
+                b.workspace.location
+                if b.workspace else ""
+            ),
 
             "city":
             getattr(
@@ -1427,6 +1466,21 @@ def admin_bookings(request):
 
             "booking_type":
             booking_type,
+
+            # ✅ BOOKED
+
+            "seats":
+            seats,
+
+            # ✅ CAPACITY
+
+            "capacity":
+            capacity,
+
+            # ✅ REMAINING
+
+            "remaining":
+            remaining,
 
             # 💰 PRICE
 
@@ -1466,11 +1520,15 @@ def admin_bookings(request):
                 0
             ),
 
-            # 🖼 SAFE IMAGE
+            # 🖼 IMAGE
 
-               "image": (
+            "image":
+            (
                 b.workspace.image.url
-                if hasattr(b.workspace.image, "url")
+                if hasattr(
+                    b.workspace.image,
+                    "url"
+                )
                 else b.workspace.image
             ),
 

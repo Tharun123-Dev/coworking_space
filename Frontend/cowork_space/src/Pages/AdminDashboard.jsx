@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import axiosInstance from "../Services/Axios";
 import { useNavigate } from "react-router-dom";
 import AdminLeadss from "../Improved/AdminLeadss";
@@ -133,23 +133,183 @@ const WORKSPACE_TYPES = [
 ];
 const LOCATIONS = ["Hitech City","Gachibowli","Madhapur","Financial District","Kondapur"];
 
+// ─── PER-WORKSPACE REVENUE PANEL (Admin version — calls admin endpoint) ──────
+function WorkspaceRevenuePanel({ workspaceId, workspaceName }) {
+  const [loading, setLoading]     = useState(false);
+  const [revenueData, setRevenueData] = useState(null);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    setLoading(true);
+    axiosInstance
+      .get(`cart/admin/workspace-revenue/${workspaceId}/`)
+      .then((res) => {
+        setRevenueData(res.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Fallback: show zeroed-out structure so the panel still renders
+        setRevenueData({
+          total_revenue: 0,
+          confirmed_revenue: 0,
+          pending_revenue: 0,
+          cancelled_revenue: 0,
+          total_bookings: 0,
+          confirmed_bookings: 0,
+          pending_bookings: 0,
+          cancelled_bookings: 0,
+        });
+        setLoading(false);
+      });
+  }, [workspaceId]);
+
+  /* ── inline styles (no module dependency) ── */
+  const PS = {
+    wrap: {
+      padding: "18px 24px",
+      background: "linear-gradient(135deg,#faf5ff 0%,#f0fdf4 100%)",
+      borderLeft: "4px solid #7c3aed",
+    },
+    loading: {
+      display: "flex", alignItems: "center", gap: 8,
+      padding: "20px 24px", color: "#7c3aed", fontSize: 13, fontWeight: 600,
+      background: "#faf5ff",
+    },
+    spinner: {
+      width: 16, height: 16,
+      border: "2px solid #e9d5ff", borderTopColor: "#7c3aed",
+      borderRadius: "50%",
+      animation: "spin 0.7s linear infinite",
+    },
+    empty: { padding: "20px 24px", color: "#94a3b8", fontSize: 13, background: "#faf5ff" },
+    titleRow: { display: "flex", alignItems: "center", gap: 8, marginBottom: 14 },
+    dot: {
+      width: 8, height: 8, borderRadius: "50%",
+      background: "#7c3aed", display: "inline-block", flexShrink: 0,
+    },
+    title: { fontSize: 13, fontWeight: 700, color: "#1a1a2e" },
+    grid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+      gap: 10, marginBottom: 12,
+    },
+    card: (borderColor) => ({
+      background: "#fff", borderRadius: 10, padding: "12px 14px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+      borderTop: `3px solid ${borderColor}`,
+    }),
+    cardIcon:  { fontSize: 18, display: "block", marginBottom: 4 },
+    cardValue: { fontSize: 15, fontWeight: 800, color: "#111827", margin: "0 0 2px" },
+    cardLabel: {
+      fontSize: 10, fontWeight: 600, color: "#6b7280",
+      textTransform: "uppercase", letterSpacing: "0.4px", margin: 0,
+    },
+    badgeRow:  { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4 },
+    badge: (bg, color, border) => ({
+      display: "inline-flex", alignItems: "center", gap: 4,
+      padding: "4px 10px", borderRadius: 20,
+      fontSize: 11, fontWeight: 600,
+      background: bg, color, border: `1px solid ${border}`,
+    }),
+    fillBarWrap: { marginTop: 10 },
+    fillBarLabel: { fontSize: 11, color: "#6b7280", marginBottom: 4, fontWeight: 600 },
+    fillBarTrack: {
+      height: 5, borderRadius: 3,
+      background: "#e5e7eb", overflow: "hidden",
+    },
+    fillBarInner: (pct) => ({
+      height: "100%", borderRadius: 3,
+      width: `${pct}%`,
+      background: pct >= 75 ? "#16a34a" : pct >= 40 ? "#d97706" : "#dc2626",
+      transition: "width 0.4s ease",
+    }),
+  };
+
+  if (loading) {
+    return (
+      <div style={PS.loading}>
+        <div style={PS.spinner} />
+        Loading revenue data…
+      </div>
+    );
+  }
+
+  if (!revenueData) {
+    return <div style={PS.empty}>No revenue data available for this workspace.</div>;
+  }
+
+  const {
+    total_revenue      = 0,
+    confirmed_revenue  = 0,
+    pending_revenue    = 0,
+    cancelled_revenue  = 0,
+    total_bookings     = 0,
+    confirmed_bookings = 0,
+    pending_bookings   = 0,
+    cancelled_bookings = 0,
+  } = revenueData;
+
+  const fillPct =
+    total_bookings > 0
+      ? Math.round((confirmed_bookings / total_bookings) * 100)
+      : 0;
+
+  const statCards = [
+    { icon: "💰", label: "Total Revenue",     value: `₹${Number(total_revenue).toLocaleString()}`,     color: "#b8922a" },
+    { icon: "✅", label: "Confirmed Revenue", value: `₹${Number(confirmed_revenue).toLocaleString()}`, color: "#16a34a" },
+    // { icon: "⏳", label: "Pending Revenue",   value: `₹${Number(pending_revenue).toLocaleString()}`,   color: "#d97706" },
+    // { icon: "❌", label: "Cancelled Revenue", value: `₹${Number(cancelled_revenue).toLocaleString()}`, color: "#dc2626" },
+  ];
+
+  return (
+    <div style={PS.wrap}>
+      {/* Title row */}
+      <div style={PS.titleRow}>
+        <span style={PS.dot} />
+        <span style={PS.title}>Revenue Breakdown — {workspaceName}</span>
+      </div>
+
+      {/* Stat cards */}
+      <div style={PS.grid}>
+        {statCards.map((s, i) => (
+          <div key={i} style={PS.card(s.color)}>
+            <span style={PS.cardIcon}>{s.icon}</span>
+            <p style={PS.cardValue}>{s.value}</p>
+            <p style={PS.cardLabel}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Booking count badges */}
+      <div style={PS.badgeRow}>
+        <span style={PS.badge("#eff6ff","#2563eb","#bfdbfe")}>📋 {total_bookings} Total Bookings</span>
+        <span style={PS.badge("#f0fdf4","#16a34a","#bbf7d0")}>✅ {confirmed_bookings} Confirmed</span>
+        <span style={PS.badge("#fff7ed","#ea580c","#fed7aa")}>⏳ {pending_bookings} Pending</span>
+        <span style={PS.badge("#fef2f2","#dc2626","#fecaca")}>❌ {cancelled_bookings} Cancelled</span>
+      </div>
+
+      {/* Fill bar */}
+      {total_bookings > 0 && (
+        <div style={PS.fillBarWrap}>
+          <div style={PS.fillBarLabel}>Confirmation Rate: {fillPct}%</div>
+          <div style={PS.fillBarTrack}>
+            <div style={PS.fillBarInner(fillPct)} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── OWNER DETAILS FORM MODAL ─────────────────────────────────────────────────
-// Full form for renting/revenue owner assignment
 const OWNER_FORM_INIT = {
-  // Personal
   owner_name: "", owner_email: "", owner_phone: "", owner_alternate_phone: "",
-  // Business
   business_name: "", business_type: "", gst_number: "", pan_number: "",
-  // Address
   address: "", city: "", state: "", pincode: "",
-  // Banking
   bank_name: "", account_number: "", ifsc_code: "", account_holder: "",
-  // Revenue
   revenue_share_pct: "", rent_amount: "", rent_frequency: "monthly",
   security_deposit: "",
-  // Contract
   contract_start: "", contract_end: "", agreement_type: "lease",
-  // Notes
   notes: "",
 };
 
@@ -157,179 +317,40 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
   const [form, setForm] = useState(OWNER_FORM_INIT);
   const [errors, setErrors] = useState({});
   const F = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }));
+
   const validateForm = () => {
+    const newErrors = {};
+    if (!form.owner_name.trim())                        newErrors.owner_name = "Owner name is required";
+    if (!form.owner_email.trim())                       newErrors.owner_email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.owner_email)) newErrors.owner_email = "Invalid email format";
+    if (!form.owner_phone.trim())                       newErrors.owner_phone = "Phone number is required";
+    else if (!/^[6-9]\d{9}$/.test(form.owner_phone))   newErrors.owner_phone = "Enter valid 10 digit mobile number";
+    if (form.pan_number && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.pan_number.toUpperCase()))
+      newErrors.pan_number = "Invalid PAN number";
+    if (form.gst_number && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/.test(form.gst_number.toUpperCase()))
+      newErrors.gst_number = "Invalid GST number";
+    if (form.rent_amount && Number(form.rent_amount) < 0)
+      newErrors.rent_amount = "Rent cannot be negative";
+    if (form.revenue_share_pct && (Number(form.revenue_share_pct) < 0 || Number(form.revenue_share_pct) > 100))
+      newErrors.revenue_share_pct = "Revenue share must be between 0 and 100";
+    if (form.account_number && form.account_number.length < 8)
+      newErrors.account_number = "Invalid account number";
+    if (form.ifsc_code && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(form.ifsc_code.toUpperCase()))
+      newErrors.ifsc_code = "Invalid IFSC code";
+    if (form.contract_start && form.contract_end && form.contract_end < form.contract_start)
+      newErrors.contract_end = "End date cannot be before start date";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  const newErrors = {};
+  const handleSubmit = () => { if (!validateForm()) return; onSubmit(form); };
 
-  // =========================
-  // OWNER NAME
-  // =========================
-  if (!form.owner_name.trim()) {
-
-    newErrors.owner_name =
-      "Owner name is required";
-
-  }
-
-  // =========================
-  // EMAIL
-  // =========================
-  if (!form.owner_email.trim()) {
-
-    newErrors.owner_email =
-      "Email is required";
-
-  } else if (
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-      form.owner_email
-    )
-  ) {
-
-    newErrors.owner_email =
-      "Invalid email format";
-
-  }
-
-  // =========================
-  // PHONE
-  // =========================
-  if (!form.owner_phone.trim()) {
-
-    newErrors.owner_phone =
-      "Phone number is required";
-
-  } else if (
-    !/^[6-9]\d{9}$/.test(
-      form.owner_phone
-    )
-  ) {
-
-    newErrors.owner_phone =
-      "Enter valid 10 digit mobile number";
-
-  }
-
-  // =========================
-  // PAN
-  // =========================
-  if (
-    form.pan_number &&
-    !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(
-      form.pan_number.toUpperCase()
-    )
-  ) {
-
-    newErrors.pan_number =
-      "Invalid PAN number";
-
-  }
-
-  // =========================
-  // GST
-  // =========================
-  if (
-    form.gst_number &&
-    !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{3}$/.test(
-      form.gst_number.toUpperCase()
-    )
-  ) {
-
-    newErrors.gst_number =
-      "Invalid GST number";
-
-  }
-
-  // =========================
-  // RENT
-  // =========================
-  if (
-    form.rent_amount &&
-    Number(form.rent_amount) < 0
-  ) {
-
-    newErrors.rent_amount =
-      "Rent cannot be negative";
-
-  }
-
-  // =========================
-  // REVENUE SHARE
-  // =========================
-  if (
-    form.revenue_share_pct &&
-    (
-      Number(form.revenue_share_pct) < 0 ||
-      Number(form.revenue_share_pct) > 100
-    )
-  ) {
-
-    newErrors.revenue_share_pct =
-      "Revenue share must be between 0 and 100";
-
-  }
-
-  // =========================
-  // ACCOUNT NUMBER
-  // =========================
-  if (
-    form.account_number &&
-    form.account_number.length < 8
-  ) {
-
-    newErrors.account_number =
-      "Invalid account number";
-
-  }
-
-  // =========================
-  // IFSC
-  // =========================
-  if (
-    form.ifsc_code &&
-    !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(
-      form.ifsc_code.toUpperCase()
-    )
-  ) {
-
-    newErrors.ifsc_code =
-      "Invalid IFSC code";
-
-  }
-
-  // =========================
-  // CONTRACT DATES
-  // =========================
-  if (
-    form.contract_start &&
-    form.contract_end &&
-    form.contract_end < form.contract_start
-  ) {
-
-    newErrors.contract_end =
-      "End date cannot be before start date";
-
-  }
-
-  setErrors(newErrors);
-
-  return Object.keys(newErrors).length === 0;
-};
- const handleSubmit = () => {
-
-  if (!validateForm()) {
-
-    return;
-
-  }
-
-  onSubmit(form);
-};
+  const ErrMsg = ({ field }) =>
+    errors[field] ? <p style={{ color:"red", fontSize:11, marginTop:4 }}>{errors[field]}</p> : null;
 
   return (
     <div className={styles.ownerFormOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className={styles.ownerFormModal}>
-
-        {/* Header */}
         <div className={styles.ownerFormHeader}>
           <div className={styles.ownerFormHeaderIco}><Icon d={IC.briefcase} size={20} /></div>
           <div className={styles.ownerFormHeaderText}>
@@ -339,79 +360,26 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
           <button className={styles.ownerFormClose} onClick={onClose}><Icon d={IC.close} size={14} /></button>
         </div>
 
-        {/* Body */}
         <div className={styles.ownerFormBody}>
-
-          {/* ── Section 1: Personal Info ── */}
+          {/* Personal */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}>
-              <Icon d={IC.users} size={13} /> Personal Information
-            </div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.users} size={13} /> Personal Information</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Owner Full Name *</label>
                 <input className={styles.ownerFormInp} placeholder="e.g. Rajesh Kumar" value={form.owner_name} onChange={F("owner_name")} />
-                {errors.owner_name && (
-  <p
-    style={{
-      color: "red",
-      fontSize: "11px",
-      marginTop: "4px"
-    }}
-  >
-    {errors.owner_name}
-  </p>
-)}
+                <ErrMsg field="owner_name" />
               </div>
               <div className={styles.ownerFormField}>
-  <label className={styles.ownerFormLabel}>
-    Email Address *
-  </label>
-
-  <input
-    className={styles.ownerFormInp}
-    type="email"
-    placeholder="owner@email.com"
-    value={form.owner_email}
-    onChange={F("owner_email")}
-  />
-
-  {errors.owner_email && (
-    <p
-      style={{
-        color: "red",
-        fontSize: "11px",
-        marginTop: "4px"
-      }}
-    >
-      {errors.owner_email}
-    </p>
-  )}
-</div>
+                <label className={styles.ownerFormLabel}>Email Address *</label>
+                <input className={styles.ownerFormInp} type="email" placeholder="owner@email.com" value={form.owner_email} onChange={F("owner_email")} />
+                <ErrMsg field="owner_email" />
+              </div>
               <div className={styles.ownerFormField}>
-  <label className={styles.ownerFormLabel}>
-    Primary Phone *
-  </label>
-
-  <input
-    className={styles.ownerFormInp}
-    placeholder="9876543210"
-    value={form.owner_phone}
-    onChange={F("owner_phone")}
-  />
-
-  {errors.owner_phone && (
-    <p
-      style={{
-        color: "red",
-        fontSize: "11px",
-        marginTop: "4px"
-      }}
-    >
-      {errors.owner_phone}
-    </p>
-  )}
-</div>
+                <label className={styles.ownerFormLabel}>Primary Phone *</label>
+                <input className={styles.ownerFormInp} placeholder="9876543210" value={form.owner_phone} onChange={F("owner_phone")} />
+                <ErrMsg field="owner_phone" />
+              </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Alternate Phone</label>
                 <input className={styles.ownerFormInp} placeholder="+91 91234 56789" value={form.owner_alternate_phone} onChange={F("owner_alternate_phone")} />
@@ -419,11 +387,9 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
             </div>
           </div>
 
-          {/* ── Section 2: Business Info ── */}
+          {/* Business */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}>
-              <Icon d={IC.briefcase} size={13} /> Business Information
-            </div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.briefcase} size={13} /> Business Information</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Business / Company Name</label>
@@ -442,63 +408,23 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
                 </select>
               </div>
               <div className={styles.ownerFormField}>
-  <label className={styles.ownerFormLabel}>
-    GST Number
-  </label>
-
-  <input
-    className={styles.ownerFormInp}
-    placeholder="29ABCDE1234F1Z5"
-    value={form.gst_number}
-    onChange={F("gst_number")}
-  />
-
-  {errors.gst_number && (
-    <p
-      style={{
-        color: "red",
-        fontSize: "11px",
-        marginTop: "4px"
-      }}
-    >
-      {errors.gst_number}
-    </p>
-  )}
-</div>
+                <label className={styles.ownerFormLabel}>GST Number</label>
+                <input className={styles.ownerFormInp} placeholder="29ABCDE1234F1Z5" value={form.gst_number} onChange={F("gst_number")} />
+                <ErrMsg field="gst_number" />
+              </div>
               <div className={styles.ownerFormField}>
-  <label className={styles.ownerFormLabel}>
-    PAN Number
-  </label>
-
-  <input
-    className={styles.ownerFormInp}
-    placeholder="ABCDE1234F"
-    value={form.pan_number}
-    onChange={F("pan_number")}
-  />
-
-  {errors.pan_number && (
-    <p
-      style={{
-        color: "red",
-        fontSize: "11px",
-        marginTop: "4px"
-      }}
-    >
-      {errors.pan_number}
-    </p>
-  )}
-</div>
+                <label className={styles.ownerFormLabel}>PAN Number</label>
+                <input className={styles.ownerFormInp} placeholder="ABCDE1234F" value={form.pan_number} onChange={F("pan_number")} />
+                <ErrMsg field="pan_number" />
+              </div>
             </div>
           </div>
 
-          {/* ── Section 3: Property Address ── */}
+          {/* Address */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}>
-              <Icon d={IC.mapPin} size={13} /> Property Address
-            </div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.mapPin} size={13} /> Property Address</div>
             <div className={styles.ownerFormGrid}>
-              <div className={styles.ownerFormField} style={{ gridColumn: "1 / -1" }}>
+              <div className={styles.ownerFormField} style={{ gridColumn:"1 / -1" }}>
                 <label className={styles.ownerFormLabel}>Street Address</label>
                 <input className={styles.ownerFormInp} placeholder="Flat / Building / Street" value={form.address} onChange={F("address")} />
               </div>
@@ -520,11 +446,9 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
             </div>
           </div>
 
-          {/* ── Section 4: Banking Details ── */}
+          {/* Banking */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}>
-              <Icon d={IC.bank} size={13} /> Banking Details
-            </div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.bank} size={13} /> Banking Details</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Bank Name</label>
@@ -534,88 +458,28 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
                 <label className={styles.ownerFormLabel}>Account Holder Name</label>
                 <input className={styles.ownerFormInp} placeholder="As per passbook" value={form.account_holder} onChange={F("account_holder")} />
               </div>
-             <div className={styles.ownerFormField}>
-  <label className={styles.ownerFormLabel}>
-    Account Number
-  </label>
-
-  <input
-    className={styles.ownerFormInp}
-    placeholder="XXXXXXXXXXXX"
-    value={form.account_number}
-    onChange={F("account_number")}
-  />
-
-  {errors.account_number && (
-    <p
-      style={{
-        color: "red",
-        fontSize: "11px",
-        marginTop: "4px"
-      }}
-    >
-      {errors.account_number}
-    </p>
-  )}
-</div>
-             <div className={styles.ownerFormField}>
-  <label className={styles.ownerFormLabel}>
-    IFSC Code
-  </label>
-
-  <input
-    className={styles.ownerFormInp}
-    placeholder="HDFC0001234"
-    value={form.ifsc_code}
-    onChange={F("ifsc_code")}
-  />
-
-  {errors.ifsc_code && (
-    <p
-      style={{
-        color: "red",
-        fontSize: "11px",
-        marginTop: "4px"
-      }}
-    >
-      {errors.ifsc_code}
-    </p>
-  )}
-</div>
+              <div className={styles.ownerFormField}>
+                <label className={styles.ownerFormLabel}>Account Number</label>
+                <input className={styles.ownerFormInp} placeholder="XXXXXXXXXXXX" value={form.account_number} onChange={F("account_number")} />
+                <ErrMsg field="account_number" />
+              </div>
+              <div className={styles.ownerFormField}>
+                <label className={styles.ownerFormLabel}>IFSC Code</label>
+                <input className={styles.ownerFormInp} placeholder="HDFC0001234" value={form.ifsc_code} onChange={F("ifsc_code")} />
+                <ErrMsg field="ifsc_code" />
+              </div>
             </div>
           </div>
 
-          {/* ── Section 5: Revenue & Rent ── */}
+          {/* Revenue & Rent */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}>
-              <Icon d={IC.percent} size={13} /> Revenue & Rent Terms
-            </div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.percent} size={13} /> Revenue & Rent Terms</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
-  <label className={styles.ownerFormLabel}>
-    Rent Amount (₹)
-  </label>
-
-  <input
-    className={styles.ownerFormInp}
-    type="number"
-    placeholder="e.g. 50000"
-    value={form.rent_amount}
-    onChange={F("rent_amount")}
-  />
-
-  {errors.rent_amount && (
-    <p
-      style={{
-        color: "red",
-        fontSize: "11px",
-        marginTop: "4px"
-      }}
-    >
-      {errors.rent_amount}
-    </p>
-  )}
-</div>
+                <label className={styles.ownerFormLabel}>Rent Amount (₹)</label>
+                <input className={styles.ownerFormInp} type="number" placeholder="e.g. 50000" value={form.rent_amount} onChange={F("rent_amount")} />
+                <ErrMsg field="rent_amount" />
+              </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Rent Frequency</label>
                 <select className={styles.ownerFormSelect} value={form.rent_frequency} onChange={F("rent_frequency")}>
@@ -624,33 +488,11 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
                   <option value="annually">Annually</option>
                 </select>
               </div>
-             <div className={styles.ownerFormField}>
-  <label className={styles.ownerFormLabel}>
-    Revenue Share % (Owner gets)
-  </label>
-
-  <input
-    className={styles.ownerFormInp}
-    type="number"
-    min="0"
-    max="100"
-    placeholder="e.g. 70"
-    value={form.revenue_share_pct}
-    onChange={F("revenue_share_pct")}
-  />
-
-  {errors.revenue_share_pct && (
-    <p
-      style={{
-        color: "red",
-        fontSize: "11px",
-        marginTop: "4px"
-      }}
-    >
-      {errors.revenue_share_pct}
-    </p>
-  )}
-</div>
+              <div className={styles.ownerFormField}>
+                <label className={styles.ownerFormLabel}>Revenue Share % (Owner gets)</label>
+                <input className={styles.ownerFormInp} type="number" min="0" max="100" placeholder="e.g. 70" value={form.revenue_share_pct} onChange={F("revenue_share_pct")} />
+                <ErrMsg field="revenue_share_pct" />
+              </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Security Deposit (₹)</label>
                 <input className={styles.ownerFormInp} type="number" placeholder="e.g. 100000" value={form.security_deposit} onChange={F("security_deposit")} />
@@ -658,11 +500,9 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
             </div>
           </div>
 
-          {/* ── Section 6: Contract ── */}
+          {/* Contract */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}>
-              <Icon d={IC.calendar} size={13} /> Contract / Agreement
-            </div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.calendar} size={13} /> Contract / Agreement</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Agreement Type</label>
@@ -677,50 +517,23 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
                 <label className={styles.ownerFormLabel}>Contract Start Date</label>
                 <input className={styles.ownerFormInp} type="date" value={form.contract_start} onChange={F("contract_start")} />
               </div>
-             <div className={styles.ownerFormField}>
-  <label className={styles.ownerFormLabel}>
-    Contract End Date
-  </label>
-
-  <input
-    className={styles.ownerFormInp}
-    type="date"
-    value={form.contract_end}
-    onChange={F("contract_end")}
-  />
-
-  {errors.contract_end && (
-    <p
-      style={{
-        color: "red",
-        fontSize: "11px",
-        marginTop: "4px"
-      }}
-    >
-      {errors.contract_end}
-    </p>
-  )}
-</div>
+              <div className={styles.ownerFormField}>
+                <label className={styles.ownerFormLabel}>Contract End Date</label>
+                <input className={styles.ownerFormInp} type="date" value={form.contract_end} onChange={F("contract_end")} />
+                <ErrMsg field="contract_end" />
+              </div>
             </div>
           </div>
 
-          {/* ── Section 7: Notes ── */}
-          <div className={styles.ownerFormSection} style={{ marginBottom: 0 }}>
-            <div className={styles.ownerFormSectionTitle}>
-              <Icon d={IC.edit} size={13} /> Additional Notes
-            </div>
-            <textarea
-              className={styles.ownerFormInp}
-              rows={3}
+          {/* Notes */}
+          <div className={styles.ownerFormSection} style={{ marginBottom:0 }}>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.edit} size={13} /> Additional Notes</div>
+            <textarea className={styles.ownerFormInp} rows={3}
               placeholder="Any special terms, conditions, or remarks about this owner..."
-              value={form.notes}
-              onChange={F("notes")}
-              style={{ resize: "vertical" }}
-            />
+              value={form.notes} onChange={F("notes")} style={{ resize:"vertical" }} />
           </div>
         </div>
 
-        {/* Footer */}
         <div className={styles.ownerFormFooter}>
           <button className={styles.ownerFormSubmit} onClick={handleSubmit} disabled={loading}>
             <Icon d={IC.check} size={14} />
@@ -771,16 +584,16 @@ function WeeklyChart({ data }) {
       <div className={styles.chartHeader}>
         <div><h3 className={styles.chartTitle}>Weekly Overview</h3><p className={styles.chartSub}>Bookings & Revenue this week</p></div>
         <div className={styles.chartLegend}>
-          <span className={styles.legendDot} style={{ background: "#f59e0b" }} /><span className={styles.legendTxt}>Bookings</span>
-          <span className={styles.legendDot} style={{ background: "#6366f1" }} /><span className={styles.legendTxt}>Revenue k</span>
+          <span className={styles.legendDot} style={{ background:"#f59e0b" }} /><span className={styles.legendTxt}>Bookings</span>
+          <span className={styles.legendDot} style={{ background:"#6366f1" }} /><span className={styles.legendTxt}>Revenue k</span>
         </div>
       </div>
       <div className={styles.chartBody}>
         {data.map((d, i) => (
           <div key={i} className={styles.chartCol}>
             <div className={styles.chartBars}>
-              <div className={styles.barTrack}><div className={styles.barFill} style={{ height: `${animate ? (d.revenue / maxR) * 100 : 0}%`, background: "linear-gradient(180deg,#6366f1 0%,rgba(99,102,241,0.15) 100%)", transitionDelay: `${i * 60}ms` }} /></div>
-              <div className={styles.barTrack}><div className={styles.barFill} style={{ height: `${animate ? (d.bookings / maxB) * 100 : 0}%`, background: "linear-gradient(180deg,#f59e0b 0%,rgba(245,158,11,0.15) 100%)", transitionDelay: `${i * 60 + 30}ms` }} /></div>
+              <div className={styles.barTrack}><div className={styles.barFill} style={{ height:`${animate?(d.revenue/maxR)*100:0}%`, background:"linear-gradient(180deg,#6366f1 0%,rgba(99,102,241,0.15) 100%)", transitionDelay:`${i*60}ms` }} /></div>
+              <div className={styles.barTrack}><div className={styles.barFill} style={{ height:`${animate?(d.bookings/maxB)*100:0}%`, background:"linear-gradient(180deg,#f59e0b 0%,rgba(245,158,11,0.15) 100%)", transitionDelay:`${i*60+30}ms` }} /></div>
             </div>
             <span className={styles.chartDay}>{d.day}</span>
           </div>
@@ -799,7 +612,7 @@ function DonutChart({ data }) {
       <svg viewBox="0 0 128 128" width="130" height="130">
         {data.map((seg, i) => {
           const dash = (seg.pct / 100) * circ;
-          const el = <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={seg.color} strokeWidth="18" strokeDasharray={`${dash} ${circ - dash}`} strokeDashoffset={-offset} style={{ transform: "rotate(-90deg)", transformOrigin: "64px 64px" }} />;
+          const el = <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={seg.color} strokeWidth="18" strokeDasharray={`${dash} ${circ-dash}`} strokeDashoffset={-offset} style={{ transform:"rotate(-90deg)", transformOrigin:"64px 64px" }} />;
           offset += dash; return el;
         })}
         <circle cx="64" cy="64" r="40" fill="var(--card-bg,#fff)" />
@@ -809,7 +622,7 @@ function DonutChart({ data }) {
       <div className={styles.donutLegend}>
         {data.map((d, i) => (
           <div key={i} className={styles.donutItem}>
-            <span className={styles.donutDot} style={{ background: d.color }} />
+            <span className={styles.donutDot} style={{ background:d.color }} />
             <span className={styles.donutLabel}>{d.label}</span>
             <span className={styles.donutPct}>{d.pct}%</span>
           </div>
@@ -820,12 +633,12 @@ function DonutChart({ data }) {
 }
 
 // ─── Spark Bar ────────────────────────────────────────────────────────────────
-const mkSpark = (n, mx) => Array.from({ length: n }, () => Math.floor(Math.random() * mx) + 4);
+const mkSpark = (n, mx) => Array.from({ length:n }, () => Math.floor(Math.random()*mx)+4);
 function SparkBar({ data, color }) {
   const max = Math.max(...data);
   return (
     <div className={styles.spark}>
-      {data.map((v, i) => <div key={i} className={styles.sparkBar} style={{ height: `${(v / max) * 100}%`, background: color, opacity: i === data.length - 1 ? 0.75 : 0.25 }} />)}
+      {data.map((v, i) => <div key={i} className={styles.sparkBar} style={{ height:`${(v/max)*100}%`, background:color, opacity:i===data.length-1?0.75:0.25 }} />)}
     </div>
   );
 }
@@ -839,16 +652,16 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
   const [roleFilter, setRoleFilter]   = useState(initialRoleFilter);
   const [activeStat, setActiveStat]   = useState(initialRoleFilter === "owners" ? "owners" : "all");
   const [formMode, setFormMode]       = useState(null);
-  const [userForm, setUserForm]       = useState({ username: "", email: "", phone: "", password: "" });
+  const [userForm, setUserForm]       = useState({ username:"", email:"", phone:"", password:"" });
   const [editUserId, setEditUserId]   = useState(null);
-  const ownerFormInit = { username: "", email: "", password: "", location: "" };
+  const ownerFormInit = { username:"", email:"", password:"", location:"" };
   const [ownerForm, setOwnerForm]     = useState(ownerFormInit);
   const [editOwnerId, setEditOwnerId] = useState(null);
 
-  useEffect(() => { setRoleFilter(initialRoleFilter); setActiveStat(initialRoleFilter === "owners" ? "owners" : "all"); }, [initialRoleFilter]);
+  useEffect(() => { setRoleFilter(initialRoleFilter); setActiveStat(initialRoleFilter==="owners"?"owners":"all"); }, [initialRoleFilter]);
 
-  const fetchUsers  = () => axiosInstance.get("leads/users/all/").then((r) => setUsers(Array.isArray(r.data) ? r.data : [])).catch(() => setUsers([]));
-  const fetchOwners = () => axiosInstance.get("owners/").then((r) => setOwners(Array.isArray(r.data) ? r.data : [])).catch(() => setOwners([]));
+  const fetchUsers  = () => axiosInstance.get("leads/users/all/").then((r) => setUsers(Array.isArray(r.data)?r.data:[])).catch(()=>setUsers([]));
+  const fetchOwners = () => axiosInstance.get("owners/").then((r) => setOwners(Array.isArray(r.data)?r.data:[])).catch(()=>setOwners([]));
   useEffect(() => { fetchUsers(); fetchOwners(); }, []);
 
   const activeUsers = users.filter((u) => u.is_active !== false).length;
@@ -856,20 +669,20 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
   const combined = useMemo(() => {
     const q = search.toLowerCase().trim();
     const ownerEmails = owners.map((o) => o.email?.toLowerCase());
-    const uList = users.filter((u) => !ownerEmails.includes(u.email?.toLowerCase())).map((u) => ({ ...u, _type: "user" }));
-    const oList = owners.map((o) => ({ ...o, _type: "owner" }));
+    const uList = users.filter((u) => !ownerEmails.includes(u.email?.toLowerCase())).map((u) => ({ ...u, _type:"user" }));
+    const oList = owners.map((o) => ({ ...o, _type:"owner" }));
     let merged = [...uList, ...oList];
-    if (activeStat === "owners") merged = oList;
-    if (roleFilter === "users")  merged = uList;
-    else if (roleFilter === "owners") merged = oList;
-    else if (roleFilter === "admins") merged = uList.filter((u) => u.is_admin || u.is_superuser);
-    if (q) merged = merged.filter((item) => [item.username, item.email, item.phone, item.location].filter(Boolean).some((f) => f.toLowerCase().includes(q)));
+    if (activeStat==="owners") merged = oList;
+    if (roleFilter==="users")  merged = uList;
+    else if (roleFilter==="owners") merged = oList;
+    else if (roleFilter==="admins") merged = uList.filter((u) => u.is_admin||u.is_superuser);
+    if (q) merged = merged.filter((item) => [item.username,item.email,item.phone,item.location].filter(Boolean).some((f)=>f.toLowerCase().includes(q)));
     return merged;
-  }, [users, owners, search, roleFilter, activeStat]);
+  }, [users,owners,search,roleFilter,activeStat]);
 
-  const resetForms = () => { setFormMode(null); setUserForm({ username:"",email:"",phone:"",password:"" }); setOwnerForm(ownerFormInit); setEditUserId(null); setEditOwnerId(null); };
-  const openEditUser  = (u) => { setEditUserId(u.id);  setUserForm({ username:u.username||"",email:u.email||"",phone:u.phone||"",password:"",is_admin:u.is_admin??u.is_superuser??false }); setFormMode("editUser");  window.scrollTo({top:0,behavior:"smooth"}); };
-  const openEditOwner = (o) => { setEditOwnerId(o.id); setOwnerForm({ username:o.username||"",email:o.email||"",password:"",location:o.location||"" }); setFormMode("editOwner"); window.scrollTo({top:0,behavior:"smooth"}); };
+  const resetForms = () => { setFormMode(null); setUserForm({username:"",email:"",phone:"",password:""}); setOwnerForm(ownerFormInit); setEditUserId(null); setEditOwnerId(null); };
+  const openEditUser  = (u) => { setEditUserId(u.id);  setUserForm({username:u.username||"",email:u.email||"",phone:u.phone||"",password:"",is_admin:u.is_admin??u.is_superuser??false}); setFormMode("editUser");  window.scrollTo({top:0,behavior:"smooth"}); };
+  const openEditOwner = (o) => { setEditOwnerId(o.id); setOwnerForm({username:o.username||"",email:o.email||"",password:"",location:o.location||""}); setFormMode("editOwner"); window.scrollTo({top:0,behavior:"smooth"}); };
 
   const handleCreateUser  = async () => { if(!userForm.username||!userForm.email){showToast("Username and email required","error");return;} try{setLoading(true);await axiosInstance.post("leads/users/create/",userForm);showToast("User created");resetForms();fetchUsers();}catch{showToast("Failed","error");}finally{setLoading(false);} };
   const handleUpdateUser  = async () => { try{setLoading(true);await axiosInstance.put(`leads/users/update/${editUserId}/`,{username:userForm.username,email:userForm.email,phone:userForm.phone,is_admin:userForm.is_admin||false});showToast("User updated");resetForms();fetchUsers();}catch{showToast("Failed","error");}finally{setLoading(false);} };
@@ -883,8 +696,8 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
   const isEditMode  = formMode==="editUser"||formMode==="editOwner";
 
   const S = {
-    statsRow: { display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:"12px", marginBottom:"20px" },
-    statCard:  (c,a) => ({ border:`1px solid ${a?c:c+"25"}`, borderRadius:"12px", padding:"14px 16px", display:"flex", flexDirection:"column", gap:"6px", cursor:"pointer", background:a?`${c}08`:"transparent", transition:"all 0.18s" }),
+    statsRow: { display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:"12px",marginBottom:"20px" },
+    statCard:  (c,a) => ({ border:`1px solid ${a?c:c+"25"}`,borderRadius:"12px",padding:"14px 16px",display:"flex",flexDirection:"column",gap:"6px",cursor:"pointer",background:a?`${c}08`:"transparent",transition:"all 0.18s" }),
     statIco:   (c)   => ({ width:36,height:36,borderRadius:"8px",background:`${c}18`,color:"black",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:"4px" }),
     statVal:   ()    => ({ fontSize:"22px",fontWeight:700,color:"#000",lineHeight:1 }),
     statLbl:   { fontSize:"11px",color:"#000",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.04em" },
@@ -918,9 +731,9 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
   };
 
   const statsConfig = [
-    { label:"Total Users",    value:users.length,   color:"#6366f1", icon:IC.users,  filterKey:"all",    statKey:"all"    },
-    { label:"Total Managers", value:owners.length,  color:"#f59e0b", icon:IC.owners, filterKey:"owners", statKey:"owners" },
-    { label:"Active Users",   value:activeUsers,    color:"#10b981", icon:IC.check,  filterKey:"users",  statKey:"users"  },
+    { label:"Total Users",    value:users.length,  color:"#6366f1", icon:IC.users,  filterKey:"all",    statKey:"all"    },
+    { label:"Total Managers", value:owners.length, color:"#f59e0b", icon:IC.owners, filterKey:"owners", statKey:"owners" },
+    { label:"Active Users",   value:activeUsers,   color:"#10b981", icon:IC.check,  filterKey:"users",  statKey:"users"  },
   ];
 
   return (
@@ -977,7 +790,7 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
         </div>
       )}
       <div style={S.filterBar}>
-        {[{key:"all",label:"All"},{key:"users",label:"Users"},{key:"managers",label:"Managers"},{key:"admins",label:"Admins"}].map((r)=>(
+        {[{key:"all",label:"All"},{key:"users",label:"Users"},{key:"owners",label:"Managers"},{key:"admins",label:"Admins"}].map((r)=>(
           <button key={r.key} style={S.roleBtn(roleFilter===r.key)} onClick={()=>{setRoleFilter(r.key);setActiveStat(r.key);}}>{r.label}</button>
         ))}
         <div style={S.searchWrap}>
@@ -1045,13 +858,15 @@ export default function AdminDashboard() {
   const [showAddForm, setShowAddForm] = useState(false);
 
   // ── Owner assignment modal state ──────────────────────────────────────────
-  const [showOwnerModal,    setShowOwnerModal]    = useState(false);   // step-1 yes/no popup
-  const [showOwnerForm,     setShowOwnerForm]     = useState(false);   // step-2 full owner form
-  // owner details stored locally per workspace (keyed by temp ID or after save by ws ID)
-  const [pendingOwnerData,  setPendingOwnerData]  = useState(null);    // filled owner form data
-  const [ownerFormLoading,  setOwnerFormLoading]  = useState(false);
+  const [showOwnerModal,   setShowOwnerModal]   = useState(false);
+  const [showOwnerForm,    setShowOwnerForm]     = useState(false);
+  const [pendingOwnerData, setPendingOwnerData]  = useState(null);
+  const [ownerFormLoading, setOwnerFormLoading]  = useState(false);
 
-const [selectedOwner, setSelectedOwner] = useState(null);
+  // ── Per-workspace revenue toggle (NEW) ────────────────────────────────────
+  const [openRevenueId, setOpenRevenueId] = useState(null);
+
+  const [selectedOwner, setSelectedOwner] = useState(null);
   const [catForm, setCatForm] = useState({ name:"",category:"",description:"",image:"",hourlyprice:"",dailyprice:"",monthlyprice:"",isavailable:true,owner:"" });
 
   const [section,          setSection]          = useState("overview");
@@ -1068,17 +883,17 @@ const [selectedOwner, setSelectedOwner] = useState(null);
   const notifRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   const [adminNotifications, setAdminNotifications] = useState([]);
-  const [viewedAdminNotifs, setViewedAdminNotifs] = useState(() => JSON.parse(localStorage.getItem("adminViewedNotifications")) || []);
+  const [viewedAdminNotifs, setViewedAdminNotifs] = useState(() => JSON.parse(localStorage.getItem("adminViewedNotifications"))||[]);
   const [companyLeads, setCompanyLeads] = useState([]);
   const [hydLeads,     setHydLeads]     = useState([]);
   const [offerLeads,   setOfferLeads]   = useState([]);
 
   const buildNotifs = (company=[], hyd=[], offer=[], ws=[]) => {
     let items = [];
-    company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",        section:"company-leads",    time:"New Lead"      }));
-    hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type,       section:"hyderabad-leads",  time:"New Lead"      }));
-    offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type,       section:"offerleads",       time:"New Lead"      }));
-    ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,       type:"Workspace Added", name:w.name, workspace:w.location||"-",        section:"workspaces",       time:"New Workspace" }));
+    company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",      section:"company-leads",   time:"New Lead"      }));
+    hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type,     section:"hyderabad-leads", time:"New Lead"      }));
+    offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type,     section:"offerleads",      time:"New Lead"      }));
+    ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,       type:"Workspace Added", name:w.name, workspace:w.location||"-",      section:"workspaces",      time:"New Workspace" }));
     setAdminNotifications(items.filter((n) => !viewedAdminNotifs.includes(n.id)));
   };
 
@@ -1115,26 +930,20 @@ const [selectedOwner, setSelectedOwner] = useState(null);
 
   const showToast = (msg, type="success") => { setToast({msg,type}); setTimeout(()=>setToast(null),3000); };
 
-  // ── Add Workspace button → open step-1 modal (unless form already open) ──
   const handleAddWorkspaceBtnClick = () => {
     if (showAddForm) {
-      setShowAddForm(false); setEditId(null); setPendingOwnerData(null);
-      setForm(WS_FORM_INIT);
+      setShowAddForm(false); setEditId(null); setPendingOwnerData(null); setForm(WS_FORM_INIT);
     } else {
       setShowOwnerModal(true);
     }
   };
 
-  // Step-1 modal: Yes → open full owner details form
-  const handleModalYes = () => { setShowOwnerModal(false); setShowOwnerForm(true); };
-  // Step-1 modal: No  → open workspace form without owner
-  const handleModalNo  = () => { setShowOwnerModal(false); setPendingOwnerData(null); setShowAddForm(true); };
+  const handleModalYes   = () => { setShowOwnerModal(false); setShowOwnerForm(true); };
+  const handleModalNo    = () => { setShowOwnerModal(false); setPendingOwnerData(null); setShowAddForm(true); };
   const handleModalClose = () => setShowOwnerModal(false);
 
-  // Step-2: Owner details form submitted → store locally, then open workspace form
   const handleOwnerFormSubmit = (ownerData) => {
     setOwnerFormLoading(true);
-    // Small fake delay for UX feel
     setTimeout(() => {
       setPendingOwnerData(ownerData);
       setShowOwnerForm(false);
@@ -1144,27 +953,15 @@ const [selectedOwner, setSelectedOwner] = useState(null);
     }, 400);
   };
 
-  // Submit workspace (with or without owner)
   const handleSubmit = () => {
     if (!form.name||!form.city||!form.price) { showToast("Fill required fields","error"); return; }
-    const payload = {
-
-  ...form,
-
-  owner_details: pendingOwnerData || null
-
-};
+    const payload = { ...form, owner_details: pendingOwnerData || null };
     const req = editId
       ? axiosInstance.put(`workspaces/update/${editId}/`, payload)
       : axiosInstance.post("workspaces/add/", payload);
-    req.then((res) => {
-      const savedId = res.data?.id || editId;
-      // If owner data was filled, store it in local map for table display
-      // (and optionally POST to a separate owner-assignment endpoint)
-      
+    req.then(() => {
       showToast(editId ? "Updated successfully" : "Workspace added successfully and make approval for show in website..");
-      setEditId(null); setShowAddForm(false); setPendingOwnerData(null);
-      setForm(WS_FORM_INIT);
+      setEditId(null); setShowAddForm(false); setPendingOwnerData(null); setForm(WS_FORM_INIT);
       fetchWS();
     }).catch(()=>showToast("Operation failed","error"));
   };
@@ -1172,7 +969,6 @@ const [selectedOwner, setSelectedOwner] = useState(null);
   const handleEdit = (item) => {
     setForm({ name:item.name||"",city:item.city||"",location:item.location||"",price:item.price||"",image:item.image||"",description:item.description||"",amenities:item.amenities?.map((a)=>a.id||a)||[],isavailable:item.isavailable??true });
     setEditId(item.id);
-   
     setShowAddForm(true); setSection("workspaces");
     window.scrollTo({top:0,behavior:"smooth"});
   };
@@ -1186,14 +982,14 @@ const [selectedOwner, setSelectedOwner] = useState(null);
   const handleApprove = (id) => axiosInstance.put(`workspaces/approve/${id}/`).then(()=>{showToast("Approved");fetchWS();}).catch(()=>showToast("Failed","error"));
   const handleReject  = (id) => axiosInstance.put(`workspaces/reject/${id}/`).then(()=>{showToast("Rejected");fetchWS();}).catch(()=>showToast("Failed","error"));
 
-  const handleAddCat  = () => { axiosInstance.post("workspaces/categories/add",catForm).then(()=>{showToast("Category added");setCatForm({name:"",category:"",description:"",image:"",hourlyprice:"",dailyprice:"",monthlyprice:"",isavailable:true,owner:""});fetchCat();}).catch(()=>showToast("Failed","error")); };
-  const handleDelCat  = (id) => { if(!window.confirm("Delete?"))return; axiosInstance.delete(`workspaces/categories/delete/${id}`).then(()=>{showToast("Deleted");fetchCat();}).catch(()=>showToast("Failed","error")); };
+  const handleAddCat = () => { axiosInstance.post("workspaces/categories/add",catForm).then(()=>{showToast("Category added");setCatForm({name:"",category:"",description:"",image:"",hourlyprice:"",dailyprice:"",monthlyprice:"",isavailable:true,owner:""});fetchCat();}).catch(()=>showToast("Failed","error")); };
+  const handleDelCat = (id) => { if(!window.confirm("Delete?"))return; axiosInstance.delete(`workspaces/categories/delete/${id}`).then(()=>{showToast("Deleted");fetchCat();}).catch(()=>showToast("Failed","error")); };
 
   const goNav = (item) => { if(item.path){navigate(item.path);setMobOpen(false);return;} if(item.section){setSection(item.section);setMobOpen(false);} };
   const closeMob = () => setMobOpen(false);
   const handleMenuToggle = () => { if(isMobile) setMobOpen((p)=>!p); else setSideOpen((p)=>!p); };
 
-  const ownerOptions = useMemo(() => [...new Set(workspaces.map((w)=>w.ownername||w.owner_name||w.owner?.username||w.owner?.name||"").filter(Boolean))].sort(), [workspaces]);
+  const ownerOptions  = useMemo(() => [...new Set(workspaces.map((w)=>w.ownername||w.owner_name||w.owner?.username||w.owner?.name||"").filter(Boolean))].sort(), [workspaces]);
   const wsTypeOptions = useMemo(() => [...new Set(workspaces.map((w)=>w.usertype||w.workspace_type||w.workspacetype||w.category||w.name||"").filter(Boolean))].sort(), [workspaces]);
 
   const filteredWS = useMemo(() => {
@@ -1212,7 +1008,7 @@ const [selectedOwner, setSelectedOwner] = useState(null);
 
   const STATS = [
     { label:"Total Workspaces", value:workspaces.length, color:"#f59e0b", spark:SPARKS.ws,  trend:12, up:true, icon:IC.workspace, hint:"View all workspaces", onClick:()=>setSection("workspaces") },
-    { label:"Total Categories",  value:WORKSPACE_TYPES.length, color:"#6366f1", spark:SPARKS.cat, trend:8,  up:true, icon:IC.category,  hint:"View all categories", onClick:()=>{setWsTypeFilter("");setSection("workspaces");} },
+    { label:"Total Categories",  value:WORKSPACE_TYPES.length, color:"#6366f1", spark:SPARKS.cat, trend:8, up:true, icon:IC.category, hint:"View all categories", onClick:()=>{setWsTypeFilter("");setSection("workspaces");} },
     { label:"Total Managers",    value:owners.length,    color:"#10b981", spark:SPARKS.own, trend:3,  up:true, icon:IC.owners,    hint:"Manage Managers",     onClick:()=>{setManagementFilter("owners");setSection("management");} },
   ];
 
@@ -1434,7 +1230,7 @@ const [selectedOwner, setSelectedOwner] = useState(null);
                   {searchQ&&<button style={{border:"none",background:"none",cursor:"pointer",color:"#aaa",padding:0,display:"flex"}} onClick={()=>setSearchQ("")}><Icon d={IC.close} size={11}/></button>}
                 </div>
                 <select style={wsSelectStyle} value={ownerFilter} onChange={(e)=>setOwnerFilter(e.target.value)}>
-                  <option value="">All Owners</option>
+                  <option value="">All Owners/managers</option>
                   {ownerOptions.map((o)=><option key={o} value={o}>{o}</option>)}
                 </select>
                 <select style={wsSelectStyle} value={wsTypeFilter} onChange={(e)=>setWsTypeFilter(e.target.value)}>
@@ -1456,7 +1252,6 @@ const [selectedOwner, setSelectedOwner] = useState(null);
                   <div className={styles.formHead}>
                     <span className={styles.formHeadIco}><Icon d={editId?IC.edit:IC.add} size={13}/></span>
                     <span>{editId?`Editing Workspace #${editId}`:"Add New Workspace"}</span>
-                    {/* Owner assigned indicator */}
                     {pendingOwnerData&&(
                       <span style={{marginLeft:"auto",display:"inline-flex",alignItems:"center",gap:"6px",fontSize:"11px",fontWeight:700,color:"#d97706",background:"#f59e0b12",border:"1px solid #f59e0b30",borderRadius:"20px",padding:"3px 10px"}}>
                         <Icon d={IC.briefcase} size={11}/>
@@ -1472,18 +1267,18 @@ const [selectedOwner, setSelectedOwner] = useState(null);
                     )}
                   </div>
 
-                  {/* Owner preview card (if assigned) */}
+                  {/* Owner preview card */}
                   {pendingOwnerData&&(
                     <div style={{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:"10px",padding:"14px 16px",marginBottom:"16px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"10px"}}>
                       {[
-                        ["Owner",           pendingOwnerData.owner_name,       IC.users],
-                        ["Phone",           pendingOwnerData.owner_phone,      IC.phone],
-                        ["Business",        pendingOwnerData.business_name,    IC.briefcase],
-                        ["GST",             pendingOwnerData.gst_number,       IC.idCard],
-                        ["Rent (₹)",        pendingOwnerData.rent_amount ? `₹${pendingOwnerData.rent_amount}/${pendingOwnerData.rent_frequency}` : "-", IC.bank],
-                        ["Revenue Share",   pendingOwnerData.revenue_share_pct ? `${pendingOwnerData.revenue_share_pct}%` : "-", IC.percent],
-                        ["Contract",        pendingOwnerData.contract_start ? `${pendingOwnerData.contract_start} → ${pendingOwnerData.contract_end||"Open"}` : "-", IC.calendar],
-                        ["Agreement",       pendingOwnerData.agreement_type,   IC.key],
+                        ["Owner",         pendingOwnerData.owner_name,       IC.users],
+                        ["Phone",         pendingOwnerData.owner_phone,      IC.phone],
+                        ["Business",      pendingOwnerData.business_name,    IC.briefcase],
+                        ["GST",           pendingOwnerData.gst_number,       IC.idCard],
+                        ["Rent (₹)",      pendingOwnerData.rent_amount ? `₹${pendingOwnerData.rent_amount}/${pendingOwnerData.rent_frequency}` : "-", IC.bank],
+                        ["Revenue Share", pendingOwnerData.revenue_share_pct ? `${pendingOwnerData.revenue_share_pct}%` : "-", IC.percent],
+                        ["Contract",      pendingOwnerData.contract_start ? `${pendingOwnerData.contract_start} → ${pendingOwnerData.contract_end||"Open"}` : "-", IC.calendar],
+                        ["Agreement",     pendingOwnerData.agreement_type,   IC.key],
                       ].filter(([,v])=>v).map(([lbl,val,ico])=>(
                         <div key={lbl} style={{display:"flex",alignItems:"flex-start",gap:"7px"}}>
                           <div style={{width:22,height:22,borderRadius:"6px",background:"#f59e0b20",color:"#f59e0b",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}><Icon d={ico} size={11}/></div>
@@ -1528,323 +1323,176 @@ const [selectedOwner, setSelectedOwner] = useState(null);
                 </div>
               )}
 
-              {/* Table */}
-             <div className={styles.tableWrap}>
-  <table className={styles.table}>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>owner/Landlord</th>
-        <th>Manager</th>
-        <th>Workspace Type</th>
-        <th>Name</th>
-        <th>City</th>
-        <th>Location</th>
-        <th>Price</th>
-        <th>Rent</th>
-        <th>Lease</th>
-        <th>Approval</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+              {/* ── Workspace Table ── */}
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Owner/Landlord</th>
+                      <th>Manager</th>
+                      <th>Workspace Type</th>
+                      <th>Name</th>
+                      <th>City</th>
+                      <th>Location</th>
+                      <th>Price</th>
+                      <th>Rent</th>
+                      <th>Lease</th>
+                      <th>Approval</th>
+                      <th>Status</th>
+                      {/* ── NEW Revenue column header ── */}
+                      <th>Revenue</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
 
-    <tbody>
+                  <tbody>
+                    {filteredWS.map((item, i) => {
+                      const landlordName = item.owner_details?.owner_name || "Unassigned";
+                      const managerName  = item.manager_name || item.owner?.username || "-";
+                      const rentInfo     = item.owner_details
+                        ? `₹${item.owner_details?.rent_amount || 0}/${item.owner_details?.rent_frequency || "mo"}`
+                        : "—";
+                      const leaseInfo    = item.owner_details?.agreement_type || "-";
+                      const wsType       = item.usertype || item.workspace_type || item.workspacetype || item.category || item.name || "-";
+                      const isActive     = item.isavailable !== false;
 
-      {filteredWS.map((item, i) => {
+                      // ── per-workspace revenue toggle ──
+                      const isRevenueOpen = openRevenueId === item.id;
 
-        // =========================
-        // LANDLORD DETAILS
-        // =========================
-        const landlordName =
-          item.owner_details?.owner_name ||
-          "Unassigned";
+                      return (
+                        <React.Fragment key={item.id}>
+                          {/* ── Main data row ── */}
+                          <tr style={!isActive ? { opacity:0.55, background:"rgba(0,0,0,0.02)" } : {}}>
 
-        // =========================
-        // MANAGER DETAILS
-        // =========================
-        const managerName =
-          item.manager_name ||
-          item.owner?.username ||
-          "-";
+                            {/* SERIAL */}
+                            <td className={styles.tdSerial}>{String(i+1).padStart(2,"00")}</td>
 
-        // =========================
-        // RENT INFO
-        // =========================
-        const rentInfo =
-          item.owner_details
-            ? `₹${item.owner_details?.rent_amount || 0}/${item.owner_details?.rent_frequency || "mo"}`
-            : "—";
+                            {/* LANDLORD */}
+                            <td className={styles.tdBold}>
+                              {item.owner_details ? (
+                                <button onClick={()=>setSelectedOwner(item.owner_details)}
+                                  style={{border:"none",background:"transparent",cursor:"pointer"}}>
+                                  <span className={styles.ownerAssignedBadge}>
+                                    <Icon d={IC.briefcase} size={11}/> {landlordName}
+                                  </span>
+                                </button>
+                              ) : (
+                                <span className={styles.ownerUnassignedBadge}>
+                                  <Icon d={IC.close} size={10}/> Unassigned
+                                </span>
+                              )}
+                            </td>
 
-        // =========================
-        // LEASE INFO
-        // =========================
-        const leaseInfo =
-          item.owner_details?.agreement_type || "-";
+                            {/* MANAGER */}
+                            <td className={styles.tdMuted}>{managerName}</td>
 
-        // =========================
-        // WORKSPACE TYPE
-        // =========================
-        const wsType =
-          item.usertype ||
-          item.workspace_type ||
-          item.workspacetype ||
-          item.category ||
-          item.name ||
-          "-";
+                            {/* TYPE */}
+                            <td className={styles.tdMuted}>{wsType}</td>
 
-        // =========================
-        // ACTIVE STATUS
-        // =========================
-        const isActive =
-          item.isavailable !== false;
+                            {/* NAME */}
+                            <td className={styles.tdBold}>{item.name}</td>
 
-        return (
+                            {/* CITY */}
+                            <td style={{color:"black"}}>{item.city}</td>
 
-          <tr
-            key={item.id}
-            style={
-              !isActive
-                ? {
-                    opacity: 0.55,
-                    background: "rgba(0,0,0,0.02)"
-                  }
-                : {}
-            }
-          >
+                            {/* LOCATION */}
+                            <td className={styles.tdMuted}>{item.location}</td>
 
-            {/* SERIAL */}
-            <td className={styles.tdSerial}>
-              {String(i + 1).padStart(2, "0")}
-            </td>
+                            {/* PRICE */}
+                            <td className={styles.tdAccent}>₹{item.price}</td>
 
-            {/* LANDLORD */}
-            <td className={styles.tdBold}>
+                            {/* RENT */}
+                            <td style={{fontSize:"11px",color:"#666",fontWeight:600}}>{rentInfo}</td>
 
-              {item.owner_details ? (
+                            {/* LEASE */}
+                            <td style={{fontSize:"11px",color:"#666",fontWeight:600}}>{leaseInfo}</td>
 
-                <button
-                  onClick={() =>
-                    setSelectedOwner(item.owner_details)
-                  }
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    cursor: "pointer"
-                  }}
-                >
+                            {/* APPROVAL */}
+                            <td>
+                              {item.is_approved
+                                ? <span className={styles.approvedBadge}>Approved</span>
+                                : <span className={styles.pendingBadge}>Pending</span>}
+                            </td>
 
-                  <span className={styles.ownerAssignedBadge}>
-                    <Icon d={IC.briefcase} size={11} />
-                    {landlordName}
-                  </span>
+                            {/* STATUS */}
+                            <td>
+                              {isActive
+                                ? <span className={styles.approvedBadge} style={{background:"#10b98118",color:"#10b981",border:"1px solid #10b98130"}}>Active</span>
+                                : <span className={styles.pendingBadge}  style={{background:"#6b728018",color:"#6b7280",border:"1px solid #6b728030"}}>Inactive</span>}
+                            </td>
 
-                </button>
+                            {/* ── REVENUE TOGGLE BUTTON (NEW) ── */}
+                            <td>
+                              <button
+                                title={isRevenueOpen ? "Hide Revenue" : "View Revenue"}
+                                onClick={() => setOpenRevenueId(isRevenueOpen ? null : item.id)}
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 5,
+                                  padding: "5px 10px",
+                                  borderRadius: 8,
+                                  border: `1.5px solid ${isRevenueOpen ? "#7c3aed" : "#a78bfa"}`,
+                                  background: isRevenueOpen ? "#7c3aed" : "#f5f3ff",
+                                  color: isRevenueOpen ? "#fff" : "#7c3aed",
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  transition: "all 0.18s ease",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {isRevenueOpen ? "▲ Hide" : "💰 Revenue"}
+                              </button>
+                            </td>
 
-              ) : (
+                            {/* ACTIONS */}
+                            <td>
+                              <div className={styles.actCell}>
+                                <button className={styles.editBtn} onClick={()=>handleEdit(item)} style={{padding:"5px 7px"}}>
+                                  <Icon d={IC.edit} size={13}/>
+                                </button>
+                                {!item.is_approved ? (
+                                  <button className={styles.approveBtn} onClick={()=>handleApprove(item.id)} style={{padding:"5px 7px"}}>
+                                    <Icon d={IC.approveCircle} size={13}/>
+                                  </button>
+                                ) : (
+                                  <button className={styles.rejectBtn} onClick={()=>handleReject(item.id)} style={{padding:"5px 7px"}}>
+                                    <Icon d={IC.rejectCircle} size={13}/>
+                                  </button>
+                                )}
+                                <button onClick={()=>handleToggleActive(item)}
+                                  style={{padding:"5px 7px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"6px",border:"none",cursor:"pointer",background:isActive?"#10b98118":"#6b728018",color:isActive?"#10b981":"#6b7280",transition:"all 0.18s"}}>
+                                  <Icon d={isActive?IC.eyeOn:IC.eyeOff} size={13}/>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
 
-                <span className={styles.ownerUnassignedBadge}>
-                  <Icon d={IC.close} size={10} />
-                  Unassigned
-                </span>
+                          {/* ── REVENUE PANEL ROW (NEW) — expands inline below each workspace ── */}
+                          {isRevenueOpen && (
+                            <tr key={`revenue-${item.id}`}>
+                              <td colSpan={14} style={{ padding:0, borderBottom:"2px solid #7c3aed30" }}>
+                                <WorkspaceRevenuePanel
+                                  workspaceId={item.id}
+                                  workspaceName={item.name}
+                                />
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
 
-              )}
-
-            </td>
-
-            {/* MANAGER */}
-            <td className={styles.tdMuted}>
-              {managerName}
-            </td>
-
-            {/* TYPE */}
-            <td className={styles.tdMuted}>
-              {wsType}
-            </td>
-
-            {/* NAME */}
-            <td className={styles.tdBold}>
-              {item.name}
-            </td>
-
-            {/* CITY */}
-            <td style={{color:"black"}}> 
-              {item.city}
-            </td>
-
-            {/* LOCATION */}
-            <td className={styles.tdMuted}>
-              {item.location}
-            </td>
-
-            {/* PRICE */}
-            <td className={styles.tdAccent}>
-              ₹{item.price}
-            </td>
-
-            {/* RENT */}
-            <td
-              style={{
-                fontSize: "11px",
-                color: "#666",
-                fontWeight: 600
-              }}
-            >
-              {rentInfo}
-            </td>
-
-            {/* LEASE */}
-            <td
-              style={{
-                fontSize: "11px",
-                color: "#666",
-                fontWeight: 600
-              }}
-            >
-              {leaseInfo}
-            </td>
-
-            {/* APPROVAL */}
-            <td>
-
-              {item.is_approved ? (
-
-                <span className={styles.approvedBadge}>
-                  Approved
-                </span>
-
-              ) : (
-
-                <span className={styles.pendingBadge}>
-                  Pending
-                </span>
-
-              )}
-
-            </td>
-
-            {/* STATUS */}
-            <td>
-
-              {isActive ? (
-
-                <span
-                  className={styles.approvedBadge}
-                  style={{
-                    background: "#10b98118",
-                    color: "#10b981",
-                    border: "1px solid #10b98130"
-                  }}
-                >
-                  Active
-                </span>
-
-              ) : (
-
-                <span
-                  className={styles.pendingBadge}
-                  style={{
-                    background: "#6b728018",
-                    color: "#6b7280",
-                    border: "1px solid #6b728030"
-                  }}
-                >
-                  Inactive
-                </span>
-
-              )}
-
-            </td>
-
-            {/* ACTIONS */}
-            <td>
-
-              <div className={styles.actCell}>
-
-                <button
-                  className={styles.editBtn}
-                  onClick={() => handleEdit(item)}
-                  style={{ padding: "5px 7px" }}
-                >
-                  <Icon d={IC.edit} size={13} />
-                </button>
-
-                {!item.is_approved ? (
-
-                  <button
-                    className={styles.approveBtn}
-                    onClick={() => handleApprove(item.id)}
-                    style={{ padding: "5px 7px" }}
-                  >
-                    <Icon d={IC.approveCircle} size={13} />
-                  </button>
-
-                ) : (
-
-                  <button
-                    className={styles.rejectBtn}
-                    onClick={() => handleReject(item.id)}
-                    style={{ padding: "5px 7px" }}
-                  >
-                    <Icon d={IC.rejectCircle} size={13} />
-                  </button>
-
-                )}
-
-                <button
-                  onClick={() => handleToggleActive(item)}
-                  style={{
-                    padding: "5px 7px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: "6px",
-                    border: "none",
-                    cursor: "pointer",
-                    background: isActive
-                      ? "#10b98118"
-                      : "#6b728018",
-                    color: isActive
-                      ? "#10b981"
-                      : "#6b7280",
-                    transition: "all 0.18s"
-                  }}
-                >
-                  <Icon
-                    d={isActive ? IC.eyeOn : IC.eyeOff}
-                    size={13}
-                  />
-                </button>
-
+                    {filteredWS.length === 0 && (
+                      <tr>
+                        <td colSpan={14} className={styles.tdEmpty}>No workspaces found</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
-
-            </td>
-
-          </tr>
-
-        );
-
-      })}
-
-      {filteredWS.length === 0 && (
-
-        <tr>
-
-          <td
-            colSpan={13}
-            className={styles.tdEmpty}
-          >
-            No workspaces found
-          </td>
-
-        </tr>
-
-      )}
-
-    </tbody>
-
-  </table>
-</div>
             </section>
           )}
 
@@ -1869,11 +1517,11 @@ const [selectedOwner, setSelectedOwner] = useState(null);
                     <option value="daypass">Day Pass</option><option value="meeting">Meeting Rooms</option>
                     <option value="fixed">Fixed Seats</option><option value="cabin">Cabins</option>
                   </select>
-                  <input className={styles.inp} placeholder="Description"  value={catForm.description}  onChange={(e)=>setCatForm({...catForm,description:e.target.value})}/>
-                  <input className={styles.inp} placeholder="Image URL"    value={catForm.image}        onChange={(e)=>setCatForm({...catForm,image:e.target.value})}/>
-                  <input className={styles.inp} placeholder="Hourly Price" value={catForm.hourlyprice}  onChange={(e)=>setCatForm({...catForm,hourlyprice:e.target.value})}/>
-                  <input className={styles.inp} placeholder="Daily Price"  value={catForm.dailyprice}   onChange={(e)=>setCatForm({...catForm,dailyprice:e.target.value})}/>
-                  <input className={styles.inp} placeholder="Monthly Price"value={catForm.monthlyprice} onChange={(e)=>setCatForm({...catForm,monthlyprice:e.target.value})}/>
+                  <input className={styles.inp} placeholder="Description"   value={catForm.description}  onChange={(e)=>setCatForm({...catForm,description:e.target.value})}/>
+                  <input className={styles.inp} placeholder="Image URL"     value={catForm.image}        onChange={(e)=>setCatForm({...catForm,image:e.target.value})}/>
+                  <input className={styles.inp} placeholder="Hourly Price"  value={catForm.hourlyprice}  onChange={(e)=>setCatForm({...catForm,hourlyprice:e.target.value})}/>
+                  <input className={styles.inp} placeholder="Daily Price"   value={catForm.dailyprice}   onChange={(e)=>setCatForm({...catForm,dailyprice:e.target.value})}/>
+                  <input className={styles.inp} placeholder="Monthly Price" value={catForm.monthlyprice} onChange={(e)=>setCatForm({...catForm,monthlyprice:e.target.value})}/>
                   <select className={styles.inp} value={String(catForm.isavailable)} onChange={(e)=>setCatForm({...catForm,isavailable:e.target.value==="true"})}>
                     <option value="true">Available</option><option value="false">Not Available</option>
                   </select>
@@ -1935,238 +1583,50 @@ const [selectedOwner, setSelectedOwner] = useState(null);
         </div>
       )}
 
-      {/* OWNER DETAILS VIEW MODAL */}
-{selectedOwner && (
-
-  <div
-    className={styles.ownerFormOverlay}
-    onClick={() => setSelectedOwner(null)}
-  >
-
-    <div
-      className={styles.ownerFormModal}
-      onClick={(e) => e.stopPropagation()}
-    >
-
-      {/* HEADER */}
-      <div className={styles.ownerFormHeader}>
-
-        <div className={styles.ownerFormHeaderIco}>
-          <Icon d={IC.briefcase} size={20} />
+      {/* ── OWNER DETAILS VIEW MODAL ── */}
+      {selectedOwner && (
+        <div className={styles.ownerFormOverlay} onClick={()=>setSelectedOwner(null)}>
+          <div className={styles.ownerFormModal} onClick={(e)=>e.stopPropagation()}>
+            <div className={styles.ownerFormHeader}>
+              <div className={styles.ownerFormHeaderIco}><Icon d={IC.briefcase} size={20}/></div>
+              <div className={styles.ownerFormHeaderText}>
+                <h3>Owner / Landlord Details</h3>
+                <p>Complete landlord information</p>
+              </div>
+              <button className={styles.ownerFormClose} onClick={()=>setSelectedOwner(null)}><Icon d={IC.close} size={14}/></button>
+            </div>
+            <div className={styles.ownerFormBody}>
+              <div className={styles.ownerFormGrid}>
+                {[
+                  ["Owner Name",      selectedOwner.owner_name],
+                  ["Email",           selectedOwner.owner_email],
+                  ["Phone",           selectedOwner.owner_phone],
+                  ["Business Name",   selectedOwner.business_name],
+                  ["GST Number",      selectedOwner.gst_number],
+                  ["PAN Number",      selectedOwner.pan_number],
+                  ["Rent Amount",     selectedOwner.rent_amount ? `₹ ${selectedOwner.rent_amount}` : ""],
+                  ["Revenue Share %", selectedOwner.revenue_share_pct ? `${selectedOwner.revenue_share_pct}%` : ""],
+                  ["Agreement Type",  selectedOwner.agreement_type],
+                  ["Contract Start",  selectedOwner.contract_start],
+                  ["Contract End",    selectedOwner.contract_end],
+                  ["Bank Name",       selectedOwner.bank_name],
+                  ["Account Number",  selectedOwner.account_number],
+                  ["IFSC Code",       selectedOwner.ifsc_code],
+                ].map(([label, val]) => (
+                  <div key={label} className={styles.ownerFormField}>
+                    <label className={styles.ownerFormLabel}>{label}</label>
+                    <input className={styles.ownerFormInp} value={val || ""} readOnly />
+                  </div>
+                ))}
+              </div>
+              <div style={{marginTop:"16px"}}>
+                <label className={styles.ownerFormLabel}>Notes</label>
+                <textarea className={styles.ownerFormInp} rows={3} value={selectedOwner.notes||""} readOnly />
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className={styles.ownerFormHeaderText}>
-          <h3>Owner / Landlord Details</h3>
-          <p>Complete landlord information</p>
-        </div>
-
-        <button
-          className={styles.ownerFormClose}
-          onClick={() => setSelectedOwner(null)}
-        >
-          <Icon d={IC.close} size={14} />
-        </button>
-
-      </div>
-
-      {/* BODY */}
-      <div className={styles.ownerFormBody}>
-
-        <div className={styles.ownerFormGrid}>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Owner Name
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.owner_name || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Email
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.owner_email || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Phone
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.owner_phone || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Business Name
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.business_name || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              GST Number
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.gst_number || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              PAN Number
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.pan_number || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Rent Amount
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={`₹ ${selectedOwner.rent_amount || 0}`}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Revenue Share %
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={`${selectedOwner.revenue_share_pct || 0}%`}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Agreement Type
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.agreement_type || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Contract Start
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.contract_start || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Contract End
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.contract_end || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Bank Name
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.bank_name || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              Account Number
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.account_number || ""}
-              readOnly
-            />
-          </div>
-
-          <div className={styles.ownerFormField}>
-            <label className={styles.ownerFormLabel}>
-              IFSC Code
-            </label>
-
-            <input
-              className={styles.ownerFormInp}
-              value={selectedOwner.ifsc_code || ""}
-              readOnly
-            />
-          </div>
-
-        </div>
-
-        {/* NOTES */}
-        <div style={{ marginTop: "16px" }}>
-
-          <label className={styles.ownerFormLabel}>
-            Notes
-          </label>
-
-          <textarea
-            className={styles.ownerFormInp}
-            rows={3}
-            value={selectedOwner.notes || ""}
-            readOnly
-          />
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-)}
+      )}
     </div>
   );
 }

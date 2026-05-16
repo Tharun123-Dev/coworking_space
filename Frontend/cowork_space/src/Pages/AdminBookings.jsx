@@ -318,7 +318,117 @@ export default function OwnerRevenue() {
                               <img src={b.image} alt={b.workspace} className={styles.bookingThumb} />
                             )}
                             <div>
-                              <p className={styles.bookingWorkspace}>{b.workspace || "—"}</p>
+                             <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px"
+  }}
+>
+
+  {/* WORKSPACE */}
+  <p className={styles.bookingWorkspace}>
+    {b.workspace || "—"}
+  </p>
+
+  {/* LOCATION */}
+  <span
+    style={{
+      fontSize: "11px",
+      color: "#6b7280",
+      fontWeight: 500
+    }}
+  >
+    📍 {b.location || "No Location"}
+
+    {b.city
+      ? `, ${b.city}`
+      : ""}
+  </span>
+
+  {/* SEATS */}
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      flexWrap: "wrap",
+      marginTop: "2px"
+    }}
+  >
+
+    {/* BOOKED */}
+    {/* <span
+      style={{
+        fontSize: "11px",
+        background: "#eff6ff",
+        color: "#2563eb",
+        padding: "3px 8px",
+        borderRadius: "20px",
+        fontWeight: 600,
+        border: "1px solid #bfdbfe"
+      }}
+    >
+      👥 Booked:
+      {" "}
+      {Number(b.seats || 1)}
+    </span> */}
+
+    {/* CAPACITY */}
+    {/* <span
+      style={{
+        fontSize: "11px",
+        background: "#f0fdf4",
+        color: "#16a34a",
+        padding: "3px 8px",
+        borderRadius: "20px",
+        fontWeight: 600,
+        border: "1px solid #bbf7d0"
+      }}
+    >
+      🪑 Capacity:
+      {" "}
+      {Number(b.capacity || 0)}
+    </span> */}
+
+    {/* REMAINING */}
+    {/* <span
+      style={{
+        fontSize: "11px",
+        background:
+          Number(b.remaining || 0) <= 0
+            ? "#fef2f2"
+            : "#fff7ed",
+
+        color:
+          Number(b.remaining || 0) <= 0
+            ? "#dc2626"
+            : "#ea580c",
+
+        padding: "3px 8px",
+        borderRadius: "20px",
+        fontWeight: 600,
+        border:
+          Number(b.remaining || 0) <= 0
+            ? "1px solid #fecaca"
+            : "1px solid #fed7aa"
+      }}
+    >
+      📌 Remaining:
+      {" "}
+      {Number(b.remaining || 0)}
+    </span> */}
+
+  </div>
+
+  {/* USER */}
+  {/* <p className={styles.bookingUser}>
+    👤 {b.user || "—"}
+    {" · "}
+    📅 {b.date || "—"}
+  </p> */}
+
+</div>
                               <p className={styles.bookingUser}>👤 {b.user || "—"} · 📅 {b.date || "—"}</p>
                             </div>
                           </div>

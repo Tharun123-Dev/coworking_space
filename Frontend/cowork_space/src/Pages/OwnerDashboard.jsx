@@ -128,7 +128,6 @@ function HoverNavGroup({ group, activeSection, handleNav, sidebarCollapsed }) {
   useEffect(() => () => clearTimeout(timeoutRef.current), []);
 
   if (sidebarCollapsed) {
-    // Collapsed: show floating flyout to the right
     return (
       <div
         className={styles.hoverGroupWrap}
@@ -160,7 +159,6 @@ function HoverNavGroup({ group, activeSection, handleNav, sidebarCollapsed }) {
     );
   }
 
-  // Expanded sidebar: inline dropdown on hover
   return (
     <div
       className={styles.hoverGroupWrap}
@@ -193,11 +191,250 @@ function HoverNavGroup({ group, activeSection, handleNav, sidebarCollapsed }) {
   );
 }
 
+// ─── PER-WORKSPACE REVENUE PANEL ───────────────────────────────────────────
+function WorkspaceRevenuePanel({ workspaceId, workspaceName, bookings }) {
+  const [loading, setLoading] = useState(false);
+  const [revenueData, setRevenueData] = useState(null);
+
+  useEffect(() => {
+    setLoading(true);
+    axiosInstance.get(`cart/owner/workspace-revenue/${workspaceId}/`)
+      .then(res => {
+        setRevenueData(res.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        // fallback: compute from bookings prop
+        const wsBookings = bookings.filter(b =>
+          (b.workspace_id === workspaceId) ||
+          (b.workspace?.trim() === workspaceName?.trim())
+        );
+        const total = wsBookings.reduce((s, b) => s + Number(b.total_price || 0), 0);
+        const confirmed = wsBookings.filter(b => b.status === "confirmed").reduce((s, b) => s + Number(b.total_price || 0), 0);
+        const pending = wsBookings.filter(b => b.status === "pending").reduce((s, b) => s + Number(b.total_price || 0), 0);
+        const cancelled = wsBookings.filter(b => b.status === "cancelled").reduce((s, b) => s + Number(b.total_price || 0), 0);
+        setRevenueData({
+          total_revenue: total,
+          confirmed_revenue: confirmed,
+          pending_revenue: pending,
+          cancelled_revenue: cancelled,
+          total_bookings: wsBookings.length,
+          confirmed_bookings: wsBookings.filter(b => b.status === "confirmed").length,
+          pending_bookings: wsBookings.filter(b => b.status === "pending").length,
+          cancelled_bookings: wsBookings.filter(b => b.status === "cancelled").length,
+        });
+        setLoading(false);
+      });
+  }, [workspaceId, workspaceName]);
+
+  if (loading) {
+    return (
+      <div style={panelStyles.loading}>
+        <div style={panelStyles.spinner} />
+        Loading revenue data…
+      </div>
+    );
+  }
+
+  if (!revenueData) {
+    return (
+      <div style={panelStyles.empty}>No revenue data available for this workspace.</div>
+    );
+  }
+
+  const {
+    total_revenue = 0,
+    confirmed_revenue = 0,
+    pending_revenue = 0,
+    cancelled_revenue = 0,
+    total_bookings = 0,
+    confirmed_bookings = 0,
+    pending_bookings = 0,
+    cancelled_bookings = 0,
+  } = revenueData;
+
+  const fillPct = total_bookings > 0 ? Math.round((confirmed_bookings / total_bookings) * 100) : 0;
+
+  const stats = [
+    { icon: "💰", label: "Total Revenue", value: `₹${Number(total_revenue).toLocaleString()}`, color: "#b8922a" },
+    { icon: "✅", label: "Confirmed Revenue", value: `₹${Number(confirmed_revenue).toLocaleString()}`, color: "#16a34a" },
+    // { icon: "⏳", label: "Pending Revenue", value: `₹${Number(pending_revenue).toLocaleString()}`, color: "#d97706" },
+    // { icon: "❌", label: "Cancelled Revenue", value: `₹${Number(cancelled_revenue).toLocaleString()}`, color: "#dc2626" },
+  ];
+
+  return (
+    <div style={panelStyles.panel}>
+      <div style={panelStyles.titleRow}>
+        <span style={panelStyles.dot} />
+        <span style={panelStyles.title}>Revenue Breakdown — {workspaceName}</span>
+      </div>
+
+      {/* Revenue stat cards */}
+      <div style={panelStyles.grid}>
+        {stats.map((s, i) => (
+          <div key={i} style={{ ...panelStyles.card, borderTopColor: s.color }}>
+            <span style={panelStyles.cardIcon}>{s.icon}</span>
+            <p style={panelStyles.cardValue}>{s.value}</p>
+            <p style={panelStyles.cardLabel}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Booking counts */}
+      <div style={panelStyles.badgeRow}>
+        <span style={{ ...panelStyles.badge, background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe" }}>
+          📋 {total_bookings} Total Bookings
+        </span>
+        <span style={{ ...panelStyles.badge, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}>
+          ✅ {confirmed_bookings} Confirmed
+        </span>
+        {/* <span style={{ ...panelStyles.badge, background: "#fff7ed", color: "#ea580c", border: "1px solid #fed7aa" }}>
+          ⏳ {pending_bookings} Pending
+        </span> */}
+        {/* <span style={{ ...panelStyles.badge, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
+          ❌ {cancelled_bookings} Cancelled
+        </span> */}
+      </div>
+
+      {/* Confirmation fill bar */}
+      {total_bookings > 0 && (
+        <div style={{ marginTop: "10px" }}>
+          <div style={{ fontSize: "11px", color: "#6b7280", marginBottom: "4px", fontWeight: 600 }}>
+            Confirmation Rate: {fillPct}%
+          </div>
+          <div style={panelStyles.fillBar}>
+            <div style={{
+              ...panelStyles.fillBarInner,
+              width: `${fillPct}%`,
+              background: fillPct >= 75 ? "#16a34a" : fillPct >= 40 ? "#d97706" : "#dc2626"
+            }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Inline styles for the revenue panel (no CSS module needed for this component)
+const panelStyles = {
+  panel: {
+    padding: "18px 24px",
+    background: "linear-gradient(135deg, #faf5ff 0%, #f0fdf4 100%)",
+    borderLeft: "4px solid #7c3aed",
+    animation: "revenueFadeIn 0.22s ease",
+  },
+  loading: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "20px 24px",
+    color: "#7c3aed",
+    fontSize: "13px",
+    fontWeight: 600,
+    background: "#faf5ff",
+  },
+  spinner: {
+    width: "16px",
+    height: "16px",
+    border: "2px solid #e9d5ff",
+    borderTopColor: "#7c3aed",
+    borderRadius: "50%",
+    animation: "spin 0.7s linear infinite",
+  },
+  empty: {
+    padding: "20px 24px",
+    color: "#94a3b8",
+    fontSize: "13px",
+    background: "#faf5ff",
+  },
+  titleRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginBottom: "14px",
+  },
+  dot: {
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    background: "#7c3aed",
+    display: "inline-block",
+    flexShrink: 0,
+  },
+  title: {
+    fontSize: "13px",
+    fontWeight: 700,
+    color: "#1a1a2e",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+    gap: "10px",
+    marginBottom: "12px",
+  },
+  card: {
+    background: "#fff",
+    borderRadius: "10px",
+    padding: "12px 14px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+    borderTop: "3px solid transparent",
+    transition: "transform 0.18s ease",
+  },
+  cardIcon: {
+    fontSize: "18px",
+    display: "block",
+    marginBottom: "4px",
+  },
+  cardValue: {
+    fontSize: "15px",
+    fontWeight: 800,
+    color: "#111827",
+    margin: "0 0 2px",
+  },
+  cardLabel: {
+    fontSize: "10px",
+    fontWeight: 600,
+    color: "#6b7280",
+    textTransform: "uppercase",
+    letterSpacing: "0.4px",
+    margin: 0,
+  },
+  badgeRow: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "6px",
+    marginBottom: "4px",
+  },
+  badge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
+    padding: "4px 10px",
+    borderRadius: "20px",
+    fontSize: "11px",
+    fontWeight: 600,
+  },
+  fillBar: {
+    height: "5px",
+    borderRadius: "3px",
+    background: "#e5e7eb",
+    overflow: "hidden",
+  },
+  fillBarInner: {
+    height: "100%",
+    borderRadius: "3px",
+    transition: "width 0.4s ease",
+  },
+};
+
 function OwnerDashboard() {
 
   const [showOwnerDetails, setShowOwnerDetails] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState(null);
 
-const [selectedOwner, setSelectedOwner] = useState(null);
+  // ─── NEW: per-workspace revenue toggle state ───────────────────────────
+  const [openRevenueId, setOpenRevenueId] = useState(null);
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -258,13 +495,11 @@ const [selectedOwner, setSelectedOwner] = useState(null);
   const [showUserForm, setShowUserForm] = useState(false);
   const [userFilterTab, setUserFilterTab] = useState("all");
   const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
-
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [showCouponForm, setShowCouponForm] = useState(false);
   const [showAmenityForm, setShowAmenityForm] = useState(false);
   const [showSlotForm, setShowSlotForm] = useState(false);
   const [showMonthlyForm, setShowMonthlyForm] = useState(false);
-
   const [companyLeadSearch, setCompanyLeadSearch] = useState("");
   const [companyLeadFilter, setCompanyLeadFilter] = useState("all");
   const [hyderabadLeadSearch, setHyderabadLeadSearch] = useState("");
@@ -670,6 +905,7 @@ const [selectedOwner, setSelectedOwner] = useState(null);
     cursor: "pointer", transition: "all 0.18s ease", flexShrink: 0,
   };
 
+  // ─── RENDER WORKSPACES (with per-workspace revenue toggle) ──────────────
   const renderWorkspaces = () => (
     <div className={styles.sectionBody}>
       {toastMsg && <div className={styles.toast}>{toastMsg}</div>}
@@ -685,371 +921,185 @@ const [selectedOwner, setSelectedOwner] = useState(null);
         </div>
         <div className={styles.wsFormActions}><button className={styles.wsSubmitBtn} onClick={handleSubmit}>{editId ? "Update Workspace" : "Add Workspace"}</button><button className={styles.wsCancelBtn} onClick={resetWorkspaceForm}>Cancel</button></div>
       </AccordionSection>
-      <div className={styles.tableTopBar}><input className={styles.searchInput} placeholder="Search my workspaces..." value={workspaceSearch} onChange={e => setWorkspaceSearch(e.target.value)} /></div>
-     <div className={styles.tableWrap}>
-  <table className={styles.table}>
 
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Workspace</th>
-        <th>Owner / Landlord</th>
-        <th>Added By</th>
-        <th>City</th>
-        <th>Rent</th>
-        <th>Lease</th>
-        <th>Price</th>
-        <th>Approval</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+      <div className={styles.tableTopBar}>
+        <input className={styles.searchInput} placeholder="Search my workspaces..." value={workspaceSearch} onChange={e => setWorkspaceSearch(e.target.value)} />
+      </div>
 
-    <tbody>
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Workspace</th>
+              <th>Owner / Landlord</th>
+              <th>Added By</th>
+              <th>City</th>
+              <th>Rent</th>
+              <th>Lease</th>
+              <th>Price</th>
+              <th>Approval</th>
+              <th>Status</th>
+              <th>Revenue</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredMyWorkspaces.map((w, i) => {
+              const isActive = w.isavailable !== false;
+              const ownerDetails = w.owner_details || null;
+              const isRevenueOpen = openRevenueId === w.id;
 
-      {filteredMyWorkspaces.map((w, i) => {
+              return (
+                <>
+                  <tr
+                    key={w.id}
+                    style={!isActive ? { opacity: 0.6, background: "#f8fafc" } : {}}
+                  >
+                    {/* SERIAL */}
+                    <td>{String(i + 1).padStart(2, "0")}</td>
 
-        const isActive =
-          w.isavailable !== false;
+                    {/* WORKSPACE */}
+                    <td>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                        <strong>{w.name}</strong>
+                        <span style={{ fontSize: "11px", color: "#64748b" }}>{w.location || "No location"}</span>
+                      </div>
+                    </td>
 
-        const ownerDetails =
-          w.owner_details || null;
+                    {/* OWNER */}
+                    <td>
+                      {ownerDetails ? (
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedOwner(ownerDetails); setShowOwnerDetails(true); }}
+                          style={{ border: "none", background: "#eff6ff", color: "#2563eb", padding: "6px 10px", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "12px" }}
+                        >
+                          👤 {ownerDetails.owner_name}
+                        </button>
+                      ) : (
+                        <span style={{ background: "#fef2f2", color: "#dc2626", padding: "5px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 600 }}>Unassigned</span>
+                      )}
+                    </td>
 
-        return (
+                    {/* ADDED BY */}
+                    <td>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                        <span style={{ fontWeight: 600, color: "#111827", fontSize: "13px" }}>{w.owner_name || "Admin"}</span>
+                        <span style={{ fontSize: "11px", color: "#64748b" }}>Manager / Admin</span>
+                      </div>
+                    </td>
 
-          <tr
-            key={w.id}
-            style={
-              !isActive
-                ? {
-                    opacity: 0.6,
-                    background: "#f8fafc"
-                  }
-                : {}
-            }
-          >
+                    {/* CITY */}
+                    <td>{w.city}</td>
 
-            {/* SERIAL */}
-            <td>
-              {String(i + 1).padStart(2, "0")}
-            </td>
+                    {/* RENT */}
+                    <td>
+                      {ownerDetails?.rent_amount ? (
+                        <span style={{ color: "#059669", fontWeight: 700 }}>₹{Number(ownerDetails.rent_amount).toLocaleString()}</span>
+                      ) : "—"}
+                    </td>
 
-            {/* WORKSPACE */}
-            <td>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "2px"
-                }}
-              >
-                <strong>
-                  {w.name}
-                </strong>
+                    {/* LEASE */}
+                    <td>
+                      {ownerDetails?.agreement_type ? (
+                        <span style={{ background: "#f1f5f9", padding: "5px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 600, color: "#334155" }}>{ownerDetails.agreement_type}</span>
+                      ) : "—"}
+                    </td>
 
-                <span
-                  style={{
-                    fontSize: "11px",
-                    color: "#64748b"
-                  }}
-                >
-                  {w.location || "No location"}
-                </span>
-              </div>
-            </td>
+                    {/* PRICE */}
+                    <td style={{ fontWeight: 700, color: "#7c3aed" }}>₹{Number(w.price || 0).toLocaleString()}</td>
 
-            {/* OWNER */}
-            <td>
+                    {/* APPROVAL */}
+                    <td>
+                      {w.is_approved ? (
+                        <span className={styles.approvedBadge}>Approved</span>
+                      ) : (
+                        <span className={styles.pendingBadge}>Pending</span>
+                      )}
+                    </td>
 
-              {ownerDetails ? (
+                    {/* STATUS */}
+                    <td>
+                      {isActive ? (
+                        <span style={{ background: "#dcfce7", color: "#166534", padding: "5px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Active</span>
+                      ) : (
+                        <span style={{ background: "#f1f5f9", color: "#475569", padding: "5px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Inactive</span>
+                      )}
+                    </td>
 
-                <button
-                  onClick={() =>
-                    setSelectedOwner(
-                      ownerDetails
-                    )
-                  }
-                  style={{
-                    border: "none",
-                    background: "#eff6ff",
-                    color: "#2563eb",
-                    padding: "6px 10px",
-                    borderRadius: "8px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontSize: "12px"
-                  }}
-                >
-                  👤 {ownerDetails.owner_name}
-                </button>
+                    {/* ── NEW: REVENUE TOGGLE ── */}
+                    <td>
+                      <button
+                        title={isRevenueOpen ? "Hide Revenue" : "View Revenue"}
+                        onClick={() => setOpenRevenueId(isRevenueOpen ? null : w.id)}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          padding: "5px 10px",
+                          borderRadius: "8px",
+                          border: `1.5px solid ${isRevenueOpen ? "#7c3aed" : "#a78bfa"}`,
+                          background: isRevenueOpen ? "#7c3aed" : "#f5f3ff",
+                          color: isRevenueOpen ? "#fff" : "#7c3aed",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          transition: "all 0.18s ease",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {isRevenueOpen ? "▲ Hide" : "💰 Revenue"}
+                      </button>
+                    </td>
 
-              ) : (
+                    {/* ACTIONS */}
+                    <td>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button
+                          title="Edit"
+                          onClick={() => handleEdit(w)}
+                          style={{ ...iconBtnBase, background: "#dbeafe", color: "#2563eb" }}
+                        >
+                          <SvgIcon d={SVG.edit} size={14} />
+                        </button>
+                        <button
+                          title={isActive ? "Deactivate" : "Activate"}
+                          onClick={() => handleToggleActive(w)}
+                          style={{ ...iconBtnBase, background: isActive ? "#dcfce7" : "#f1f5f9", color: isActive ? "#16a34a" : "#475569" }}
+                        >
+                          <SvgIcon d={isActive ? SVG.eyeOn : SVG.eyeOff} size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
 
-                <span
-                  style={{
-                    background: "#fef2f2",
-                    color: "#dc2626",
-                    padding: "5px 10px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600
-                  }}
-                >
-                  Unassigned
-                </span>
+                  {/* ── PER-WORKSPACE REVENUE PANEL ROW ── */}
+                  {isRevenueOpen && (
+                    <tr key={`revenue-${w.id}`} style={{ background: "linear-gradient(135deg,#faf5ff,#f0fdf4)", borderLeft: "4px solid #7c3aed" }}>
+                      <td colSpan={12} style={{ padding: 0 }}>
+                        <WorkspaceRevenuePanel
+                          workspaceId={w.id}
+                          workspaceName={w.name}
+                          bookings={mergedBookings}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </>
+              );
+            })}
 
-              )}
-
-            </td>
-
-            {/* ADDED BY */}
-            <td>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "2px"
-                }}
-              >
-
-                <span
-                  style={{
-                    fontWeight: 600,
-                    color: "#111827",
-                    fontSize: "13px"
-                  }}
-                >
-                  {w.owner_name || "Admin"}
-                </span>
-
-                <span
-                  style={{
-                    fontSize: "11px",
-                    color: "#64748b"
-                  }}
-                >
-                  Manager / Admin
-                </span>
-
-              </div>
-
-            </td>
-
-            {/* CITY */}
-            <td>
-              {w.city}
-            </td>
-
-            {/* RENT */}
-            <td>
-
-              {ownerDetails?.rent_amount ? (
-
-                <span
-                  style={{
-                    color: "#059669",
-                    fontWeight: 700
-                  }}
-                >
-                  ₹
-                  {Number(
-                    ownerDetails.rent_amount
-                  ).toLocaleString()}
-                </span>
-
-              ) : "—"}
-
-            </td>
-
-            {/* LEASE */}
-            <td>
-
-              {ownerDetails?.agreement_type ? (
-
-                <span
-                  style={{
-                    background: "#f1f5f9",
-                    padding: "5px 10px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "#334155"
-                  }}
-                >
-                  {ownerDetails.agreement_type}
-                </span>
-
-              ) : "—"}
-
-            </td>
-
-            {/* PRICE */}
-            <td
-              style={{
-                fontWeight: 700,
-                color: "#7c3aed"
-              }}
-            >
-              ₹
-              {Number(
-                w.price || 0
-              ).toLocaleString()}
-            </td>
-
-            {/* APPROVAL */}
-            <td>
-
-              {w.is_approved ? (
-
-                <span
-                  className={
-                    styles.approvedBadge
-                  }
-                >
-                  Approved
-                </span>
-
-              ) : (
-
-                <span
-                  className={
-                    styles.pendingBadge
-                  }
-                >
-                  Pending
-                </span>
-
-              )}
-
-            </td>
-
-            {/* STATUS */}
-            <td>
-
-              {isActive ? (
-
-                <span
-                  style={{
-                    background: "#dcfce7",
-                    color: "#166534",
-                    padding: "5px 10px",
-                    borderRadius: "20px",
-                    fontSize: "11px",
-                    fontWeight: 700
-                  }}
-                >
-                  Active
-                </span>
-
-              ) : (
-
-                <span
-                  style={{
-                    background: "#f1f5f9",
-                    color: "#475569",
-                    padding: "5px 10px",
-                    borderRadius: "20px",
-                    fontSize: "11px",
-                    fontWeight: 700
-                  }}
-                >
-                  Inactive
-                </span>
-
-              )}
-
-            </td>
-
-            {/* ACTIONS */}
-            <td>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: "6px"
-                }}
-              >
-
-                <button
-                  title="Edit"
-                  onClick={() =>
-                    handleEdit(w)
-                  }
-                  style={{
-                    ...iconBtnBase,
-                    background:
-                      "#dbeafe",
-                    color: "#2563eb"
-                  }}
-                >
-                  <SvgIcon
-                    d={SVG.edit}
-                    size={14}
-                  />
-                </button>
-
-                <button
-                  title={
-                    isActive
-                      ? "Deactivate"
-                      : "Activate"
-                  }
-                  onClick={() =>
-                    handleToggleActive(w)
-                  }
-                  style={{
-                    ...iconBtnBase,
-                    background:
-                      isActive
-                        ? "#dcfce7"
-                        : "#f1f5f9",
-                    color:
-                      isActive
-                        ? "#16a34a"
-                        : "#475569"
-                  }}
-                >
-                  <SvgIcon
-                    d={
-                      isActive
-                        ? SVG.eyeOn
-                        : SVG.eyeOff
-                    }
-                    size={14}
-                  />
-                </button>
-
-              </div>
-
-            </td>
-
-          </tr>
-
-        );
-      })}
-
-      {filteredMyWorkspaces.length === 0 && (
-
-        <tr>
-          <td
-            colSpan={11}
-            style={{
-              textAlign: "center",
-              padding: "40px",
-              color: "#94a3b8"
-            }}
-          >
-            No workspaces found
-          </td>
-        </tr>
-
-      )}
-
-    </tbody>
-
-  </table>
-</div>
+            {filteredMyWorkspaces.length === 0 && (
+              <tr>
+                <td colSpan={12} style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
+                  No workspaces found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 
@@ -1154,7 +1204,49 @@ const [selectedOwner, setSelectedOwner] = useState(null);
               const pct = capacity>0?Math.round((booked/capacity)*100):0;
               return (
                 <tr key={s.id}>
-                  <td><strong>{workspaces.find(w=>w.name?.trim()===s.workspace_name?.trim())?.city||"No City"} | {workspaces.find(w=>w.name?.trim()===s.workspace_name?.trim())?.location||"No Location"} | {s.workspace_name}</strong></td>
+<td>
+
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "4px"
+    }}
+  >
+
+    {/* WORKSPACE NAME */}
+
+    <strong
+      style={{
+        color: "#111827",
+        fontSize: "13px"
+      }}
+    >
+      {s.workspace_name}
+    </strong>
+
+    {/* LOCATION */}
+
+    <span
+      style={{
+        fontSize: "11px",
+        color: "#6b7280"
+      }}
+    >
+      📍 {s.location || "No Location"}
+
+{s.city ? `, ${s.city}` : ""}
+
+      {s.city
+        ? `, ${s.city}`
+        : ""}
+    </span>
+
+  </div>
+
+</td>
+
+                  
                   <td>{s.date}</td><td>{s.slot_type==="hour"?"Hourly":"Full Day"}</td><td>{s.slot_type==="hour"?`${s.start_time} – ${s.end_time}`:"All Day"}</td><td>{capacity}</td>
                   <td><span style={{ display:"inline-block",padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:600,background:booked>0?"#eff6ff":"#f3f4f6",color:booked>0?"#2563eb":"#6b7280",border:`1px solid ${booked>0?"#bfdbfe":"#e5e7eb"}` }}>{booked}</span></td>
                   <td><div style={{ display:"flex",flexDirection:"column",gap:"4px" }}><span style={{ display:"inline-block",padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:600,background:remaining===0?"#fef2f2":remaining<capacity*0.2?"#fff7ed":"#f0fdf4",color:remaining===0?"#dc2626":remaining<capacity*0.2?"#ea580c":"#16a34a",border:`1px solid ${remaining===0?"#fecaca":remaining<capacity*0.2?"#fed7aa":"#bbf7d0"}` }}>{remaining===0?"Full":`${remaining} left`}</span><div style={{ height:"4px",borderRadius:"2px",background:"#e5e7eb",overflow:"hidden",width:"60px" }}><div style={{ height:"100%",width:`${pct}%`,borderRadius:"2px",background:pct>=80?"#dc2626":pct>=50?"#ea580c":"#16a34a",transition:"width 0.3s" }}/></div></div></td>
@@ -1239,7 +1331,43 @@ const [selectedOwner, setSelectedOwner] = useState(null);
                 return (<tr key={item.id} className={isPulsing?styles.rowPulse:""}>
                   <td><div className={styles.bookingWorkspace} onClick={()=>openBookingModal(item)}><img src={item.image} alt={item.workspace} className={styles.bookingThumb}/><span className={styles.bookingWorkspaceTitle}>{item.workspace}</span></div></td>
                   <td>{item.user}</td>
-                  <td>{workspaces.find(w=>w.name?.trim()===item.workspace?.trim())?.city||"No City"} | {workspaces.find(w=>w.name?.trim()===item.workspace?.trim())?.location||"No Location"} | {item.workspace}</td>
+                  <td>
+
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "3px"
+    }}
+  >
+
+    {/* WORKSPACE */}
+    <strong
+      style={{
+        color: "#111827",
+        fontSize: "13px"
+      }}
+    >
+      {item.workspace}
+    </strong>
+
+    {/* LOCATION */}
+    <span
+      style={{
+        fontSize: "11px",
+        color: "#6b7280"
+      }}
+    >
+      📍 {item.location || "No Location"}
+
+      {item.city
+        ? `, ${item.city}`
+        : ""}
+    </span>
+
+  </div>
+
+</td>
                   <td>{item.date}</td>
                   <td><div><strong>{item.slot_type}</strong><br/><small>{item.slot_time}</small></div></td>
                   <td><span className={styles.capacityBadge}>💺 {item.seats||1} / {item.capacity||0}</span></td>
@@ -1467,6 +1595,43 @@ const [selectedOwner, setSelectedOwner] = useState(null);
                 <table><thead><tr><th>Workspace</th><th>Amenity</th><th>Description</th><th>Price</th><th>Type</th><th>Action</th></tr></thead>
                 <tbody>{additionalAmenities.map(item=>(<tr key={item.id}><td><strong>{workspaces.find(w=>w.name?.trim()===item.workspace_name?.trim())?.city||"No City"} | {workspaces.find(w=>w.name?.trim()===item.workspace_name?.trim())?.location||"No Location"} | {item.workspace_name}</strong></td><td>{item.title}</td><td>{item.description}</td><td>₹{item.price}</td><td>{item.price_type?.replace("_"," ")}</td><td><div className={styles.actionBtns}><button className={styles.editBtn} onClick={()=>{ setEditAmenityId(item.id); setAmenityForm({ workspace:item.workspace,title:item.title,description:item.description,price:item.price,price_type:item.price_type }); setShowAmenityForm(true); }}>Edit</button><button className={styles.deleteBtn} onClick={()=>handleDeleteAmenity(item.id)}>Delete</button></div></td></tr>))}</tbody></table>
                 {additionalAmenities.length===0&&<div className={styles.empty}>No additional amenities yet.</div>}
+              </div>
+            </div>
+          )}
+
+          {/* OWNER DETAILS MODAL */}
+          {showOwnerDetails && selectedOwner && (
+            <div
+              onClick={() => setShowOwnerDetails(false)}
+              style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:9999,display:"flex",justifyContent:"center",alignItems:"center",padding:"20px" }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{ width:"100%",maxWidth:"700px",background:"#fff",borderRadius:"18px",padding:"24px",maxHeight:"90vh",overflowY:"auto" }}
+              >
+                <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"20px" }}>
+                  <h2>Owner / Landlord Details</h2>
+                  <button onClick={() => setShowOwnerDetails(false)} style={{ border:"none",background:"#ef4444",color:"#fff",padding:"8px 14px",borderRadius:"8px",cursor:"pointer" }}>Close</button>
+                </div>
+                <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:"18px" }}>
+                  <div><strong>Owner Name</strong><p>{selectedOwner.owner_name}</p></div>
+                  <div><strong>Email</strong><p>{selectedOwner.owner_email}</p></div>
+                  <div><strong>Phone</strong><p>{selectedOwner.owner_phone}</p></div>
+                  <div><strong>PAN Number</strong><p>{selectedOwner.pan_number}</p></div>
+                  <div><strong>GST Number</strong><p>{selectedOwner.gst_number}</p></div>
+                  <div><strong>Rent Amount</strong><p>₹{selectedOwner.rent_amount}</p></div>
+                  <div><strong>Lease Type</strong><p>{selectedOwner.agreement_type}</p></div>
+                  <div><strong>Revenue Share</strong><p>{selectedOwner.revenue_share_pct}%</p></div>
+                  <div><strong>Bank Name</strong><p>{selectedOwner.bank_name}</p></div>
+                  <div><strong>Account Number</strong><p>{selectedOwner.account_number}</p></div>
+                  <div><strong>IFSC Code</strong><p>{selectedOwner.ifsc_code}</p></div>
+                  <div><strong>Contract Start</strong><p>{selectedOwner.contract_start}</p></div>
+                  <div><strong>Contract End</strong><p>{selectedOwner.contract_end}</p></div>
+                </div>
+                <div style={{ marginTop:"20px" }}>
+                  <strong>Notes</strong>
+                  <p>{selectedOwner.notes || "No notes"}</p>
+                </div>
               </div>
             </div>
           )}
