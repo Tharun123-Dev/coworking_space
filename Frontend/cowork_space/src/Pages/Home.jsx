@@ -5,6 +5,7 @@ import styles from "../Styles/Home.module.css";
 import Reveal from "../Pages/Reveal";
 
 function HomePage() {
+
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeCount, setActiveCount] = useState({ spaces: 0, cities: 0, users: 0 });
@@ -334,14 +335,21 @@ function HomePage() {
               </div>
 
               <div className={styles.ctaRow}>
-                <button onClick={scrollToCompanies} className={styles.exploreBtn}>
-                  <span className={styles.btnShine}></span>
-                  <span>Explore More</span>
-                  <span className={styles.btnArrow}>→</span>
-                </button>
-                <button onClick={scrollToCompanies} className={styles.ghostBtn}>
-                  <span>View More Spaces</span>
-                </button>
+               <button
+  onClick={() => navigate("/enterprise")}
+  className={styles.exploreBtn}
+>
+  <span className={styles.btnShine}></span>
+  <span>Explore More</span>
+  <span className={styles.btnArrow}>→</span>
+</button>
+
+<button
+  onClick={() => navigate("/enterprise")}
+  className={styles.ghostBtn}
+>
+  <span>View More Spaces</span>
+</button>
               </div>
 
               <div className={styles.trustBadges}>

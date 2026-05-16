@@ -231,7 +231,7 @@ const goToLocation = (locationName) => {
               {roleOpen && !token && (
                 <div className={styles.roleMenu}>
                   <p className={styles.roleHdr}>Login as</p>
-                  {[{l:"User",i:"👤",t:"user"},{l:"Owner",i:"🏢",t:"owner"},{l:"Admin",i:"⚙️",t:"admin"}].map((r)=>(
+                  {[{l:"User",i:"👤",t:"user"},{l:"Manager",i:"🏢",t:"owner"},{l:"Admin",i:"⚙️",t:"admin"}].map((r)=>(
                     <div key={r.t} className={styles.roleItem} onClick={() => { navigate(`/auth?type=${r.t}`); setRoleOpen(false); }}>
                       <span>{r.i}</span><span>{r.l}</span>
                     </div>
@@ -453,7 +453,7 @@ const goToLocation = (locationName) => {
               <p className={styles.mLoginHdr}>Continue as</p>
 
               <div className={styles.mTiles}>
-                {[{l:"User",i:"👤",t:"user"},{l:"Owner",i:"🏢",t:"owner"},{l:"Admin",i:"⚙️",t:"admin"}].map((r)=>(
+                {[{l:"User",i:"👤",t:"user"},{l:"Manager",i:"🏢",t:"owner"},{l:"Admin",i:"⚙️",t:"admin"}].map((r)=>(
                   <div key={r.t} className={styles.mTile} onClick={() => go(`/auth?type=${r.t}`)}>
                     <span className={styles.mTileIco}>{r.i}</span>
                     <span>{r.l}</span>

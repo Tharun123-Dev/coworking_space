@@ -1318,7 +1318,7 @@ function OwnerDashboard() {
           <div className={`${styles.statCard} ${styles.gold}`}><span className={styles.statIcon}>📋</span><div><p className={styles.statValue}>{bookingStats.total}</p><p className={styles.statLabel}>Total</p></div></div>
           <div className={`${styles.statCard} ${styles.green}`}><span className={styles.statIcon}>✅</span><div><p className={styles.statValue}>{bookingStats.confirmed}</p><p className={styles.statLabel}>Confirmed</p></div></div>
           <div className={`${styles.statCard} ${styles.amber}`}><span className={styles.statIcon}>⏳</span><div><p className={styles.statValue}>{bookingStats.pending}</p><p className={styles.statLabel}>Pending</p></div></div>
-          <div className={`${styles.statCard} ${styles.red}`}><span className={styles.statIcon}>❌</span><div><p className={styles.statValue}>{bookingStats.cancelled}</p><p className={styles.statLabel}>Cancelled</p></div></div>
+          {/* <div className={`${styles.statCard} ${styles.red}`}><span className={styles.statIcon}>❌</span><div><p className={styles.statValue}>{bookingStats.cancelled}</p><p className={styles.statLabel}>Cancelled</p></div></div> */}
           <div className={`${styles.statCard} ${styles.green}`}><span className={styles.statIcon}>💰</span><div><p className={styles.statValue}>₹{confirmedRevenue.toLocaleString()}</p><p className={styles.statLabel}>Confirmed Revenue</p></div></div>
           <div className={`${styles.statCard} ${styles.amber}`}><span className={styles.statIcon}>🕐</span><div><p className={styles.statValue}>₹{pendingRevenue.toLocaleString()}</p><p className={styles.statLabel}>Pending Revenue</p></div></div>
         </div>

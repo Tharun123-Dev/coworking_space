@@ -1226,7 +1226,7 @@ export default function AdminDashboard() {
                 </button>
                 <div style={{display:"flex",alignItems:"center",gap:"6px",flex:"1",minWidth:"160px",height:"36px",padding:"0 10px",borderRadius:"8px",border:"1.5px solid var(--border,#e5e7eb)",background:"#fff"}}>
                   <Icon d={IC.search} size={13}/>
-                  <input style={{border:"none",outline:"none",fontSize:"12px",color:"#000",width:"100%",background:"transparent"}} placeholder="Search workspace, city, owner..." value={searchQ} onChange={(e)=>setSearchQ(e.target.value)}/>
+                  <input style={{border:"none",outline:"none",fontSize:"12px",color:"#000",width:"100%",background:"transparent"}} placeholder="Search workspace, city, owner, manager..." value={searchQ} onChange={(e)=>setSearchQ(e.target.value)}/>
                   {searchQ&&<button style={{border:"none",background:"none",cursor:"pointer",color:"#aaa",padding:0,display:"flex"}} onClick={()=>setSearchQ("")}><Icon d={IC.close} size={11}/></button>}
                 </div>
                 <select style={wsSelectStyle} value={ownerFilter} onChange={(e)=>setOwnerFilter(e.target.value)}>
