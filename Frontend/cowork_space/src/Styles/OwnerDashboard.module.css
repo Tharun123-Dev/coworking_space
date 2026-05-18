@@ -34,6 +34,7 @@
   height: 64px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
+  margin-left: 8px;
 }
 .logo {
   font-size: 15px;
@@ -1887,6 +1888,475 @@
   margin: 0;
   font-style: italic;
 }
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR — FIXED RESPONSIVE
+   Replace the existing .sidebar, .collapsed, .main,
+   .mainCollapsed, .sidebarHeader, .collapseBtn blocks
+   and add the new mobile-close button styles below.
+═══════════════════════════════════════════════════ */
+ 
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 240px;
+  background: #1a2235;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s ease, transform 0.25s ease;
+  z-index: 300;
+  overflow: hidden;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+ 
+/* Desktop collapsed */
+.collapsed {
+  width: 64px;
+}
+ 
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  height: 64px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+ 
+.logo {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  letter-spacing: 0.3px;
+}
+ 
+/* Desktop collapse/expand toggle button */
+.collapseBtn {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.collapseBtn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+ 
+/* Mobile close button — shown only on mobile inside the sidebar */
+.mobileSidebarClose {
+  display: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+  line-height: 1;
+}
+.mobileSidebarClose:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+ 
+.nav {
+  flex: 1;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+ 
+/* ── MAIN CONTENT AREA ── */
+.main {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  transition: margin-left 0.25s ease;
+  min-width: 0;
+}
+.mainCollapsed {
+  margin-left: 64px;
+}
+ 
+/* ── MOBILE OVERLAY ── */
+.mobileOverlay {
+  display: none;
+}
+ 
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — 640px and below (mobile)
+══════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Show the overlay backdrop */
+  .mobileOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 250;
+  }
+ 
+  /* Sidebar slides in from left; collapsed state ignored on mobile */
+  .sidebar {
+    width: 240px !important; /* override .collapsed on mobile */
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+ 
+  /* When mobile open class applied, slide in */
+  .mobileOpen {
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.28);
+  }
+ 
+  /* Main fills full width — no left margin on mobile */
+  .main,
+  .mainCollapsed {
+    margin-left: 0 !important;
+  }
+ 
+  /* Show mobile close X button, hide desktop toggle */
+  .mobileSidebarClose {
+    display: flex;
+  }
+  .collapseBtn {
+    display: none;
+  }
+ 
+  /* Hamburger menu button in header */
+  .mobileMenuBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+ 
+  /* Header wraps on small screens */
+  .mainHeader {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    height: auto;
+    gap: 10px;
+  }
+  .pageHeading {
+    width: 100%;
+  }
+  .pageHeading h1 {
+    font-size: 14px;
+  }
+  .pageHeading p {
+    font-size: 11px;
+  }
+ 
+  /* Content padding */
+  .content {
+    padding: 12px;
+  }
+ 
+  /* Grids */
+  .overviewStatsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .statCardValue {
+    font-size: 20px;
+  }
+  .wsFormGrid {
+    grid-template-columns: 1fr;
+  }
+  .muStatsRow {
+    grid-template-columns: 1fr;
+  }
+  .muFormGrid {
+    grid-template-columns: 1fr;
+  }
+  .muFilterBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .muSearchWrap {
+    max-width: 100%;
+    width: 100%;
+  }
+  .muPageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .muAddBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  .wsTypeGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .muActions {
+    flex-direction: column;
+  }
+  .overviewBottomRow {
+    grid-template-columns: 1fr;
+  }
+  .overviewGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .notificationDropdown {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95%;
+    max-height: 75vh;
+    border-radius: 18px;
+  }
+  .notificationItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .viewBtn {
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+  }
+  .amenityFormGrid {
+    grid-template-columns: 1fr;
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+  .table {
+    min-width: 700px;
+  }
+  .table th,
+  .table td {
+    padding: 10px 12px;
+    font-size: 12.5px;
+  }
+  .modalOverlay {
+    padding: 10px;
+  }
+  .bookingModal {
+    border-radius: 16px;
+  }
+  .modalHero {
+    height: 200px;
+  }
+  .modalHeroContent h2 {
+    font-size: 20px;
+  }
+  .modalBody {
+    padding: 14px;
+  }
+  .modalFooter {
+    padding: 14px;
+  }
+  .accordHeader {
+    padding: 14px 16px;
+  }
+  .accordBody {
+    padding: 0 16px 18px;
+  }
+  .leadTabs {
+    gap: 6px;
+  }
+  .leadTab {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .leadFilterBar {
+    padding: 12px 14px;
+  }
+ 
+  /* Overview v3 responsive */
+  .ovHeroGrid {
+    grid-template-columns: 1fr;
+  }
+  .ovBottomRow {
+    grid-template-columns: 1fr;
+  }
+  .ovQGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ovWsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ovHeroNum {
+    font-size: 26px;
+  }
+  .ovHeroBody {
+    padding: 14px 14px 11px;
+  }
+  .ovSparkWrap {
+    height: 26px;
+  }
+}
+ 
+/* ══════════════════════════════════════════════════
+   480px
+══════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .overviewStatsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .statCardValue {
+    font-size: 18px;
+  }
+  .amenityInput,
+  .amenitySelect,
+  .amenityBtn {
+    height: 46px;
+    font-size: 13px;
+  }
+  .ovQGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ovWsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+ 
+/* ══════════════════════════════════════════════════
+   360px
+══════════════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .notificationDropdown {
+    width: 98%;
+  }
+  .overviewStatsGrid {
+    grid-template-columns: 1fr;
+  }
+  .ovQGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ovWsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+ 
+/* ══════════════════════════════════════════════════
+   900px — tablet
+══════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 200px;
+  }
+  .collapsed {
+    width: 56px;
+  }
+  .main {
+    margin-left: 200px;
+  }
+  .mainCollapsed {
+    margin-left: 56px;
+  }
+  .content {
+    padding: 18px;
+  }
+  .mainHeader {
+    padding: 0 18px;
+  }
+  .overviewStatsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .wsFormGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .muStatsRow {
+    grid-template-columns: 1fr 1fr;
+  }
+  .muFormGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .wsTypeGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .formGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .notificationDropdown {
+    width: 340px;
+  }
+  .leadFilterBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .leadSearchWrap {
+    max-width: 100%;
+    width: 100%;
+  }
+  .ovHeroGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ovBottomRow {
+    grid-template-columns: 1fr;
+  }
+  .ovQGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ovWsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ovHeroNum {
+    font-size: 26px;
+  }
+}
+ 
+/* ══════════════════════════════════════════════════
+   1100px — small desktop
+══════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .overviewStatsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .overviewBottomRow {
+    grid-template-columns: 1fr;
+  }
+  .ovHeroGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ovBottomRow {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ovQGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ovWsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+ 
+/* ══════════════════════════════════════════════════
+   1400px
+══════════════════════════════════════════════════ */
+@media (max-width: 1400px) {
+  .overviewStatsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+ 
 
 /* ══════════════════════════════════════
    RESPONSIVE

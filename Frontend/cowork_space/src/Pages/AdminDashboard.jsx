@@ -65,6 +65,9 @@ const IC = {
   calendar:     "M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z",
   briefcase:    "M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z",
   idCard:       "M2 9a2 2 0 012-2h16a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V9z M7 13h4 M7 16h2 M15 13h2",
+  // Collapse / expand arrows for sidebar toggle
+  sidebarClose: "M15 18l-6-6 6-6",   // left arrow  → collapse
+  sidebarOpen:  "M9 18l6-6-6-6",     // right arrow → expand
 };
 
 const SIDEBAR_GROUPS = [
@@ -854,9 +857,6 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     const role = localStorage.getItem("role");
-    // ── FIX: Do NOT clear viewed notifications on logout ──────────────────
-    // We intentionally preserve "adminViewedNotifications" so that already-
-    // viewed notifications do not reappear after re-login.
     const viewedToKeep = localStorage.getItem("adminViewedNotifications");
     localStorage.clear();
     if (viewedToKeep) {
@@ -872,20 +872,17 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
   const [amenities,  setAmenities]  = useState([]);
 
-  // ── Workspace form ────────────────────────────────────────────────────────
   const WS_FORM_INIT = { name:"", city:"", location:"", price:"", image:"", description:"", amenities:[], isavailable:true };
   const [form,        setForm]        = useState(WS_FORM_INIT);
   const [editId,      setEditId]      = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
-  // ── Owner assignment modal state ──────────────────────────────────────────
   const [showOwnerModal,    setShowOwnerModal]    = useState(false);
   const [showOwnerPicker,   setShowOwnerPicker]   = useState(false);
   const [showOwnerForm,     setShowOwnerForm]      = useState(false);
   const [pendingOwnerData,  setPendingOwnerData]   = useState(null);
   const [ownerFormLoading,  setOwnerFormLoading]   = useState(false);
 
-  // ── Saved owner details (pulled from existing workspaces) ─────────────────
   const existingOwnerDetails = useMemo(() => {
     const seen  = new Set();
     const list  = [];
@@ -898,7 +895,6 @@ export default function AdminDashboard() {
     return list;
   }, [workspaces]);
 
-  // ── Per-workspace revenue toggle ──────────────────────────────────────────
   const [openRevenueId, setOpenRevenueId] = useState(null);
 
   const [selectedOwner, setSelectedOwner] = useState(null);
@@ -919,15 +915,13 @@ export default function AdminDashboard() {
   const [isMobile, setIsMobile] = useState(false);
   const [adminNotifications, setAdminNotifications]   = useState([]);
 
-  // ── FIX: viewedAdminNotifs persists across logout/login ──────────────────
-  // Read once on mount; preserved through logout (see handleLogout above).
   const [viewedAdminNotifs, setViewedAdminNotifs] = useState(
-  () => {
-    try {
-      return JSON.parse(localStorage.getItem("adminViewedNotifications") || "[]");
-    } catch { return []; }
-  }
-);
+    () => {
+      try {
+        return JSON.parse(localStorage.getItem("adminViewedNotifications") || "[]");
+      } catch { return []; }
+    }
+  );
   const [viewedNotifications, setViewedNotifications] = useState(() => {
     const saved = localStorage.getItem("viewed_notifications");
     return saved ? JSON.parse(saved) : [];
@@ -938,61 +932,56 @@ export default function AdminDashboard() {
   const [offerLeads,   setOfferLeads]   = useState([]);
   const [ownerAddedWorkspaces, setOwnerAddedWorkspaces] = useState([]);
 
-  // ── FIX: buildNotifs now receives viewedAdminNotifs as a parameter so it
-  // always uses the latest value, not a stale closure. ──────────────────────
-const buildNotifs = useCallback((company=[], hyd=[], offer=[], ws=[], ownerNotifs=[], viewedIds=[]) => {
-  let items = [];
-  company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",  section:"company-leads",   time:"New Lead" }));
-  hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type, section:"hyderabad-leads", time:"New Lead" }));
-  offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type, section:"offerleads",      time:"New Lead" }));
-  ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,      type:"Workspace Added", name:w.name, workspace:w.location||"-",  section:"workspaces",      time:"New Workspace" }));
-  // ── NEW: owner-added workspace notifications ──
-  ownerNotifs.forEach((n) => items.push({
-    id: `owner-notif-${n.id}`,
-    type: "Workspace Added by Owner",
-    name: n.workspace_name || n.workspace || "-",
-    workspace: n.message || "-",
-    section: "workspaces",
-    time: "New Workspace",
-    original_id: n.id,
-  }));
-  setAdminNotifications(items.filter((n) => !viewedIds.includes(n.id)));
-}, []);
+  const buildNotifs = useCallback((company=[], hyd=[], offer=[], ws=[], ownerNotifs=[], viewedIds=[]) => {
+    let items = [];
+    company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",  section:"company-leads",   time:"New Lead" }));
+    hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type, section:"hyderabad-leads", time:"New Lead" }));
+    offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type, section:"offerleads",      time:"New Lead" }));
+    ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,      type:"Workspace Added", name:w.name, workspace:w.location||"-",  section:"workspaces",      time:"New Workspace" }));
+    ownerNotifs.forEach((n) => items.push({
+      id: `owner-notif-${n.id}`,
+      type: "Workspace Added by Owner",
+      name: n.workspace_name || n.workspace || "-",
+      workspace: n.message || "-",
+      section: "workspaces",
+      time: "New Workspace",
+      original_id: n.id,
+    }));
+    setAdminNotifications(items.filter((n) => !viewedIds.includes(n.id)));
+  }, []);
+
   useEffect(() => { const c=()=>setIsMobile(window.innerWidth<768); c(); window.addEventListener("resize",c); return ()=>window.removeEventListener("resize",c); }, []);
   const SPARKS = { ws:mkSpark(10,8), cat:mkSpark(10,6), own:mkSpark(10,4) };
 
   const fetchWS     = () => axiosInstance.get("workspaces/admin/workspaces").then((r)=>setWorkspaces(Array.isArray(r.data)?r.data:[])).catch(()=>setWorkspaces([]));
   const fetchCat    = () => axiosInstance.get("workspaces/categories").then((r)=>setCategories(Array.isArray(r.data)?r.data:[])).catch(()=>setCategories([]));
   const fetchOwners = () => axiosInstance.get("owners").then((r)=>setOwners(Array.isArray(r.data)?r.data:[])).catch(()=>setOwners([]));
-  
-  // ── FIX: pass viewedAdminNotifs explicitly so buildNotifs is always fresh ─
+
   useEffect(() => {
-  // ── Always read from localStorage fresh to avoid stale state on re-login ──
-  let latestViewed = viewedAdminNotifs;
-  try {
-    const stored = localStorage.getItem("adminViewedNotifications");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed.length >= viewedAdminNotifs.length) {
-        latestViewed = parsed;
+    let latestViewed = viewedAdminNotifs;
+    try {
+      const stored = localStorage.getItem("adminViewedNotifications");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.length >= viewedAdminNotifs.length) latestViewed = parsed;
       }
-    }
-  } catch {}
-  buildNotifs(companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, latestViewed);
-}, [companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, viewedAdminNotifs, buildNotifs]);
+    } catch {}
+    buildNotifs(companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, latestViewed);
+  }, [companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, viewedAdminNotifs, buildNotifs]);
+
   useEffect(() => {
     fetchOwners(); fetchWS(); fetchCat();
     axiosInstance.get("workspaces/amenities/").then((r)=>setAmenities(r.data||[])).catch(()=>{});
     Promise.all([
-  axiosInstance.get("leads/company/admin/"),
-  axiosInstance.get("hyderabad/admin/"),
-  axiosInstance.get("leads/offers/admin/leads/"),
-]).then(([c,h,o])=>{ setCompanyLeads(c.data||[]); setHydLeads(h.data||[]); setOfferLeads(o.data||[]); });
+      axiosInstance.get("leads/company/admin/"),
+      axiosInstance.get("hyderabad/admin/"),
+      axiosInstance.get("leads/offers/admin/leads/"),
+    ]).then(([c,h,o])=>{ setCompanyLeads(c.data||[]); setHydLeads(h.data||[]); setOfferLeads(o.data||[]); });
 
-// fetch owner-added workspace notifications for admin bell
-axiosInstance.get("workspaces/owner-notifications/")
-  .then(res => setOwnerAddedWorkspaces(Array.isArray(res.data) ? res.data : []))
-  .catch(() => {});
+    axiosInstance.get("workspaces/owner-notifications/")
+      .then(res => setOwnerAddedWorkspaces(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {});
+
     const sync=()=>{
       const raw=window.location.hash||"";
       const [hs,hq]=raw.replace("#","").split("?");
@@ -1004,16 +993,15 @@ axiosInstance.get("workspaces/owner-notifications/")
     return ()=>window.removeEventListener("hashchange",sync);
   }, []);
 
-  // ── FIX: persist viewedAdminNotifs to localStorage whenever it changes ───
   useEffect(() => {
-  if (viewedAdminNotifs.length === 0) return; // don't overwrite with empty on first render
-  const existing = (() => {
-    try { return JSON.parse(localStorage.getItem("adminViewedNotifications") || "[]"); }
-    catch { return []; }
-  })();
-  const merged = [...new Set([...existing, ...viewedAdminNotifs])];
-  localStorage.setItem("adminViewedNotifications", JSON.stringify(merged));
-}, [viewedAdminNotifs]);
+    if (viewedAdminNotifs.length === 0) return;
+    const existing = (() => {
+      try { return JSON.parse(localStorage.getItem("adminViewedNotifications") || "[]"); }
+      catch { return []; }
+    })();
+    const merged = [...new Set([...existing, ...viewedAdminNotifs])];
+    localStorage.setItem("adminViewedNotifications", JSON.stringify(merged));
+  }, [viewedAdminNotifs]);
 
   useEffect(() => { const h=(e)=>{ if(notifRef.current&&!notifRef.current.contains(e.target)) setNotifOpen(false); }; document.addEventListener("mousedown",h); return ()=>document.removeEventListener("mousedown",h); }, []);
 
@@ -1029,11 +1017,8 @@ axiosInstance.get("workspaces/owner-notifications/")
 
   const handleModalYes   = () => {
     setShowOwnerModal(false);
-    if (existingOwnerDetails.length > 0) {
-      setShowOwnerPicker(true);
-    } else {
-      setShowOwnerForm(true);
-    }
+    if (existingOwnerDetails.length > 0) setShowOwnerPicker(true);
+    else setShowOwnerForm(true);
   };
   const handleModalNo    = () => { setShowOwnerModal(false); setPendingOwnerData(null); setShowAddForm(true); };
   const handleModalClose = () => setShowOwnerModal(false);
@@ -1044,11 +1029,8 @@ axiosInstance.get("workspaces/owner-notifications/")
     setShowAddForm(true);
     showToast(`Owner "${ownerData.owner_name}" selected — now fill workspace info`);
   };
-  const handlePickerAddNew = () => {
-    setShowOwnerPicker(false);
-    setShowOwnerForm(true);
-  };
-  const handlePickerClose = () => setShowOwnerPicker(false);
+  const handlePickerAddNew  = () => { setShowOwnerPicker(false); setShowOwnerForm(true); };
+  const handlePickerClose   = () => setShowOwnerPicker(false);
 
   const handleOwnerFormSubmit = (ownerData) => {
     setOwnerFormLoading(true);
@@ -1095,7 +1077,13 @@ axiosInstance.get("workspaces/owner-notifications/")
 
   const goNav = (item) => { if(item.path){navigate(item.path);setMobOpen(false);return;} if(item.section){setSection(item.section);setMobOpen(false);} };
   const closeMob = () => setMobOpen(false);
-  const handleMenuToggle = () => { if(isMobile) setMobOpen((p)=>!p); else setSideOpen((p)=>!p); };
+
+  // ── KEY CHANGE: mobile hamburger opens mobile drawer
+  //               desktop: toggle sideOpen from sidebar button
+  const handleMenuToggle = () => {
+    if (isMobile) setMobOpen((p) => !p);
+    else setSideOpen((p) => !p);
+  };
 
   const ownerOptions  = useMemo(() => [...new Set(workspaces.map((w)=>w.ownername||w.owner_name||w.owner?.username||w.owner?.name||"").filter(Boolean))].sort(), [workspaces]);
   const wsTypeOptions = useMemo(() => [...new Set(workspaces.map((w)=>w.usertype||w.workspace_type||w.workspacetype||w.category||w.name||"").filter(Boolean))].sort(), [workspaces]);
@@ -1128,155 +1116,160 @@ axiosInstance.get("workspaces/owner-notifications/")
     <div className={styles.root}>
       {mobOpen && <div className={styles.mobOverlay} onClick={closeMob}/>}
 
-      {showOwnerModal && <AddWorkspaceModal onYes={handleModalYes} onNo={handleModalNo} onClose={handleModalClose}/>}
+      {showOwnerModal    && <AddWorkspaceModal onYes={handleModalYes} onNo={handleModalNo} onClose={handleModalClose}/>}
+      {showOwnerPicker   && <ExistingOwnerPickerModal existingOwners={existingOwnerDetails} onSelectExisting={handlePickerSelectExisting} onAddNew={handlePickerAddNew} onClose={handlePickerClose}/>}
+      {showOwnerForm     && <OwnerDetailsFormModal onSubmit={handleOwnerFormSubmit} onClose={()=>setShowOwnerForm(false)} loading={ownerFormLoading}/>}
 
-      {showOwnerPicker && (
-        <ExistingOwnerPickerModal
-          existingOwners={existingOwnerDetails}
-          onSelectExisting={handlePickerSelectExisting}
-          onAddNew={handlePickerAddNew}
-          onClose={handlePickerClose}
-        />
-      )}
+      {/* ════════════════════════════════════════
+          SIDEBAR
+          ════════════════════════════════════════ */}
+      <aside className={`${styles.sidebar} ${sideOpen ? styles.sidebarOpen : styles.sidebarCollapsed} ${mobOpen ? styles.sidebarMob : ""}`}>
 
-      {showOwnerForm && <OwnerDetailsFormModal onSubmit={handleOwnerFormSubmit} onClose={()=>setShowOwnerForm(false)} loading={ownerFormLoading}/>}
-
-      {/* ── Sidebar ── */}
-      <aside className={`${styles.sidebar} ${sideOpen?styles.sidebarOpen:styles.sidebarCollapsed} ${mobOpen?styles.sidebarMob:""}`}>
+        {/* ── Logo row — toggle button lives here on desktop ── */}
         <div className={styles.logo}>
-          <div className={styles.logoMark}><Icon d={IC.building} size={18}/></div>
-          {(sideOpen||mobOpen)&&<span className={styles.logoText}>Co<span className={styles.logoAccent}>Work</span></span>}
-          {isMobile&&mobOpen&&<button className={styles.sideCloseBtn} onClick={closeMob}><Icon d={IC.close} size={14}/></button>}
+          <div className={styles.logoMark}>
+            <Icon d={IC.building} size={18}/>
+          </div>
+
+          {/* Label only when expanded */}
+          {(sideOpen || mobOpen) && (
+            <span className={styles.logoText}>
+              Co<span className={styles.logoAccent}>Work</span>
+            </span>
+          )}
+
+          {/* ── DESKTOP COLLAPSE / EXPAND BUTTON (inside sidebar) ── */}
+          {/* Hidden on mobile via CSS (.sideToggleBtn { display:none } @media ≤768px) */}
+          <button
+            className={styles.sideToggleBtn}
+            onClick={() => setSideOpen((p) => !p)}
+            title={sideOpen ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            <Icon d={sideOpen ? IC.sidebarClose : IC.sidebarOpen} size={15}/>
+          </button>
+
+          {/* Mobile: show X close button when drawer is open */}
+          {isMobile && mobOpen && (
+            <button className={styles.sideCloseBtn} onClick={closeMob}>
+              <Icon d={IC.close} size={12}/>
+            </button>
+          )}
         </div>
+
         <div className={styles.divider}/>
+
         <nav className={styles.nav}>
           {SIDEBAR_GROUPS.map((group) => {
             if (!group.children) {
-              const isActive = section===group.section;
+              const isActive = section === group.section;
               return (
-                <button key={group.id} className={`${styles.navItem} ${isActive?styles.navItemActive:""}`}
-                  onClick={()=>{setSection(group.section||"overview");closeMob();}} title={!sideOpen&&!mobOpen?group.label:""}>
+                <button
+                  key={group.id}
+                  className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
+                  onClick={() => { setSection(group.section || "overview"); closeMob(); }}
+                  title={!sideOpen && !mobOpen ? group.label : ""}
+                >
                   <span className={styles.navIco}><Icon d={group.icon} size={15}/></span>
-                  {(sideOpen||mobOpen)&&<span className={styles.navLabel}>{group.label}</span>}
+                  {(sideOpen || mobOpen) && <span className={styles.navLabel}>{group.label}</span>}
                 </button>
               );
             }
-            const isOpen   = openGroup===group.id;
-const isActive = group.children.some((c)=>c.section===section);
-return (
-  <div
-    key={group.id}
-    style={{ position:"relative" }}
-    onMouseEnter={() => setOpenGroup(group.id)}
-    onMouseLeave={() => setOpenGroup(null)}
-  >
-    {/* ── Parent button ── */}
-    <button
-      className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
-      title={!sideOpen && !mobOpen ? group.label : ""}
-    >
-      <span className={styles.navIco}><Icon d={group.icon} size={15}/></span>
-      {(sideOpen || mobOpen) && (
-        <>
-          <span className={styles.navLabel}>{group.label}</span>
-          <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}>
-            <Icon d={IC.chevDown} size={11}/>
-          </span>
-        </>
-      )}
-    </button>
 
-    {/* ── Collapsed sidebar: flyout to the right ── */}
-    {!sideOpen && !mobOpen && isOpen && (
-      <div style={{
-        position:       "absolute",
-        left:           "100%",
-        top:            0,
-        background:     "var(--card-bg,#fff)",
-        border:         "1px solid var(--border,#e5e7eb)",
-        borderRadius:   "10px",
-        boxShadow:      "0 8px 24px rgba(0,0,0,0.12)",
-        minWidth:       "180px",
-        zIndex:         999,
-        padding:        "6px",
-        marginLeft:     "6px",
-      }}>
-        <div style={{
-          fontSize:     "10px",
-          fontWeight:   700,
-          color:        "#aaa",
-          textTransform:"uppercase",
-          letterSpacing:"0.06em",
-          padding:      "6px 10px 4px",
-        }}>
-          {group.label}
-        </div>
-        {group.children.map((child) => (
-          <button
-            key={child.id}
-            onClick={() => { goNav(child); setOpenGroup(null); }}
-            style={{
-              display:        "flex",
-              alignItems:     "center",
-              gap:            "8px",
-              width:          "100%",
-              padding:        "8px 10px",
-              border:         "none",
-              borderRadius:   "7px",
-              background:     section === child.section ? "#6366f110" : "transparent",
-              color:          section === child.section ? "#6366f1"   : "#333",
-              fontWeight:     section === child.section ? 700 : 500,
-              fontSize:       "13px",
-              cursor:         "pointer",
-              textAlign:      "left",
-              transition:     "background 0.15s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "#f3f4f6"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = section === child.section ? "#6366f110" : "transparent"; }}
-          >
-            <span style={{ fontSize:"14px" }}>
-              {child.icon === IC.leads      ? "🏷️"
-               : child.icon === IC.offers   ? "🔥"
-               : child.icon === IC.enterprise ? "🏢"
-               : "📋"}
-            </span>
-            <span>{child.label}</span>
-          </button>
-        ))}
-      </div>
-    )}
+            const isOpen   = openGroup === group.id;
+            const isActive = group.children.some((c) => c.section === section);
 
-    {/* ── Expanded sidebar / mobile: inline dropdown ── */}
-    {(sideOpen || mobOpen) && (
-      <div style={{
-        maxHeight:    isOpen ? "300px" : "0",
-        overflow:     "hidden",
-        transition:   "max-height 0.25s ease",
-      }}>
-        {group.children.map((child) => (
-          <button
-            key={child.id}
-            className={`${styles.navChild} ${section === child.section ? styles.navChildActive : ""}`}
-            onClick={() => { goNav(child); setOpenGroup(null); }}
-          >
-            <span className={styles.childDot}/>
-            <span>{child.label}</span>
-          </button>
-        ))}
-      </div>
-    )}
-  </div>
-);
+            return (
+              <div
+                key={group.id}
+                style={{ position:"relative" }}
+                onMouseEnter={() => setOpenGroup(group.id)}
+                onMouseLeave={() => setOpenGroup(null)}
+              >
+                <button
+                  className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
+                  title={!sideOpen && !mobOpen ? group.label : ""}
+                >
+                  <span className={styles.navIco}><Icon d={group.icon} size={15}/></span>
+                  {(sideOpen || mobOpen) && (
+                    <>
+                      <span className={styles.navLabel}>{group.label}</span>
+                      <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}>
+                        <Icon d={IC.chevDown} size={11}/>
+                      </span>
+                    </>
+                  )}
+                </button>
+
+                {/* Collapsed sidebar: flyout panel */}
+                {!sideOpen && !mobOpen && isOpen && (
+                  <div style={{
+                    position:"absolute", left:"100%", top:0,
+                    background:"var(--card-bg,#fff)",
+                    border:"1px solid var(--border,#e5e7eb)",
+                    borderRadius:"10px",
+                    boxShadow:"0 8px 24px rgba(0,0,0,0.12)",
+                    minWidth:"180px", zIndex:999,
+                    padding:"6px", marginLeft:"6px",
+                  }}>
+                    <div style={{fontSize:"10px",fontWeight:700,color:"#aaa",textTransform:"uppercase",letterSpacing:"0.06em",padding:"6px 10px 4px"}}>
+                      {group.label}
+                    </div>
+                    {group.children.map((child) => (
+                      <button key={child.id}
+                        onClick={() => { goNav(child); setOpenGroup(null); }}
+                        style={{
+                          display:"flex",alignItems:"center",gap:"8px",
+                          width:"100%",padding:"8px 10px",
+                          border:"none",borderRadius:"7px",
+                          background:section===child.section?"#6366f110":"transparent",
+                          color:section===child.section?"#6366f1":"#333",
+                          fontWeight:section===child.section?700:500,
+                          fontSize:"13px",cursor:"pointer",textAlign:"left",transition:"background 0.15s",
+                        }}
+                        onMouseEnter={(e)=>{e.currentTarget.style.background="#f3f4f6";}}
+                        onMouseLeave={(e)=>{e.currentTarget.style.background=section===child.section?"#6366f110":"transparent";}}
+                      >
+                        <span style={{fontSize:"14px"}}>
+                          {child.icon===IC.leads?"🏷️":child.icon===IC.offers?"🔥":child.icon===IC.enterprise?"🏢":"📋"}
+                        </span>
+                        <span>{child.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Expanded sidebar / mobile: inline dropdown */}
+                {(sideOpen || mobOpen) && (
+                  <div style={{
+                    maxHeight: isOpen ? "300px" : "0",
+                    overflow:"hidden",
+                    transition:"max-height 0.25s ease",
+                  }}>
+                    {group.children.map((child) => (
+                      <button
+                        key={child.id}
+                        className={`${styles.navChild} ${section === child.section ? styles.navChildActive : ""}`}
+                        onClick={() => { goNav(child); setOpenGroup(null); }}
+                      >
+                        <span className={styles.childDot}/>
+                        <span>{child.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
           })}
         </nav>
+
         <div className={styles.sideFooter}>
           <div className={styles.divider}/>
-          {(sideOpen||mobOpen)&&(
+          {(sideOpen || mobOpen) && (
             <div className={styles.sideUser}>
               <div className={styles.sideAvatar}>A</div>
               <div className={styles.sideUserInfo}>
                 <p className={styles.sideName}>Admin</p>
-                <p className={styles.sideRole}><strong>Hi {localStorage.getItem("username")||"Admin"}</strong></p>
+                <p className={styles.sideRole}><strong>Hi {localStorage.getItem("username") || "Admin"}</strong></p>
               </div>
               <div className={styles.onlineDot}/>
             </div>
@@ -1284,19 +1277,24 @@ return (
           <div className={styles.logoutWrap}>
             <button className={styles.logoutBtn} onClick={handleLogout}>
               <Icon d={IC.logout} size={16}/>
-              {(sideOpen||mobOpen)&&<span>Logout</span>}
+              {(sideOpen || mobOpen) && <span>Logout</span>}
             </button>
           </div>
         </div>
       </aside>
 
-      {/* ── Main ── */}
-      <div className={`${styles.main} ${!isMobile&&!sideOpen?styles.mainCollapsed:""}`}>
+      {/* ════════════════════════════════════════
+          MAIN
+          ════════════════════════════════════════ */}
+      <div className={`${styles.main} ${!isMobile && !sideOpen ? styles.mainCollapsed : ""}`}>
 
         {/* ── Topbar ── */}
-        <header className={styles.topbar}>
+        <header className={`${styles.topbar} ${!isMobile && !sideOpen ? styles.mainCollapsed : ""}`}>
           <div className={styles.topLeft}>
-            <button className={styles.menuBtn} onClick={handleMenuToggle}><Icon d={IC.menu} size={18}/></button>
+            {/* hamburger only shown on mobile (CSS hides it on desktop) */}
+            <button className={styles.menuBtn} onClick={handleMenuToggle}>
+              <Icon d={IC.menu} size={18}/>
+            </button>
             <div className={styles.topTitle}>
               <span className={styles.topSub}>Admin Panel</span>
               <span className={styles.topSection}>{sectionTitle}</span>
@@ -1304,63 +1302,67 @@ return (
           </div>
           <div className={styles.topRight}>
             <div className={styles.notifWrap} ref={notifRef}>
-              <button className={`${styles.iconBtn} ${notifOpen?styles.iconBtnActive:""}`} onClick={()=>setNotifOpen((p)=>!p)}>
+              <button className={`${styles.iconBtn} ${notifOpen ? styles.iconBtnActive : ""}`} onClick={() => setNotifOpen((p) => !p)}>
                 <Icon d={IC.bell} size={15}/>
-                {adminNotifications.length>0&&<span className={styles.notifBadge}>{adminNotifications.length}</span>}
+                {adminNotifications.length > 0 && (
+                  <span className={styles.notifBadge}>{adminNotifications.length}</span>
+                )}
               </button>
-              {notifOpen&&(
+
+              {notifOpen && (
                 <div className={styles.notifPanel}>
                   <div className={styles.notifHead}>
-                    <div className={styles.notifHeading}><h3>Notifications</h3><span className={styles.notifCount}>{adminNotifications.length}</span></div>
-                    <button className={styles.notifClose} onClick={()=>setNotifOpen(false)}>✕</button>
+                    <div className={styles.notifHeading}>
+                      <h3>Notifications</h3>
+                      <span className={styles.notifCount}>{adminNotifications.length}</span>
+                    </div>
+                    <button className={styles.notifClose} onClick={() => setNotifOpen(false)}>✕</button>
                   </div>
                   {adminNotifications.length === 0 && (
                     <div style={{padding:"20px",textAlign:"center",color:"#aaa",fontSize:"13px"}}>
                       No new notifications
                     </div>
                   )}
-                  {adminNotifications.map((n)=>(
+                  {adminNotifications.map((n) => (
                     <div key={n.id} className={styles.notifItem}>
-                      <div className={styles.notifIco} style={{background:"rgba(99,102,241,0.1)",color:"#6366f1"}}><Icon d={IC.bell} size={14}/></div>
-                      <div style={{flex:1}}><div className={styles.notifTxt}><strong>{n.type}</strong><br/>{n.name}</div><div className={styles.notifTime}>{n.workspace}</div></div>
-             <button className={styles.viewBtn}
-onClick={() => {
-  setSection(n.section);
+                      <div className={styles.notifIco} style={{background:"rgba(99,102,241,0.1)",color:"#6366f1"}}>
+                        <Icon d={IC.bell} size={14}/>
+                      </div>
+                      <div style={{flex:1}}>
+                        <div className={styles.notifTxt}><strong>{n.type}</strong><br/>{n.name}</div>
+                        <div className={styles.notifTime}>{n.workspace}</div>
+                      </div>
+                      <button className={styles.viewBtn}
+                        onClick={() => {
+                          setSection(n.section);
+                          const idsForSection = adminNotifications
+                            .filter((i) => i.section === n.section)
+                            .map((i) => i.id);
 
-  const idsForSection = adminNotifications
-    .filter((i) => i.section === n.section)
-    .map((i) => i.id);
+                          adminNotifications
+                            .filter((i) => i.section === n.section && i.original_id)
+                            .forEach((i) => {
+                              axiosInstance.put(`workspaces/owner-notification-read/${i.original_id}/`)
+                                .then(() => {
+                                  axiosInstance.get("workspaces/owner-notifications/")
+                                    .then(res => setOwnerAddedWorkspaces(Array.isArray(res.data) ? res.data : []))
+                                    .catch(() => {});
+                                })
+                                .catch(() => {});
+                            });
 
-  // ── Mark ALL notifications in this section as read on backend ──
-  // This ensures backend returns is_read=True next fetch,
-  // so they never reappear even after logout/login
-  adminNotifications
-    .filter((i) => i.section === n.section && i.original_id)
-    .forEach((i) => {
-      axiosInstance.put(`workspaces/owner-notification-read/${i.original_id}/`)
-        .then(() => {
-          // After marking read on backend, refresh ownerAddedWorkspaces
-          // so the state stays in sync with backend
-          axiosInstance.get("workspaces/owner-notifications/")
-            .then(res => setOwnerAddedWorkspaces(Array.isArray(res.data) ? res.data : []))
-            .catch(() => {});
-        })
-        .catch(() => {});
-    });
+                          setViewedAdminNotifs((prev) => {
+                            const merged = [...new Set([...prev, ...idsForSection])];
+                            localStorage.setItem("adminViewedNotifications", JSON.stringify(merged));
+                            return merged;
+                          });
 
-  // ── Also save viewed IDs in localStorage as a second safety layer ──
-setViewedAdminNotifs((prev) => {
-  const merged = [...new Set([...prev, ...idsForSection])];
-  // Write immediately so next login reads correct value
-  localStorage.setItem("adminViewedNotifications", JSON.stringify(merged));
-  return merged;
-});
-
-  setAdminNotifications((prev) =>
-    prev.filter((i) => i.section !== n.section)
-  );
-  setNotifOpen(false);
-}}>View</button>
+                          setAdminNotifications((prev) =>
+                            prev.filter((i) => i.section !== n.section)
+                          );
+                          setNotifOpen(false);
+                        }}
+                      >View</button>
                     </div>
                   ))}
                 </div>
@@ -1373,10 +1375,10 @@ setViewedAdminNotifs((prev) => {
         <main className={styles.content}>
 
           {/* ── Overview ── */}
-          {section==="overview"&&(
+          {section==="overview" && (
             <section className={styles.overview}>
               <div className={styles.statsGrid}>
-                {STATS.map((s,i)=>(
+                {STATS.map((s,i) => (
                   <button key={i} className={styles.statCard} style={{"--ac":s.color}} onClick={s.onClick} title={s.hint}>
                     <div className={styles.statTop}>
                       <div className={styles.statIco} style={{background:`${s.color}18`,color:s.color}}><Icon d={s.icon} size={18}/></div>
@@ -1389,6 +1391,7 @@ setViewedAdminNotifs((prev) => {
                   </button>
                 ))}
               </div>
+
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:"12px",marginBottom:"24px"}}>
                 {[
                   {label:"Manage Users",    icon:IC.users,     color:"#6366f1", hint:"View users & owners",  onClick:()=>{setManagementFilter("all");setSection("management");}},
@@ -1397,16 +1400,22 @@ setViewedAdminNotifs((prev) => {
                   {label:"Support Tickets", icon:IC.tickets,   color:"#f43f5e", hint:"View tickets",          onClick:()=>setSection("tickets")},
                   {label:"Recent Activity", icon:IC.activity,  color:"#8b5cf6", hint:"See activity log",      onClick:()=>setSection("activity")},
                   {label:"Amenities",       icon:IC.amenities, color:"#0ea5e9", hint:"Manage amenities",      onClick:()=>setSection("amenities")},
-                ].map((q,i)=>(
+                ].map((q,i) => (
                   <button key={i} onClick={q.onClick} title={q.hint}
                     style={{display:"flex",alignItems:"center",gap:"10px",padding:"14px 16px",borderRadius:"12px",border:`1px solid ${q.color}25`,background:`${q.color}06`,cursor:"pointer",transition:"all 0.18s",textAlign:"left"}}
                     onMouseEnter={(e)=>{e.currentTarget.style.background=`${q.color}14`;e.currentTarget.style.borderColor=`${q.color}50`;}}
                     onMouseLeave={(e)=>{e.currentTarget.style.background=`${q.color}06`;e.currentTarget.style.borderColor=`${q.color}25`;}}>
-                    <div style={{width:34,height:34,borderRadius:"8px",background:`${q.color}18`,color:q.color,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon d={q.icon} size={16}/></div>
-                    <div><div style={{fontSize:"12px",fontWeight:700,color:"#000",lineHeight:1.2}}>{q.label}</div><div style={{fontSize:"10px",color:"#888",marginTop:"2px"}}>{q.hint}</div></div>
+                    <div style={{width:34,height:34,borderRadius:"8px",background:`${q.color}18`,color:q.color,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                      <Icon d={q.icon} size={16}/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:"12px",fontWeight:700,color:"#000",lineHeight:1.2}}>{q.label}</div>
+                      <div style={{fontSize:"10px",color:"#888",marginTop:"2px"}}>{q.hint}</div>
+                    </div>
                   </button>
                 ))}
               </div>
+
               <div className={styles.chartsRow}>
                 <div className={styles.chartPanel}><WeeklyChart data={CHART_DATA}/></div>
                 <div className={styles.donutPanel}>
@@ -1414,18 +1423,24 @@ setViewedAdminNotifs((prev) => {
                   <DonutChart data={DONUT_SEGS}/>
                 </div>
               </div>
+
               <div className={styles.quickPanel}>
                 <div className={styles.quickHead}>
                   <div><h3 className={styles.panelTitle}>Recent Support Tickets</h3><p className={styles.panelSub}>Latest issues raised by users</p></div>
-                  <button className={styles.viewAllBtn} onClick={()=>setSection("tickets")}>View All</button>
+                  <button className={styles.viewAllBtn} onClick={() => setSection("tickets")}>View All</button>
                 </div>
                 <div className={styles.ticketList}>
-                  {MOCK_TICKETS.slice(0,4).map((t,i)=>(
+                  {MOCK_TICKETS.slice(0,4).map((t,i) => (
                     <div key={i} className={styles.ticketRow}>
                       <span className={styles.ticketId}>{t.id}</span>
-                      <div className={styles.ticketMain}><span className={styles.ticketSubject}>{t.subject}</span><span className={styles.ticketUser}><Icon d={IC.users} size={10}/> {t.user}</span></div>
+                      <div className={styles.ticketMain}>
+                        <span className={styles.ticketSubject}>{t.subject}</span>
+                        <span className={styles.ticketUser}><Icon d={IC.users} size={10}/> {t.user}</span>
+                      </div>
                       <span className={`${styles.pri} ${t.priority==="high"?styles.priHigh:t.priority==="medium"?styles.priMed:styles.priLow}`}>{t.priority}</span>
-                      <span className={`${styles.statusBadge} ${t.status==="open"?styles.stOpen:t.status==="inprogress"?styles.stProg:styles.stDone}`}>{t.status==="open"?"Open":t.status==="inprogress"?"In Progress":"Resolved"}</span>
+                      <span className={`${styles.statusBadge} ${t.status==="open"?styles.stOpen:t.status==="inprogress"?styles.stProg:styles.stDone}`}>
+                        {t.status==="open"?"Open":t.status==="inprogress"?"In Progress":"Resolved"}
+                      </span>
                       <span className={styles.ticketTime}><Icon d={IC.clock} size={10}/> {t.time}</span>
                     </div>
                   ))}
@@ -1435,7 +1450,7 @@ setViewedAdminNotifs((prev) => {
           )}
 
           {/* ── Management ── */}
-          {section==="management"&&(
+          {section==="management" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
                 <div className={styles.secIco} style={{background:"#6366f118",color:"#6366f1"}}><Icon d={IC.users} size={18}/></div>
@@ -1446,7 +1461,7 @@ setViewedAdminNotifs((prev) => {
           )}
 
           {/* ── Workspaces ── */}
-          {section==="workspaces"&&(
+          {section==="workspaces" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
                 <div className={styles.secIco} style={{background:"#f59e0b18",color:"#f59e0b"}}><Icon d={IC.workspace} size={18}/></div>
@@ -1464,17 +1479,18 @@ setViewedAdminNotifs((prev) => {
                 <div style={{display:"flex",alignItems:"center",gap:"6px",flex:"1",minWidth:"160px",height:"36px",padding:"0 10px",borderRadius:"8px",border:"1.5px solid var(--border,#e5e7eb)",background:"#fff"}}>
                   <Icon d={IC.search} size={13}/>
                   <input style={{border:"none",outline:"none",fontSize:"12px",color:"#000",width:"100%",background:"transparent"}} placeholder="Search workspace, city, owner, manager..." value={searchQ} onChange={(e)=>setSearchQ(e.target.value)}/>
-                  {searchQ&&<button style={{border:"none",background:"none",cursor:"pointer",color:"#aaa",padding:0,display:"flex"}} onClick={()=>setSearchQ("")}><Icon d={IC.close} size={11}/></button>}
+                  {searchQ && <button style={{border:"none",background:"none",cursor:"pointer",color:"#aaa",padding:0,display:"flex"}} onClick={()=>setSearchQ("")}><Icon d={IC.close} size={11}/></button>}
                 </div>
                 <select style={wsSelectStyle} value={ownerFilter} onChange={(e)=>setOwnerFilter(e.target.value)}>
                   <option value="">All Owners/managers</option>
-                  {ownerOptions.map((o)=><option key={o} value={o}>{o}</option>)}
+                  {ownerOptions.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
                 <select style={wsSelectStyle} value={wsTypeFilter} onChange={(e)=>setWsTypeFilter(e.target.value)}>
                   <option value="">All Types</option>
-                  {wsTypeOptions.map((t)=><option key={t} value={t}>{t}</option>)}
+                  {wsTypeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
-                <button className={styles.btnGhost} style={{display:"inline-flex",alignItems:"center",gap:"5px",height:"36px",padding:"0 12px",borderRadius:"8px",fontSize:"12px",whiteSpace:"nowrap",flexShrink:0}}
+                <button className={styles.btnGhost}
+                  style={{display:"inline-flex",alignItems:"center",gap:"5px",height:"36px",padding:"0 12px",borderRadius:"8px",fontSize:"12px",whiteSpace:"nowrap",flexShrink:0}}
                   onClick={()=>{setSearchQ("");setOwnerFilter("");setWsTypeFilter("");window.location.hash="workspaces";}}>
                   <Icon d={IC.refresh} size={13}/> Reset
                 </button>
@@ -1484,30 +1500,27 @@ setViewedAdminNotifs((prev) => {
               </div>
 
               {/* Workspace Add/Edit Form */}
-              {showAddForm&&(
+              {showAddForm && (
                 <div className={styles.formCard} style={{marginBottom:"16px"}}>
                   <div className={styles.formHead}>
                     <span className={styles.formHeadIco}><Icon d={editId?IC.edit:IC.add} size={13}/></span>
-                    <span>{editId?`Editing Workspace #${editId}`:"Add New Workspace"}</span>
-                    {pendingOwnerData&&(
+                    <span>{editId ? `Editing Workspace #${editId}` : "Add New Workspace"}</span>
+                    {pendingOwnerData && (
                       <span style={{marginLeft:"auto",display:"inline-flex",alignItems:"center",gap:"6px",fontSize:"11px",fontWeight:700,color:"#d97706",background:"#f59e0b12",border:"1px solid #f59e0b30",borderRadius:"20px",padding:"3px 10px"}}>
                         <Icon d={IC.briefcase} size={11}/>
                         Owner: {pendingOwnerData.owner_name}
                         <button onClick={()=>setPendingOwnerData(null)} style={{border:"none",background:"none",cursor:"pointer",color:"#f43f5e",padding:0,display:"inline-flex",marginLeft:"2px"}}><Icon d={IC.close} size={10}/></button>
                       </span>
                     )}
-                    {!pendingOwnerData&&!editId&&(
-                      <button onClick={()=>{
-                        if(existingOwnerDetails.length>0) setShowOwnerPicker(true);
-                        else setShowOwnerForm(true);
-                      }}
+                    {!pendingOwnerData && !editId && (
+                      <button onClick={()=>{ if(existingOwnerDetails.length>0) setShowOwnerPicker(true); else setShowOwnerForm(true); }}
                         style={{marginLeft:"auto",display:"inline-flex",alignItems:"center",gap:"5px",fontSize:"11px",fontWeight:600,color:"#f59e0b",background:"#f59e0b10",border:"1px solid #f59e0b25",borderRadius:"8px",padding:"4px 10px",cursor:"pointer"}}>
                         <Icon d={IC.briefcase} size={11}/> + Assign Owner
                       </button>
                     )}
                   </div>
 
-                  {pendingOwnerData&&(
+                  {pendingOwnerData && (
                     <div style={{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:"10px",padding:"14px 16px",marginBottom:"16px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"10px"}}>
                       {[
                         ["Owner",         pendingOwnerData.owner_name,       IC.users],
@@ -1518,10 +1531,13 @@ setViewedAdminNotifs((prev) => {
                         ["Revenue Share", pendingOwnerData.revenue_share_pct ? `${pendingOwnerData.revenue_share_pct}%` : "-", IC.percent],
                         ["Contract",      pendingOwnerData.contract_start ? `${pendingOwnerData.contract_start} → ${pendingOwnerData.contract_end||"Open"}` : "-", IC.calendar],
                         ["Agreement",     pendingOwnerData.agreement_type,   IC.key],
-                      ].filter(([,v])=>v).map(([lbl,val,ico])=>(
+                      ].filter(([,v])=>v).map(([lbl,val,ico]) => (
                         <div key={lbl} style={{display:"flex",alignItems:"flex-start",gap:"7px"}}>
                           <div style={{width:22,height:22,borderRadius:"6px",background:"#f59e0b20",color:"#f59e0b",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}><Icon d={ico} size={11}/></div>
-                          <div><div style={{fontSize:"10px",color:"#888",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.04em"}}>{lbl}</div><div style={{fontSize:"12px",fontWeight:600,color:"#111"}}>{val}</div></div>
+                          <div>
+                            <div style={{fontSize:"10px",color:"#888",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.04em"}}>{lbl}</div>
+                            <div style={{fontSize:"12px",fontWeight:600,color:"#111"}}>{val}</div>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1530,22 +1546,23 @@ setViewedAdminNotifs((prev) => {
                   <div className={styles.formGrid}>
                     <select className={styles.selectField} value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})}>
                       <option value="">Select Workspace Type *</option>
-                      {WORKSPACE_TYPES.map((t)=><option key={t} value={t}>{t}</option>)}
+                      {WORKSPACE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
                     <select className={styles.selectField} value={form.city} onChange={(e)=>setForm({...form,city:e.target.value})}>
                       <option value="">Select City *</option>
-                      {LOCATIONS.map((l)=><option key={l} value={l}>{l}</option>)}
+                      {LOCATIONS.map((l) => <option key={l} value={l}>{l}</option>)}
                     </select>
                     <input className={styles.inp} placeholder="Location / Area" value={form.location} onChange={(e)=>setForm({...form,location:e.target.value})}/>
                     <input className={styles.inp} placeholder="Price (₹) *"     value={form.price}    onChange={(e)=>setForm({...form,price:e.target.value})}/>
                     <input className={styles.inp} placeholder="Description"     value={form.description} onChange={(e)=>setForm({...form,description:e.target.value})}/>
                     <input className={styles.inp} placeholder="Image URL"       value={form.image}    onChange={(e)=>setForm({...form,image:e.target.value})}/>
                   </div>
-                  {amenities.length>0&&(
+
+                  {amenities.length > 0 && (
                     <div className={styles.fieldGroup} style={{marginBottom:"16px"}}>
                       <div style={{fontSize:"12px",fontWeight:600,color:"#555",marginBottom:"8px"}}>Amenities</div>
                       <div className={styles.amenitiesGrid}>
-                        {amenities.map((a)=>(
+                        {amenities.map((a) => (
                           <label key={a.id} className={styles.amenityItem}>
                             <input type="checkbox" checked={form.amenities?.includes(a.id)}
                               onChange={(e)=>{ if(e.target.checked) setForm({...form,amenities:[...(form.amenities||[]),a.id]}); else setForm({...form,amenities:form.amenities.filter((id)=>id!==a.id)}); }}/>
@@ -1555,9 +1572,17 @@ setViewedAdminNotifs((prev) => {
                       </div>
                     </div>
                   )}
+
                   <div className={styles.formActs} style={{marginTop:"16px"}}>
-                    <button className={styles.btnPrimary} onClick={handleSubmit}><Icon d={editId?IC.edit:IC.add} size={13}/>{editId?"Update Workspace":"Add Workspace"}</button>
-                    {editId&&<button className={styles.btnGhost} onClick={()=>{setEditId(null);setShowAddForm(false);setPendingOwnerData(null);setForm(WS_FORM_INIT);}}>Cancel</button>}
+                    <button className={styles.btnPrimary} onClick={handleSubmit}>
+                      <Icon d={editId?IC.edit:IC.add} size={13}/>
+                      {editId ? "Update Workspace" : "Add Workspace"}
+                    </button>
+                    {editId && (
+                      <button className={styles.btnGhost} onClick={()=>{setEditId(null);setShowAddForm(false);setPendingOwnerData(null);setForm(WS_FORM_INIT);}}>
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -1567,33 +1592,20 @@ setViewedAdminNotifs((prev) => {
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Owner/Landlord</th>
-                      <th>Manager</th>
-                      <th>Workspace Type</th>
-                      <th>Name</th>
-                      <th>City</th>
-                      <th>Location</th>
-                      <th>Price</th>
-                      <th>Rent</th>
-                      <th>Lease</th>
-                      <th>Approval</th>
-                      <th>Status</th>
-                      <th>Revenue</th>
-                      <th>Actions</th>
+                      <th>#</th><th>Owner/Landlord</th><th>Manager</th><th>Workspace Type</th>
+                      <th>Name</th><th>City</th><th>Location</th><th>Price</th>
+                      <th>Rent</th><th>Lease</th><th>Approval</th><th>Status</th>
+                      <th>Revenue</th><th>Actions</th>
                     </tr>
                   </thead>
-
                   <tbody>
                     {filteredWS.map((item, i) => {
-                      const landlordName = item.owner_details?.owner_name || "Unassigned";
-                      const managerName  = item.manager_name || item.owner?.username || "-";
-                      const rentInfo     = item.owner_details
-                        ? `₹${item.owner_details?.rent_amount || 0}/${item.owner_details?.rent_frequency || "mo"}`
-                        : "—";
-                      const leaseInfo    = item.owner_details?.agreement_type || "-";
-                      const wsType       = item.usertype || item.workspace_type || item.workspacetype || item.category || item.name || "-";
-                      const isActive     = item.isavailable !== false;
+                      const landlordName  = item.owner_details?.owner_name || "Unassigned";
+                      const managerName   = item.manager_name || item.owner?.username || "-";
+                      const rentInfo      = item.owner_details ? `₹${item.owner_details?.rent_amount || 0}/${item.owner_details?.rent_frequency || "mo"}` : "—";
+                      const leaseInfo     = item.owner_details?.agreement_type || "-";
+                      const wsType        = item.usertype || item.workspace_type || item.workspacetype || item.category || item.name || "-";
+                      const isActive      = item.isavailable !== false;
                       const isRevenueOpen = openRevenueId === item.id;
 
                       return (
@@ -1602,7 +1614,7 @@ setViewedAdminNotifs((prev) => {
                             <td className={styles.tdSerial}>{String(i+1).padStart(2,"00")}</td>
                             <td className={styles.tdBold}>
                               {item.owner_details ? (
-                                <button onClick={()=>setSelectedOwner(item.owner_details)}
+                                <button onClick={() => setSelectedOwner(item.owner_details)}
                                   style={{border:"none",background:"transparent",cursor:"pointer"}}>
                                   <span className={styles.ownerAssignedBadge}>
                                     <Icon d={IC.briefcase} size={11}/> {landlordName}
@@ -1642,21 +1654,21 @@ setViewedAdminNotifs((prev) => {
                             </td>
                             <td>
                               <div className={styles.actCell}>
-                                <button className={styles.editBtn} onClick={()=>handleEdit(item)} style={{padding:"5px 7px"}}>
+                                <button className={styles.editBtn} onClick={() => handleEdit(item)} style={{padding:"5px 7px"}}>
                                   <Icon d={IC.edit} size={13}/>
                                 </button>
                                 {!item.is_approved ? (
-                                  <button className={styles.approveBtn} onClick={()=>handleApprove(item.id)} style={{padding:"5px 7px"}}>
+                                  <button className={styles.approveBtn} onClick={() => handleApprove(item.id)} style={{padding:"5px 7px"}}>
                                     <Icon d={IC.approveCircle} size={13}/>
                                   </button>
                                 ) : (
-                                  <button className={styles.rejectBtn} onClick={()=>handleReject(item.id)} style={{padding:"5px 7px"}}>
+                                  <button className={styles.rejectBtn} onClick={() => handleReject(item.id)} style={{padding:"5px 7px"}}>
                                     <Icon d={IC.rejectCircle} size={13}/>
                                   </button>
                                 )}
-                                <button onClick={()=>handleToggleActive(item)}
+                                <button onClick={() => handleToggleActive(item)}
                                   style={{padding:"5px 7px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"6px",border:"none",cursor:"pointer",background:isActive?"#10b98118":"#6b728018",color:isActive?"#10b981":"#6b7280",transition:"all 0.18s"}}>
-                                  <Icon d={isActive?IC.eyeOn:IC.eyeOff} size={13}/>
+                                  <Icon d={isActive ? IC.eyeOn : IC.eyeOff} size={13}/>
                                 </button>
                               </div>
                             </td>
@@ -1664,7 +1676,7 @@ setViewedAdminNotifs((prev) => {
 
                           {isRevenueOpen && (
                             <tr key={`revenue-${item.id}`}>
-                              <td colSpan={14} style={{padding:0, borderBottom:"2px solid #7c3aed30"}}>
+                              <td colSpan={14} style={{padding:0,borderBottom:"2px solid #7c3aed30"}}>
                                 <WorkspaceRevenuePanel workspaceId={item.id} workspaceName={item.name}/>
                               </td>
                             </tr>
@@ -1672,7 +1684,6 @@ setViewedAdminNotifs((prev) => {
                         </React.Fragment>
                       );
                     })}
-
                     {filteredWS.length === 0 && (
                       <tr><td colSpan={14} className={styles.tdEmpty}>No workspaces found</td></tr>
                     )}
@@ -1683,7 +1694,7 @@ setViewedAdminNotifs((prev) => {
           )}
 
           {/* ── Categories ── */}
-          {section==="categories"&&(
+          {section==="categories" && (
             <section className={styles.section}>
               <div className={styles.secHead}>
                 <div className={styles.secIco} style={{background:"#6366f118",color:"#6366f1"}}><Icon d={IC.category} size={18}/></div>
@@ -1696,7 +1707,7 @@ setViewedAdminNotifs((prev) => {
                   <input className={styles.inp} placeholder="Category Name" value={catForm.name} onChange={(e)=>setCatForm({...catForm,name:e.target.value})}/>
                   <select className={styles.inp} value={catForm.owner} onChange={(e)=>setCatForm({...catForm,owner:e.target.value})}>
                     <option value="">Assign Manager</option>
-                    {owners.map((o)=><option key={o.id} value={o.id}>{o.username}</option>)}
+                    {owners.map((o) => <option key={o.id} value={o.id}>{o.username}</option>)}
                   </select>
                   <select className={styles.inp} value={catForm.category} onChange={(e)=>setCatForm({...catForm,category:e.target.value})}>
                     <option value="">Select Category Type</option>
@@ -1715,23 +1726,28 @@ setViewedAdminNotifs((prev) => {
                 <div className={styles.formActs}><button className={styles.btnPrimary} onClick={handleAddCat}><Icon d={IC.add} size={13}/> Add Category</button></div>
               </div>
               <div className={styles.catGrid}>
-                {categories.length===0
-                  ?<div className={styles.emptyState}><div className={styles.emptyIcon}><Icon d={IC.category} size={32}/></div><p className={styles.emptyTitle}>No categories yet</p></div>
-                  :categories.map((item)=>(
+                {categories.length === 0
+                  ? <div className={styles.emptyState}><div className={styles.emptyIcon}><Icon d={IC.category} size={32}/></div><p className={styles.emptyTitle}>No categories yet</p></div>
+                  : categories.map((item) => (
                     <div key={item.id} className={styles.catCard}>
-                      {item.image&&<div className={styles.catImgWrap}><img src={item.image} alt={item.name} className={styles.catImg}/></div>}
+                      {item.image && <div className={styles.catImgWrap}><img src={item.image} alt={item.name} className={styles.catImg}/></div>}
                       <div className={styles.catTop}>
                         <div><h4 className={styles.catName}>{item.name}</h4><span className={styles.catType}>{item.category?.replace("_"," ")}</span></div>
                         <span className={`${styles.statusBadge} ${item.isavailable?styles.stDone:styles.stOpen}`}>{item.isavailable?"Available":"Off"}</span>
                       </div>
-                      {item.ownername&&<div className={styles.catOwner}><Icon d={IC.users} size={11}/> {item.ownername}</div>}
-                      <p className={styles.catDesc}>{item.description||"No description."}</p>
+                      {item.ownername && <div className={styles.catOwner}><Icon d={IC.users} size={11}/> {item.ownername}</div>}
+                      <p className={styles.catDesc}>{item.description || "No description."}</p>
                       <div className={styles.catPrices}>
-                        {[["Hourly",item.hourlyprice],["Daily",item.dailyprice],["Monthly",item.monthlyprice]].map(([lbl,val])=>(
-                          <div key={lbl} className={styles.priceBox}><span className={styles.priceLbl}>{lbl}</span><span className={styles.priceVal}>{val||0}</span></div>
+                        {[["Hourly",item.hourlyprice],["Daily",item.dailyprice],["Monthly",item.monthlyprice]].map(([lbl,val]) => (
+                          <div key={lbl} className={styles.priceBox}>
+                            <span className={styles.priceLbl}>{lbl}</span>
+                            <span className={styles.priceVal}>{val||0}</span>
+                          </div>
                         ))}
                       </div>
-                      <button className={styles.delBtn} style={{marginTop:12,width:"100%"}} onClick={()=>handleDelCat(item.id)}><Icon d={IC.trash} size={11}/> Delete</button>
+                      <button className={styles.delBtn} style={{marginTop:12,width:"100%"}} onClick={() => handleDelCat(item.id)}>
+                        <Icon d={IC.trash} size={11}/> Delete
+                      </button>
                     </div>
                   ))
                 }
@@ -1739,21 +1755,21 @@ setViewedAdminNotifs((prev) => {
             </section>
           )}
 
-          {section==="quotation-leads"&&(<section className={styles.section}><div className={styles.secHead}><div><h2 className={styles.secTitle}>Quotation Leads</h2><p className={styles.secSub}>All quotation leads</p></div></div><AdminQuotationLeads/></section>)}
-          {section==="leads"          &&<section className={styles.sectionWrapper}><AdminLeads/></section>}
-          {section==="offerleads"     &&<section className={styles.section}><AdminLeadss/></section>}
-          {section==="enterprise"     &&<section className={styles.section}><AdminDashboardEnterprise/></section>}
-          {section==="hyderabad-leads"&&<section className={styles.section}><AdminDashboards/></section>}
-          {section==="company-leads"  &&<section className={styles.section}><AdminCompanyLeads/></section>}
-          {section==="bookings"       &&<section className={styles.section}><AdminBookings/></section>}
-          {section==="tickets"        &&<section className={styles.section}><AdminTickets/></section>}
-          {section==="amenities"      &&<section className={styles.section}><AdminAmenities/></section>}
+          {section==="quotation-leads" && (<section className={styles.section}><div className={styles.secHead}><div><h2 className={styles.secTitle}>Quotation Leads</h2><p className={styles.secSub}>All quotation leads</p></div></div><AdminQuotationLeads/></section>)}
+          {section==="leads"           && <section className={styles.sectionWrapper}><AdminLeads/></section>}
+          {section==="offerleads"      && <section className={styles.section}><AdminLeadss/></section>}
+          {section==="enterprise"      && <section className={styles.section}><AdminDashboardEnterprise/></section>}
+          {section==="hyderabad-leads" && <section className={styles.section}><AdminDashboards/></section>}
+          {section==="company-leads"   && <section className={styles.section}><AdminCompanyLeads/></section>}
+          {section==="bookings"        && <section className={styles.section}><AdminBookings/></section>}
+          {section==="tickets"         && <section className={styles.section}><AdminTickets/></section>}
+          {section==="amenities"       && <section className={styles.section}><AdminAmenities/></section>}
 
-          {section==="activity"&&(
+          {section==="activity" && (
             <section className={styles.section}>
               <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:16}}>
-                {activityTypes.map((t)=>(
-                  <button key={t} className={t===actFilter?styles.btnPrimary:styles.btnGhost} onClick={()=>setActFilter(t)}>{t}</button>
+                {activityTypes.map((t) => (
+                  <button key={t} className={t===actFilter?styles.btnPrimary:styles.btnGhost} onClick={() => setActFilter(t)}>{t}</button>
                 ))}
               </div>
               <RecentActivity activities={filteredActivity}/>
@@ -1763,23 +1779,25 @@ setViewedAdminNotifs((prev) => {
       </div>
 
       {/* Toast */}
-      {toast&&(
-        <div className={`${styles.toast} ${toast.type==="error"?styles.toastErr:""}`}>
+      {toast && (
+        <div className={`${styles.toast} ${toast.type==="error" ? styles.toastErr : ""}`}>
           <span className={styles.toastIcon}>•</span>{toast.msg}
         </div>
       )}
 
       {/* ── OWNER DETAILS VIEW MODAL ── */}
       {selectedOwner && (
-        <div className={styles.ownerFormOverlay} onClick={()=>setSelectedOwner(null)}>
-          <div className={styles.ownerFormModal} onClick={(e)=>e.stopPropagation()}>
+        <div className={styles.ownerFormOverlay} onClick={() => setSelectedOwner(null)}>
+          <div className={styles.ownerFormModal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.ownerFormHeader}>
               <div className={styles.ownerFormHeaderIco}><Icon d={IC.briefcase} size={20}/></div>
               <div className={styles.ownerFormHeaderText}>
                 <h3>Owner / Landlord Details</h3>
                 <p>Complete landlord information</p>
               </div>
-              <button className={styles.ownerFormClose} onClick={()=>setSelectedOwner(null)}><Icon d={IC.close} size={14}/></button>
+              <button className={styles.ownerFormClose} onClick={() => setSelectedOwner(null)}>
+                <Icon d={IC.close} size={14}/>
+              </button>
             </div>
             <div className={styles.ownerFormBody}>
               <div className={styles.ownerFormGrid}>
@@ -1807,7 +1825,7 @@ setViewedAdminNotifs((prev) => {
               </div>
               <div style={{marginTop:"16px"}}>
                 <label className={styles.ownerFormLabel}>Notes</label>
-                <textarea className={styles.ownerFormInp} rows={3} value={selectedOwner.notes||""} readOnly/>
+                <textarea className={styles.ownerFormInp} rows={3} value={selectedOwner.notes || ""} readOnly/>
               </div>
             </div>
           </div>

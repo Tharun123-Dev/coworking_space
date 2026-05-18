@@ -204,7 +204,6 @@ function WorkspaceRevenuePanel({ workspaceId, workspaceName, bookings }) {
         setLoading(false);
       })
       .catch(() => {
-        // fallback: compute from bookings prop
         const wsBookings = bookings.filter(b =>
           (b.workspace_id === workspaceId) ||
           (b.workspace?.trim() === workspaceName?.trim())
@@ -245,12 +244,8 @@ function WorkspaceRevenuePanel({ workspaceId, workspaceName, bookings }) {
   const {
     total_revenue = 0,
     confirmed_revenue = 0,
-    pending_revenue = 0,
-    cancelled_revenue = 0,
     total_bookings = 0,
     confirmed_bookings = 0,
-    pending_bookings = 0,
-    cancelled_bookings = 0,
   } = revenueData;
 
   const fillPct = total_bookings > 0 ? Math.round((confirmed_bookings / total_bookings) * 100) : 0;
@@ -258,8 +253,6 @@ function WorkspaceRevenuePanel({ workspaceId, workspaceName, bookings }) {
   const stats = [
     { icon: "💰", label: "Total Revenue", value: `₹${Number(total_revenue).toLocaleString()}`, color: "#b8922a" },
     { icon: "✅", label: "Confirmed Revenue", value: `₹${Number(confirmed_revenue).toLocaleString()}`, color: "#16a34a" },
-    // { icon: "⏳", label: "Pending Revenue", value: `₹${Number(pending_revenue).toLocaleString()}`, color: "#d97706" },
-    // { icon: "❌", label: "Cancelled Revenue", value: `₹${Number(cancelled_revenue).toLocaleString()}`, color: "#dc2626" },
   ];
 
   return (
@@ -268,8 +261,6 @@ function WorkspaceRevenuePanel({ workspaceId, workspaceName, bookings }) {
         <span style={panelStyles.dot} />
         <span style={panelStyles.title}>Revenue Breakdown — {workspaceName}</span>
       </div>
-
-      {/* Revenue stat cards */}
       <div style={panelStyles.grid}>
         {stats.map((s, i) => (
           <div key={i} style={{ ...panelStyles.card, borderTopColor: s.color }}>
@@ -279,8 +270,6 @@ function WorkspaceRevenuePanel({ workspaceId, workspaceName, bookings }) {
           </div>
         ))}
       </div>
-
-      {/* Booking counts */}
       <div style={panelStyles.badgeRow}>
         <span style={{ ...panelStyles.badge, background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe" }}>
           📋 {total_bookings} Total Bookings
@@ -288,15 +277,7 @@ function WorkspaceRevenuePanel({ workspaceId, workspaceName, bookings }) {
         <span style={{ ...panelStyles.badge, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}>
           ✅ {confirmed_bookings} Confirmed
         </span>
-        {/* <span style={{ ...panelStyles.badge, background: "#fff7ed", color: "#ea580c", border: "1px solid #fed7aa" }}>
-          ⏳ {pending_bookings} Pending
-        </span> */}
-        {/* <span style={{ ...panelStyles.badge, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
-          ❌ {cancelled_bookings} Cancelled
-        </span> */}
       </div>
-
-      {/* Confirmation fill bar */}
       {total_bookings > 0 && (
         <div style={{ marginTop: "10px" }}>
           <div style={{ fontSize: "11px", color: "#6b7280", marginBottom: "4px", fontWeight: 600 }}>
@@ -315,7 +296,6 @@ function WorkspaceRevenuePanel({ workspaceId, workspaceName, bookings }) {
   );
 }
 
-// Inline styles for the revenue panel (no CSS module needed for this component)
 const panelStyles = {
   panel: {
     padding: "18px 24px",
@@ -431,49 +411,25 @@ function OwnerDashboard() {
 
   const [showOwnerDetails, setShowOwnerDetails] = useState(false);
   const [selectedOwner, setSelectedOwner] = useState(null);
-
-  // ─── NEW: per-workspace revenue toggle state ───────────────────────────
   const [openRevenueId, setOpenRevenueId] = useState(null);
 
   const navigate = useNavigate();
 
   const handleLogout = () => {
-
-  const role = localStorage.getItem("role");
-
-  // KEEP viewed notifications
-  const savedViewedNotifications =
-    localStorage.getItem(notificationKey);
-
-  // CLEAR ALL
-  localStorage.clear();
-
-  // RESTORE viewed notifications
-  if (savedViewedNotifications) {
-
-    localStorage.setItem(
-      notificationKey,
-      savedViewedNotifications
-    );
-
-  }
-
-  // REDIRECT
-  if (role === "admin") {
-
-    window.location.href = "/auth?type=admin";
-
-  } else if (role === "owner") {
-
-    window.location.href = "/auth?type=owner";
-
-  } else {
-
-    window.location.href = "/auth?type=user";
-
-  }
-
-};
+    const role = localStorage.getItem("role");
+    const savedViewedNotifications = localStorage.getItem(notificationKey);
+    localStorage.clear();
+    if (savedViewedNotifications) {
+      localStorage.setItem(notificationKey, savedViewedNotifications);
+    }
+    if (role === "admin") {
+      window.location.href = "/auth?type=admin";
+    } else if (role === "owner") {
+      window.location.href = "/auth?type=owner";
+    } else {
+      window.location.href = "/auth?type=user";
+    }
+  };
 
   const [workspaces, setWorkspaces] = useState([]);
   const [offerWorkspaces, setOfferWorkspaces] = useState([]);
@@ -501,24 +457,14 @@ function OwnerDashboard() {
   const [busyMap, setBusyMap] = useState({});
   const [toastMsg, setToastMsg] = useState("");
   const [revenue, setRevenue] = useState({ total_revenue: 0, confirmed_revenue: 0, pending_revenue: 0, cancelled_count: 0 });
-  
   const [notifications, setNotifications] = useState([]);
   const [workspaceNotifications, setWorkspaceNotifications] = useState([]);
-const currentUser = JSON.parse(
-  localStorage.getItem("user")
-);
 
-const notificationKey = `viewedNotifications_${currentUser?.id}`;
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const notificationKey = `viewedNotifications_${currentUser?.id}`;
 
-const [viewedNotifications, setViewedNotifications] =
-  useState(() => {
-
-    return JSON.parse(
-
-      localStorage.getItem(notificationKey)
-
-    ) || [];
-
+  const [viewedNotifications, setViewedNotifications] = useState(() => {
+    return JSON.parse(localStorage.getItem(notificationKey)) || [];
   });
   const [showNotifications, setShowNotifications] = useState(false);
   const [additionalAmenities, setAdditionalAmenities] = useState([]);
@@ -562,6 +508,7 @@ const [viewedNotifications, setViewedNotifications] =
   const setBusy = (id, value) => setBusyMap(prev => ({ ...prev, [id]: value }));
   const isBusy = (id) => !!busyMap[id];
 
+  // ── NAV: close mobile sidebar after navigation ──
   const handleNav = (sectionKey, groupKey) => {
     setActiveSection(sectionKey);
     setMobileSidebarOpen(false);
@@ -593,17 +540,10 @@ const [viewedNotifications, setViewedNotifications] =
   const fetchCustomisationLeads = () => axiosInstance.get("leads/modern-leads/owner/").then(res => setCustomisationLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Customisation leads fetch error:", err));
   const fetchQuotationLeads = () => axiosInstance.get("leads/quotation-leads/owner/").then(res => setQuotationLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Quotation leads fetch error:", err));
   const fetchWorkspaceNotifications = () => {
-  axiosInstance
-    .get("workspaces/owner-notifications/")
-    .then((res) => {
-      setWorkspaceNotifications(
-        Array.isArray(res.data) ? res.data : []
-      );
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-};
+    axiosInstance.get("workspaces/owner-notifications/").then((res) => {
+      setWorkspaceNotifications(Array.isArray(res.data) ? res.data : []);
+    }).catch((err) => { console.log(err); });
+  };
 
   const handleEditOffer = (item) => {
     setOfferForm({ building: item.building, type: item.type, original_price: item.original_price, offer_price: item.offer_price, seats: item.seats, floor: item.floor, image: item.image, amenities: item.amenities || [] });
@@ -643,248 +583,92 @@ const [viewedNotifications, setViewedNotifications] =
     if (!window.confirm("Delete this amenity?")) return;
     axiosInstance.delete(`workspaces/additional-amenities/delete/${id}/`).then(() => { fetchAdditionalAmenities(); alert("Deleted Successfully"); }).catch(err => console.log(err));
   };
-const handleViewNotification = async (notification) => {
 
-  try {
-
-    // =========================
-    // GET SAME SECTION IDS
-    // =========================
-    const sameSectionNotifications = notifications.filter(
-
-      (n) => n.section === notification.section
-
-    );
-
-    // =========================
-    // MARK ALL AS READ
-    // =========================
-    await Promise.all(
-
-      sameSectionNotifications.map((n) => {
-
-        if (n.original_id) {
-
-          return axiosInstance.put(
-
-            `workspaces/owner-notification-read/${n.original_id}/`
-
-          );
-
-        }
-
-        return Promise.resolve();
-
-      })
-
-    );
-
-    // =========================
-    // OPEN SECTION
-    // =========================
-    setActiveSection(notification.section);
-
-    // =========================
-    // SAVE VIEWED IDS
-    // =========================
-    const updatedViewed = [
-  ...new Set([
-    ...viewedNotifications,
-    notification.id,
-    ...sameSectionNotifications.map((n) => n.id)
-  ])
-];
-
-    // =========================
-    // UPDATE STATE
-    // =========================
-    setViewedNotifications(updatedViewed);
-
-    // =========================
-    // SAVE LOCAL STORAGE
-    // =========================
-  localStorage.setItem(
-
-  notificationKey,
-
-  JSON.stringify(updatedViewed)
-
-);
-
-    // =========================
-    // REMOVE SAME SECTION
-    // =========================
-    setNotifications((prev) =>
-
-      prev.filter(
-
-        (n) => n.section !== notification.section
-
-      )
-
-    );
-
-    // =========================
-    // CLOSE DROPDOWN
-    // =========================
-    setShowNotifications(false);
-
-  }
-
-  catch (err) {
-
-    console.log(err);
-
-  }
-
-};
-const buildNotifications = () => {
-
-  let items = [];
-
-  // =========================
-  // COMPANY LEADS
-  // =========================
-  companyLeads.forEach((l) => {
-
-    const id = `company-${l.id}`;
-
-    if (!viewedNotifications.includes(id)) {
-
-      items.push({
-        id,
-        type: "Company Lead",
-        name: l.name,
-        workspace: l.company || "-",
-        location: l.location || "-",
-        section: "companyLeads",
-      });
-
-    }
-
-  });
-
-  // =========================
-  // HYDERABAD LEADS
-  // =========================
-  hyderabadLeads.forEach((l) => {
-
-    const id = `hyd-${l.id}`;
-
-    if (!viewedNotifications.includes(id)) {
-
-      items.push({
-        id,
-        type: "Hyderabad Lead",
-        name: l.name,
-        workspace: l.workspace_type,
-        location: l.preferred_location,
-        section: "hyderabadLeads",
-      });
-
-    }
-
-  });
-
-  // =========================
-  // OFFER LEADS
-  // =========================
-  offerLeads.forEach((l) => {
-
-    const id = `offer-${l.id}`;
-
-    if (!viewedNotifications.includes(id)) {
-
-      items.push({
-        id,
-        type: "Offer Lead",
-        name: l.name,
-        workspace: l.workspace_type,
-        location: l.preferred_location,
-        section: "offerLeads",
-      });
-
-    }
-
-  });
-
-  // =========================
-  // CUSTOMISATION LEADS
-  // =========================
-  customisationLeads.forEach((l) => {
-
-    const id = `custom-${l.id}`;
-
-    if (!viewedNotifications.includes(id)) {
-
-      items.push({
-        id,
-        type: "Customisation Lead",
-        name: l.name,
-        workspace: l.company || "-",
-        location: l.location || "-",
-        section: "customisationLeads",
-      });
-
-    }
-
-  });
-
-  // =========================
-  // WORKSPACE NOTIFICATIONS
-  // =========================
-  workspaceNotifications.forEach((w) => {
-
-    const id = `workspace-${w.id}`;
-
-    if (!viewedNotifications.includes(id)) {
-
-      items.push({
-        id,
-        original_id: w.id,
-        type: "Workspace Added By Admin",
-        name: w.workspace_name,
-        workspace: w.workspace_name,
-        location: w.city || w.location,
-        owner_role: w.owner_role,
-        message: `${w.workspace_name} added in ${
-          w.city || w.location
-        } by ${
-          w.owner_role === "admin"
-            ? "Super Admin"
-            : "Owner"
-        }`,
-        section: "workspaces",
-      });
-
-    }
-
-  });
-
-  setNotifications(items);
-
-};
-
-
-
-  useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads, workspaceNotifications,
-  viewedNotifications]);
+  const handleViewNotification = async (notification) => {
+    try {
+      const sameSectionNotifications = notifications.filter((n) => n.section === notification.section);
+      await Promise.all(
+        sameSectionNotifications.map((n) => {
+          if (n.original_id) {
+            return axiosInstance.put(`workspaces/owner-notification-read/${n.original_id}/`);
+          }
+          return Promise.resolve();
+        })
+      );
+      setActiveSection(notification.section);
+      const updatedViewed = [
+        ...new Set([
+          ...viewedNotifications,
+          notification.id,
+          ...sameSectionNotifications.map((n) => n.id)
+        ])
+      ];
+      setViewedNotifications(updatedViewed);
+      localStorage.setItem(notificationKey, JSON.stringify(updatedViewed));
+      setNotifications((prev) => prev.filter((n) => n.section !== notification.section));
+      setShowNotifications(false);
+    } catch (err) { console.log(err); }
+  };
+
+  const buildNotifications = () => {
+    let items = [];
+    companyLeads.forEach((l) => {
+      const id = `company-${l.id}`;
+      if (!viewedNotifications.includes(id)) {
+        items.push({ id, type: "Company Lead", name: l.name, workspace: l.company || "-", location: l.location || "-", section: "companyLeads" });
+      }
+    });
+    hyderabadLeads.forEach((l) => {
+      const id = `hyd-${l.id}`;
+      if (!viewedNotifications.includes(id)) {
+        items.push({ id, type: "Hyderabad Lead", name: l.name, workspace: l.workspace_type, location: l.preferred_location, section: "hyderabadLeads" });
+      }
+    });
+    offerLeads.forEach((l) => {
+      const id = `offer-${l.id}`;
+      if (!viewedNotifications.includes(id)) {
+        items.push({ id, type: "Offer Lead", name: l.name, workspace: l.workspace_type, location: l.preferred_location, section: "offerLeads" });
+      }
+    });
+    customisationLeads.forEach((l) => {
+      const id = `custom-${l.id}`;
+      if (!viewedNotifications.includes(id)) {
+        items.push({ id, type: "Customisation Lead", name: l.name, workspace: l.company || "-", location: l.location || "-", section: "customisationLeads" });
+      }
+    });
+    workspaceNotifications.forEach((w) => {
+      const id = `workspace-${w.id}`;
+      if (!viewedNotifications.includes(id)) {
+        items.push({
+          id, original_id: w.id, type: "Workspace Added By Admin", name: w.workspace_name, workspace: w.workspace_name,
+          location: w.city || w.location, owner_role: w.owner_role,
+          message: `${w.workspace_name} added in ${w.city || w.location} by ${w.owner_role === "admin" ? "Super Admin" : "Owner"}`,
+          section: "workspaces",
+        });
+      }
+    });
+    setNotifications(items);
+  };
+
+  useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads, workspaceNotifications, viewedNotifications]);
   useEffect(() => {
+    localStorage.setItem(notificationKey, JSON.stringify(viewedNotifications));
+  }, [viewedNotifications, notificationKey]);
 
-  localStorage.setItem(
-
-    notificationKey,
-
-    JSON.stringify(viewedNotifications)
-
-  );
-
-}, [viewedNotifications, notificationKey]);
   useEffect(() => {
-    fetchWorkspaces(); fetchAllWorkspaces();fetchWorkspaceNotifications();fetchOfferWorkspaces();fetchOfferCoupons(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchUsers(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchQuotationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
+    fetchWorkspaces(); fetchAllWorkspaces(); fetchWorkspaceNotifications(); fetchOfferWorkspaces(); fetchOfferCoupons(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchUsers(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchQuotationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
   }, [fetchBookings, fetchCancelRequests]);
+
   useEffect(() => { const loc = localStorage.getItem("user_location"); if (loc) setOwnerCity(loc); }, []);
-  useEffect(() => { const handleResize = () => { if (window.innerWidth > 640) setMobileSidebarOpen(false); }; window.addEventListener("resize", handleResize); return () => window.removeEventListener("resize", handleResize); }, []);
+
+  // ── Resize: close mobile sidebar when going back to desktop ──
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 640) setMobileSidebarOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const mergedBookings = useMemo(() => bookings.map(b => { const ls = localStates[b.id] || {}; return { ...b, ...ls }; }), [bookings, localStates]);
   const bookingStats = useMemo(() => ({ total: mergedBookings.length, confirmed: mergedBookings.filter(b => b.status === "confirmed").length, pending: mergedBookings.filter(b => b.status === "pending").length, cancelled: mergedBookings.filter(b => b.status === "cancelled").length }), [mergedBookings]);
@@ -1028,244 +812,190 @@ const buildNotifications = () => {
       return matchFilter && matchSearch;
     });
   }, [quotationLeads, quotationLeadSearch, quotationLeadFilter]);
-const renderOverview = () => {
-  const miniBarData = {
-    revenue:   [40,55,45,70,60,80,65,100],
-    workspaces:[50,60,75,55,80,65,90,70],
-    bookings:  [35,65,50,85,70,90,75,100],
-  };
 
-  const topCards = [
-    {
-      key:"revenue",
-      value:`₹${revenue.total_revenue?.toLocaleString() ?? 0}`,
-      label:"Total Revenue",
-      accent:"linear-gradient(135deg,#b8922a,#f0c040)",
-      accentSolid:"#b8922a",
-      iconBg:"linear-gradient(135deg,#fef3c7,#fde68a)",
-      icon:"💰",
-      badge:"All time",
-      badgeBg:"rgba(184,146,42,0.12)",
-      badgeColor:"#92400e",
-      section:null,
-      glowColor:"rgba(184,146,42,0.18)",
-    },
-    {
-      key:"workspaces",
-      value:workspaces.length,
-      label:"My Workspaces",
-      accent:"linear-gradient(135deg,#6366f1,#a78bfa)",
-      accentSolid:"#6366f1",
-      iconBg:"linear-gradient(135deg,#ede9fe,#ddd6fe)",
-      icon:"🏗️",
-      badge:`${approvedWorkspaces.length} approved`,
-      badgeBg:"rgba(99,102,241,0.10)",
-      badgeColor:"#4338ca",
-      section:"workspaces",
-      glowColor:"rgba(99,102,241,0.18)",
-    },
-    {
-      key:"bookings",
-      value:mergedBookings.length,
-      label:"Total Bookings",
-      accent:"linear-gradient(135deg,#3b82f6,#60a5fa)",
-      accentSolid:"#3b82f6",
-      iconBg:"linear-gradient(135deg,#dbeafe,#bfdbfe)",
-      icon:"📋",
-      badge:`${bookingStats.confirmed} confirmed`,
-      badgeBg:"rgba(59,130,246,0.10)",
-      badgeColor:"#1d4ed8",
-      section:"bookings",
-      glowColor:"rgba(59,130,246,0.18)",
-    },
-  ];
+  const renderOverview = () => {
+    const miniBarData = {
+      revenue:   [40,55,45,70,60,80,65,100],
+      workspaces:[50,60,75,55,80,65,90,70],
+      bookings:  [35,65,50,85,70,90,75,100],
+    };
 
-  const quickCards = [
-    { icon:"✅", iconBg:"linear-gradient(135deg,#dcfce7,#bbf7d0)", iconColor:"#16a34a", label:"Confirmed Revenue", sub:`₹${revenue.confirmed_revenue?.toLocaleString() ?? 0}`, section:"bookings",  accent:"#16a34a" },
-    { icon:"⏰", iconBg:"linear-gradient(135deg,#ede9fe,#ddd6fe)", iconColor:"#7c3aed", label:"Total Slots",        sub:`${slots.length} bookable`,                              section:"slots",     accent:"#7c3aed" },
-    { icon:"📅", iconBg:"linear-gradient(135deg,#cffafe,#a5f3fc)", iconColor:"#0891b2", label:"Monthly Slots",      sub:`${monthlySlots.length} months`,                         section:"monthlySlots", accent:"#0891b2" },
-    { icon:"🏷️", iconBg:"linear-gradient(135deg,#fee2e2,#fecaca)", iconColor:"#dc2626", label:"Total Leads",       sub:`${totalLeads} inquiries`,                               section:"hyderabadLeads", accent:"#dc2626" },
-    { icon:"👥", iconBg:"linear-gradient(135deg,#dbeafe,#bfdbfe)", iconColor:"#2563eb", label:"Total Users",        sub:`${Array.isArray(users)?users.length:0} members`,        section:"manageUsers",   accent:"#2563eb" },
-    { icon:"🔥", iconBg:"linear-gradient(135deg,#fce7f3,#fbcfe8)", iconColor:"#db2777", label:"Offer Workspaces",  sub:`${offerWorkspaces.length} active`,                      section:"offerWorkspaces", accent:"#db2777" },
-    { icon:"✔️", iconBg:"linear-gradient(135deg,#d1fae5,#a7f3d0)", iconColor:"#059669", label:"Approved Spaces",   sub:`${approvedWorkspaces.length} live`,                     section:"workspaces",  accent:"#059669" },
-    { icon:"🎟️", iconBg:"linear-gradient(135deg,#fef3c7,#fde68a)", iconColor:"#b8922a", label:"Offer Coupons",    sub:`${offerCoupons.length} coupons`,                        section:"offerCoupons", accent:"#b8922a" },
-    { icon:"☕", iconBg:"linear-gradient(135deg,#f3e8ff,#e9d5ff)",  iconColor:"#9333ea", label:"Extra Amenities",  sub:`${additionalAmenities.length} added`,                   section:"additionalAmenities", accent:"#9333ea" },
-  ];
+    const topCards = [
+      {
+        key:"revenue",
+        value:`₹${revenue.total_revenue?.toLocaleString() ?? 0}`,
+        label:"Total Revenue",
+        accent:"linear-gradient(135deg,#b8922a,#f0c040)",
+        accentSolid:"#b8922a",
+        iconBg:"linear-gradient(135deg,#fef3c7,#fde68a)",
+        icon:"💰",
+        badge:"All time",
+        badgeBg:"rgba(184,146,42,0.12)",
+        badgeColor:"#92400e",
+        section:null,
+        glowColor:"rgba(184,146,42,0.18)",
+      },
+      {
+        key:"workspaces",
+        value:workspaces.length,
+        label:"My Workspaces",
+        accent:"linear-gradient(135deg,#6366f1,#a78bfa)",
+        accentSolid:"#6366f1",
+        iconBg:"linear-gradient(135deg,#ede9fe,#ddd6fe)",
+        icon:"🏗️",
+        badge:`${approvedWorkspaces.length} approved`,
+        badgeBg:"rgba(99,102,241,0.10)",
+        badgeColor:"#4338ca",
+        section:"workspaces",
+        glowColor:"rgba(99,102,241,0.18)",
+      },
+      {
+        key:"bookings",
+        value:mergedBookings.length,
+        label:"Total Bookings",
+        accent:"linear-gradient(135deg,#3b82f6,#60a5fa)",
+        accentSolid:"#3b82f6",
+        iconBg:"linear-gradient(135deg,#dbeafe,#bfdbfe)",
+        icon:"📋",
+        badge:`${bookingStats.confirmed} confirmed`,
+        badgeBg:"rgba(59,130,246,0.10)",
+        badgeColor:"#1d4ed8",
+        section:"bookings",
+        glowColor:"rgba(59,130,246,0.18)",
+      },
+    ];
 
-  const WORKSPACE_TYPE_META = {
-    "Hot Desk":             { icon:"🪑", color:"#6366f1", g1:"#ede9fe", g2:"#ddd6fe" },
-    "Dedicated Desk":       { icon:"💼", color:"#3b82f6", g1:"#dbeafe", g2:"#bfdbfe" },
-    "Private Office Space": { icon:"🏢", color:"#0891b2", g1:"#cffafe", g2:"#a5f3fc" },
-    "Private Cabin":        { icon:"🚪", color:"#7c3aed", g1:"#f5f3ff", g2:"#ede9fe" },
-    "Meeting Room":         { icon:"🤝", color:"#16a34a", g1:"#dcfce7", g2:"#bbf7d0" },
-    "Board Room":           { icon:"📊", color:"#b8922a", g1:"#fef3c7", g2:"#fde68a" },
-    "Event Space":          { icon:"🎉", color:"#db2777", g1:"#fce7f3", g2:"#fbcfe8" },
-    "Podcast":              { icon:"🎙️", color:"#dc2626", g1:"#fee2e2", g2:"#fecaca" },
-    "Virtual Office":       { icon:"💻", color:"#0284c7", g1:"#e0f2fe", g2:"#bae6fd" },
-  };
+    const quickCards = [
+      { icon:"✅", iconBg:"linear-gradient(135deg,#dcfce7,#bbf7d0)", iconColor:"#16a34a", label:"Confirmed Revenue", sub:`₹${revenue.confirmed_revenue?.toLocaleString() ?? 0}`, section:"bookings",  accent:"#16a34a" },
+      { icon:"⏰", iconBg:"linear-gradient(135deg,#ede9fe,#ddd6fe)", iconColor:"#7c3aed", label:"Total Slots",        sub:`${slots.length} bookable`,                              section:"slots",     accent:"#7c3aed" },
+      { icon:"📅", iconBg:"linear-gradient(135deg,#cffafe,#a5f3fc)", iconColor:"#0891b2", label:"Monthly Slots",      sub:`${monthlySlots.length} months`,                         section:"monthlySlots", accent:"#0891b2" },
+      { icon:"🏷️", iconBg:"linear-gradient(135deg,#fee2e2,#fecaca)", iconColor:"#dc2626", label:"Total Leads",       sub:`${totalLeads} inquiries`,                               section:"hyderabadLeads", accent:"#dc2626" },
+      { icon:"👥", iconBg:"linear-gradient(135deg,#dbeafe,#bfdbfe)", iconColor:"#2563eb", label:"Total Users",        sub:`${Array.isArray(users)?users.length:0} members`,        section:"manageUsers",   accent:"#2563eb" },
+      { icon:"🔥", iconBg:"linear-gradient(135deg,#fce7f3,#fbcfe8)", iconColor:"#db2777", label:"Offer Workspaces",  sub:`${offerWorkspaces.length} active`,                      section:"offerWorkspaces", accent:"#db2777" },
+      { icon:"✔️", iconBg:"linear-gradient(135deg,#d1fae5,#a7f3d0)", iconColor:"#059669", label:"Approved Spaces",   sub:`${approvedWorkspaces.length} live`,                     section:"workspaces",  accent:"#059669" },
+      { icon:"🎟️", iconBg:"linear-gradient(135deg,#fef3c7,#fde68a)", iconColor:"#b8922a", label:"Offer Coupons",    sub:`${offerCoupons.length} coupons`,                        section:"offerCoupons", accent:"#b8922a" },
+      { icon:"☕", iconBg:"linear-gradient(135deg,#f3e8ff,#e9d5ff)",  iconColor:"#9333ea", label:"Extra Amenities",  sub:`${additionalAmenities.length} added`,                   section:"additionalAmenities", accent:"#9333ea" },
+    ];
 
-  const wsTypeCounts = WORKSPACE_TYPES.map(type => ({
-    type,
-    count:    workspaces.filter(w => w.name === type).length,
-    approved: workspaces.filter(w => w.name === type && w.is_approved).length,
-    meta:     WORKSPACE_TYPE_META[type] || { icon:"🏗️", color:"#64748b", g1:"#f1f5f9", g2:"#e2e8f0" },
-  }));
+    const WORKSPACE_TYPE_META = {
+      "Hot Desk":             { icon:"🪑", color:"#6366f1", g1:"#ede9fe", g2:"#ddd6fe" },
+      "Dedicated Desk":       { icon:"💼", color:"#3b82f6", g1:"#dbeafe", g2:"#bfdbfe" },
+      "Private Office Space": { icon:"🏢", color:"#0891b2", g1:"#cffafe", g2:"#a5f3fc" },
+      "Private Cabin":        { icon:"🚪", color:"#7c3aed", g1:"#f5f3ff", g2:"#ede9fe" },
+      "Meeting Room":         { icon:"🤝", color:"#16a34a", g1:"#dcfce7", g2:"#bbf7d0" },
+      "Board Room":           { icon:"📊", color:"#b8922a", g1:"#fef3c7", g2:"#fde68a" },
+      "Event Space":          { icon:"🎉", color:"#db2777", g1:"#fce7f3", g2:"#fbcfe8" },
+      "Podcast":              { icon:"🎙️", color:"#dc2626", g1:"#fee2e2", g2:"#fecaca" },
+      "Virtual Office":       { icon:"💻", color:"#0284c7", g1:"#e0f2fe", g2:"#bae6fd" },
+    };
 
-  const maxCount     = Math.max(...wsTypeCounts.map(t => t.count), 1);
-  const totalWsCount = wsTypeCounts.reduce((s,t) => s + t.count, 0);
-  const activeTypes  = wsTypeCounts.filter(t => t.count > 0).length;
+    const wsTypeCounts = WORKSPACE_TYPES.map(type => ({
+      type,
+      count:    workspaces.filter(w => w.name === type).length,
+      approved: workspaces.filter(w => w.name === type && w.is_approved).length,
+      meta:     WORKSPACE_TYPE_META[type] || { icon:"🏗️", color:"#64748b", g1:"#f1f5f9", g2:"#e2e8f0" },
+    }));
 
-  return (
-    <div className={styles.ov}>
+    const maxCount     = Math.max(...wsTypeCounts.map(t => t.count), 1);
+    const totalWsCount = wsTypeCounts.reduce((s,t) => s + t.count, 0);
+    const activeTypes  = wsTypeCounts.filter(t => t.count > 0).length;
 
-      {/* ── TOP 3 HERO STAT CARDS ── */}
-      <div className={styles.ovHeroGrid}>
-        {topCards.map((card) => (
-          <div
-            key={card.key}
-            className={`${styles.ovHeroCard} ${card.section ? styles.ovHeroCardLink : ""}`}
-            style={{ "--glow": card.glowColor, "--accent": card.accentSolid }}
-            onClick={() => card.section && handleNav(card.section)}
-          >
-            {/* glow blob */}
-            <div className={styles.ovHeroGlow} style={{ background: card.glowColor }} />
-
-            {/* left accent strip */}
-            <div className={styles.ovHeroStrip} style={{ background: card.accent }} />
-
-            <div className={styles.ovHeroBody}>
-              <div className={styles.ovHeroTop}>
-                <div className={styles.ovHeroIcon} style={{ background: card.iconBg }}>
-                  {card.icon}
+    return (
+      <div className={styles.ov}>
+        <div className={styles.ovHeroGrid}>
+          {topCards.map((card) => (
+            <div
+              key={card.key}
+              className={`${styles.ovHeroCard} ${card.section ? styles.ovHeroCardLink : ""}`}
+              style={{ "--glow": card.glowColor, "--accent": card.accentSolid }}
+              onClick={() => card.section && handleNav(card.section)}
+            >
+              <div className={styles.ovHeroGlow} style={{ background: card.glowColor }} />
+              <div className={styles.ovHeroStrip} style={{ background: card.accent }} />
+              <div className={styles.ovHeroBody}>
+                <div className={styles.ovHeroTop}>
+                  <div className={styles.ovHeroIcon} style={{ background: card.iconBg }}>{card.icon}</div>
+                  <span className={styles.ovHeroBadge} style={{ background: card.badgeBg, color: card.badgeColor }}>{card.badge}</span>
                 </div>
-                <span className={styles.ovHeroBadge} style={{ background: card.badgeBg, color: card.badgeColor }}>
-                  {card.badge}
-                </span>
-              </div>
-
-              <p className={styles.ovHeroNum}>{card.value}</p>
-              <p className={styles.ovHeroLabel}>{card.label}</p>
-
-              {/* sparkline */}
-              <div className={styles.ovSparkWrap}>
-                {miniBarData[card.key].map((h, i) => (
-                  <div
-                    key={i}
-                    className={styles.ovSparkBar}
-                    style={{ height:`${h}%`, background: card.accent }}
-                  />
-                ))}
-              </div>
-
-              {card.section && (
-                <div className={styles.ovHeroFooter}>
-                  <span className={styles.ovHeroLink}>View all</span>
-                  <span className={styles.ovHeroArrow} style={{ color: card.accentSolid }}>→</span>
+                <p className={styles.ovHeroNum}>{card.value}</p>
+                <p className={styles.ovHeroLabel}>{card.label}</p>
+                <div className={styles.ovSparkWrap}>
+                  {miniBarData[card.key].map((h, i) => (
+                    <div key={i} className={styles.ovSparkBar} style={{ height:`${h}%`, background: card.accent }} />
+                  ))}
                 </div>
-              )}
+                {card.section && (
+                  <div className={styles.ovHeroFooter}>
+                    <span className={styles.ovHeroLink}>View all</span>
+                    <span className={styles.ovHeroArrow} style={{ color: card.accentSolid }}>→</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.ovBottomRow}>
+          <div className={styles.ovPanel}>
+            <div className={styles.ovPanelHead}>
+              <div className={styles.ovPanelDot} />
+              <span className={styles.ovPanelTitle}>Quick Stats</span>
+              <span className={styles.ovPanelCount}>{quickCards.length} metrics</span>
+            </div>
+            <div className={styles.ovQGrid}>
+              {quickCards.map((card) => (
+                <div key={card.label} className={styles.ovQCard} style={{ "--qaccent": card.accent }} onClick={() => handleNav(card.section)}>
+                  <div className={styles.ovQBar} style={{ background: card.accent }} />
+                  <div className={styles.ovQIcon} style={{ background: card.iconBg }}>{card.icon}</div>
+                  <p className={styles.ovQLabel}>{card.label}</p>
+                  <p className={styles.ovQSub}>{card.sub}</p>
+                  <span className={styles.ovQArrow}>↗</span>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* ── BOTTOM ROW ── */}
-      <div className={styles.ovBottomRow}>
-
-        {/* ── LEFT: Quick Stats ── */}
-        <div className={styles.ovPanel}>
-          <div className={styles.ovPanelHead}>
-            <div className={styles.ovPanelDot} />
-            <span className={styles.ovPanelTitle}>Quick Stats</span>
-            <span className={styles.ovPanelCount}>{quickCards.length} metrics</span>
-          </div>
-          <div className={styles.ovQGrid}>
-            {quickCards.map((card) => (
-              <div
-                key={card.label}
-                className={styles.ovQCard}
-                style={{ "--qaccent": card.accent }}
-                onClick={() => handleNav(card.section)}
-              >
-                <div className={styles.ovQBar} style={{ background: card.accent }} />
-                <div className={styles.ovQIcon} style={{ background: card.iconBg }}>
-                  {card.icon}
-                </div>
-                <p className={styles.ovQLabel}>{card.label}</p>
-                <p className={styles.ovQSub}>{card.sub}</p>
-                <span className={styles.ovQArrow}>↗</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── RIGHT: Workspace Types ── */}
-        <div className={styles.ovPanel}>
-          <div className={styles.ovPanelHead}>
-            <div className={styles.ovPanelDot} />
-            <span className={styles.ovPanelTitle}>Workspace Types</span>
-            <span className={styles.ovPanelCount}>
-              {totalWsCount} spaces · {activeTypes} active
-            </span>
-          </div>
-          <div className={styles.ovWsGrid}>
-            {wsTypeCounts.map(({ type, count, approved, meta }) => {
-              const pct     = Math.round((count / maxCount) * 100);
-              const isEmpty = count === 0;
-              return (
-                <div
-                  key={type}
-                  className={`${styles.ovWsCard} ${isEmpty ? styles.ovWsCardDim : ""}`}
-                  style={{ "--wscolor": meta.color }}
-                  onClick={() => handleNav("workspaces")}
-                >
-                  <div className={styles.ovWsCardTop} style={{ background: isEmpty ? "#e5e7eb" : meta.color }} />
-                  <div className={styles.ovWsCardBody}>
-                    <div className={styles.ovWsCardRow}>
-                      <div
-                        className={styles.ovWsCardIcon}
-                        style={{ background: isEmpty ? "#f1f5f9" : `linear-gradient(135deg,${meta.g1},${meta.g2})` }}
-                      >
-                        {meta.icon}
+          <div className={styles.ovPanel}>
+            <div className={styles.ovPanelHead}>
+              <div className={styles.ovPanelDot} />
+              <span className={styles.ovPanelTitle}>Workspace Types</span>
+              <span className={styles.ovPanelCount}>{totalWsCount} spaces · {activeTypes} active</span>
+            </div>
+            <div className={styles.ovWsGrid}>
+              {wsTypeCounts.map(({ type, count, approved, meta }) => {
+                const pct     = Math.round((count / maxCount) * 100);
+                const isEmpty = count === 0;
+                return (
+                  <div key={type} className={`${styles.ovWsCard} ${isEmpty ? styles.ovWsCardDim : ""}`} style={{ "--wscolor": meta.color }} onClick={() => handleNav("workspaces")}>
+                    <div className={styles.ovWsCardTop} style={{ background: isEmpty ? "#e5e7eb" : meta.color }} />
+                    <div className={styles.ovWsCardBody}>
+                      <div className={styles.ovWsCardRow}>
+                        <div className={styles.ovWsCardIcon} style={{ background: isEmpty ? "#f1f5f9" : `linear-gradient(135deg,${meta.g1},${meta.g2})` }}>{meta.icon}</div>
+                        <span className={styles.ovWsCardNum} style={{ color: isEmpty ? "#cbd5e1" : meta.color }}>{count}</span>
                       </div>
-                      <span
-                        className={styles.ovWsCardNum}
-                        style={{ color: isEmpty ? "#cbd5e1" : meta.color }}
-                      >
-                        {count}
-                      </span>
-                    </div>
-                    <p className={styles.ovWsCardName}>{type}</p>
-                    <div className={styles.ovWsCardTrack}>
-                      <div
-                        className={styles.ovWsCardFill}
-                        style={{
-                          width:`${pct}%`,
-                          background: isEmpty ? "#e5e7eb" : `linear-gradient(90deg,${meta.color},${meta.g2})`,
-                        }}
-                      />
-                    </div>
-                    {!isEmpty ? (
-                      <div className={styles.ovWsBadges}>
-                        <span className={styles.ovWsBadgeGreen}>✔ {approved}</span>
-                        {count - approved > 0 && (
-                          <span className={styles.ovWsBadgeAmber}>{count - approved}p</span>
-                        )}
+                      <p className={styles.ovWsCardName}>{type}</p>
+                      <div className={styles.ovWsCardTrack}>
+                        <div className={styles.ovWsCardFill} style={{ width:`${pct}%`, background: isEmpty ? "#e5e7eb" : `linear-gradient(90deg,${meta.color},${meta.g2})` }} />
                       </div>
-                    ) : (
-                      <p className={styles.ovWsEmpty}>No spaces</p>
-                    )}
+                      {!isEmpty ? (
+                        <div className={styles.ovWsBadges}>
+                          <span className={styles.ovWsBadgeGreen}>✔ {approved}</span>
+                          {count - approved > 0 && <span className={styles.ovWsBadgeAmber}>{count - approved}p</span>}
+                        </div>
+                      ) : (
+                        <p className={styles.ovWsEmpty}>No spaces</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
-
       </div>
-    </div>
-  );
-};
-      
+    );
+  };
+
   const renderManageUsers = () => {
     const allUsers = Array.isArray(users) ? users : [];
     const totalUsers = allUsers.length;
@@ -1353,7 +1083,6 @@ const renderOverview = () => {
     cursor: "pointer", transition: "all 0.18s ease", flexShrink: 0,
   };
 
-  // ─── RENDER WORKSPACES (with per-workspace revenue toggle) ──────────────
   const renderWorkspaces = () => (
     <div className={styles.sectionBody}>
       {toastMsg && <div className={styles.toast}>{toastMsg}</div>}
@@ -1378,18 +1107,9 @@ const renderOverview = () => {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Workspace</th>
-              <th>Owner / Landlord</th>
-              <th>Added By</th>
-              <th>City</th>
-              <th>Rent</th>
-              <th>Lease</th>
-              <th>Price</th>
-              <th>Approval</th>
-              <th>Status</th>
-              <th>Revenue</th>
-              <th>Actions</th>
+              <th>#</th><th>Workspace</th><th>Owner / Landlord</th><th>Added By</th>
+              <th>City</th><th>Rent</th><th>Lease</th><th>Price</th>
+              <th>Approval</th><th>Status</th><th>Revenue</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -1397,105 +1117,38 @@ const renderOverview = () => {
               const isActive = w.isavailable !== false;
               const ownerDetails = w.owner_details || null;
               const isRevenueOpen = openRevenueId === w.id;
-
               return (
                 <>
-                  <tr
-                    key={w.id}
-                    style={!isActive ? { opacity: 0.6, background: "#f8fafc" } : {}}
-                  >
-                    {/* SERIAL */}
+                  <tr key={w.id} style={!isActive ? { opacity: 0.6, background: "#f8fafc" } : {}}>
                     <td>{String(i + 1).padStart(2, "0")}</td>
-
-                    {/* WORKSPACE */}
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                         <strong>{w.name}</strong>
                         <span style={{ fontSize: "11px", color: "#64748b" }}>{w.location || "No location"}</span>
                       </div>
                     </td>
-
-                    {/* OWNER */}
                     <td>
                       {ownerDetails ? (
-                        <button
-                          type="button"
-                          onClick={() => { setSelectedOwner(ownerDetails); setShowOwnerDetails(true); }}
-                          style={{ border: "none", background: "#eff6ff", color: "#2563eb", padding: "6px 10px", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "12px" }}
-                        >
+                        <button type="button" onClick={() => { setSelectedOwner(ownerDetails); setShowOwnerDetails(true); }} style={{ border: "none", background: "#eff6ff", color: "#2563eb", padding: "6px 10px", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "12px" }}>
                           👤 {ownerDetails.owner_name}
                         </button>
                       ) : (
                         <span style={{ background: "#fef2f2", color: "#dc2626", padding: "5px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 600 }}>Unassigned</span>
                       )}
                     </td>
-
-                    {/* ADDED BY */}
-                   <td>
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: "3px",
-    }}
-  >
-    <span
-      style={{
-        fontWeight: 700,
-        color: "#111827",
-        fontSize: "13px",
-      }}
-    >
-      {w.owner_display_name || "Unknown"}
-    </span>
-
-    <span
-      style={{
-        fontSize: "11px",
-        fontWeight: 600,
-        color:
-          w.owner_role === "admin"
-            ? "#dc2626"
-            : "#2563eb",
-      }}
-    >
-      {w.owner_role === "admin"
-        ? "Added By Admin"
-        : "Added By Manager"}
-    </span>
-  </div>
-</td>
-
-                    {/* CITY */}
+                    <td>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                        <span style={{ fontWeight: 700, color: "#111827", fontSize: "13px" }}>{w.owner_display_name || "Unknown"}</span>
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: w.owner_role === "admin" ? "#dc2626" : "#2563eb" }}>
+                          {w.owner_role === "admin" ? "Added By Admin" : "Added By Manager"}
+                        </span>
+                      </div>
+                    </td>
                     <td>{w.city}</td>
-
-                    {/* RENT */}
-                    <td>
-                      {ownerDetails?.rent_amount ? (
-                        <span style={{ color: "#059669", fontWeight: 700 }}>₹{Number(ownerDetails.rent_amount).toLocaleString()}</span>
-                      ) : "—"}
-                    </td>
-
-                    {/* LEASE */}
-                    <td>
-                      {ownerDetails?.agreement_type ? (
-                        <span style={{ background: "#f1f5f9", padding: "5px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 600, color: "#334155" }}>{ownerDetails.agreement_type}</span>
-                      ) : "—"}
-                    </td>
-
-                    {/* PRICE */}
+                    <td>{ownerDetails?.rent_amount ? <span style={{ color: "#059669", fontWeight: 700 }}>₹{Number(ownerDetails.rent_amount).toLocaleString()}</span> : "—"}</td>
+                    <td>{ownerDetails?.agreement_type ? <span style={{ background: "#f1f5f9", padding: "5px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 600, color: "#334155" }}>{ownerDetails.agreement_type}</span> : "—"}</td>
                     <td style={{ fontWeight: 700, color: "#7c3aed" }}>₹{Number(w.price || 0).toLocaleString()}</td>
-
-                    {/* APPROVAL */}
-                    <td>
-                      {w.is_approved ? (
-                        <span className={styles.approvedBadge}>Approved</span>
-                      ) : (
-                        <span className={styles.pendingBadge}>Pending</span>
-                      )}
-                    </td>
-
-                    {/* STATUS */}
+                    <td>{w.is_approved ? <span className={styles.approvedBadge}>Approved</span> : <span className={styles.pendingBadge}>Pending</span>}</td>
                     <td>
                       {isActive ? (
                         <span style={{ background: "#dcfce7", color: "#166534", padding: "5px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Active</span>
@@ -1503,75 +1156,46 @@ const renderOverview = () => {
                         <span style={{ background: "#f1f5f9", color: "#475569", padding: "5px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Inactive</span>
                       )}
                     </td>
-
-                    {/* ── NEW: REVENUE TOGGLE ── */}
                     <td>
                       <button
                         title={isRevenueOpen ? "Hide Revenue" : "View Revenue"}
                         onClick={() => setOpenRevenueId(isRevenueOpen ? null : w.id)}
                         style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          padding: "5px 10px",
-                          borderRadius: "8px",
+                          display: "inline-flex", alignItems: "center", gap: "5px",
+                          padding: "5px 10px", borderRadius: "8px",
                           border: `1.5px solid ${isRevenueOpen ? "#7c3aed" : "#a78bfa"}`,
                           background: isRevenueOpen ? "#7c3aed" : "#f5f3ff",
                           color: isRevenueOpen ? "#fff" : "#7c3aed",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          transition: "all 0.18s ease",
-                          whiteSpace: "nowrap",
+                          fontSize: "11px", fontWeight: 700, cursor: "pointer",
+                          transition: "all 0.18s ease", whiteSpace: "nowrap",
                         }}
                       >
                         {isRevenueOpen ? "▲ Hide" : "💰 Revenue"}
                       </button>
                     </td>
-
-                    {/* ACTIONS */}
                     <td>
                       <div style={{ display: "flex", gap: "6px" }}>
-                        <button
-                          title="Edit"
-                          onClick={() => handleEdit(w)}
-                          style={{ ...iconBtnBase, background: "#dbeafe", color: "#2563eb" }}
-                        >
+                        <button title="Edit" onClick={() => handleEdit(w)} style={{ ...iconBtnBase, background: "#dbeafe", color: "#2563eb" }}>
                           <SvgIcon d={SVG.edit} size={14} />
                         </button>
-                        <button
-                          title={isActive ? "Deactivate" : "Activate"}
-                          onClick={() => handleToggleActive(w)}
-                          style={{ ...iconBtnBase, background: isActive ? "#dcfce7" : "#f1f5f9", color: isActive ? "#16a34a" : "#475569" }}
-                        >
+                        <button title={isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleActive(w)} style={{ ...iconBtnBase, background: isActive ? "#dcfce7" : "#f1f5f9", color: isActive ? "#16a34a" : "#475569" }}>
                           <SvgIcon d={isActive ? SVG.eyeOn : SVG.eyeOff} size={14} />
                         </button>
                       </div>
                     </td>
                   </tr>
-
-                  {/* ── PER-WORKSPACE REVENUE PANEL ROW ── */}
                   {isRevenueOpen && (
                     <tr key={`revenue-${w.id}`} style={{ background: "linear-gradient(135deg,#faf5ff,#f0fdf4)", borderLeft: "4px solid #7c3aed" }}>
                       <td colSpan={12} style={{ padding: 0 }}>
-                        <WorkspaceRevenuePanel
-                          workspaceId={w.id}
-                          workspaceName={w.name}
-                          bookings={mergedBookings}
-                        />
+                        <WorkspaceRevenuePanel workspaceId={w.id} workspaceName={w.name} bookings={mergedBookings} />
                       </td>
                     </tr>
                   )}
                 </>
               );
             })}
-
             {filteredMyWorkspaces.length === 0 && (
-              <tr>
-                <td colSpan={12} style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
-                  No workspaces found
-                </td>
-              </tr>
+              <tr><td colSpan={12} style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>No workspaces found</td></tr>
             )}
           </tbody>
         </table>
@@ -1680,49 +1304,12 @@ const renderOverview = () => {
               const pct = capacity>0?Math.round((booked/capacity)*100):0;
               return (
                 <tr key={s.id}>
-<td>
-
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: "4px"
-    }}
-  >
-
-    {/* WORKSPACE NAME */}
-
-    <strong
-      style={{
-        color: "#111827",
-        fontSize: "13px"
-      }}
-    >
-      {s.workspace_name}
-    </strong>
-
-    {/* LOCATION */}
-
-    <span
-      style={{
-        fontSize: "11px",
-        color: "#6b7280"
-      }}
-    >
-      📍 {s.location || "No Location"}
-
-{s.city ? `, ${s.city}` : ""}
-
-      {s.city
-        ? `, ${s.city}`
-        : ""}
-    </span>
-
-  </div>
-
-</td>
-
-                  
+                  <td>
+                    <div style={{ display:"flex",flexDirection:"column",gap:"4px" }}>
+                      <strong style={{ color:"#111827",fontSize:"13px" }}>{s.workspace_name}</strong>
+                      <span style={{ fontSize:"11px",color:"#6b7280" }}>📍 {s.location || "No Location"}{s.city ? `, ${s.city}` : ""}</span>
+                    </div>
+                  </td>
                   <td>{s.date}</td><td>{s.slot_type==="hour"?"Hourly":"Full Day"}</td><td>{s.slot_type==="hour"?`${s.start_time} – ${s.end_time}`:"All Day"}</td><td>{capacity}</td>
                   <td><span style={{ display:"inline-block",padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:600,background:booked>0?"#eff6ff":"#f3f4f6",color:booked>0?"#2563eb":"#6b7280",border:`1px solid ${booked>0?"#bfdbfe":"#e5e7eb"}` }}>{booked}</span></td>
                   <td><div style={{ display:"flex",flexDirection:"column",gap:"4px" }}><span style={{ display:"inline-block",padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:600,background:remaining===0?"#fef2f2":remaining<capacity*0.2?"#fff7ed":"#f0fdf4",color:remaining===0?"#dc2626":remaining<capacity*0.2?"#ea580c":"#16a34a",border:`1px solid ${remaining===0?"#fecaca":remaining<capacity*0.2?"#fed7aa":"#bbf7d0"}` }}>{remaining===0?"Full":`${remaining} left`}</span><div style={{ height:"4px",borderRadius:"2px",background:"#e5e7eb",overflow:"hidden",width:"60px" }}><div style={{ height:"100%",width:`${pct}%`,borderRadius:"2px",background:pct>=80?"#dc2626":pct>=50?"#ea580c":"#16a34a",transition:"width 0.3s" }}/></div></div></td>
@@ -1786,17 +1373,13 @@ const renderOverview = () => {
 
   const renderBookings = () => {
     const confirmedRevenue = mergedBookings.filter(b=>b.status==="confirmed").reduce((sum,b)=>sum+Number(b.total_price||0),0);
-    const pendingRevenue = mergedBookings.filter(b=>b.status==="pending").reduce((sum,b)=>sum+Number(b.total_price||0),0);
     return (
       <div className={styles.sectionBody}>
         {toastMsg&&<div className={styles.toast}>{toastMsg}</div>}
         <div className={styles.overviewGrid}>
           <div className={`${styles.statCard} ${styles.gold}`}><span className={styles.statIcon}>📋</span><div><p className={styles.statValue}>{bookingStats.total}</p><p className={styles.statLabel}>Total</p></div></div>
           <div className={`${styles.statCard} ${styles.green}`}><span className={styles.statIcon}>✅</span><div><p className={styles.statValue}>{bookingStats.confirmed}</p><p className={styles.statLabel}>Confirmed</p></div></div>
-          {/* <div className={`${styles.statCard} ${styles.amber}`}><span className={styles.statIcon}>⏳</span><div><p className={styles.statValue}>{bookingStats.pending}</p><p className={styles.statLabel}>Pending</p></div></div> */}
-          {/* <div className={`${styles.statCard} ${styles.red}`}><span className={styles.statIcon}>❌</span><div><p className={styles.statValue}>{bookingStats.cancelled}</p><p className={styles.statLabel}>Cancelled</p></div></div> */}
           <div className={`${styles.statCard} ${styles.green}`}><span className={styles.statIcon}>💰</span><div><p className={styles.statValue}>₹{confirmedRevenue.toLocaleString()}</p><p className={styles.statLabel}>Confirmed Revenue</p></div></div>
-          {/* <div className={`${styles.statCard} ${styles.amber}`}><span className={styles.statIcon}>🕐</span><div><p className={styles.statValue}>₹{pendingRevenue.toLocaleString()}</p><p className={styles.statLabel}>Pending Revenue</p></div></div> */}
         </div>
         <div className={styles.tableWrap}>
           {loadingBookings?(<div className={styles.empty}>Loading bookings…</div>):mergedBookings.length===0?(<div className={styles.empty}><div>📋</div><p>No bookings yet</p></div>):(
@@ -1808,49 +1391,18 @@ const renderOverview = () => {
                   <td><div className={styles.bookingWorkspace} onClick={()=>openBookingModal(item)}><img src={item.image} alt={item.workspace} className={styles.bookingThumb}/><span className={styles.bookingWorkspaceTitle}>{item.workspace}</span></div></td>
                   <td>{item.user}</td>
                   <td>
-
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: "3px"
-    }}
-  >
-
-    {/* WORKSPACE */}
-    <strong
-      style={{
-        color: "#111827",
-        fontSize: "13px"
-      }}
-    >
-      {item.workspace}
-    </strong>
-
-    {/* LOCATION */}
-    <span
-      style={{
-        fontSize: "11px",
-        color: "#6b7280"
-      }}
-    >
-      📍 {item.location || "No Location"}
-
-      {item.city
-        ? `, ${item.city}`
-        : ""}
-    </span>
-
-  </div>
-
-</td>
+                    <div style={{ display:"flex",flexDirection:"column",gap:"3px" }}>
+                      <strong style={{ color:"#111827",fontSize:"13px" }}>{item.workspace}</strong>
+                      <span style={{ fontSize:"11px",color:"#6b7280" }}>📍 {item.location || "No Location"}{item.city ? `, ${item.city}` : ""}</span>
+                    </div>
+                  </td>
                   <td>{item.date}</td>
                   <td><div><strong>{item.slot_type}</strong><br/><small>{item.slot_time}</small></div></td>
                   <td><span className={styles.capacityBadge}>💺 {item.seats||1} / {item.capacity||0}</span></td>
                   <td>{Array.isArray(item.amenities)&&item.amenities.length>0?<div className={styles.bookingAmenities}>{item.amenities.map((a,i)=>(<div key={i} className={styles.bookingAmenityItem}><span>☕</span><div><strong>{a.title}</strong><small>{a.persons} Person • ₹{a.total}</small></div></div>))}</div>:<span className={styles.noAmenities}>No Amenities</span>}</td>
                   <td className={styles.priceCell}>₹{Number(item.total_price||0).toLocaleString()}</td>
                   <td><span className={styles.statusPill}>{item.status||"pending"}</span></td>
-                  <td><div className={styles.bookingActionBox}>{isConfirmed&&<span className={styles.statusPill}>✓ Confirmed</span>}{isCancelled&&<span className={styles.statusPill}>✕ Cancelled</span>}{!isConfirmed&&!isCancelled&&<span className={styles.statusPill}>Pending</span>}</div></td>
+                  <td><div className={styles.bookingActionBox}>{isConfirmed&&<span className={styles.statusPill}>✓Confirmed</span>}{isCancelled&&<span className={styles.statusPill}>✕ Cancelled</span>}{!isConfirmed&&!isCancelled&&<span className={styles.statusPill}>Pending</span>}</div></td>
                 </tr>);
               })}</tbody>
             </table>
@@ -1904,7 +1456,7 @@ const renderOverview = () => {
   const renderOfferLeads = () => {
     const tabs=[["all","All"],["New","New"],["Contacted","Contacted"],["Interested","Interested"],["Converted","Converted"]];
     const counts=getLeadCounts(offerLeads,tabs);
-    return (<div className={styles.sectionBody}><LeadFilterBar search={offerLeadSearch} onSearch={setOfferLeadSearch} filterTab={offerLeadFilter} onFilter={setOfferLeadFilter} tabs={tabs} counts={counts} placeholder="Search by name, email, phone, workspace..."/><div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Workspace</th><th>Name</th><th>Phone</th><th>Email</th><th>Preferred Location</th><th>Team Size</th><th>Price Details</th><th>Coupon</th><th>Discount</th><th>Final Price</th><th>Status</th><th>Action</th></tr></thead><tbody>{filteredOfferLeads.map(item=>{const matchedWorkspace=offerWorkspaces.find(w=>(w.type||"").trim().toLowerCase()===(item.workspace_type||"").trim().toLowerCase());const matchedCoupon=offerCoupons.find(c=>(c.coupon_code||"").trim().toLowerCase()===(item.coupon_code||"").trim().toLowerCase());const remainingCoupons=Number(matchedCoupon?.capacity||0)-Number(matchedCoupon?.used_count||0);return(<tr key={item.id}><td>{matchedWorkspace?.type||item.workspace_type||"Workspace"}</td><td><strong>{item.name}</strong></td><td>{item.phone}</td><td>{item.email}</td><td>{item.preferred_location}</td><td>{item.team_size}</td><td>₹{item.original_price||matchedWorkspace?.original_price||0}</td><td><strong className={styles.couponCode}>{item.coupon_code||"No Coupon"}</strong></td><td>{item.discount_percentage?`${item.discount_percentage}% OFF`:"-"}</td><td><strong>₹{item.final_price||matchedWorkspace?.offer_price||0}</strong></td><td><span className={item.status==="Converted"?styles.activeBadge:styles.pendingBadge}>{item.status}</span></td><td><select value={item.status} onChange={e=>updateOfferLeadStatus(item.id,e.target.value)} className={styles.statusSelect}><option value="New">New</option><option value="Contacted">Contacted</option><option value="Interested">Interested</option><option value="Converted">Converted</option></select></td></tr>);})}{filteredOfferLeads.length===0&&<tr><td colSpan="12" style={{ textAlign:"center",padding:"40px",color:"#94a3b8" }}>No offer leads found</td></tr>}</tbody></table></div></div>);
+    return (<div className={styles.sectionBody}><LeadFilterBar search={offerLeadSearch} onSearch={setOfferLeadSearch} filterTab={offerLeadFilter} onFilter={setOfferLeadFilter} tabs={tabs} counts={counts} placeholder="Search by name, email, phone, workspace..."/><div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Workspace</th><th>Name</th><th>Phone</th><th>Email</th><th>Preferred Location</th><th>Team Size</th><th>Price Details</th><th>Coupon</th><th>Discount</th><th>Final Price</th><th>Status</th><th>Action</th></tr></thead><tbody>{filteredOfferLeads.map(item=>{const matchedWorkspace=offerWorkspaces.find(w=>(w.type||"").trim().toLowerCase()===(item.workspace_type||"").trim().toLowerCase());const matchedCoupon=offerCoupons.find(c=>(c.coupon_code||"").trim().toLowerCase()===(item.coupon_code||"").trim().toLowerCase());return(<tr key={item.id}><td>{matchedWorkspace?.type||item.workspace_type||"Workspace"}</td><td><strong>{item.name}</strong></td><td>{item.phone}</td><td>{item.email}</td><td>{item.preferred_location}</td><td>{item.team_size}</td><td>₹{item.original_price||matchedWorkspace?.original_price||0}</td><td><strong className={styles.couponCode}>{item.coupon_code||"No Coupon"}</strong></td><td>{item.discount_percentage?`${item.discount_percentage}% OFF`:"-"}</td><td><strong>₹{item.final_price||matchedWorkspace?.offer_price||0}</strong></td><td><span className={item.status==="Converted"?styles.activeBadge:styles.pendingBadge}>{item.status}</span></td><td><select value={item.status} onChange={e=>updateOfferLeadStatus(item.id,e.target.value)} className={styles.statusSelect}><option value="New">New</option><option value="Contacted">Contacted</option><option value="Interested">Interested</option><option value="Converted">Converted</option></select></td></tr>);})}{filteredOfferLeads.length===0&&<tr><td colSpan="12" style={{ textAlign:"center",padding:"40px",color:"#94a3b8" }}>No offer leads found</td></tr>}</tbody></table></div></div>);
   };
 
   const renderCustomisationLeads = () => {
@@ -1961,14 +1513,48 @@ const renderOverview = () => {
 
   const current = sectionTitles[activeSection];
 
+  // ── Determine sidebar class: on mobile never apply collapsed ──
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 640;
+  const sidebarClass = [
+    styles.sidebar,
+    !isMobile && sidebarCollapsed ? styles.collapsed : "",
+    mobileSidebarOpen ? styles.mobileOpen : "",
+  ].filter(Boolean).join(" ");
+
+  const mainClass = [
+    styles.main,
+    !isMobile && sidebarCollapsed ? styles.mainCollapsed : "",
+  ].filter(Boolean).join(" ");
+
   return (
     <div className={styles.shell}>
-      {mobileSidebarOpen && <div className={styles.mobileOverlay} onClick={() => setMobileSidebarOpen(false)} />}
+      {/* Mobile overlay — clicking it closes the sidebar */}
+      {mobileSidebarOpen && (
+        <div className={styles.mobileOverlay} onClick={() => setMobileSidebarOpen(false)} />
+      )}
 
-      <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ""} ${mobileSidebarOpen ? styles.mobileOpen : ""}`}>
+      {/* ── SIDEBAR ── */}
+      <aside className={sidebarClass}>
         <div className={styles.sidebarHeader}>
-          <div className={styles.logo}>{sidebarCollapsed ? "M" : "Manager Panel"}</div>
-          <button className={styles.collapseBtn} onClick={() => setSidebarCollapsed(prev => !prev)}>{sidebarCollapsed ? "→" : "←"}</button>
+          <div className={styles.logo}>{sidebarCollapsed && !mobileSidebarOpen ? "M" : "Manager Panel"}</div>
+
+          {/* Desktop collapse/expand button — hidden on mobile via CSS */}
+          <button
+            className={styles.collapseBtn}
+            onClick={() => setSidebarCollapsed(prev => !prev)}
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {sidebarCollapsed ? "→" : "←"}
+          </button>
+
+          {/* Mobile close button — shown only on mobile via CSS */}
+          <button
+            className={styles.mobileSidebarClose}
+            onClick={() => setMobileSidebarOpen(false)}
+            title="Close menu"
+          >
+            ✕
+          </button>
         </div>
 
         <nav className={styles.nav} style={{ padding: "8px 0" }}>
@@ -1983,7 +1569,7 @@ const renderOverview = () => {
                   title={group.label}
                 >
                   <span className={styles.navItemIcon}>{group.icon}</span>
-                  {!sidebarCollapsed && <span>{group.label}</span>}
+                  {(!sidebarCollapsed || mobileSidebarOpen) && <span>{group.label}</span>}
                 </button>
               );
             }
@@ -1993,13 +1579,13 @@ const renderOverview = () => {
                 group={group}
                 activeSection={activeSection}
                 handleNav={handleNav}
-                sidebarCollapsed={sidebarCollapsed}
+                sidebarCollapsed={sidebarCollapsed && !mobileSidebarOpen}
               />
             );
           })}
         </nav>
 
-        {!sidebarCollapsed && (
+        {(!sidebarCollapsed || mobileSidebarOpen) && (
           <div className={styles.sidebarFooter}>
             <div className={styles.sidebarStats}>
               <div><strong>{workspaces.length}</strong><span>My Spaces</span></div>
@@ -2012,10 +1598,18 @@ const renderOverview = () => {
         )}
       </aside>
 
-      <main className={`${styles.main} ${sidebarCollapsed ? styles.mainCollapsed : ""}`}>
+      {/* ── MAIN CONTENT ── */}
+      <main className={mainClass}>
         <header className={styles.mainHeader}>
           <div className={styles.pageHeading}>
-            <button className={styles.mobileMenuBtn} onClick={() => setMobileSidebarOpen(true)}>☰</button>
+            {/* Hamburger — visible only on mobile via CSS */}
+            <button
+              className={styles.mobileMenuBtn}
+              onClick={() => setMobileSidebarOpen(true)}
+              title="Open menu"
+            >
+              ☰
+            </button>
             <span className={styles.headIcon}>{current?.icon}</span>
             <div><h1>{current?.title}</h1><p>{current?.sub}</p></div>
           </div>
