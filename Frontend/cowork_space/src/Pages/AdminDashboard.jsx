@@ -922,9 +922,12 @@ export default function AdminDashboard() {
   // ── FIX: viewedAdminNotifs persists across logout/login ──────────────────
   // Read once on mount; preserved through logout (see handleLogout above).
   const [viewedAdminNotifs, setViewedAdminNotifs] = useState(
-    () => JSON.parse(localStorage.getItem("adminViewedNotifications") || "[]")
-  );
-
+  () => {
+    try {
+      return JSON.parse(localStorage.getItem("adminViewedNotifications") || "[]");
+    } catch { return []; }
+  }
+);
   const [viewedNotifications, setViewedNotifications] = useState(() => {
     const saved = localStorage.getItem("viewed_notifications");
     return saved ? JSON.parse(saved) : [];
@@ -933,39 +936,63 @@ export default function AdminDashboard() {
   const [companyLeads, setCompanyLeads] = useState([]);
   const [hydLeads,     setHydLeads]     = useState([]);
   const [offerLeads,   setOfferLeads]   = useState([]);
+  const [ownerAddedWorkspaces, setOwnerAddedWorkspaces] = useState([]);
 
   // ── FIX: buildNotifs now receives viewedAdminNotifs as a parameter so it
   // always uses the latest value, not a stale closure. ──────────────────────
-  const buildNotifs = useCallback((company=[], hyd=[], offer=[], ws=[], viewedIds=[]) => {
-    let items = [];
-    company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",  section:"company-leads",   time:"New Lead"      }));
-    hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type, section:"hyderabad-leads", time:"New Lead"      }));
-    offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type, section:"offerleads",      time:"New Lead"      }));
-    ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,       type:"Workspace Added", name:w.name, workspace:w.location||"-",  section:"workspaces",      time:"New Workspace" }));
-    // ── FIX: filter using the passed-in viewedIds (not stale state) ──────
-    setAdminNotifications(items.filter((n) => !viewedIds.includes(n.id)));
-  }, []);
-
+const buildNotifs = useCallback((company=[], hyd=[], offer=[], ws=[], ownerNotifs=[], viewedIds=[]) => {
+  let items = [];
+  company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",  section:"company-leads",   time:"New Lead" }));
+  hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type, section:"hyderabad-leads", time:"New Lead" }));
+  offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type, section:"offerleads",      time:"New Lead" }));
+  ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,      type:"Workspace Added", name:w.name, workspace:w.location||"-",  section:"workspaces",      time:"New Workspace" }));
+  // ── NEW: owner-added workspace notifications ──
+  ownerNotifs.forEach((n) => items.push({
+    id: `owner-notif-${n.id}`,
+    type: "Workspace Added by Owner",
+    name: n.workspace_name || n.workspace || "-",
+    workspace: n.message || "-",
+    section: "workspaces",
+    time: "New Workspace",
+    original_id: n.id,
+  }));
+  setAdminNotifications(items.filter((n) => !viewedIds.includes(n.id)));
+}, []);
   useEffect(() => { const c=()=>setIsMobile(window.innerWidth<768); c(); window.addEventListener("resize",c); return ()=>window.removeEventListener("resize",c); }, []);
   const SPARKS = { ws:mkSpark(10,8), cat:mkSpark(10,6), own:mkSpark(10,4) };
 
   const fetchWS     = () => axiosInstance.get("workspaces/admin/workspaces").then((r)=>setWorkspaces(Array.isArray(r.data)?r.data:[])).catch(()=>setWorkspaces([]));
   const fetchCat    = () => axiosInstance.get("workspaces/categories").then((r)=>setCategories(Array.isArray(r.data)?r.data:[])).catch(()=>setCategories([]));
   const fetchOwners = () => axiosInstance.get("owners").then((r)=>setOwners(Array.isArray(r.data)?r.data:[])).catch(()=>setOwners([]));
-
+  
   // ── FIX: pass viewedAdminNotifs explicitly so buildNotifs is always fresh ─
   useEffect(() => {
-    buildNotifs(companyLeads, hydLeads, offerLeads, workspaces, viewedAdminNotifs);
-  }, [companyLeads, hydLeads, offerLeads, workspaces, viewedAdminNotifs, buildNotifs]);
-
+  // ── Always read from localStorage fresh to avoid stale state on re-login ──
+  let latestViewed = viewedAdminNotifs;
+  try {
+    const stored = localStorage.getItem("adminViewedNotifications");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.length >= viewedAdminNotifs.length) {
+        latestViewed = parsed;
+      }
+    }
+  } catch {}
+  buildNotifs(companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, latestViewed);
+}, [companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, viewedAdminNotifs, buildNotifs]);
   useEffect(() => {
     fetchOwners(); fetchWS(); fetchCat();
     axiosInstance.get("workspaces/amenities/").then((r)=>setAmenities(r.data||[])).catch(()=>{});
     Promise.all([
-      axiosInstance.get("leads/company/admin/"),
-      axiosInstance.get("hyderabad/admin/"),
-      axiosInstance.get("leads/offers/admin/leads/"),
-    ]).then(([c,h,o])=>{ setCompanyLeads(c.data||[]); setHydLeads(h.data||[]); setOfferLeads(o.data||[]); });
+  axiosInstance.get("leads/company/admin/"),
+  axiosInstance.get("hyderabad/admin/"),
+  axiosInstance.get("leads/offers/admin/leads/"),
+]).then(([c,h,o])=>{ setCompanyLeads(c.data||[]); setHydLeads(h.data||[]); setOfferLeads(o.data||[]); });
+
+// fetch owner-added workspace notifications for admin bell
+axiosInstance.get("workspaces/owner-notifications/")
+  .then(res => setOwnerAddedWorkspaces(Array.isArray(res.data) ? res.data : []))
+  .catch(() => {});
     const sync=()=>{
       const raw=window.location.hash||"";
       const [hs,hq]=raw.replace("#","").split("?");
@@ -979,8 +1006,14 @@ export default function AdminDashboard() {
 
   // ── FIX: persist viewedAdminNotifs to localStorage whenever it changes ───
   useEffect(() => {
-    localStorage.setItem("adminViewedNotifications", JSON.stringify(viewedAdminNotifs));
-  }, [viewedAdminNotifs]);
+  if (viewedAdminNotifs.length === 0) return; // don't overwrite with empty on first render
+  const existing = (() => {
+    try { return JSON.parse(localStorage.getItem("adminViewedNotifications") || "[]"); }
+    catch { return []; }
+  })();
+  const merged = [...new Set([...existing, ...viewedAdminNotifs])];
+  localStorage.setItem("adminViewedNotifications", JSON.stringify(merged));
+}, [viewedAdminNotifs]);
 
   useEffect(() => { const h=(e)=>{ if(notifRef.current&&!notifRef.current.contains(e.target)) setNotifOpen(false); }; document.addEventListener("mousedown",h); return ()=>document.removeEventListener("mousedown",h); }, []);
 
@@ -1129,25 +1162,111 @@ export default function AdminDashboard() {
               );
             }
             const isOpen   = openGroup===group.id;
-            const isActive = group.children.some((c)=>c.section===section);
-            return (
-              <div key={group.id}>
-                <button className={`${styles.navItem} ${isActive?styles.navItemActive:""}`}
-                  onMouseEnter={()=>(sideOpen||mobOpen)&&setOpenGroup(group.id)} title={!sideOpen&&!mobOpen?group.label:""}>
-                  <span className={styles.navIco}><Icon d={group.icon} size={15}/></span>
-                  {(sideOpen||mobOpen)&&<><span className={styles.navLabel}>{group.label}</span><span className={`${styles.chevron} ${isOpen?styles.chevronOpen:""}`}><Icon d={IC.chevDown} size={11}/></span></>}
-                </button>
-                {(sideOpen||mobOpen)&&(
-                  <div className={`${styles.navChildren} ${isOpen?styles.navChildrenOpen:""}`} onMouseLeave={()=>setOpenGroup(null)}>
-                    {group.children.map((child)=>(
-                      <button key={child.id} className={`${styles.navChild} ${section===child.section?styles.navChildActive:""}`} onClick={()=>{goNav(child);setOpenGroup(null);}}>
-                        <span className={styles.childDot}/><span>{child.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
+const isActive = group.children.some((c)=>c.section===section);
+return (
+  <div
+    key={group.id}
+    style={{ position:"relative" }}
+    onMouseEnter={() => setOpenGroup(group.id)}
+    onMouseLeave={() => setOpenGroup(null)}
+  >
+    {/* ── Parent button ── */}
+    <button
+      className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
+      title={!sideOpen && !mobOpen ? group.label : ""}
+    >
+      <span className={styles.navIco}><Icon d={group.icon} size={15}/></span>
+      {(sideOpen || mobOpen) && (
+        <>
+          <span className={styles.navLabel}>{group.label}</span>
+          <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}>
+            <Icon d={IC.chevDown} size={11}/>
+          </span>
+        </>
+      )}
+    </button>
+
+    {/* ── Collapsed sidebar: flyout to the right ── */}
+    {!sideOpen && !mobOpen && isOpen && (
+      <div style={{
+        position:       "absolute",
+        left:           "100%",
+        top:            0,
+        background:     "var(--card-bg,#fff)",
+        border:         "1px solid var(--border,#e5e7eb)",
+        borderRadius:   "10px",
+        boxShadow:      "0 8px 24px rgba(0,0,0,0.12)",
+        minWidth:       "180px",
+        zIndex:         999,
+        padding:        "6px",
+        marginLeft:     "6px",
+      }}>
+        <div style={{
+          fontSize:     "10px",
+          fontWeight:   700,
+          color:        "#aaa",
+          textTransform:"uppercase",
+          letterSpacing:"0.06em",
+          padding:      "6px 10px 4px",
+        }}>
+          {group.label}
+        </div>
+        {group.children.map((child) => (
+          <button
+            key={child.id}
+            onClick={() => { goNav(child); setOpenGroup(null); }}
+            style={{
+              display:        "flex",
+              alignItems:     "center",
+              gap:            "8px",
+              width:          "100%",
+              padding:        "8px 10px",
+              border:         "none",
+              borderRadius:   "7px",
+              background:     section === child.section ? "#6366f110" : "transparent",
+              color:          section === child.section ? "#6366f1"   : "#333",
+              fontWeight:     section === child.section ? 700 : 500,
+              fontSize:       "13px",
+              cursor:         "pointer",
+              textAlign:      "left",
+              transition:     "background 0.15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#f3f4f6"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = section === child.section ? "#6366f110" : "transparent"; }}
+          >
+            <span style={{ fontSize:"14px" }}>
+              {child.icon === IC.leads      ? "🏷️"
+               : child.icon === IC.offers   ? "🔥"
+               : child.icon === IC.enterprise ? "🏢"
+               : "📋"}
+            </span>
+            <span>{child.label}</span>
+          </button>
+        ))}
+      </div>
+    )}
+
+    {/* ── Expanded sidebar / mobile: inline dropdown ── */}
+    {(sideOpen || mobOpen) && (
+      <div style={{
+        maxHeight:    isOpen ? "300px" : "0",
+        overflow:     "hidden",
+        transition:   "max-height 0.25s ease",
+      }}>
+        {group.children.map((child) => (
+          <button
+            key={child.id}
+            className={`${styles.navChild} ${section === child.section ? styles.navChildActive : ""}`}
+            onClick={() => { goNav(child); setOpenGroup(null); }}
+          >
+            <span className={styles.childDot}/>
+            <span>{child.label}</span>
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+);
           })}
         </nav>
         <div className={styles.sideFooter}>
@@ -1204,22 +1323,44 @@ export default function AdminDashboard() {
                     <div key={n.id} className={styles.notifItem}>
                       <div className={styles.notifIco} style={{background:"rgba(99,102,241,0.1)",color:"#6366f1"}}><Icon d={IC.bell} size={14}/></div>
                       <div style={{flex:1}}><div className={styles.notifTxt}><strong>{n.type}</strong><br/>{n.name}</div><div className={styles.notifTime}>{n.workspace}</div></div>
-                      <button className={styles.viewBtn} onClick={()=>{
-                        setSection(n.section);
-                        // ── FIX: collect all IDs for this section and mark them
-                        // viewed so they never reappear — even after logout/login ──
-                        const idsForSection = adminNotifications
-                          .filter((i) => i.section === n.section)
-                          .map((i) => i.id);
-                        setViewedAdminNotifs((prev) => {
-                          const merged = [...new Set([...prev, ...idsForSection])];
-                          return merged;
-                        });
-                        setAdminNotifications((prev) =>
-                          prev.filter((i) => i.section !== n.section)
-                        );
-                        setNotifOpen(false);
-                      }}>View</button>
+             <button className={styles.viewBtn}
+onClick={() => {
+  setSection(n.section);
+
+  const idsForSection = adminNotifications
+    .filter((i) => i.section === n.section)
+    .map((i) => i.id);
+
+  // ── Mark ALL notifications in this section as read on backend ──
+  // This ensures backend returns is_read=True next fetch,
+  // so they never reappear even after logout/login
+  adminNotifications
+    .filter((i) => i.section === n.section && i.original_id)
+    .forEach((i) => {
+      axiosInstance.put(`workspaces/owner-notification-read/${i.original_id}/`)
+        .then(() => {
+          // After marking read on backend, refresh ownerAddedWorkspaces
+          // so the state stays in sync with backend
+          axiosInstance.get("workspaces/owner-notifications/")
+            .then(res => setOwnerAddedWorkspaces(Array.isArray(res.data) ? res.data : []))
+            .catch(() => {});
+        })
+        .catch(() => {});
+    });
+
+  // ── Also save viewed IDs in localStorage as a second safety layer ──
+setViewedAdminNotifs((prev) => {
+  const merged = [...new Set([...prev, ...idsForSection])];
+  // Write immediately so next login reads correct value
+  localStorage.setItem("adminViewedNotifications", JSON.stringify(merged));
+  return merged;
+});
+
+  setAdminNotifications((prev) =>
+    prev.filter((i) => i.section !== n.section)
+  );
+  setNotifOpen(false);
+}}>View</button>
                     </div>
                   ))}
                 </div>

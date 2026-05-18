@@ -1461,7 +1461,7 @@ const renderOverview = () => {
     >
       {w.owner_role === "admin"
         ? "Added By Admin"
-        : "Added By Owner"}
+        : "Added By Manager"}
     </span>
   </div>
 </td>

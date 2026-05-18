@@ -1310,9 +1310,7 @@ def cancel_booking(request, id):
     })
 # ==============================
 # ADMIN TRACK BOOKINGS
-# ===============================
-@api_view(['GET'])
-# ===============================
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_bookings(request):
