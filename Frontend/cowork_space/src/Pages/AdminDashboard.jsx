@@ -133,9 +133,9 @@ const WORKSPACE_TYPES = [
 ];
 const LOCATIONS = ["Hitech City","Gachibowli","Madhapur","Financial District","Kondapur"];
 
-// ─── PER-WORKSPACE REVENUE PANEL (Admin version — calls admin endpoint) ──────
+// ─── PER-WORKSPACE REVENUE PANEL ─────────────────────────────────────────────
 function WorkspaceRevenuePanel({ workspaceId, workspaceName }) {
-  const [loading, setLoading]     = useState(false);
+  const [loading, setLoading]         = useState(false);
   const [revenueData, setRevenueData] = useState(null);
 
   useEffect(() => {
@@ -143,160 +143,176 @@ function WorkspaceRevenuePanel({ workspaceId, workspaceName }) {
     setLoading(true);
     axiosInstance
       .get(`cart/admin/workspace-revenue/${workspaceId}/`)
-      .then((res) => {
-        setRevenueData(res.data);
-        setLoading(false);
-      })
+      .then((res) => { setRevenueData(res.data); setLoading(false); })
       .catch(() => {
-        // Fallback: show zeroed-out structure so the panel still renders
-        setRevenueData({
-          total_revenue: 0,
-          confirmed_revenue: 0,
-          pending_revenue: 0,
-          cancelled_revenue: 0,
-          total_bookings: 0,
-          confirmed_bookings: 0,
-          pending_bookings: 0,
-          cancelled_bookings: 0,
-        });
+        setRevenueData({ total_revenue:0, confirmed_revenue:0, pending_revenue:0, cancelled_revenue:0, total_bookings:0, confirmed_bookings:0, pending_bookings:0, cancelled_bookings:0 });
         setLoading(false);
       });
   }, [workspaceId]);
 
-  /* ── inline styles (no module dependency) ── */
   const PS = {
-    wrap: {
-      padding: "18px 24px",
-      background: "linear-gradient(135deg,#faf5ff 0%,#f0fdf4 100%)",
-      borderLeft: "4px solid #7c3aed",
-    },
-    loading: {
-      display: "flex", alignItems: "center", gap: 8,
-      padding: "20px 24px", color: "#7c3aed", fontSize: 13, fontWeight: 600,
-      background: "#faf5ff",
-    },
-    spinner: {
-      width: 16, height: 16,
-      border: "2px solid #e9d5ff", borderTopColor: "#7c3aed",
-      borderRadius: "50%",
-      animation: "spin 0.7s linear infinite",
-    },
-    empty: { padding: "20px 24px", color: "#94a3b8", fontSize: 13, background: "#faf5ff" },
-    titleRow: { display: "flex", alignItems: "center", gap: 8, marginBottom: 14 },
-    dot: {
-      width: 8, height: 8, borderRadius: "50%",
-      background: "#7c3aed", display: "inline-block", flexShrink: 0,
-    },
-    title: { fontSize: 13, fontWeight: 700, color: "#1a1a2e" },
-    grid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
-      gap: 10, marginBottom: 12,
-    },
-    card: (borderColor) => ({
-      background: "#fff", borderRadius: 10, padding: "12px 14px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-      borderTop: `3px solid ${borderColor}`,
-    }),
-    cardIcon:  { fontSize: 18, display: "block", marginBottom: 4 },
-    cardValue: { fontSize: 15, fontWeight: 800, color: "#111827", margin: "0 0 2px" },
-    cardLabel: {
-      fontSize: 10, fontWeight: 600, color: "#6b7280",
-      textTransform: "uppercase", letterSpacing: "0.4px", margin: 0,
-    },
-    badgeRow:  { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4 },
-    badge: (bg, color, border) => ({
-      display: "inline-flex", alignItems: "center", gap: 4,
-      padding: "4px 10px", borderRadius: 20,
-      fontSize: 11, fontWeight: 600,
-      background: bg, color, border: `1px solid ${border}`,
-    }),
-    fillBarWrap: { marginTop: 10 },
-    fillBarLabel: { fontSize: 11, color: "#6b7280", marginBottom: 4, fontWeight: 600 },
-    fillBarTrack: {
-      height: 5, borderRadius: 3,
-      background: "#e5e7eb", overflow: "hidden",
-    },
-    fillBarInner: (pct) => ({
-      height: "100%", borderRadius: 3,
-      width: `${pct}%`,
-      background: pct >= 75 ? "#16a34a" : pct >= 40 ? "#d97706" : "#dc2626",
-      transition: "width 0.4s ease",
-    }),
+    wrap:         { padding:"18px 24px", background:"linear-gradient(135deg,#faf5ff 0%,#f0fdf4 100%)", borderLeft:"4px solid #7c3aed" },
+    loading:      { display:"flex", alignItems:"center", gap:8, padding:"20px 24px", color:"#7c3aed", fontSize:13, fontWeight:600, background:"#faf5ff" },
+    spinner:      { width:16, height:16, border:"2px solid #e9d5ff", borderTopColor:"#7c3aed", borderRadius:"50%", animation:"spin 0.7s linear infinite" },
+    empty:        { padding:"20px 24px", color:"#94a3b8", fontSize:13, background:"#faf5ff" },
+    titleRow:     { display:"flex", alignItems:"center", gap:8, marginBottom:14 },
+    dot:          { width:8, height:8, borderRadius:"50%", background:"#7c3aed", display:"inline-block", flexShrink:0 },
+    title:        { fontSize:13, fontWeight:700, color:"#1a1a2e" },
+    grid:         { display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:10, marginBottom:12 },
+    card:         (c) => ({ background:"#fff", borderRadius:10, padding:"12px 14px", boxShadow:"0 2px 8px rgba(0,0,0,0.06)", borderTop:`3px solid ${c}` }),
+    cardIcon:     { fontSize:18, display:"block", marginBottom:4 },
+    cardValue:    { fontSize:15, fontWeight:800, color:"#111827", margin:"0 0 2px" },
+    cardLabel:    { fontSize:10, fontWeight:600, color:"#6b7280", textTransform:"uppercase", letterSpacing:"0.4px", margin:0 },
+    badgeRow:     { display:"flex", flexWrap:"wrap", gap:6, marginBottom:4 },
+    badge:        (bg, color, border) => ({ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:20, fontSize:11, fontWeight:600, background:bg, color, border:`1px solid ${border}` }),
+    fillBarWrap:  { marginTop:10 },
+    fillBarLabel: { fontSize:11, color:"#6b7280", marginBottom:4, fontWeight:600 },
+    fillBarTrack: { height:5, borderRadius:3, background:"#e5e7eb", overflow:"hidden" },
+    fillBarInner: (pct) => ({ height:"100%", borderRadius:3, width:`${pct}%`, background:pct>=75?"#16a34a":pct>=40?"#d97706":"#dc2626", transition:"width 0.4s ease" }),
   };
 
-  if (loading) {
-    return (
-      <div style={PS.loading}>
-        <div style={PS.spinner} />
-        Loading revenue data…
-      </div>
-    );
-  }
+  if (loading) return <div style={PS.loading}><div style={PS.spinner}/>Loading revenue data…</div>;
+  if (!revenueData) return <div style={PS.empty}>No revenue data available for this workspace.</div>;
 
-  if (!revenueData) {
-    return <div style={PS.empty}>No revenue data available for this workspace.</div>;
-  }
-
-  const {
-    total_revenue      = 0,
-    confirmed_revenue  = 0,
-    pending_revenue    = 0,
-    cancelled_revenue  = 0,
-    total_bookings     = 0,
-    confirmed_bookings = 0,
-    pending_bookings   = 0,
-    cancelled_bookings = 0,
-  } = revenueData;
-
-  const fillPct =
-    total_bookings > 0
-      ? Math.round((confirmed_bookings / total_bookings) * 100)
-      : 0;
-
+  const { total_revenue=0, confirmed_revenue=0, total_bookings=0, confirmed_bookings=0, pending_bookings=0, cancelled_bookings=0 } = revenueData;
+  const fillPct = total_bookings > 0 ? Math.round((confirmed_bookings / total_bookings) * 100) : 0;
   const statCards = [
-    { icon: "💰", label: "Total Revenue",     value: `₹${Number(total_revenue).toLocaleString()}`,     color: "#b8922a" },
-    { icon: "✅", label: "Confirmed Revenue", value: `₹${Number(confirmed_revenue).toLocaleString()}`, color: "#16a34a" },
-    // { icon: "⏳", label: "Pending Revenue",   value: `₹${Number(pending_revenue).toLocaleString()}`,   color: "#d97706" },
-    // { icon: "❌", label: "Cancelled Revenue", value: `₹${Number(cancelled_revenue).toLocaleString()}`, color: "#dc2626" },
+    { icon:"💰", label:"Total Revenue",     value:`₹${Number(total_revenue).toLocaleString()}`,     color:"#b8922a" },
+    { icon:"✅", label:"Confirmed Revenue", value:`₹${Number(confirmed_revenue).toLocaleString()}`, color:"#16a34a" },
   ];
 
   return (
     <div style={PS.wrap}>
-      {/* Title row */}
-      <div style={PS.titleRow}>
-        <span style={PS.dot} />
-        <span style={PS.title}>Revenue Breakdown — {workspaceName}</span>
-      </div>
-
-      {/* Stat cards */}
-      <div style={PS.grid}>
-        {statCards.map((s, i) => (
-          <div key={i} style={PS.card(s.color)}>
-            <span style={PS.cardIcon}>{s.icon}</span>
-            <p style={PS.cardValue}>{s.value}</p>
-            <p style={PS.cardLabel}>{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Booking count badges */}
+      <div style={PS.titleRow}><span style={PS.dot}/><span style={PS.title}>Revenue Breakdown — {workspaceName}</span></div>
+      <div style={PS.grid}>{statCards.map((s,i)=>(<div key={i} style={PS.card(s.color)}><span style={PS.cardIcon}>{s.icon}</span><p style={PS.cardValue}>{s.value}</p><p style={PS.cardLabel}>{s.label}</p></div>))}</div>
       <div style={PS.badgeRow}>
         <span style={PS.badge("#eff6ff","#2563eb","#bfdbfe")}>📋 {total_bookings} Total Bookings</span>
         <span style={PS.badge("#f0fdf4","#16a34a","#bbf7d0")}>✅ {confirmed_bookings} Confirmed</span>
         <span style={PS.badge("#fff7ed","#ea580c","#fed7aa")}>⏳ {pending_bookings} Pending</span>
         <span style={PS.badge("#fef2f2","#dc2626","#fecaca")}>❌ {cancelled_bookings} Cancelled</span>
       </div>
-
-      {/* Fill bar */}
       {total_bookings > 0 && (
         <div style={PS.fillBarWrap}>
           <div style={PS.fillBarLabel}>Confirmation Rate: {fillPct}%</div>
-          <div style={PS.fillBarTrack}>
-            <div style={PS.fillBarInner(fillPct)} />
-          </div>
+          <div style={PS.fillBarTrack}><div style={PS.fillBarInner(fillPct)}/></div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── EXISTING OWNER PICKER MODAL ──────────────────────────────────────────────
+// Shows when user clicks "Yes, Add Owner Details" and existing owners exist.
+// Allows selecting a saved owner OR filling new details.
+function ExistingOwnerPickerModal({ existingOwners, onSelectExisting, onAddNew, onClose }) {
+  const [selected, setSelected]   = useState(null);
+  const [search,   setSearch]     = useState("");
+
+  const filtered = existingOwners.filter((o) => {
+    const q = search.toLowerCase();
+    return (
+      (o.owner_name  || "").toLowerCase().includes(q) ||
+      (o.owner_email || "").toLowerCase().includes(q) ||
+      (o.business_name || "").toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <div className={styles.modalOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className={styles.ownerPickerModal}>
+        {/* Header */}
+        <div className={styles.ownerPickerHeader}>
+          <div className={styles.ownerPickerHeaderIco}><Icon d={IC.briefcase} size={20}/></div>
+          <div>
+            <h3 className={styles.ownerPickerTitle}>Select Owner / Landlord</h3>
+            <p className={styles.ownerPickerSub}>Pick an existing owner or add new details</p>
+          </div>
+          <button className={styles.ownerFormClose} onClick={onClose}><Icon d={IC.close} size={14}/></button>
+        </div>
+
+        {/* Search */}
+        <div className={styles.ownerPickerSearch}>
+          <Icon d={IC.search} size={13}/>
+          <input
+            className={styles.ownerPickerSearchInp}
+            placeholder="Search by name, email, business..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button style={{border:"none",background:"none",cursor:"pointer",color:"#aaa",padding:0,display:"flex"}} onClick={()=>setSearch("")}>
+              <Icon d={IC.close} size={11}/>
+            </button>
+          )}
+        </div>
+
+        {/* Owner list */}
+        <div className={styles.ownerPickerList}>
+          {filtered.length === 0 ? (
+            <div className={styles.ownerPickerEmpty}>No owners match your search.</div>
+          ) : (
+            filtered.map((owner, i) => {
+              const isSelected = selected?.owner_name === owner.owner_name && selected?.owner_email === owner.owner_email;
+              return (
+                <div
+                  key={i}
+                  className={`${styles.ownerPickerCard} ${isSelected ? styles.ownerPickerCardSelected : ""}`}
+                  onClick={() => setSelected(isSelected ? null : owner)}
+                >
+                  <div className={styles.ownerPickerCardLeft}>
+                    <div className={styles.ownerPickerAvatar}>
+                      {(owner.owner_name || "?").charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className={styles.ownerPickerName}>{owner.owner_name || "—"}</div>
+                      <div className={styles.ownerPickerMeta}>
+                        {owner.owner_email && <span><Icon d={IC.mail} size={10}/> {owner.owner_email}</span>}
+                        {owner.business_name && <span><Icon d={IC.briefcase} size={10}/> {owner.business_name}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.ownerPickerCardRight}>
+                    {owner.rent_amount && (
+                      <div className={styles.ownerPickerBadge}>
+                        ₹{owner.rent_amount}/{owner.rent_frequency || "mo"}
+                      </div>
+                    )}
+                    {owner.revenue_share_pct && (
+                      <div className={styles.ownerPickerBadge} style={{background:"#f0fdf4",color:"#16a34a",borderColor:"#bbf7d0"}}>
+                        {owner.revenue_share_pct}% share
+                      </div>
+                    )}
+                    {isSelected && (
+                      <div className={styles.ownerPickerCheckmark}>
+                        <Icon d={IC.check} size={12}/>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className={styles.ownerPickerFooter}>
+          <button
+            className={styles.ownerPickerSelectBtn}
+            disabled={!selected}
+            onClick={() => selected && onSelectExisting(selected)}
+          >
+            <Icon d={IC.check} size={14}/>
+            Use Selected Owner
+          </button>
+          <button className={styles.ownerPickerNewBtn} onClick={onAddNew}>
+            <Icon d={IC.add} size={14}/>
+            Add New Owner Details
+          </button>
+          <button className={styles.ownerFormCancel} onClick={onClose}>
+            <Icon d={IC.close} size={13}/> Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -314,7 +330,7 @@ const OWNER_FORM_INIT = {
 };
 
 function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
-  const [form, setForm] = useState(OWNER_FORM_INIT);
+  const [form, setForm]     = useState(OWNER_FORM_INIT);
   const [errors, setErrors] = useState({});
   const F = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }));
 
@@ -352,48 +368,48 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
     <div className={styles.ownerFormOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className={styles.ownerFormModal}>
         <div className={styles.ownerFormHeader}>
-          <div className={styles.ownerFormHeaderIco}><Icon d={IC.briefcase} size={20} /></div>
+          <div className={styles.ownerFormHeaderIco}><Icon d={IC.briefcase} size={20}/></div>
           <div className={styles.ownerFormHeaderText}>
             <h3>Owner / Landlord Details</h3>
             <p>Fill renting & revenue details to assign an owner to this workspace</p>
           </div>
-          <button className={styles.ownerFormClose} onClick={onClose}><Icon d={IC.close} size={14} /></button>
+          <button className={styles.ownerFormClose} onClick={onClose}><Icon d={IC.close} size={14}/></button>
         </div>
 
         <div className={styles.ownerFormBody}>
           {/* Personal */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}><Icon d={IC.users} size={13} /> Personal Information</div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.users} size={13}/> Personal Information</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Owner Full Name *</label>
-                <input className={styles.ownerFormInp} placeholder="e.g. Rajesh Kumar" value={form.owner_name} onChange={F("owner_name")} />
-                <ErrMsg field="owner_name" />
+                <input className={styles.ownerFormInp} placeholder="e.g. Rajesh Kumar" value={form.owner_name} onChange={F("owner_name")}/>
+                <ErrMsg field="owner_name"/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Email Address *</label>
-                <input className={styles.ownerFormInp} type="email" placeholder="owner@email.com" value={form.owner_email} onChange={F("owner_email")} />
-                <ErrMsg field="owner_email" />
+                <input className={styles.ownerFormInp} type="email" placeholder="owner@email.com" value={form.owner_email} onChange={F("owner_email")}/>
+                <ErrMsg field="owner_email"/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Primary Phone *</label>
-                <input className={styles.ownerFormInp} placeholder="9876543210" value={form.owner_phone} onChange={F("owner_phone")} />
-                <ErrMsg field="owner_phone" />
+                <input className={styles.ownerFormInp} placeholder="9876543210" value={form.owner_phone} onChange={F("owner_phone")}/>
+                <ErrMsg field="owner_phone"/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Alternate Phone</label>
-                <input className={styles.ownerFormInp} placeholder="+91 91234 56789" value={form.owner_alternate_phone} onChange={F("owner_alternate_phone")} />
+                <input className={styles.ownerFormInp} placeholder="+91 91234 56789" value={form.owner_alternate_phone} onChange={F("owner_alternate_phone")}/>
               </div>
             </div>
           </div>
 
           {/* Business */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}><Icon d={IC.briefcase} size={13} /> Business Information</div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.briefcase} size={13}/> Business Information</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Business / Company Name</label>
-                <input className={styles.ownerFormInp} placeholder="e.g. KR Properties Pvt Ltd" value={form.business_name} onChange={F("business_name")} />
+                <input className={styles.ownerFormInp} placeholder="e.g. KR Properties Pvt Ltd" value={form.business_name} onChange={F("business_name")}/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Business Type</label>
@@ -409,24 +425,24 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>GST Number</label>
-                <input className={styles.ownerFormInp} placeholder="29ABCDE1234F1Z5" value={form.gst_number} onChange={F("gst_number")} />
-                <ErrMsg field="gst_number" />
+                <input className={styles.ownerFormInp} placeholder="29ABCDE1234F1Z5" value={form.gst_number} onChange={F("gst_number")}/>
+                <ErrMsg field="gst_number"/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>PAN Number</label>
-                <input className={styles.ownerFormInp} placeholder="ABCDE1234F" value={form.pan_number} onChange={F("pan_number")} />
-                <ErrMsg field="pan_number" />
+                <input className={styles.ownerFormInp} placeholder="ABCDE1234F" value={form.pan_number} onChange={F("pan_number")}/>
+                <ErrMsg field="pan_number"/>
               </div>
             </div>
           </div>
 
           {/* Address */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}><Icon d={IC.mapPin} size={13} /> Property Address</div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.mapPin} size={13}/> Property Address</div>
             <div className={styles.ownerFormGrid}>
-              <div className={styles.ownerFormField} style={{ gridColumn:"1 / -1" }}>
+              <div className={styles.ownerFormField} style={{gridColumn:"1 / -1"}}>
                 <label className={styles.ownerFormLabel}>Street Address</label>
-                <input className={styles.ownerFormInp} placeholder="Flat / Building / Street" value={form.address} onChange={F("address")} />
+                <input className={styles.ownerFormInp} placeholder="Flat / Building / Street" value={form.address} onChange={F("address")}/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>City</label>
@@ -437,48 +453,48 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>State</label>
-                <input className={styles.ownerFormInp} placeholder="e.g. Telangana" value={form.state} onChange={F("state")} />
+                <input className={styles.ownerFormInp} placeholder="e.g. Telangana" value={form.state} onChange={F("state")}/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Pincode</label>
-                <input className={styles.ownerFormInp} placeholder="500081" value={form.pincode} onChange={F("pincode")} />
+                <input className={styles.ownerFormInp} placeholder="500081" value={form.pincode} onChange={F("pincode")}/>
               </div>
             </div>
           </div>
 
           {/* Banking */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}><Icon d={IC.bank} size={13} /> Banking Details</div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.bank} size={13}/> Banking Details</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Bank Name</label>
-                <input className={styles.ownerFormInp} placeholder="e.g. HDFC Bank" value={form.bank_name} onChange={F("bank_name")} />
+                <input className={styles.ownerFormInp} placeholder="e.g. HDFC Bank" value={form.bank_name} onChange={F("bank_name")}/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Account Holder Name</label>
-                <input className={styles.ownerFormInp} placeholder="As per passbook" value={form.account_holder} onChange={F("account_holder")} />
+                <input className={styles.ownerFormInp} placeholder="As per passbook" value={form.account_holder} onChange={F("account_holder")}/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Account Number</label>
-                <input className={styles.ownerFormInp} placeholder="XXXXXXXXXXXX" value={form.account_number} onChange={F("account_number")} />
-                <ErrMsg field="account_number" />
+                <input className={styles.ownerFormInp} placeholder="XXXXXXXXXXXX" value={form.account_number} onChange={F("account_number")}/>
+                <ErrMsg field="account_number"/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>IFSC Code</label>
-                <input className={styles.ownerFormInp} placeholder="HDFC0001234" value={form.ifsc_code} onChange={F("ifsc_code")} />
-                <ErrMsg field="ifsc_code" />
+                <input className={styles.ownerFormInp} placeholder="HDFC0001234" value={form.ifsc_code} onChange={F("ifsc_code")}/>
+                <ErrMsg field="ifsc_code"/>
               </div>
             </div>
           </div>
 
           {/* Revenue & Rent */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}><Icon d={IC.percent} size={13} /> Revenue & Rent Terms</div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.percent} size={13}/> Revenue & Rent Terms</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Rent Amount (₹)</label>
-                <input className={styles.ownerFormInp} type="number" placeholder="e.g. 50000" value={form.rent_amount} onChange={F("rent_amount")} />
-                <ErrMsg field="rent_amount" />
+                <input className={styles.ownerFormInp} type="number" placeholder="e.g. 50000" value={form.rent_amount} onChange={F("rent_amount")}/>
+                <ErrMsg field="rent_amount"/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Rent Frequency</label>
@@ -490,19 +506,19 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Revenue Share % (Owner gets)</label>
-                <input className={styles.ownerFormInp} type="number" min="0" max="100" placeholder="e.g. 70" value={form.revenue_share_pct} onChange={F("revenue_share_pct")} />
-                <ErrMsg field="revenue_share_pct" />
+                <input className={styles.ownerFormInp} type="number" min="0" max="100" placeholder="e.g. 70" value={form.revenue_share_pct} onChange={F("revenue_share_pct")}/>
+                <ErrMsg field="revenue_share_pct"/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Security Deposit (₹)</label>
-                <input className={styles.ownerFormInp} type="number" placeholder="e.g. 100000" value={form.security_deposit} onChange={F("security_deposit")} />
+                <input className={styles.ownerFormInp} type="number" placeholder="e.g. 100000" value={form.security_deposit} onChange={F("security_deposit")}/>
               </div>
             </div>
           </div>
 
           {/* Contract */}
           <div className={styles.ownerFormSection}>
-            <div className={styles.ownerFormSectionTitle}><Icon d={IC.calendar} size={13} /> Contract / Agreement</div>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.calendar} size={13}/> Contract / Agreement</div>
             <div className={styles.ownerFormGrid}>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Agreement Type</label>
@@ -515,32 +531,32 @@ function OwnerDetailsFormModal({ onSubmit, onClose, loading }) {
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Contract Start Date</label>
-                <input className={styles.ownerFormInp} type="date" value={form.contract_start} onChange={F("contract_start")} />
+                <input className={styles.ownerFormInp} type="date" value={form.contract_start} onChange={F("contract_start")}/>
               </div>
               <div className={styles.ownerFormField}>
                 <label className={styles.ownerFormLabel}>Contract End Date</label>
-                <input className={styles.ownerFormInp} type="date" value={form.contract_end} onChange={F("contract_end")} />
-                <ErrMsg field="contract_end" />
+                <input className={styles.ownerFormInp} type="date" value={form.contract_end} onChange={F("contract_end")}/>
+                <ErrMsg field="contract_end"/>
               </div>
             </div>
           </div>
 
           {/* Notes */}
-          <div className={styles.ownerFormSection} style={{ marginBottom:0 }}>
-            <div className={styles.ownerFormSectionTitle}><Icon d={IC.edit} size={13} /> Additional Notes</div>
+          <div className={styles.ownerFormSection} style={{marginBottom:0}}>
+            <div className={styles.ownerFormSectionTitle}><Icon d={IC.edit} size={13}/> Additional Notes</div>
             <textarea className={styles.ownerFormInp} rows={3}
               placeholder="Any special terms, conditions, or remarks about this owner..."
-              value={form.notes} onChange={F("notes")} style={{ resize:"vertical" }} />
+              value={form.notes} onChange={F("notes")} style={{resize:"vertical"}}/>
           </div>
         </div>
 
         <div className={styles.ownerFormFooter}>
           <button className={styles.ownerFormSubmit} onClick={handleSubmit} disabled={loading}>
-            <Icon d={IC.check} size={14} />
+            <Icon d={IC.check} size={14}/>
             {loading ? "Assigning Owner..." : "Assign Owner & Continue"}
           </button>
           <button className={styles.ownerFormCancel} onClick={onClose}>
-            <Icon d={IC.close} size={13} /> Cancel
+            <Icon d={IC.close} size={13}/> Cancel
           </button>
         </div>
       </div>
@@ -553,7 +569,7 @@ function AddWorkspaceModal({ onYes, onNo, onClose }) {
   return (
     <div className={styles.modalOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className={styles.modalBox}>
-        <div className={styles.modalIco}><Icon d={IC.workspace} size={24} /></div>
+        <div className={styles.modalIco}><Icon d={IC.workspace} size={24}/></div>
         <h3 className={styles.modalTitle}>Add New Workspace</h3>
         <p className={styles.modalSub}>
           Do you want to assign an <strong>Owner / Landlord</strong> to this workspace?
@@ -561,10 +577,10 @@ function AddWorkspaceModal({ onYes, onNo, onClose }) {
         </p>
         <div className={styles.modalBtns}>
           <button className={styles.modalBtnYes} onClick={onYes}>
-            <Icon d={IC.briefcase} size={16} /> Yes, Add Owner Details
+            <Icon d={IC.briefcase} size={16}/> Yes, Add Owner Details
           </button>
           <button className={styles.modalBtnNo} onClick={onNo}>
-            <Icon d={IC.add} size={16} /> No, Just Add Workspace
+            <Icon d={IC.add} size={16}/> No, Just Add Workspace
           </button>
           <button className={styles.modalBtnCancel} onClick={onClose}>Cancel</button>
         </div>
@@ -584,16 +600,16 @@ function WeeklyChart({ data }) {
       <div className={styles.chartHeader}>
         <div><h3 className={styles.chartTitle}>Weekly Overview</h3><p className={styles.chartSub}>Bookings & Revenue this week</p></div>
         <div className={styles.chartLegend}>
-          <span className={styles.legendDot} style={{ background:"#f59e0b" }} /><span className={styles.legendTxt}>Bookings</span>
-          <span className={styles.legendDot} style={{ background:"#6366f1" }} /><span className={styles.legendTxt}>Revenue k</span>
+          <span className={styles.legendDot} style={{background:"#f59e0b"}}/><span className={styles.legendTxt}>Bookings</span>
+          <span className={styles.legendDot} style={{background:"#6366f1"}}/><span className={styles.legendTxt}>Revenue k</span>
         </div>
       </div>
       <div className={styles.chartBody}>
         {data.map((d, i) => (
           <div key={i} className={styles.chartCol}>
             <div className={styles.chartBars}>
-              <div className={styles.barTrack}><div className={styles.barFill} style={{ height:`${animate?(d.revenue/maxR)*100:0}%`, background:"linear-gradient(180deg,#6366f1 0%,rgba(99,102,241,0.15) 100%)", transitionDelay:`${i*60}ms` }} /></div>
-              <div className={styles.barTrack}><div className={styles.barFill} style={{ height:`${animate?(d.bookings/maxB)*100:0}%`, background:"linear-gradient(180deg,#f59e0b 0%,rgba(245,158,11,0.15) 100%)", transitionDelay:`${i*60+30}ms` }} /></div>
+              <div className={styles.barTrack}><div className={styles.barFill} style={{height:`${animate?(d.revenue/maxR)*100:0}%`,background:"linear-gradient(180deg,#6366f1 0%,rgba(99,102,241,0.15) 100%)",transitionDelay:`${i*60}ms`}}/></div>
+              <div className={styles.barTrack}><div className={styles.barFill} style={{height:`${animate?(d.bookings/maxB)*100:0}%`,background:"linear-gradient(180deg,#f59e0b 0%,rgba(245,158,11,0.15) 100%)",transitionDelay:`${i*60+30}ms`}}/></div>
             </div>
             <span className={styles.chartDay}>{d.day}</span>
           </div>
@@ -612,17 +628,17 @@ function DonutChart({ data }) {
       <svg viewBox="0 0 128 128" width="130" height="130">
         {data.map((seg, i) => {
           const dash = (seg.pct / 100) * circ;
-          const el = <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={seg.color} strokeWidth="18" strokeDasharray={`${dash} ${circ-dash}`} strokeDashoffset={-offset} style={{ transform:"rotate(-90deg)", transformOrigin:"64px 64px" }} />;
+          const el = <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={seg.color} strokeWidth="18" strokeDasharray={`${dash} ${circ-dash}`} strokeDashoffset={-offset} style={{transform:"rotate(-90deg)",transformOrigin:"64px 64px"}}/>;
           offset += dash; return el;
         })}
-        <circle cx="64" cy="64" r="40" fill="var(--card-bg,#fff)" />
+        <circle cx="64" cy="64" r="40" fill="var(--card-bg,#fff)"/>
         <text x="64" y="60" textAnchor="middle" fill="#1E1A08" fontSize="11" fontWeight="700">Space</text>
         <text x="64" y="75" textAnchor="middle" fill="#A89A6A" fontSize="9">Mix</text>
       </svg>
       <div className={styles.donutLegend}>
         {data.map((d, i) => (
           <div key={i} className={styles.donutItem}>
-            <span className={styles.donutDot} style={{ background:d.color }} />
+            <span className={styles.donutDot} style={{background:d.color}}/>
             <span className={styles.donutLabel}>{d.label}</span>
             <span className={styles.donutPct}>{d.pct}%</span>
           </div>
@@ -638,30 +654,30 @@ function SparkBar({ data, color }) {
   const max = Math.max(...data);
   return (
     <div className={styles.spark}>
-      {data.map((v, i) => <div key={i} className={styles.sparkBar} style={{ height:`${(v/max)*100}%`, background:color, opacity:i===data.length-1?0.75:0.25 }} />)}
+      {data.map((v, i) => <div key={i} className={styles.sparkBar} style={{height:`${(v/max)*100}%`,background:color,opacity:i===data.length-1?0.75:0.25}}/>)}
     </div>
   );
 }
 
 // ─── UNIFIED MANAGEMENT PANEL ─────────────────────────────────────────────────
 function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
-  const [users, setUsers]   = useState([]);
+  const [users,  setUsers]  = useState([]);
   const [owners, setOwners] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch]   = useState("");
-  const [roleFilter, setRoleFilter]   = useState(initialRoleFilter);
-  const [activeStat, setActiveStat]   = useState(initialRoleFilter === "owners" ? "owners" : "all");
-  const [formMode, setFormMode]       = useState(null);
-  const [userForm, setUserForm]       = useState({ username:"", email:"", phone:"", password:"" });
-  const [editUserId, setEditUserId]   = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [search,  setSearch]    = useState("");
+  const [roleFilter,  setRoleFilter]  = useState(initialRoleFilter);
+  const [activeStat,  setActiveStat]  = useState(initialRoleFilter === "owners" ? "owners" : "all");
+  const [formMode,    setFormMode]    = useState(null);
+  const [userForm,    setUserForm]    = useState({ username:"", email:"", phone:"", password:"" });
+  const [editUserId,  setEditUserId]  = useState(null);
   const ownerFormInit = { username:"", email:"", password:"", location:"" };
-  const [ownerForm, setOwnerForm]     = useState(ownerFormInit);
+  const [ownerForm,   setOwnerForm]   = useState(ownerFormInit);
   const [editOwnerId, setEditOwnerId] = useState(null);
 
   useEffect(() => { setRoleFilter(initialRoleFilter); setActiveStat(initialRoleFilter==="owners"?"owners":"all"); }, [initialRoleFilter]);
 
-  const fetchUsers  = () => axiosInstance.get("leads/users/all/").then((r) => setUsers(Array.isArray(r.data)?r.data:[])).catch(()=>setUsers([]));
-  const fetchOwners = () => axiosInstance.get("owners/").then((r) => setOwners(Array.isArray(r.data)?r.data:[])).catch(()=>setOwners([]));
+  const fetchUsers  = () => axiosInstance.get("leads/users/all/").then((r)=>setUsers(Array.isArray(r.data)?r.data:[])).catch(()=>setUsers([]));
+  const fetchOwners = () => axiosInstance.get("owners/").then((r)=>setOwners(Array.isArray(r.data)?r.data:[])).catch(()=>setOwners([]));
   useEffect(() => { fetchUsers(); fetchOwners(); }, []);
 
   const activeUsers = users.filter((u) => u.is_active !== false).length;
@@ -669,8 +685,8 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
   const combined = useMemo(() => {
     const q = search.toLowerCase().trim();
     const ownerEmails = owners.map((o) => o.email?.toLowerCase());
-    const uList = users.filter((u) => !ownerEmails.includes(u.email?.toLowerCase())).map((u) => ({ ...u, _type:"user" }));
-    const oList = owners.map((o) => ({ ...o, _type:"owner" }));
+    const uList = users.filter((u) => !ownerEmails.includes(u.email?.toLowerCase())).map((u) => ({...u, _type:"user"}));
+    const oList = owners.map((o) => ({...o, _type:"owner"}));
     let merged = [...uList, ...oList];
     if (activeStat==="owners") merged = oList;
     if (roleFilter==="users")  merged = uList;
@@ -681,7 +697,7 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
   }, [users,owners,search,roleFilter,activeStat]);
 
   const resetForms = () => { setFormMode(null); setUserForm({username:"",email:"",phone:"",password:""}); setOwnerForm(ownerFormInit); setEditUserId(null); setEditOwnerId(null); };
-  const openEditUser  = (u) => { setEditUserId(u.id);  setUserForm({username:u.username||"",email:u.email||"",phone:u.phone||"",password:"",is_admin:u.is_admin??u.is_superuser??false}); setFormMode("editUser");  window.scrollTo({top:0,behavior:"smooth"}); };
+  const openEditUser  = (u) => { setEditUserId(u.id); setUserForm({username:u.username||"",email:u.email||"",phone:u.phone||"",password:"",is_admin:u.is_admin??u.is_superuser??false}); setFormMode("editUser"); window.scrollTo({top:0,behavior:"smooth"}); };
   const openEditOwner = (o) => { setEditOwnerId(o.id); setOwnerForm({username:o.username||"",email:o.email||"",password:"",location:o.location||""}); setFormMode("editOwner"); window.scrollTo({top:0,behavior:"smooth"}); };
 
   const handleCreateUser  = async () => { if(!userForm.username||!userForm.email){showToast("Username and email required","error");return;} try{setLoading(true);await axiosInstance.post("leads/users/create/",userForm);showToast("User created");resetForms();fetchUsers();}catch{showToast("Failed","error");}finally{setLoading(false);} };
@@ -740,8 +756,8 @@ function UnifiedManagementPanel({ showToast, initialRoleFilter = "all" }) {
     <div>
       <div style={S.statsRow}>
         {statsConfig.map((s,i) => (
-          <div key={i} style={S.statCard(s.color,activeStat===s.statKey)} onClick={() => { setActiveStat(s.statKey); setRoleFilter(s.filterKey); }}>
-            <div style={S.statIco(s.color)}><Icon d={s.icon} size={17} /></div>
+          <div key={i} style={S.statCard(s.color,activeStat===s.statKey)} onClick={()=>{setActiveStat(s.statKey);setRoleFilter(s.filterKey);}}>
+            <div style={S.statIco(s.color)}><Icon d={s.icon} size={17}/></div>
             <div style={S.statVal()}>{s.value}</div>
             <div style={S.statLbl}>{s.label}</div>
           </div>
@@ -852,18 +868,35 @@ export default function AdminDashboard() {
   const [amenities,  setAmenities]  = useState([]);
 
   // ── Workspace form ────────────────────────────────────────────────────────
-  const WS_FORM_INIT = { name:"",city:"",location:"",price:"",image:"",description:"",amenities:[],isavailable:true };
+  const WS_FORM_INIT = { name:"", city:"", location:"", price:"", image:"", description:"", amenities:[], isavailable:true };
   const [form,        setForm]        = useState(WS_FORM_INIT);
   const [editId,      setEditId]      = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
   // ── Owner assignment modal state ──────────────────────────────────────────
-  const [showOwnerModal,   setShowOwnerModal]   = useState(false);
-  const [showOwnerForm,    setShowOwnerForm]     = useState(false);
-  const [pendingOwnerData, setPendingOwnerData]  = useState(null);
-  const [ownerFormLoading, setOwnerFormLoading]  = useState(false);
+  const [showOwnerModal,    setShowOwnerModal]    = useState(false);
+  // NEW: picker for existing owners
+  const [showOwnerPicker,   setShowOwnerPicker]   = useState(false);
+  const [showOwnerForm,     setShowOwnerForm]      = useState(false);
+  const [pendingOwnerData,  setPendingOwnerData]   = useState(null);
+  const [ownerFormLoading,  setOwnerFormLoading]   = useState(false);
 
-  // ── Per-workspace revenue toggle (NEW) ────────────────────────────────────
+  // ── Saved owner details (pulled from existing workspaces) ─────────────────
+  // We collect all unique owner_details objects from existing workspaces so the
+  // picker can show them.
+  const existingOwnerDetails = useMemo(() => {
+    const seen  = new Set();
+    const list  = [];
+    workspaces.forEach((w) => {
+      const od = w.owner_details;
+      if (!od || !od.owner_name) return;
+      const key = od.owner_email || od.owner_name;
+      if (!seen.has(key)) { seen.add(key); list.push(od); }
+    });
+    return list;
+  }, [workspaces]);
+
+  // ── Per-workspace revenue toggle ──────────────────────────────────────────
   const [openRevenueId, setOpenRevenueId] = useState(null);
 
   const [selectedOwner, setSelectedOwner] = useState(null);
@@ -882,7 +915,11 @@ export default function AdminDashboard() {
   const [actFilter,        setActFilter]        = useState("all");
   const notifRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [adminNotifications, setAdminNotifications] = useState([]);
+  const [adminNotifications, setAdminNotifications]   = useState([]);
+  const [viewedNotifications, setViewedNotifications] = useState(() => {
+    const saved = localStorage.getItem("viewed_notifications");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [viewedAdminNotifs, setViewedAdminNotifs] = useState(() => JSON.parse(localStorage.getItem("adminViewedNotifications"))||[]);
   const [companyLeads, setCompanyLeads] = useState([]);
   const [hydLeads,     setHydLeads]     = useState([]);
@@ -890,10 +927,10 @@ export default function AdminDashboard() {
 
   const buildNotifs = (company=[], hyd=[], offer=[], ws=[]) => {
     let items = [];
-    company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",      section:"company-leads",   time:"New Lead"      }));
-    hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type,     section:"hyderabad-leads", time:"New Lead"      }));
-    offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type,     section:"offerleads",      time:"New Lead"      }));
-    ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,       type:"Workspace Added", name:w.name, workspace:w.location||"-",      section:"workspaces",      time:"New Workspace" }));
+    company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",  section:"company-leads",   time:"New Lead"      }));
+    hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type, section:"hyderabad-leads", time:"New Lead"      }));
+    offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type, section:"offerleads",      time:"New Lead"      }));
+    ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,       type:"Workspace Added", name:w.name, workspace:w.location||"-",  section:"workspaces",      time:"New Workspace" }));
     setAdminNotifications(items.filter((n) => !viewedAdminNotifs.includes(n.id)));
   };
 
@@ -930,6 +967,7 @@ export default function AdminDashboard() {
 
   const showToast = (msg, type="success") => { setToast({msg,type}); setTimeout(()=>setToast(null),3000); };
 
+  // ── NEW: handleAddWorkspaceBtnClick — opens Yes/No modal ─────────────────
   const handleAddWorkspaceBtnClick = () => {
     if (showAddForm) {
       setShowAddForm(false); setEditId(null); setPendingOwnerData(null); setForm(WS_FORM_INIT);
@@ -938,10 +976,33 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleModalYes   = () => { setShowOwnerModal(false); setShowOwnerForm(true); };
+  // ── Step-1 modal handlers ─────────────────────────────────────────────────
+  const handleModalYes   = () => {
+    setShowOwnerModal(false);
+    // If existing owners exist → show picker; else → jump straight to new form
+    if (existingOwnerDetails.length > 0) {
+      setShowOwnerPicker(true);
+    } else {
+      setShowOwnerForm(true);
+    }
+  };
   const handleModalNo    = () => { setShowOwnerModal(false); setPendingOwnerData(null); setShowAddForm(true); };
   const handleModalClose = () => setShowOwnerModal(false);
 
+  // ── Picker handlers ───────────────────────────────────────────────────────
+  const handlePickerSelectExisting = (ownerData) => {
+    setPendingOwnerData(ownerData);
+    setShowOwnerPicker(false);
+    setShowAddForm(true);
+    showToast(`Owner "${ownerData.owner_name}" selected — now fill workspace info`);
+  };
+  const handlePickerAddNew = () => {
+    setShowOwnerPicker(false);
+    setShowOwnerForm(true);
+  };
+  const handlePickerClose = () => setShowOwnerPicker(false);
+
+  // ── New owner form handlers ───────────────────────────────────────────────
   const handleOwnerFormSubmit = (ownerData) => {
     setOwnerFormLoading(true);
     setTimeout(() => {
@@ -974,7 +1035,7 @@ export default function AdminDashboard() {
   };
 
   const handleToggleActive = (item) => {
-    const ns=!(item.isavailable!==false);
+    const ns = !(item.isavailable !== false);
     axiosInstance.put(`workspaces/update/${item.id}/`,{...item,isavailable:ns,is_approved:item.is_approved})
       .then(()=>{showToast(ns?"Activated":"Inactivated");fetchWS();})
       .catch(()=>showToast("Failed","error"));
@@ -1018,13 +1079,23 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.root}>
-      {mobOpen && <div className={styles.mobOverlay} onClick={closeMob} />}
+      {mobOpen && <div className={styles.mobOverlay} onClick={closeMob}/>}
 
       {/* ── Step-1: Yes/No Modal ── */}
-      {showOwnerModal && <AddWorkspaceModal onYes={handleModalYes} onNo={handleModalNo} onClose={handleModalClose} />}
+      {showOwnerModal && <AddWorkspaceModal onYes={handleModalYes} onNo={handleModalNo} onClose={handleModalClose}/>}
+
+      {/* ── Step-1b: Existing Owner Picker ── */}
+      {showOwnerPicker && (
+        <ExistingOwnerPickerModal
+          existingOwners={existingOwnerDetails}
+          onSelectExisting={handlePickerSelectExisting}
+          onAddNew={handlePickerAddNew}
+          onClose={handlePickerClose}
+        />
+      )}
 
       {/* ── Step-2: Full Owner Details Form ── */}
-      {showOwnerForm && <OwnerDetailsFormModal onSubmit={handleOwnerFormSubmit} onClose={()=>setShowOwnerForm(false)} loading={ownerFormLoading} />}
+      {showOwnerForm && <OwnerDetailsFormModal onSubmit={handleOwnerFormSubmit} onClose={()=>setShowOwnerForm(false)} loading={ownerFormLoading}/>}
 
       {/* ── Sidebar ── */}
       <aside className={`${styles.sidebar} ${sideOpen?styles.sidebarOpen:styles.sidebarCollapsed} ${mobOpen?styles.sidebarMob:""}`}>
@@ -1260,7 +1331,10 @@ export default function AdminDashboard() {
                       </span>
                     )}
                     {!pendingOwnerData&&!editId&&(
-                      <button onClick={()=>setShowOwnerForm(true)}
+                      <button onClick={()=>{
+                        if(existingOwnerDetails.length>0) setShowOwnerPicker(true);
+                        else setShowOwnerForm(true);
+                      }}
                         style={{marginLeft:"auto",display:"inline-flex",alignItems:"center",gap:"5px",fontSize:"11px",fontWeight:600,color:"#f59e0b",background:"#f59e0b10",border:"1px solid #f59e0b25",borderRadius:"8px",padding:"4px 10px",cursor:"pointer"}}>
                         <Icon d={IC.briefcase} size={11}/> + Assign Owner
                       </button>
@@ -1340,7 +1414,6 @@ export default function AdminDashboard() {
                       <th>Lease</th>
                       <th>Approval</th>
                       <th>Status</th>
-                      {/* ── NEW Revenue column header ── */}
                       <th>Revenue</th>
                       <th>Actions</th>
                     </tr>
@@ -1356,19 +1429,12 @@ export default function AdminDashboard() {
                       const leaseInfo    = item.owner_details?.agreement_type || "-";
                       const wsType       = item.usertype || item.workspace_type || item.workspacetype || item.category || item.name || "-";
                       const isActive     = item.isavailable !== false;
-
-                      // ── per-workspace revenue toggle ──
                       const isRevenueOpen = openRevenueId === item.id;
 
                       return (
                         <React.Fragment key={item.id}>
-                          {/* ── Main data row ── */}
                           <tr style={!isActive ? { opacity:0.55, background:"rgba(0,0,0,0.02)" } : {}}>
-
-                            {/* SERIAL */}
                             <td className={styles.tdSerial}>{String(i+1).padStart(2,"00")}</td>
-
-                            {/* LANDLORD */}
                             <td className={styles.tdBold}>
                               {item.owner_details ? (
                                 <button onClick={()=>setSelectedOwner(item.owner_details)}
@@ -1383,71 +1449,32 @@ export default function AdminDashboard() {
                                 </span>
                               )}
                             </td>
-
-                            {/* MANAGER */}
                             <td className={styles.tdMuted}>{managerName}</td>
-
-                            {/* TYPE */}
                             <td className={styles.tdMuted}>{wsType}</td>
-
-                            {/* NAME */}
                             <td className={styles.tdBold}>{item.name}</td>
-
-                            {/* CITY */}
                             <td style={{color:"black"}}>{item.city}</td>
-
-                            {/* LOCATION */}
                             <td className={styles.tdMuted}>{item.location}</td>
-
-                            {/* PRICE */}
                             <td className={styles.tdAccent}>₹{item.price}</td>
-
-                            {/* RENT */}
                             <td style={{fontSize:"11px",color:"#666",fontWeight:600}}>{rentInfo}</td>
-
-                            {/* LEASE */}
                             <td style={{fontSize:"11px",color:"#666",fontWeight:600}}>{leaseInfo}</td>
-
-                            {/* APPROVAL */}
                             <td>
                               {item.is_approved
                                 ? <span className={styles.approvedBadge}>Approved</span>
                                 : <span className={styles.pendingBadge}>Pending</span>}
                             </td>
-
-                            {/* STATUS */}
                             <td>
                               {isActive
                                 ? <span className={styles.approvedBadge} style={{background:"#10b98118",color:"#10b981",border:"1px solid #10b98130"}}>Active</span>
                                 : <span className={styles.pendingBadge}  style={{background:"#6b728018",color:"#6b7280",border:"1px solid #6b728030"}}>Inactive</span>}
                             </td>
-
-                            {/* ── REVENUE TOGGLE BUTTON (NEW) ── */}
                             <td>
                               <button
                                 title={isRevenueOpen ? "Hide Revenue" : "View Revenue"}
                                 onClick={() => setOpenRevenueId(isRevenueOpen ? null : item.id)}
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: 5,
-                                  padding: "5px 10px",
-                                  borderRadius: 8,
-                                  border: `1.5px solid ${isRevenueOpen ? "#7c3aed" : "#a78bfa"}`,
-                                  background: isRevenueOpen ? "#7c3aed" : "#f5f3ff",
-                                  color: isRevenueOpen ? "#fff" : "#7c3aed",
-                                  fontSize: 11,
-                                  fontWeight: 700,
-                                  cursor: "pointer",
-                                  transition: "all 0.18s ease",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
+                                style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:8,border:`1.5px solid ${isRevenueOpen?"#7c3aed":"#a78bfa"}`,background:isRevenueOpen?"#7c3aed":"#f5f3ff",color:isRevenueOpen?"#fff":"#7c3aed",fontSize:11,fontWeight:700,cursor:"pointer",transition:"all 0.18s ease",whiteSpace:"nowrap"}}>
                                 {isRevenueOpen ? "▲ Hide" : "💰 Revenue"}
                               </button>
                             </td>
-
-                            {/* ACTIONS */}
                             <td>
                               <div className={styles.actCell}>
                                 <button className={styles.editBtn} onClick={()=>handleEdit(item)} style={{padding:"5px 7px"}}>
@@ -1470,14 +1497,10 @@ export default function AdminDashboard() {
                             </td>
                           </tr>
 
-                          {/* ── REVENUE PANEL ROW (NEW) — expands inline below each workspace ── */}
                           {isRevenueOpen && (
                             <tr key={`revenue-${item.id}`}>
-                              <td colSpan={14} style={{ padding:0, borderBottom:"2px solid #7c3aed30" }}>
-                                <WorkspaceRevenuePanel
-                                  workspaceId={item.id}
-                                  workspaceName={item.name}
-                                />
+                              <td colSpan={14} style={{padding:0, borderBottom:"2px solid #7c3aed30"}}>
+                                <WorkspaceRevenuePanel workspaceId={item.id} workspaceName={item.name}/>
                               </td>
                             </tr>
                           )}
@@ -1486,9 +1509,7 @@ export default function AdminDashboard() {
                     })}
 
                     {filteredWS.length === 0 && (
-                      <tr>
-                        <td colSpan={14} className={styles.tdEmpty}>No workspaces found</td>
-                      </tr>
+                      <tr><td colSpan={14} className={styles.tdEmpty}>No workspaces found</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -1615,13 +1636,13 @@ export default function AdminDashboard() {
                 ].map(([label, val]) => (
                   <div key={label} className={styles.ownerFormField}>
                     <label className={styles.ownerFormLabel}>{label}</label>
-                    <input className={styles.ownerFormInp} value={val || ""} readOnly />
+                    <input className={styles.ownerFormInp} value={val || ""} readOnly/>
                   </div>
                 ))}
               </div>
               <div style={{marginTop:"16px"}}>
                 <label className={styles.ownerFormLabel}>Notes</label>
-                <textarea className={styles.ownerFormInp} rows={3} value={selectedOwner.notes||""} readOnly />
+                <textarea className={styles.ownerFormInp} rows={3} value={selectedOwner.notes||""} readOnly/>
               </div>
             </div>
           </div>
