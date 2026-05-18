@@ -755,69 +755,244 @@ function OwnerDashboard() {
       return matchFilter && matchSearch;
     });
   }, [quotationLeads, quotationLeadSearch, quotationLeadFilter]);
-
-  const renderOverview = () => {
-    const overviewCards = [
-      { value: `₹${revenue.total_revenue?.toLocaleString()}`, label: "Total Revenue", sub: "All time earnings", section: null, accent: "#b8922a", icon: "💰" },
-      { value: `₹${revenue.confirmed_revenue?.toLocaleString()}`, label: "Confirmed Revenue", sub: "Paid & settled", section: "bookings", accent: "#16a34a", icon: "✅" },
-      { value: workspaces.length, label: "My Workspaces", sub: "Listed spaces", section: "workspaces", accent: "#6366f1", icon: "🏗️" },
-      { value: approvedWorkspaces.length, label: "Approved Workspaces", sub: "Live on platform", section: "workspaces", accent: "#14b8a6", icon: "✔️" },
-      { value: slots.length, label: "Total Slots", sub: "Bookable hours", section: "slots", accent: "#a855f7", icon: "⏰" },
-      { value: monthlySlots.length, label: "Monthly Slots", sub: "Active months", section: "monthlySlots", accent: "#06b6d4", icon: "📅" },
-      { value: mergedBookings.length, label: "Total Bookings", sub: "All reservations", section: "bookings", accent: "#3b82f6", icon: "📋" },
-      { value: totalLeads, label: "Total Leads", sub: "Inquiries received", section: "hyderabadLeads", accent: "#f97316", icon: "🏷️" },
-      { value: Array.isArray(users) ? users.length : 0, label: "Total Users", sub: "Registered members", section: "manageUsers", accent: "#ec4899", icon: "👥" },
-      { value: offerWorkspaces.length, label: "Offer Workspaces", sub: "Active deals", section: "offerWorkspaces", accent: "#f43f5e", icon: "🔥" },
-    ];
-
-    return (
-      <div className={styles.overviewWrap}>
-        <div className={styles.overviewStatsGrid}>
-          {overviewCards.map((card, i) => (
-            <div
-              key={i}
-              className={`${styles.statCardNew} ${card.section ? styles.clickableStat : ""}`}
-              style={{ "--card-accent": card.accent, animationDelay: `${i * 0.07}s` }}
-              onClick={() => card.section && handleNav(card.section)}
-            >
-              <div className={styles.statCardAccentBar} style={{ background: card.accent }} />
-              <div className={styles.statCardBody}>
-                <div className={styles.statCardIcon} style={{ background: card.accent + "20", color: card.accent }}>{card.icon}</div>
-                <p className={styles.statCardValue}>{card.value}</p>
-                <p className={styles.statCardLabel}>{card.label}</p>
-                <p className={styles.statCardSub}>{card.sub}</p>
-              </div>
-              {card.section && <div className={styles.statCardArrow} style={{ color: card.accent }}>→</div>}
-            </div>
-          ))}
-        </div>
-        <div className={styles.overviewBottomRow}>
-          <div className={styles.overviewInfo}>
-            <h3>Quick Summary</h3>
-            <p>{workspaces.length} workspace{workspaces.length !== 1 ? "s" : ""} listed &nbsp;•&nbsp; {approvedWorkspaces.length} approved</p>
-            <p>{slots.length} slot{slots.length !== 1 ? "s" : ""} &nbsp;•&nbsp; {monthlySlots.length} monthly slot{monthlySlots.length !== 1 ? "s" : ""}</p>
-            <p>{mergedBookings.length} booking{mergedBookings.length !== 1 ? "s" : ""} received</p>
-            <p>{totalLeads} total lead{totalLeads !== 1 ? "s" : ""}</p>
-          </div>
-          <div className={styles.workspaceTypeSummary}>
-            <h3>Workspace Types</h3>
-            <div className={styles.wsTypeGrid}>
-              {WORKSPACE_TYPES.map(type => {
-                const count = workspaces.filter(w => w.name === type).length;
-                return (
-                  <div key={type} className={styles.wsTypeChip} onClick={() => handleNav("workspaces")}>
-                    <span className={styles.wsTypeCount}>{count}</span>
-                    <span className={styles.wsTypeName}>{type}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+const renderOverview = () => {
+  const miniBarData = {
+    revenue:   [40,55,45,70,60,80,65,100],
+    workspaces:[50,60,75,55,80,65,90,70],
+    bookings:  [35,65,50,85,70,90,75,100],
   };
 
+  const topCards = [
+    {
+      key:"revenue",
+      value:`₹${revenue.total_revenue?.toLocaleString() ?? 0}`,
+      label:"Total Revenue",
+      accent:"linear-gradient(135deg,#b8922a,#f0c040)",
+      accentSolid:"#b8922a",
+      iconBg:"linear-gradient(135deg,#fef3c7,#fde68a)",
+      icon:"💰",
+      badge:"All time",
+      badgeBg:"rgba(184,146,42,0.12)",
+      badgeColor:"#92400e",
+      section:null,
+      glowColor:"rgba(184,146,42,0.18)",
+    },
+    {
+      key:"workspaces",
+      value:workspaces.length,
+      label:"My Workspaces",
+      accent:"linear-gradient(135deg,#6366f1,#a78bfa)",
+      accentSolid:"#6366f1",
+      iconBg:"linear-gradient(135deg,#ede9fe,#ddd6fe)",
+      icon:"🏗️",
+      badge:`${approvedWorkspaces.length} approved`,
+      badgeBg:"rgba(99,102,241,0.10)",
+      badgeColor:"#4338ca",
+      section:"workspaces",
+      glowColor:"rgba(99,102,241,0.18)",
+    },
+    {
+      key:"bookings",
+      value:mergedBookings.length,
+      label:"Total Bookings",
+      accent:"linear-gradient(135deg,#3b82f6,#60a5fa)",
+      accentSolid:"#3b82f6",
+      iconBg:"linear-gradient(135deg,#dbeafe,#bfdbfe)",
+      icon:"📋",
+      badge:`${bookingStats.confirmed} confirmed`,
+      badgeBg:"rgba(59,130,246,0.10)",
+      badgeColor:"#1d4ed8",
+      section:"bookings",
+      glowColor:"rgba(59,130,246,0.18)",
+    },
+  ];
+
+  const quickCards = [
+    { icon:"✅", iconBg:"linear-gradient(135deg,#dcfce7,#bbf7d0)", iconColor:"#16a34a", label:"Confirmed Revenue", sub:`₹${revenue.confirmed_revenue?.toLocaleString() ?? 0}`, section:"bookings",  accent:"#16a34a" },
+    { icon:"⏰", iconBg:"linear-gradient(135deg,#ede9fe,#ddd6fe)", iconColor:"#7c3aed", label:"Total Slots",        sub:`${slots.length} bookable`,                              section:"slots",     accent:"#7c3aed" },
+    { icon:"📅", iconBg:"linear-gradient(135deg,#cffafe,#a5f3fc)", iconColor:"#0891b2", label:"Monthly Slots",      sub:`${monthlySlots.length} months`,                         section:"monthlySlots", accent:"#0891b2" },
+    { icon:"🏷️", iconBg:"linear-gradient(135deg,#fee2e2,#fecaca)", iconColor:"#dc2626", label:"Total Leads",       sub:`${totalLeads} inquiries`,                               section:"hyderabadLeads", accent:"#dc2626" },
+    { icon:"👥", iconBg:"linear-gradient(135deg,#dbeafe,#bfdbfe)", iconColor:"#2563eb", label:"Total Users",        sub:`${Array.isArray(users)?users.length:0} members`,        section:"manageUsers",   accent:"#2563eb" },
+    { icon:"🔥", iconBg:"linear-gradient(135deg,#fce7f3,#fbcfe8)", iconColor:"#db2777", label:"Offer Workspaces",  sub:`${offerWorkspaces.length} active`,                      section:"offerWorkspaces", accent:"#db2777" },
+    { icon:"✔️", iconBg:"linear-gradient(135deg,#d1fae5,#a7f3d0)", iconColor:"#059669", label:"Approved Spaces",   sub:`${approvedWorkspaces.length} live`,                     section:"workspaces",  accent:"#059669" },
+    { icon:"🎟️", iconBg:"linear-gradient(135deg,#fef3c7,#fde68a)", iconColor:"#b8922a", label:"Offer Coupons",    sub:`${offerCoupons.length} coupons`,                        section:"offerCoupons", accent:"#b8922a" },
+    { icon:"☕", iconBg:"linear-gradient(135deg,#f3e8ff,#e9d5ff)",  iconColor:"#9333ea", label:"Extra Amenities",  sub:`${additionalAmenities.length} added`,                   section:"additionalAmenities", accent:"#9333ea" },
+  ];
+
+  const WORKSPACE_TYPE_META = {
+    "Hot Desk":             { icon:"🪑", color:"#6366f1", g1:"#ede9fe", g2:"#ddd6fe" },
+    "Dedicated Desk":       { icon:"💼", color:"#3b82f6", g1:"#dbeafe", g2:"#bfdbfe" },
+    "Private Office Space": { icon:"🏢", color:"#0891b2", g1:"#cffafe", g2:"#a5f3fc" },
+    "Private Cabin":        { icon:"🚪", color:"#7c3aed", g1:"#f5f3ff", g2:"#ede9fe" },
+    "Meeting Room":         { icon:"🤝", color:"#16a34a", g1:"#dcfce7", g2:"#bbf7d0" },
+    "Board Room":           { icon:"📊", color:"#b8922a", g1:"#fef3c7", g2:"#fde68a" },
+    "Event Space":          { icon:"🎉", color:"#db2777", g1:"#fce7f3", g2:"#fbcfe8" },
+    "Podcast":              { icon:"🎙️", color:"#dc2626", g1:"#fee2e2", g2:"#fecaca" },
+    "Virtual Office":       { icon:"💻", color:"#0284c7", g1:"#e0f2fe", g2:"#bae6fd" },
+  };
+
+  const wsTypeCounts = WORKSPACE_TYPES.map(type => ({
+    type,
+    count:    workspaces.filter(w => w.name === type).length,
+    approved: workspaces.filter(w => w.name === type && w.is_approved).length,
+    meta:     WORKSPACE_TYPE_META[type] || { icon:"🏗️", color:"#64748b", g1:"#f1f5f9", g2:"#e2e8f0" },
+  }));
+
+  const maxCount     = Math.max(...wsTypeCounts.map(t => t.count), 1);
+  const totalWsCount = wsTypeCounts.reduce((s,t) => s + t.count, 0);
+  const activeTypes  = wsTypeCounts.filter(t => t.count > 0).length;
+
+  return (
+    <div className={styles.ov}>
+
+      {/* ── TOP 3 HERO STAT CARDS ── */}
+      <div className={styles.ovHeroGrid}>
+        {topCards.map((card) => (
+          <div
+            key={card.key}
+            className={`${styles.ovHeroCard} ${card.section ? styles.ovHeroCardLink : ""}`}
+            style={{ "--glow": card.glowColor, "--accent": card.accentSolid }}
+            onClick={() => card.section && handleNav(card.section)}
+          >
+            {/* glow blob */}
+            <div className={styles.ovHeroGlow} style={{ background: card.glowColor }} />
+
+            {/* left accent strip */}
+            <div className={styles.ovHeroStrip} style={{ background: card.accent }} />
+
+            <div className={styles.ovHeroBody}>
+              <div className={styles.ovHeroTop}>
+                <div className={styles.ovHeroIcon} style={{ background: card.iconBg }}>
+                  {card.icon}
+                </div>
+                <span className={styles.ovHeroBadge} style={{ background: card.badgeBg, color: card.badgeColor }}>
+                  {card.badge}
+                </span>
+              </div>
+
+              <p className={styles.ovHeroNum}>{card.value}</p>
+              <p className={styles.ovHeroLabel}>{card.label}</p>
+
+              {/* sparkline */}
+              <div className={styles.ovSparkWrap}>
+                {miniBarData[card.key].map((h, i) => (
+                  <div
+                    key={i}
+                    className={styles.ovSparkBar}
+                    style={{ height:`${h}%`, background: card.accent }}
+                  />
+                ))}
+              </div>
+
+              {card.section && (
+                <div className={styles.ovHeroFooter}>
+                  <span className={styles.ovHeroLink}>View all</span>
+                  <span className={styles.ovHeroArrow} style={{ color: card.accentSolid }}>→</span>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── BOTTOM ROW ── */}
+      <div className={styles.ovBottomRow}>
+
+        {/* ── LEFT: Quick Stats ── */}
+        <div className={styles.ovPanel}>
+          <div className={styles.ovPanelHead}>
+            <div className={styles.ovPanelDot} />
+            <span className={styles.ovPanelTitle}>Quick Stats</span>
+            <span className={styles.ovPanelCount}>{quickCards.length} metrics</span>
+          </div>
+          <div className={styles.ovQGrid}>
+            {quickCards.map((card) => (
+              <div
+                key={card.label}
+                className={styles.ovQCard}
+                style={{ "--qaccent": card.accent }}
+                onClick={() => handleNav(card.section)}
+              >
+                <div className={styles.ovQBar} style={{ background: card.accent }} />
+                <div className={styles.ovQIcon} style={{ background: card.iconBg }}>
+                  {card.icon}
+                </div>
+                <p className={styles.ovQLabel}>{card.label}</p>
+                <p className={styles.ovQSub}>{card.sub}</p>
+                <span className={styles.ovQArrow}>↗</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── RIGHT: Workspace Types ── */}
+        <div className={styles.ovPanel}>
+          <div className={styles.ovPanelHead}>
+            <div className={styles.ovPanelDot} />
+            <span className={styles.ovPanelTitle}>Workspace Types</span>
+            <span className={styles.ovPanelCount}>
+              {totalWsCount} spaces · {activeTypes} active
+            </span>
+          </div>
+          <div className={styles.ovWsGrid}>
+            {wsTypeCounts.map(({ type, count, approved, meta }) => {
+              const pct     = Math.round((count / maxCount) * 100);
+              const isEmpty = count === 0;
+              return (
+                <div
+                  key={type}
+                  className={`${styles.ovWsCard} ${isEmpty ? styles.ovWsCardDim : ""}`}
+                  style={{ "--wscolor": meta.color }}
+                  onClick={() => handleNav("workspaces")}
+                >
+                  <div className={styles.ovWsCardTop} style={{ background: isEmpty ? "#e5e7eb" : meta.color }} />
+                  <div className={styles.ovWsCardBody}>
+                    <div className={styles.ovWsCardRow}>
+                      <div
+                        className={styles.ovWsCardIcon}
+                        style={{ background: isEmpty ? "#f1f5f9" : `linear-gradient(135deg,${meta.g1},${meta.g2})` }}
+                      >
+                        {meta.icon}
+                      </div>
+                      <span
+                        className={styles.ovWsCardNum}
+                        style={{ color: isEmpty ? "#cbd5e1" : meta.color }}
+                      >
+                        {count}
+                      </span>
+                    </div>
+                    <p className={styles.ovWsCardName}>{type}</p>
+                    <div className={styles.ovWsCardTrack}>
+                      <div
+                        className={styles.ovWsCardFill}
+                        style={{
+                          width:`${pct}%`,
+                          background: isEmpty ? "#e5e7eb" : `linear-gradient(90deg,${meta.color},${meta.g2})`,
+                        }}
+                      />
+                    </div>
+                    {!isEmpty ? (
+                      <div className={styles.ovWsBadges}>
+                        <span className={styles.ovWsBadgeGreen}>✔ {approved}</span>
+                        {count - approved > 0 && (
+                          <span className={styles.ovWsBadgeAmber}>{count - approved}p</span>
+                        )}
+                      </div>
+                    ) : (
+                      <p className={styles.ovWsEmpty}>No spaces</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+      
   const renderManageUsers = () => {
     const allUsers = Array.isArray(users) ? users : [];
     const totalUsers = allUsers.length;
