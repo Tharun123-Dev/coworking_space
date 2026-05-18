@@ -202,8 +202,6 @@ function WorkspaceRevenuePanel({ workspaceId, workspaceName }) {
 }
 
 // ─── EXISTING OWNER PICKER MODAL ──────────────────────────────────────────────
-// Shows when user clicks "Yes, Add Owner Details" and existing owners exist.
-// Allows selecting a saved owner OR filling new details.
 function ExistingOwnerPickerModal({ existingOwners, onSelectExisting, onAddNew, onClose }) {
   const [selected, setSelected]   = useState(null);
   const [search,   setSearch]     = useState("");
@@ -856,7 +854,14 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     const role = localStorage.getItem("role");
+    // ── FIX: Do NOT clear viewed notifications on logout ──────────────────
+    // We intentionally preserve "adminViewedNotifications" so that already-
+    // viewed notifications do not reappear after re-login.
+    const viewedToKeep = localStorage.getItem("adminViewedNotifications");
     localStorage.clear();
+    if (viewedToKeep) {
+      localStorage.setItem("adminViewedNotifications", viewedToKeep);
+    }
     if (role==="admin")      window.location.href="/auth?type=admin";
     else if (role==="owner") window.location.href="/auth?type=owner";
     else                     window.location.href="/auth?type=user";
@@ -875,15 +880,12 @@ export default function AdminDashboard() {
 
   // ── Owner assignment modal state ──────────────────────────────────────────
   const [showOwnerModal,    setShowOwnerModal]    = useState(false);
-  // NEW: picker for existing owners
   const [showOwnerPicker,   setShowOwnerPicker]   = useState(false);
   const [showOwnerForm,     setShowOwnerForm]      = useState(false);
   const [pendingOwnerData,  setPendingOwnerData]   = useState(null);
   const [ownerFormLoading,  setOwnerFormLoading]   = useState(false);
 
   // ── Saved owner details (pulled from existing workspaces) ─────────────────
-  // We collect all unique owner_details objects from existing workspaces so the
-  // picker can show them.
   const existingOwnerDetails = useMemo(() => {
     const seen  = new Set();
     const list  = [];
@@ -916,23 +918,33 @@ export default function AdminDashboard() {
   const notifRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   const [adminNotifications, setAdminNotifications]   = useState([]);
+
+  // ── FIX: viewedAdminNotifs persists across logout/login ──────────────────
+  // Read once on mount; preserved through logout (see handleLogout above).
+  const [viewedAdminNotifs, setViewedAdminNotifs] = useState(
+    () => JSON.parse(localStorage.getItem("adminViewedNotifications") || "[]")
+  );
+
   const [viewedNotifications, setViewedNotifications] = useState(() => {
     const saved = localStorage.getItem("viewed_notifications");
     return saved ? JSON.parse(saved) : [];
   });
-  const [viewedAdminNotifs, setViewedAdminNotifs] = useState(() => JSON.parse(localStorage.getItem("adminViewedNotifications"))||[]);
+
   const [companyLeads, setCompanyLeads] = useState([]);
   const [hydLeads,     setHydLeads]     = useState([]);
   const [offerLeads,   setOfferLeads]   = useState([]);
 
-  const buildNotifs = (company=[], hyd=[], offer=[], ws=[]) => {
+  // ── FIX: buildNotifs now receives viewedAdminNotifs as a parameter so it
+  // always uses the latest value, not a stale closure. ──────────────────────
+  const buildNotifs = useCallback((company=[], hyd=[], offer=[], ws=[], viewedIds=[]) => {
     let items = [];
     company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",  section:"company-leads",   time:"New Lead"      }));
     hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type, section:"hyderabad-leads", time:"New Lead"      }));
     offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type, section:"offerleads",      time:"New Lead"      }));
     ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,       type:"Workspace Added", name:w.name, workspace:w.location||"-",  section:"workspaces",      time:"New Workspace" }));
-    setAdminNotifications(items.filter((n) => !viewedAdminNotifs.includes(n.id)));
-  };
+    // ── FIX: filter using the passed-in viewedIds (not stale state) ──────
+    setAdminNotifications(items.filter((n) => !viewedIds.includes(n.id)));
+  }, []);
 
   useEffect(() => { const c=()=>setIsMobile(window.innerWidth<768); c(); window.addEventListener("resize",c); return ()=>window.removeEventListener("resize",c); }, []);
   const SPARKS = { ws:mkSpark(10,8), cat:mkSpark(10,6), own:mkSpark(10,4) };
@@ -941,7 +953,10 @@ export default function AdminDashboard() {
   const fetchCat    = () => axiosInstance.get("workspaces/categories").then((r)=>setCategories(Array.isArray(r.data)?r.data:[])).catch(()=>setCategories([]));
   const fetchOwners = () => axiosInstance.get("owners").then((r)=>setOwners(Array.isArray(r.data)?r.data:[])).catch(()=>setOwners([]));
 
-  useEffect(() => { buildNotifs(companyLeads,hydLeads,offerLeads,workspaces); }, [companyLeads,hydLeads,offerLeads,workspaces]);
+  // ── FIX: pass viewedAdminNotifs explicitly so buildNotifs is always fresh ─
+  useEffect(() => {
+    buildNotifs(companyLeads, hydLeads, offerLeads, workspaces, viewedAdminNotifs);
+  }, [companyLeads, hydLeads, offerLeads, workspaces, viewedAdminNotifs, buildNotifs]);
 
   useEffect(() => {
     fetchOwners(); fetchWS(); fetchCat();
@@ -962,12 +977,15 @@ export default function AdminDashboard() {
     return ()=>window.removeEventListener("hashchange",sync);
   }, []);
 
-  useEffect(() => { localStorage.setItem("adminViewedNotifications",JSON.stringify(viewedAdminNotifs)); }, [viewedAdminNotifs]);
+  // ── FIX: persist viewedAdminNotifs to localStorage whenever it changes ───
+  useEffect(() => {
+    localStorage.setItem("adminViewedNotifications", JSON.stringify(viewedAdminNotifs));
+  }, [viewedAdminNotifs]);
+
   useEffect(() => { const h=(e)=>{ if(notifRef.current&&!notifRef.current.contains(e.target)) setNotifOpen(false); }; document.addEventListener("mousedown",h); return ()=>document.removeEventListener("mousedown",h); }, []);
 
   const showToast = (msg, type="success") => { setToast({msg,type}); setTimeout(()=>setToast(null),3000); };
 
-  // ── NEW: handleAddWorkspaceBtnClick — opens Yes/No modal ─────────────────
   const handleAddWorkspaceBtnClick = () => {
     if (showAddForm) {
       setShowAddForm(false); setEditId(null); setPendingOwnerData(null); setForm(WS_FORM_INIT);
@@ -976,10 +994,8 @@ export default function AdminDashboard() {
     }
   };
 
-  // ── Step-1 modal handlers ─────────────────────────────────────────────────
   const handleModalYes   = () => {
     setShowOwnerModal(false);
-    // If existing owners exist → show picker; else → jump straight to new form
     if (existingOwnerDetails.length > 0) {
       setShowOwnerPicker(true);
     } else {
@@ -989,7 +1005,6 @@ export default function AdminDashboard() {
   const handleModalNo    = () => { setShowOwnerModal(false); setPendingOwnerData(null); setShowAddForm(true); };
   const handleModalClose = () => setShowOwnerModal(false);
 
-  // ── Picker handlers ───────────────────────────────────────────────────────
   const handlePickerSelectExisting = (ownerData) => {
     setPendingOwnerData(ownerData);
     setShowOwnerPicker(false);
@@ -1002,7 +1017,6 @@ export default function AdminDashboard() {
   };
   const handlePickerClose = () => setShowOwnerPicker(false);
 
-  // ── New owner form handlers ───────────────────────────────────────────────
   const handleOwnerFormSubmit = (ownerData) => {
     setOwnerFormLoading(true);
     setTimeout(() => {
@@ -1081,10 +1095,8 @@ export default function AdminDashboard() {
     <div className={styles.root}>
       {mobOpen && <div className={styles.mobOverlay} onClick={closeMob}/>}
 
-      {/* ── Step-1: Yes/No Modal ── */}
       {showOwnerModal && <AddWorkspaceModal onYes={handleModalYes} onNo={handleModalNo} onClose={handleModalClose}/>}
 
-      {/* ── Step-1b: Existing Owner Picker ── */}
       {showOwnerPicker && (
         <ExistingOwnerPickerModal
           existingOwners={existingOwnerDetails}
@@ -1094,7 +1106,6 @@ export default function AdminDashboard() {
         />
       )}
 
-      {/* ── Step-2: Full Owner Details Form ── */}
       {showOwnerForm && <OwnerDetailsFormModal onSubmit={handleOwnerFormSubmit} onClose={()=>setShowOwnerForm(false)} loading={ownerFormLoading}/>}
 
       {/* ── Sidebar ── */}
@@ -1184,15 +1195,29 @@ export default function AdminDashboard() {
                     <div className={styles.notifHeading}><h3>Notifications</h3><span className={styles.notifCount}>{adminNotifications.length}</span></div>
                     <button className={styles.notifClose} onClick={()=>setNotifOpen(false)}>✕</button>
                   </div>
+                  {adminNotifications.length === 0 && (
+                    <div style={{padding:"20px",textAlign:"center",color:"#aaa",fontSize:"13px"}}>
+                      No new notifications
+                    </div>
+                  )}
                   {adminNotifications.map((n)=>(
                     <div key={n.id} className={styles.notifItem}>
                       <div className={styles.notifIco} style={{background:"rgba(99,102,241,0.1)",color:"#6366f1"}}><Icon d={IC.bell} size={14}/></div>
                       <div style={{flex:1}}><div className={styles.notifTxt}><strong>{n.type}</strong><br/>{n.name}</div><div className={styles.notifTime}>{n.workspace}</div></div>
                       <button className={styles.viewBtn} onClick={()=>{
                         setSection(n.section);
-                        const ids=adminNotifications.filter((i)=>i.section===n.section).map((i)=>i.id);
-                        setViewedAdminNotifs((p)=>[...new Set([...p,...ids])]);
-                        setAdminNotifications((p)=>p.filter((i)=>i.section!==n.section));
+                        // ── FIX: collect all IDs for this section and mark them
+                        // viewed so they never reappear — even after logout/login ──
+                        const idsForSection = adminNotifications
+                          .filter((i) => i.section === n.section)
+                          .map((i) => i.id);
+                        setViewedAdminNotifs((prev) => {
+                          const merged = [...new Set([...prev, ...idsForSection])];
+                          return merged;
+                        });
+                        setAdminNotifications((prev) =>
+                          prev.filter((i) => i.section !== n.section)
+                        );
                         setNotifOpen(false);
                       }}>View</button>
                     </div>
@@ -1341,7 +1366,6 @@ export default function AdminDashboard() {
                     )}
                   </div>
 
-                  {/* Owner preview card */}
                   {pendingOwnerData&&(
                     <div style={{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:"10px",padding:"14px 16px",marginBottom:"16px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"10px"}}>
                       {[

@@ -842,7 +842,7 @@ const buildNotifications = () => {
       items.push({
         id,
         original_id: w.id,
-        type: "Workspace Added",
+        type: "Workspace Added By Admin",
         name: w.workspace_name,
         workspace: w.workspace_name,
         location: w.city || w.location,

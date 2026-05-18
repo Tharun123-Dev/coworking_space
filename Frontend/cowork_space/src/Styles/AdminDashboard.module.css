@@ -1538,6 +1538,7 @@
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: all 0.18s;
+  margin-left: 250px !important;
 }
 .ownerFormClose:hover { background: var(--red-dim); border-color: rgba(212,74,74,0.3); color: var(--red); }
 
@@ -1818,4 +1819,15 @@
   .ownerFormSubmit, .ownerFormCancel { width: 100%; justify-content: center; }
   .modalBox { padding: 24px 16px 20px; }
   .amenitiesGrid { grid-template-columns: repeat(2, 1fr); }
+  .ownerFormClose {
+  width: 30px; height: 30px; flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: rgba(245,242,234,0.8);
+  color: #9A8A6A;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-left:0px !important;
+}
 }
