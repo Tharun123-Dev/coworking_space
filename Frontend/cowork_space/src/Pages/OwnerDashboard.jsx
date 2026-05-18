@@ -438,12 +438,42 @@ function OwnerDashboard() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    const role = localStorage.getItem("role");
-    localStorage.clear();
-    if (role === "admin") window.location.href = "/auth?type=admin";
-    else if (role === "owner") window.location.href = "/auth?type=owner";
-    else window.location.href = "/auth?type=user";
-  };
+
+  const role = localStorage.getItem("role");
+
+  // KEEP viewed notifications
+  const savedViewedNotifications =
+    localStorage.getItem(notificationKey);
+
+  // CLEAR ALL
+  localStorage.clear();
+
+  // RESTORE viewed notifications
+  if (savedViewedNotifications) {
+
+    localStorage.setItem(
+      notificationKey,
+      savedViewedNotifications
+    );
+
+  }
+
+  // REDIRECT
+  if (role === "admin") {
+
+    window.location.href = "/auth?type=admin";
+
+  } else if (role === "owner") {
+
+    window.location.href = "/auth?type=owner";
+
+  } else {
+
+    window.location.href = "/auth?type=user";
+
+  }
+
+};
 
   const [workspaces, setWorkspaces] = useState([]);
   const [offerWorkspaces, setOfferWorkspaces] = useState([]);
@@ -471,8 +501,25 @@ function OwnerDashboard() {
   const [busyMap, setBusyMap] = useState({});
   const [toastMsg, setToastMsg] = useState("");
   const [revenue, setRevenue] = useState({ total_revenue: 0, confirmed_revenue: 0, pending_revenue: 0, cancelled_count: 0 });
+  
   const [notifications, setNotifications] = useState([]);
-  const [viewedNotifications, setViewedNotifications] = useState(() => JSON.parse(localStorage.getItem("viewedNotifications")) || []);
+  const [workspaceNotifications, setWorkspaceNotifications] = useState([]);
+const currentUser = JSON.parse(
+  localStorage.getItem("user")
+);
+
+const notificationKey = `viewedNotifications_${currentUser?.id}`;
+
+const [viewedNotifications, setViewedNotifications] =
+  useState(() => {
+
+    return JSON.parse(
+
+      localStorage.getItem(notificationKey)
+
+    ) || [];
+
+  });
   const [showNotifications, setShowNotifications] = useState(false);
   const [additionalAmenities, setAdditionalAmenities] = useState([]);
   const [editAmenityId, setEditAmenityId] = useState(null);
@@ -545,6 +592,18 @@ function OwnerDashboard() {
   const fetchHyderabadLeads = () => axiosInstance.get("hyderabad/owner/").then(res => setHyderabadLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Hyderabad leads fetch error:", err));
   const fetchCustomisationLeads = () => axiosInstance.get("leads/modern-leads/owner/").then(res => setCustomisationLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Customisation leads fetch error:", err));
   const fetchQuotationLeads = () => axiosInstance.get("leads/quotation-leads/owner/").then(res => setQuotationLeads(Array.isArray(res.data) ? res.data : [])).catch(err => console.error("Quotation leads fetch error:", err));
+  const fetchWorkspaceNotifications = () => {
+  axiosInstance
+    .get("workspaces/owner-notifications/")
+    .then((res) => {
+      setWorkspaceNotifications(
+        Array.isArray(res.data) ? res.data : []
+      );
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 
   const handleEditOffer = (item) => {
     setOfferForm({ building: item.building, type: item.type, original_price: item.original_price, offer_price: item.offer_price, seats: item.seats, floor: item.floor, image: item.image, amenities: item.amenities || [] });
@@ -584,31 +643,245 @@ function OwnerDashboard() {
     if (!window.confirm("Delete this amenity?")) return;
     axiosInstance.delete(`workspaces/additional-amenities/delete/${id}/`).then(() => { fetchAdditionalAmenities(); alert("Deleted Successfully"); }).catch(err => console.log(err));
   };
+const handleViewNotification = async (notification) => {
 
-  const buildNotifications = () => {
-    let items = [];
-    companyLeads.forEach(l => items.push({ id: `company-${l.id}`, type: "Company Lead", name: l.name, workspace: l.company || "-", location: l.location || "-", section: "companyLeads" }));
-    hyderabadLeads.forEach(l => items.push({ id: `hyd-${l.id}`, type: "Hyderabad Lead", name: l.name, workspace: l.workspace_type, location: l.preferred_location, section: "hyderabadLeads" }));
-    offerLeads.forEach(l => items.push({ id: `offer-${l.id}`, type: "Offer Lead", name: l.name, workspace: l.workspace_type, location: l.preferred_location, section: "offerLeads" }));
-    customisationLeads.forEach(l => items.push({ id: `custom-${l.id}`, type: "Customisation Lead", name: l.name, workspace: l.company || "-", location: l.location || "-", section: "customisationLeads" }));
-    setNotifications(items.filter(item => !viewedNotifications.includes(item.id)));
-  };
+  try {
 
-  const handleViewNotification = (notification) => {
+    // =========================
+    // GET SAME SECTION IDS
+    // =========================
+    const sameSectionNotifications = notifications.filter(
+
+      (n) => n.section === notification.section
+
+    );
+
+    // =========================
+    // MARK ALL AS READ
+    // =========================
+    await Promise.all(
+
+      sameSectionNotifications.map((n) => {
+
+        if (n.original_id) {
+
+          return axiosInstance.put(
+
+            `workspaces/owner-notification-read/${n.original_id}/`
+
+          );
+
+        }
+
+        return Promise.resolve();
+
+      })
+
+    );
+
+    // =========================
+    // OPEN SECTION
+    // =========================
     setActiveSection(notification.section);
-    let updatedViewed = [...viewedNotifications];
-    const sameSectionIds = notifications.filter((n) => n.section === notification.section).map((n) => n.id);
-    updatedViewed = [...new Set([...updatedViewed, ...sameSectionIds])];
-    setViewedNotifications(updatedViewed);
-    localStorage.setItem("viewedNotifications", JSON.stringify(updatedViewed));
-    setNotifications((prev) => prev.filter((n) => n.section !== notification.section));
-    setShowNotifications(false);
-  };
 
-  useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads]);
-  useEffect(() => { localStorage.setItem("viewedNotifications", JSON.stringify(viewedNotifications)); }, [viewedNotifications]);
+    // =========================
+    // SAVE VIEWED IDS
+    // =========================
+    const updatedViewed = [
+  ...new Set([
+    ...viewedNotifications,
+    notification.id,
+    ...sameSectionNotifications.map((n) => n.id)
+  ])
+];
+
+    // =========================
+    // UPDATE STATE
+    // =========================
+    setViewedNotifications(updatedViewed);
+
+    // =========================
+    // SAVE LOCAL STORAGE
+    // =========================
+  localStorage.setItem(
+
+  notificationKey,
+
+  JSON.stringify(updatedViewed)
+
+);
+
+    // =========================
+    // REMOVE SAME SECTION
+    // =========================
+    setNotifications((prev) =>
+
+      prev.filter(
+
+        (n) => n.section !== notification.section
+
+      )
+
+    );
+
+    // =========================
+    // CLOSE DROPDOWN
+    // =========================
+    setShowNotifications(false);
+
+  }
+
+  catch (err) {
+
+    console.log(err);
+
+  }
+
+};
+const buildNotifications = () => {
+
+  let items = [];
+
+  // =========================
+  // COMPANY LEADS
+  // =========================
+  companyLeads.forEach((l) => {
+
+    const id = `company-${l.id}`;
+
+    if (!viewedNotifications.includes(id)) {
+
+      items.push({
+        id,
+        type: "Company Lead",
+        name: l.name,
+        workspace: l.company || "-",
+        location: l.location || "-",
+        section: "companyLeads",
+      });
+
+    }
+
+  });
+
+  // =========================
+  // HYDERABAD LEADS
+  // =========================
+  hyderabadLeads.forEach((l) => {
+
+    const id = `hyd-${l.id}`;
+
+    if (!viewedNotifications.includes(id)) {
+
+      items.push({
+        id,
+        type: "Hyderabad Lead",
+        name: l.name,
+        workspace: l.workspace_type,
+        location: l.preferred_location,
+        section: "hyderabadLeads",
+      });
+
+    }
+
+  });
+
+  // =========================
+  // OFFER LEADS
+  // =========================
+  offerLeads.forEach((l) => {
+
+    const id = `offer-${l.id}`;
+
+    if (!viewedNotifications.includes(id)) {
+
+      items.push({
+        id,
+        type: "Offer Lead",
+        name: l.name,
+        workspace: l.workspace_type,
+        location: l.preferred_location,
+        section: "offerLeads",
+      });
+
+    }
+
+  });
+
+  // =========================
+  // CUSTOMISATION LEADS
+  // =========================
+  customisationLeads.forEach((l) => {
+
+    const id = `custom-${l.id}`;
+
+    if (!viewedNotifications.includes(id)) {
+
+      items.push({
+        id,
+        type: "Customisation Lead",
+        name: l.name,
+        workspace: l.company || "-",
+        location: l.location || "-",
+        section: "customisationLeads",
+      });
+
+    }
+
+  });
+
+  // =========================
+  // WORKSPACE NOTIFICATIONS
+  // =========================
+  workspaceNotifications.forEach((w) => {
+
+    const id = `workspace-${w.id}`;
+
+    if (!viewedNotifications.includes(id)) {
+
+      items.push({
+        id,
+        original_id: w.id,
+        type: "Workspace Added",
+        name: w.workspace_name,
+        workspace: w.workspace_name,
+        location: w.city || w.location,
+        owner_role: w.owner_role,
+        message: `${w.workspace_name} added in ${
+          w.city || w.location
+        } by ${
+          w.owner_role === "admin"
+            ? "Super Admin"
+            : "Owner"
+        }`,
+        section: "workspaces",
+      });
+
+    }
+
+  });
+
+  setNotifications(items);
+
+};
+
+
+
+  useEffect(() => { buildNotifications(); }, [companyLeads, hyderabadLeads, offerLeads, customisationLeads, workspaceNotifications,
+  viewedNotifications]);
   useEffect(() => {
-    fetchWorkspaces(); fetchAllWorkspaces(); fetchOfferWorkspaces(); fetchOfferCoupons(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchUsers(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchQuotationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
+
+  localStorage.setItem(
+
+    notificationKey,
+
+    JSON.stringify(viewedNotifications)
+
+  );
+
+}, [viewedNotifications, notificationKey]);
+  useEffect(() => {
+    fetchWorkspaces(); fetchAllWorkspaces();fetchWorkspaceNotifications();fetchOfferWorkspaces();fetchOfferCoupons(); fetchAdditionalAmenities(); fetchRevenue(); fetchSlots(); fetchAmenities(); fetchUsers(); fetchMonthlySlots(); fetchCompanyLeads(); fetchHyderabadLeads(); fetchCustomisationLeads(); fetchQuotationLeads(); fetchOfferLeads(); fetchBookings(); fetchCancelRequests();
   }, [fetchBookings, fetchCancelRequests]);
   useEffect(() => { const loc = localStorage.getItem("user_location"); if (loc) setOwnerCity(loc); }, []);
   useEffect(() => { const handleResize = () => { if (window.innerWidth > 640) setMobileSidebarOpen(false); }; window.addEventListener("resize", handleResize); return () => window.removeEventListener("resize", handleResize); }, []);
@@ -1158,12 +1431,40 @@ const renderOverview = () => {
                     </td>
 
                     {/* ADDED BY */}
-                    <td>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                        <span style={{ fontWeight: 600, color: "#111827", fontSize: "13px" }}>{w.owner_name || "Admin"}</span>
-                        <span style={{ fontSize: "11px", color: "#64748b" }}>Manager / Admin</span>
-                      </div>
-                    </td>
+                   <td>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "3px",
+    }}
+  >
+    <span
+      style={{
+        fontWeight: 700,
+        color: "#111827",
+        fontSize: "13px",
+      }}
+    >
+      {w.owner_display_name || "Unknown"}
+    </span>
+
+    <span
+      style={{
+        fontSize: "11px",
+        fontWeight: 600,
+        color:
+          w.owner_role === "admin"
+            ? "#dc2626"
+            : "#2563eb",
+      }}
+    >
+      {w.owner_role === "admin"
+        ? "Added By Admin"
+        : "Added By Owner"}
+    </span>
+  </div>
+</td>
 
                     {/* CITY */}
                     <td>{w.city}</td>
@@ -1492,10 +1793,10 @@ const renderOverview = () => {
         <div className={styles.overviewGrid}>
           <div className={`${styles.statCard} ${styles.gold}`}><span className={styles.statIcon}>📋</span><div><p className={styles.statValue}>{bookingStats.total}</p><p className={styles.statLabel}>Total</p></div></div>
           <div className={`${styles.statCard} ${styles.green}`}><span className={styles.statIcon}>✅</span><div><p className={styles.statValue}>{bookingStats.confirmed}</p><p className={styles.statLabel}>Confirmed</p></div></div>
-          <div className={`${styles.statCard} ${styles.amber}`}><span className={styles.statIcon}>⏳</span><div><p className={styles.statValue}>{bookingStats.pending}</p><p className={styles.statLabel}>Pending</p></div></div>
+          {/* <div className={`${styles.statCard} ${styles.amber}`}><span className={styles.statIcon}>⏳</span><div><p className={styles.statValue}>{bookingStats.pending}</p><p className={styles.statLabel}>Pending</p></div></div> */}
           {/* <div className={`${styles.statCard} ${styles.red}`}><span className={styles.statIcon}>❌</span><div><p className={styles.statValue}>{bookingStats.cancelled}</p><p className={styles.statLabel}>Cancelled</p></div></div> */}
           <div className={`${styles.statCard} ${styles.green}`}><span className={styles.statIcon}>💰</span><div><p className={styles.statValue}>₹{confirmedRevenue.toLocaleString()}</p><p className={styles.statLabel}>Confirmed Revenue</p></div></div>
-          <div className={`${styles.statCard} ${styles.amber}`}><span className={styles.statIcon}>🕐</span><div><p className={styles.statValue}>₹{pendingRevenue.toLocaleString()}</p><p className={styles.statLabel}>Pending Revenue</p></div></div>
+          {/* <div className={`${styles.statCard} ${styles.amber}`}><span className={styles.statIcon}>🕐</span><div><p className={styles.statValue}>₹{pendingRevenue.toLocaleString()}</p><p className={styles.statLabel}>Pending Revenue</p></div></div> */}
         </div>
         <div className={styles.tableWrap}>
           {loadingBookings?(<div className={styles.empty}>Loading bookings…</div>):mergedBookings.length===0?(<div className={styles.empty}><div>📋</div><p>No bookings yet</p></div>):(

@@ -57,6 +57,14 @@ class Workspace(models.Model):
         related_name="owner_workspaces"
     )
 
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_workspaces"
+    )
+
     is_approved = models.BooleanField(
         default=False
     )
@@ -410,9 +418,29 @@ class WorkspaceOwnerDetails(models.Model):
     notes = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+class OwnerNotification(models.Model):
 
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
 
+    workspace = models.ForeignKey(
+        Workspace,
+        on_delete=models.CASCADE
+    )
 
+    title = models.CharField(
+        max_length=255
+    )
 
+    message = models.TextField()
 
+    is_read = models.BooleanField(
+        default=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
     

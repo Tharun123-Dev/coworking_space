@@ -5,7 +5,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework.permissions import IsAdminUser
 from workspaces.models import ActivityLog
 from django.shortcuts import get_object_or_404
-from .models import Workspace
+from .models import Workspace, OwnerNotification
 from .serializers import WorkspaceSerializer, WorkspaceCategorySerializer, WorkspaceCategory, AmenitySerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -158,7 +158,7 @@ def add_workspace(request):
     )
 
     # =========================
-    # FIND MANAGER BASED ON LOCATION
+    # FIND OWNER BASED ON LOCATION
     # =========================
     owner_profile = Profile.objects.filter(
 
@@ -181,16 +181,20 @@ def add_workspace(request):
 
     if serializer.is_valid():
 
+        # =========================
+        # SAVE WORKSPACE
+        # =========================
         workspace = serializer.save(
 
-            # LOCATION MANAGER
-            owner=owner_profile.user
-            if owner_profile
-            else request.user,
+    owner=owner_profile.user
+    if owner_profile
+    else request.user,
 
-            is_approved=False
+    created_by=request.user,
 
-        )
+    is_approved=False
+
+)
 
         # =========================
         # SAVE AMENITIES
@@ -272,6 +276,27 @@ def add_workspace(request):
             )
 
         # =========================
+        # CREATE OWNER NOTIFICATION
+        # =========================
+        if owner_profile:
+
+            OwnerNotification.objects.create(
+
+                owner=owner_profile.user,
+
+                workspace=workspace,
+
+                title="New Workspace Added",
+
+                message=(
+    f"New workspace '{workspace.name}' "
+    f"added in {workspace.city} "
+    f"by  Admin"
+)
+
+            )
+
+        # =========================
         # ACTIVITY LOG
         # =========================
         ActivityLog.objects.create(
@@ -308,6 +333,38 @@ def add_workspace(request):
         serializer.errors,
         status=400
     )
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def owner_notifications(request):
+
+    notifications = OwnerNotification.objects.filter(
+    owner=request.user,
+    is_read=False
+
+    ).order_by("-id")
+
+    data = []
+
+    for n in notifications:
+
+        data.append({
+
+            "id": n.id,
+
+            "title": n.title,
+
+            "message": n.message,
+
+            "workspace": n.workspace.name,
+
+            "created_at": n.created_at,
+
+            "is_read": n.is_read
+
+        })
+
+    return Response(data)
 # ===========================
 # UPDATE WORKSPACE
 # ===========================
@@ -1865,6 +1922,34 @@ def workspace_owner_details(request, workspace_id):
             {
                 "error": "No owner details found"
             },
+            status=404
+        )
+    
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def mark_owner_notification_read(request, pk):
+
+    try:
+
+        notification = OwnerNotification.objects.get(
+
+            id=pk,
+            owner=request.user
+
+        )
+
+        notification.is_read = True
+
+        notification.save()
+
+        return Response({
+            "message": "Notification marked as read"
+        })
+
+    except OwnerNotification.DoesNotExist:
+
+        return Response(
+            {"error": "Notification not found"},
             status=404
         )
     

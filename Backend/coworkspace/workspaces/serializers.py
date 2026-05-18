@@ -59,6 +59,10 @@ class WorkspaceSerializer(serializers.ModelSerializer):
 
     manager_location = serializers.SerializerMethodField()
 
+    owner_role = serializers.SerializerMethodField()
+
+    owner_display_name = serializers.SerializerMethodField()
+
     class Meta:
 
         model = Workspace
@@ -67,14 +71,12 @@ class WorkspaceSerializer(serializers.ModelSerializer):
 
     def get_owner_name(self, obj):
 
-        # Assigned landlord
         if hasattr(obj, "owner_details"):
 
             if obj.owner_details:
 
                 return obj.owner_details.owner_name
 
-        # Fallback manager
         if obj.owner:
 
             return (
@@ -102,6 +104,31 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         except:
 
             return None
+
+    def get_owner_role(self, obj):
+
+     if obj.created_by:
+
+        if obj.created_by.is_superuser:
+            return "admin"
+
+     return "owner"
+
+    def get_owner_display_name(self, obj):
+
+     if obj.created_by:
+
+        if obj.created_by.is_superuser:
+            return "Super Admin"
+
+        return (
+            obj.created_by.get_full_name()
+            or
+            obj.created_by.username
+        )
+
+     return "Unknown"
+    
 class WorkspaceCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
