@@ -16,6 +16,7 @@ import HydCards from "../Pages/HyderabadWorkspaces.jsx";
 import Compaines from "../Pages/Companies.jsx"
 import Hyderabad from "../Improved/Hyderabad.jsx"
 import WhatsAppFloat from "../Pages/WhatsAppFloat.jsx";
+import ChatBot from "../Pages/Chatbot.jsx";
 
 function HomeLayout() {
   const [selected, setSelected] = useState(null);
@@ -36,6 +37,7 @@ function HomeLayout() {
       <WorkspaceFeature />
       {/* <Cities /> */}
       {/* <AISeats /> */}
+      <ChatBot/>
       <Reviews />
           <AddReview />
           <WhatsAppFloat/>
