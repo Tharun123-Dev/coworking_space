@@ -914,6 +914,43 @@ export default function AdminDashboard() {
   const notifRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   const [adminNotifications, setAdminNotifications]   = useState([]);
+  const fetchAdminNotifications = async () => {
+
+  try {
+
+    const res = await axiosInstance.get(
+
+      "admin-notifications/"
+
+    );
+
+    const items = res.data.map((n) => ({
+
+      id: `admin-${n.id}`,
+
+      type: n.type,
+
+      name: n.name,
+
+      workspace: n.workspace,
+
+      section: n.section,
+
+      original_id: n.id,
+
+    }));
+
+    setAdminNotifications(items);
+
+  }
+
+  catch (err) {
+
+    console.log(err);
+
+  }
+
+};
 
   const [viewedAdminNotifs, setViewedAdminNotifs] = useState(
     () => {
@@ -930,14 +967,26 @@ export default function AdminDashboard() {
   const [companyLeads, setCompanyLeads] = useState([]);
   const [hydLeads,     setHydLeads]     = useState([]);
   const [offerLeads,   setOfferLeads]   = useState([]);
+  const [normalLeads, setNormalLeads] = useState([]);
   const [ownerAddedWorkspaces, setOwnerAddedWorkspaces] = useState([]);
 
-  const buildNotifs = useCallback((company=[], hyd=[], offer=[], ws=[], ownerNotifs=[], viewedIds=[]) => {
+  const buildNotifs = useCallback((company=[], hyd=[], offer=[], ws=[], ownerNotifs=[], viewedIds=[],normal = []) => {
     let items = [];
+        normal.forEach((l) =>
+    items.push({
+      id: `normal-${l.id}`,
+      type: "Normal Lead",
+      name: l.name,
+      workspace: l.city || l.message || "-",
+      section: "leads",
+      time: "New Lead",
+    })
+  );
     company.forEach((l) => items.push({ id:`company-${l.id}`, type:"Company Lead",    name:l.name, workspace:l.company||"-",  section:"company-leads",   time:"New Lead" }));
     hyd.forEach(    (l) => items.push({ id:`hyd-${l.id}`,     type:"Hyderabad Lead",  name:l.name, workspace:l.workspace_type, section:"hyderabad-leads", time:"New Lead" }));
     offer.forEach(  (l) => items.push({ id:`offer-${l.id}`,   type:"Offer Lead",      name:l.name, workspace:l.workspace_type, section:"offerleads",      time:"New Lead" }));
     ws.forEach(     (w) => items.push({ id:`ws-${w.id}`,      type:"Workspace Added", name:w.name, workspace:w.location||"-",  section:"workspaces",      time:"New Workspace" }));
+ 
     ownerNotifs.forEach((n) => items.push({
       id: `owner-notif-${n.id}`,
       type: "Workspace Added by Owner",
@@ -966,8 +1015,8 @@ export default function AdminDashboard() {
         if (parsed.length >= viewedAdminNotifs.length) latestViewed = parsed;
       }
     } catch {}
-    buildNotifs(companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, latestViewed);
-  }, [companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, viewedAdminNotifs, buildNotifs]);
+    buildNotifs(companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, latestViewed,normalLeads);
+  }, [companyLeads, hydLeads, offerLeads, workspaces, ownerAddedWorkspaces, viewedAdminNotifs, buildNotifs,normalLeads]);
 
   useEffect(() => {
     fetchOwners(); fetchWS(); fetchCat();
@@ -976,7 +1025,13 @@ export default function AdminDashboard() {
       axiosInstance.get("leads/company/admin/"),
       axiosInstance.get("hyderabad/admin/"),
       axiosInstance.get("leads/offers/admin/leads/"),
-    ]).then(([c,h,o])=>{ setCompanyLeads(c.data||[]); setHydLeads(h.data||[]); setOfferLeads(o.data||[]); });
+       axiosInstance.get("leads/all/"),   
+  ]).then(([c, h, o, n]) => {
+  setCompanyLeads(c.data || []);
+  setHydLeads(h.data || []);
+  setOfferLeads(o.data || []);
+  setNormalLeads(n.data || []);
+});
 
     axiosInstance.get("workspaces/owner-notifications/")
       .then(res => setOwnerAddedWorkspaces(Array.isArray(res.data) ? res.data : []))
@@ -1312,59 +1367,98 @@ export default function AdminDashboard() {
               {notifOpen && (
                 <div className={styles.notifPanel}>
                   <div className={styles.notifHead}>
-                    <div className={styles.notifHeading}>
-                      <h3>Notifications</h3>
-                      <span className={styles.notifCount}>{adminNotifications.length}</span>
-                    </div>
-                    <button className={styles.notifClose} onClick={() => setNotifOpen(false)}>✕</button>
-                  </div>
+  <div className={styles.notifHeading}>
+    <h3>Notifications</h3>
+    <span className={styles.notifCount}>{adminNotifications.length}</span>
+  </div>
+  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+    {adminNotifications.length > 0 && (
+      <button
+        style={{
+          padding: "4px 10px", borderRadius: 6, border: "1px solid #e5e7eb",
+          background: "#f8fafc", color: "#64748b", fontSize: 11,
+          fontWeight: 600, cursor: "pointer",
+        }}
+        onClick={() => {
+          // Mark ALL as viewed
+          const allIds = adminNotifications.map((n) => n.id);
+          // Fire read API for any owner notifs
+          adminNotifications
+            .filter((n) => n.original_id)
+            .forEach((n) => {
+              axiosInstance.put(`workspaces/owner-notification-read/${n.original_id}/`)
+                .catch(() => {});
+            });
+          setViewedAdminNotifs((prev) => {
+            const merged = [...new Set([...prev, ...allIds])];
+            localStorage.setItem("adminViewedNotifications", JSON.stringify(merged));
+            return merged;
+          });
+          setAdminNotifications([]);
+          setNotifOpen(false);
+        }}
+      >
+        Close All
+      </button>
+    )}
+    <button className={styles.notifClose} onClick={() => setNotifOpen(false)}>✕</button>
+  </div>
+</div>
                   {adminNotifications.length === 0 && (
                     <div style={{padding:"20px",textAlign:"center",color:"#aaa",fontSize:"13px"}}>
                       No new notifications
                     </div>
                   )}
-                  {adminNotifications.map((n) => (
-                    <div key={n.id} className={styles.notifItem}>
-                      <div className={styles.notifIco} style={{background:"rgba(99,102,241,0.1)",color:"#6366f1"}}>
-                        <Icon d={IC.bell} size={14}/>
-                      </div>
-                      <div style={{flex:1}}>
-                        <div className={styles.notifTxt}><strong>{n.type}</strong><br/>{n.name}</div>
-                        <div className={styles.notifTime}>{n.workspace}</div>
-                      </div>
-                      <button className={styles.viewBtn}
-                        onClick={() => {
-                          setSection(n.section);
-                          const idsForSection = adminNotifications
-                            .filter((i) => i.section === n.section)
-                            .map((i) => i.id);
+                 {adminNotifications.map((n) => {
+  const iconColor =
+    n.type === "Normal Lead"         ? { bg: "rgba(16,185,129,0.1)",  color: "#10b981" } :
+    n.type === "Company Lead"        ? { bg: "rgba(99,102,241,0.1)",  color: "#6366f1" } :
+    n.type === "Hyderabad Lead"      ? { bg: "rgba(245,158,11,0.1)",  color: "#f59e0b" } :
+    n.type === "Offer Lead"          ? { bg: "rgba(244,63,94,0.1)",   color: "#f43f5e" } :
+                                       { bg: "rgba(99,102,241,0.1)",  color: "#6366f1" };
+  return (
+    <div key={n.id} className={styles.notifItem}>
+      <div className={styles.notifIco} style={{ background: iconColor.bg, color: iconColor.color }}>
+        <Icon d={IC.bell} size={14}/>
+      </div>
+      <div style={{ flex: 1 }}>
+        <div className={styles.notifTxt}><strong>{n.type}</strong><br/>{n.name}</div>
+        <div className={styles.notifTime}>{n.workspace}</div>
+      </div>
+      <button className={styles.viewBtn}
+        onClick={() => {
+          setSection(n.section);
+          const idsForSection = adminNotifications
+            .filter((i) => i.section === n.section)
+            .map((i) => i.id);
 
-                          adminNotifications
-                            .filter((i) => i.section === n.section && i.original_id)
-                            .forEach((i) => {
-                              axiosInstance.put(`workspaces/owner-notification-read/${i.original_id}/`)
-                                .then(() => {
-                                  axiosInstance.get("workspaces/owner-notifications/")
-                                    .then(res => setOwnerAddedWorkspaces(Array.isArray(res.data) ? res.data : []))
-                                    .catch(() => {});
-                                })
-                                .catch(() => {});
-                            });
+          adminNotifications
+            .filter((i) => i.section === n.section && i.original_id)
+            .forEach((i) => {
+              axiosInstance.put(`workspaces/owner-notification-read/${i.original_id}/`)
+                .then(() => {
+                  axiosInstance.get("workspaces/owner-notifications/")
+                    .then(res => setOwnerAddedWorkspaces(Array.isArray(res.data) ? res.data : []))
+                    .catch(() => {});
+                })
+                .catch(() => {});
+            });
 
-                          setViewedAdminNotifs((prev) => {
-                            const merged = [...new Set([...prev, ...idsForSection])];
-                            localStorage.setItem("adminViewedNotifications", JSON.stringify(merged));
-                            return merged;
-                          });
+          setViewedAdminNotifs((prev) => {
+            const merged = [...new Set([...prev, ...idsForSection])];
+            localStorage.setItem("adminViewedNotifications", JSON.stringify(merged));
+            return merged;
+          });
 
-                          setAdminNotifications((prev) =>
-                            prev.filter((i) => i.section !== n.section)
-                          );
-                          setNotifOpen(false);
-                        }}
-                      >View</button>
-                    </div>
-                  ))}
+          setAdminNotifications((prev) =>
+            prev.filter((i) => i.section !== n.section)
+          );
+          setNotifOpen(false);
+        }}
+      >View</button>
+    </div>
+  );
+})}
                 </div>
               )}
             </div>
