@@ -1237,7 +1237,26 @@ function OwnerDashboard() {
           <div className={styles.fieldGroup}><label>Offer Price</label><input type="number" value={offerForm.offer_price} onChange={e => setOfferForm({ ...offerForm, offer_price: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Seats</label><input type="number" value={offerForm.seats} onChange={e => setOfferForm({ ...offerForm, seats: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Floor</label><input value={offerForm.floor} onChange={e => setOfferForm({ ...offerForm, floor: e.target.value })} /></div>
-          <div className={styles.fieldGroup}><label>Image URL</label><input value={offerForm.image} onChange={e => setOfferForm({ ...offerForm, image: e.target.value })} /></div>
+         {/* Replace the Image URL input with a preview */}
+{offerForm.image && (
+  <div className={styles.fieldGroup}>
+    <label>Workspace Image (auto-filled)</label>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <img
+        src={offerForm.image}
+        alt="workspace"
+        style={{
+          width: 80, height: 60, objectFit: "cover",
+          borderRadius: 8, border: "1px solid #e5e7eb"
+        }}
+        onError={e => e.target.style.display = "none"}
+      />
+      <span style={{ fontSize: 12, color: "#64748b", wordBreak: "break-all" }}>
+        {offerForm.image}
+      </span>
+    </div>
+  </div>
+)}
         </div>
         <div className={styles.formActions}><button className={styles.submitBtn} onClick={handleAddOfferWorkspace}>{editOfferId?"Update Offer Workspace":"Add Offer Workspace"}</button><button className={styles.cancelBtn} onClick={() => { setShowOfferForm(false); setEditOfferId(null); setOfferForm({ building:"",type:"",original_price:"",offer_price:"",seats:"",floor:"",image:"",amenities:[] }); }}>Cancel</button></div>
       </AccordionSection>

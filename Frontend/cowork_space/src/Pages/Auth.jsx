@@ -101,31 +101,31 @@ function Auth() {
     });
   };
 
-  const handleGuestLogin = async (role) => {
-    const map = {
-      admin: { username: "Fis", password: "Fis123" },
-      owner: { username: "manager1", password: "manager1" },
-      user:  { username: "Tharun", password: "Tharun123" },
-    };
-    try {
-      const res = await axiosInstance.post("login/", map[role]);
-      localStorage.setItem("access", res.data.access);
-      localStorage.setItem("refresh", res.data.refresh || "");
-      localStorage.setItem("username", res.data.username);
-      localStorage.setItem("role", res.data.role);
-      localStorage.setItem("user_location", res.data.location);
-      showPopup("success", `Welcome, ${res.data.username}!`);
-      setTimeout(() => redirectAfterLogin(res.data.role), 700);
-    } catch {
-      showPopup("error", "Guest login failed. Try again.");
-    }
-  };
+  // const handleGuestLogin = async (role) => {
+  //   const map = {
+  //     admin: { username: "Fis", password: "Fis123" },
+  //     owner: { username: "manager1", password: "manager1" },
+  //     user:  { username: "Tharun", password: "Tharun123" },
+  //   };
+  //   try {
+  //     const res = await axiosInstance.post("login/", map[role]);
+  //     localStorage.setItem("access", res.data.access);
+  //     localStorage.setItem("refresh", res.data.refresh || "");
+  //     localStorage.setItem("username", res.data.username);
+  //     localStorage.setItem("role", res.data.role);
+  //     localStorage.setItem("user_location", res.data.location);
+  //     showPopup("success", `Welcome, ${res.data.username}!`);
+  //     setTimeout(() => redirectAfterLogin(res.data.role), 700);
+  //   } catch {
+  //     showPopup("error", "Guest login failed. Try again.");
+  //   }
+  // };
 
-  const handleClick = async (role) => {
-    setLoadingRole(role);
-    await handleGuestLogin(role);
-    setLoadingRole(null);
-  };
+  // const handleClick = async (role) => {
+  //   setLoadingRole(role);
+  //   await handleGuestLogin(role);
+  //   setLoadingRole(null);
+  // };
 
   const handleSubmit = async () => {
     if (loading) return;
@@ -175,9 +175,9 @@ function Auth() {
 
   const isOwnerOrAdmin = roleType === "owner" || roleType === "admin";
 
-  const guestRoles = isOwnerOrAdmin
-    ? [roleType]
-    : ["admin", "owner", "user"];
+  // const guestRoles = isOwnerOrAdmin
+  //   ? [roleType]
+  //   : ["admin", "owner", "user"];
 
   return (
     <section className={`${styles.authPage} ${mounted ? styles.mounted : ""}`}>
@@ -417,14 +417,14 @@ function Auth() {
           </button>
 
           {/* Divider */}
-          <div className={styles.divider}>
+          {/* <div className={styles.divider}>
             <span className={styles.dividerLine} />
             <span className={styles.dividerText}>or try a guest account</span>
             <span className={styles.dividerLine} />
-          </div>
+          </div> */}
 
           {/* Guest Buttons */}
-          <div className={styles.guestRow}>
+          {/* <div className={styles.guestRow}>
             {guestRoles.map((role) => (
               <button
                 key={role}
@@ -438,7 +438,7 @@ function Auth() {
                 <span>{loadingRole === role ? "Loading…" : role.charAt(0).toUpperCase() + role.slice(1)}</span>
               </button>
             ))}
-          </div>
+          </div> */}
 
           {/* Switch link — only for users */}
           {roleType === "user" && (
