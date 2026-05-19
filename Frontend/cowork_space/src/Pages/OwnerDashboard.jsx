@@ -1209,7 +1209,30 @@ function OwnerDashboard() {
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}><label>Area</label><input type="text" value={ownerCity} readOnly className={styles.readonlyInput} /></div>
           <div className={styles.fieldGroup}><label>Building</label><input value={offerForm.building} onChange={e => setOfferForm({ ...offerForm, building: e.target.value })} /></div>
-          <div className={styles.fieldGroup}><label>Workspace Type</label><select value={offerForm.type} onChange={e => setOfferForm({ ...offerForm, type: e.target.value })}><option value="">Select Workspace</option>{approvedWorkspaces.map(ws => (<option key={ws.id} value={ws.workspacename||ws.name||ws.title}>{ws.city} | {ws.location} | {ws.workspacename||ws.name||ws.title}</option>))}</select></div>
+         <div className={styles.fieldGroup}>
+  <label>Workspace Type</label>
+  <select
+    value={offerForm.type}
+    onChange={e => {
+      const selectedName = e.target.value;
+      const selectedWs = approvedWorkspaces.find(
+        ws => (ws.workspacename || ws.name || ws.title) === selectedName
+      );
+      setOfferForm({
+        ...offerForm,
+        type: selectedName,
+        image: selectedWs?.image || offerForm.image,  // ← auto-fill image
+      });
+    }}
+  >
+    <option value="">Select Workspace</option>
+    {approvedWorkspaces.map(ws => (
+      <option key={ws.id} value={ws.workspacename||ws.name||ws.title}>
+        {ws.city} | {ws.location} | {ws.workspacename||ws.name||ws.title}
+      </option>
+    ))}
+  </select>
+</div>
           <div className={styles.fieldGroup}><label>Original Price</label><input type="number" value={offerForm.original_price} onChange={e => setOfferForm({ ...offerForm, original_price: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Offer Price</label><input type="number" value={offerForm.offer_price} onChange={e => setOfferForm({ ...offerForm, offer_price: e.target.value })} /></div>
           <div className={styles.fieldGroup}><label>Seats</label><input type="number" value={offerForm.seats} onChange={e => setOfferForm({ ...offerForm, seats: e.target.value })} /></div>

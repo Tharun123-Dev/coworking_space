@@ -88,7 +88,7 @@ def login_view(request):
 @permission_classes([IsAdminUser])
 def create_owner(request):
 
-    print("DATA:", request.data)
+    
 
     username = request.data.get("username")
     email = request.data.get("email")

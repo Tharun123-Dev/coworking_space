@@ -1,26 +1,31 @@
-import requests
+from django.core.mail import send_mail
 from django.conf import settings
 
 
-def send_owner_email(to_email, username, password):
+def send_owner_email(email, username, password):
 
-    response = requests.post(
-        "https://api.resend.com/emails",
-        headers={
-            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "from": settings.EMAIL_FROM,
-            "to": ["anjali.tharun9949@gmail.com"],
-            "subject": "Owner Account Created",
-            "html": f"""
-                <h2>Owner Account Created</h2>
-                <p>Username: {username}</p>
-                <p>Password: {password}</p>
-            """,
-        },
+    send_mail(
+        "Owner Account Created",
+
+        f"""
+Hello,
+
+Your Owner account has been created successfully.
+
+Login Details:
+
+Username: {username}
+Password: {password}
+
+Please login using these credentials.
+
+Thank You,
+Coworking Team
+""",
+
+        settings.EMAIL_HOST_USER,
+
+        [email],
+
+        fail_silently=False,
     )
-
-    # print("EMAIL STATUS:", response.status_code)
-    # print("EMAIL RESPONSE:", response.text)
