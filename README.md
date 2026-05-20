@@ -27,7 +27,7 @@ It supports three major roles:
 - **Admin** – manage users, owners, categories, workspaces, bookings, leads, and platform-level controls.
 
 ### 🌐 Live Demo
-**Frontend:**https://coworkingspace-seven.vercel.app/
+**Frontend:**https://coworkingspace-ten.vercel.app/
 ---
 
 ## ✨ Highlights
