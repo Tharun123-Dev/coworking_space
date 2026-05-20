@@ -7,9 +7,15 @@
   --nb-h: 66px;
   --nb-bg: rgba(7, 7, 10, 0.94);
   --nb-border: rgba(201, 162, 84, 0.16);
-  --gold: #c9a254;
-  --gold-lt: #e2be78;
-  --gold-dim: rgba(201, 162, 84, 0.1);
+  /* To this: */
+  --navbar-gold: #c9a254;
+  --navbar-gold-lt: #e2be78;
+  --navbar-gold-dim: rgba(201, 162, 84, 0.1);
+  --navbar-gold-glow: rgba(221, 217, 208, 0.28);
+  --navbar-tx: #f9f7f3;
+  --navbar-tx-muted: #fcf2d6;
+  --navbar-font-d: 'Cormorant Garamond', Georgia, serif;
+  --navbar-font-b: 'Outfit', 'Segoe UI', sans-serif;
   --gold-glow: rgba(221, 217, 208, 0.28);
   --tx: #f9f7f3;
   --tx-muted: #fcf2d6;
