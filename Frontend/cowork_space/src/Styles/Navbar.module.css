@@ -1,3 +1,5 @@
+
+
 /* ════════════════════════════════════════════════════
    WORKNEST NAVBAR  ·  Dark Gold  ·  Logo Left / Nav Right
    ════════════════════════════════════════════════════ */
@@ -7,15 +9,9 @@
   --nb-h: 66px;
   --nb-bg: rgba(7, 7, 10, 0.94);
   --nb-border: rgba(201, 162, 84, 0.16);
-  /* To this: */
-  --navbar-gold: #c9a254;
-  --navbar-gold-lt: #e2be78;
-  --navbar-gold-dim: rgba(201, 162, 84, 0.1);
-  --navbar-gold-glow: rgba(221, 217, 208, 0.28);
-  --navbar-tx: #f9f7f3;
-  --navbar-tx-muted: #fcf2d6;
-  --navbar-font-d: 'Cormorant Garamond', Georgia, serif;
-  --navbar-font-b: 'Outfit', 'Segoe UI', sans-serif;
+  --gold: #c9a254;
+  --gold-lt: #e2be78;
+  --gold-dim: rgba(201, 162, 84, 0.1);
   --gold-glow: rgba(221, 217, 208, 0.28);
   --tx: #f9f7f3;
   --tx-muted: #fcf2d6;
@@ -50,7 +46,7 @@
   opacity: 0.65;
 }
  
-/* ── Inner: flex row, logo LEFT, spacer, nav, cta RIGHT ── */
+/* ── Inner ── */
 .inner {
   max-width: 1380px;
   margin: 0 auto;
@@ -60,67 +56,6 @@
   align-items: center;
   gap: 0;
 }
- 
-/* Wrapper */
-.dropWrap {
-  position: relative;
-  display: inline-block;
-}
- 
-/* Dropdown container */
-.galDrop {
-  position: absolute;
-  top: 110%;
-  left: -10px !important;
-  min-width: 200px;
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  padding: 8px 0;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(10px);
-  transition: all 0.25s ease;
-  z-index: 999;
-}
- 
-/* Show on hover */
-.dropWrap:hover .galDrop {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
- 
-/* Each item */
-.galItem {
-  padding: 10px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  color: #333;
-  transition: all 0.2s ease;
-}
- 
-/* Hover effect */
-.galItem:hover {
-  background: #f5f5f5;
-  color: #f59e0b; /* your theme color */
-  padding-left: 5px;
-}
- .linkDrop {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
- 
-.chevron {
-  transition: transform 0.3s ease;
-}
- 
-.dropWrap:hover .chevron {
-  transform: rotate(180deg);
-}
-/* Spacer pushes everything after it to the right */
-.spacer { flex: 1; }
  
 /* ── Logo ── */
 .logo {
@@ -148,6 +83,9 @@
   color: var(--tx);
   letter-spacing: 0.4px;
 }
+ 
+/* Spacer */
+.spacer { flex: 1; }
  
 /* ══════════════════════════════
    DESKTOP NAV
@@ -191,7 +129,12 @@
 }
 .link:hover::after { transform: scaleX(1); }
  
-.linkDrop { padding-right: 11px; }
+.linkDrop {
+  padding-right: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .linkActive { color: var(--gold-lt); background: var(--gold-dim); }
 .linkActive::after { transform: scaleX(1); }
  
@@ -201,9 +144,14 @@
 }
 .chevUp { transform: rotate(180deg); }
  
-/* ── Drop host (position anchor) ── */
+/* ── Drop host ── */
 .dropWrap {
   position: relative;
+  display: inline-block;
+}
+ 
+.dropWrap:hover .chevron {
+  transform: rotate(180deg);
 }
  
 /* ── Workspaces dropdown ── */
@@ -262,7 +210,7 @@
 .wsLabel { font-size: 12.5px; color: var(--tx-muted); font-weight: 500; flex: 1; transition: color var(--ease); line-height: 1.35; }
 .wsArrow { color: var(--tx-muted); opacity: 0; transition: opacity var(--ease), transform var(--ease); flex-shrink: 0; }
  
-/* ── Gallery simple dropdown ── */
+/* ── Locations dropdown ── */
 .galDrop {
   position: absolute;
   top: calc(100% + 12px);
@@ -274,8 +222,17 @@
   border-radius: var(--r-md);
   padding: 8px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.55);
-  animation: fadeDown 0.18s ease;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(10px);
+  transition: all 0.25s ease;
   z-index: 500;
+}
+ 
+.dropWrap:hover .galDrop {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
  
 .galItem {
@@ -300,7 +257,6 @@
   flex-shrink: 0;
 }
  
-/* Profile icon button */
 .iconBtn {
   all: unset;
   width: 34px;
@@ -317,7 +273,7 @@
 }
 .iconBtn:hover { color: var(--gold-lt); border-color: var(--gold); background: var(--gold-dim); }
  
-/* Role menu popup */
+/* Role menu */
 .roleAnchor { position: relative; }
  
 .roleMenu {
@@ -373,7 +329,7 @@
 .hiText { font-size: 13px; color: var(--tx-muted); white-space: nowrap; }
 .userRow { display: flex; align-items: center; gap: 8px; }
  
-/* Ghost outline buttons */
+/* Ghost buttons */
 .ghostBtn {
   all: unset;
   padding: 6px 13px;
@@ -487,7 +443,6 @@
 }
 .drawerOn { transform: translateX(0); }
  
-/* Drawer top bar */
 .drawerTop {
   display: flex;
   align-items: center;
@@ -581,7 +536,6 @@
 .mCaret { color: var(--tx-muted); transition: transform var(--ease); flex-shrink: 0; }
 .mCaretOpen { transform: rotate(180deg); color: var(--gold); }
  
-/* Accordion sub list */
 .mSub {
   padding: 4px 0 6px 46px;
   display: flex;
@@ -735,7 +689,6 @@
   .nav   { gap: 0; }
 }
  
-/* Hide desktop nav + actions, show hamburger */
 @media (max-width: 860px) {
   .nav       { display: none; }
   .actions   { display: none; }
@@ -750,12 +703,9 @@
   .drawer  { width: 100vw; border-left: none; }
 }
  
- 
 /* ════════════════════════════════
-   PROFILE COMING SOON MODAL
+   PROFILE MODAL
 ════════════════════════════════ */
- 
-/* Backdrop */
 .profileBackdrop {
   position: fixed;
   inset: 0;
@@ -766,7 +716,6 @@
   animation: profileFadeIn 0.22s ease;
 }
  
-/* Modal card */
 .profileModal {
   position: fixed;
   top: 50%;
@@ -788,7 +737,6 @@
   animation: profileSlideUp 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
  
-/* Close ✕ button */
 .profileModalClose {
   all: unset;
   position: absolute;
@@ -811,7 +759,6 @@
   background: var(--gold-dim);
 }
  
-/* Loader ring wrapper */
 .profileLoaderWrap {
   position: relative;
   width: 80px;
@@ -819,7 +766,6 @@
   margin-bottom: 20px;
 }
  
-/* Spinning ring */
 .profileRing {
   position: absolute;
   inset: 0;
@@ -830,7 +776,6 @@
     rgba(201, 162, 84, 0.15) 270deg,
     var(--gold-lt) 360deg
   );
- 
 }
  
 .profileRingInner {
@@ -839,7 +784,6 @@
   border-radius: 50%;
 }
  
-/* Avatar letter inside the ring */
 .profileAvatarInner {
   position: absolute;
   inset: 8px;
@@ -855,7 +799,6 @@
   box-shadow: 0 0 18px rgba(201, 162, 84, 0.35);
 }
  
-/* Title */
 .profileModalTitle {
   margin: 0 0 10px;
   font-family: var(--font-d);
@@ -865,7 +808,6 @@
   letter-spacing: 0.3px;
 }
  
-/* Subtitle */
 .profileModalSub {
   margin: 0 0 20px;
   font-size: 13.5px;
@@ -878,7 +820,6 @@
   font-weight: 600;
 }
  
-/* Pulsing dots loader */
 .profileDots {
   display: flex;
   align-items: center;
@@ -895,7 +836,6 @@
   animation: profilePulse 0.9s ease-in-out infinite alternate;
 }
  
-/* Action buttons row */
 .profileModalActions {
   display: flex;
   gap: 10px;
@@ -944,7 +884,6 @@
   background: var(--gold-dim);
 }
  
-/* ── Profile modal keyframes ── */
 @keyframes profileFadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
