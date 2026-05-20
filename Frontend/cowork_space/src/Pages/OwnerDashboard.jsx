@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/OwnerDashboard.module.css";
-
+import React from "react";
 const AMENITY_ICONS = {
   wifi: "📶", coffee: "☕", "24hr": "⏰", security: "🛡️",
   parking: "🅿️", meeting: "🏢", games: "🎮", pantry: "🍽️",
@@ -45,7 +45,7 @@ const NAV_GROUPS = [
       { key: "workspaces",          iconKey: "workspaces",  label: "Workspaces" },
       { key: "offerWorkspaces",     iconKey: "offerWs",     label: "Offer Workspaces" },
       { key: "offerCoupons",        iconKey: "coupons",     label: "Offer Coupons" },
-      { key: "additionalAmenities", iconKey: "amenities",   label: "Amenities" },
+      { key: "additionalAmenities", iconKey: "amenities",   label: "Additional Amenities" },
       { key: "suggestedWorkspaces", iconKey: "suggested",   label: "Suggested Workspaces" },
     ],
   },
@@ -995,156 +995,236 @@ const confirmDeactivateWorkspace = async () => {
     });
   }, [quotationLeads, quotationLeadSearch, quotationLeadFilter]);
 
-  const renderOverview = () => {
-  const activeSlots = slots.filter(s => !isSlotExpired(s.date));
-  const activeMonthlySlots = monthlySlots.filter(s => !isMonthlySlotExpired(s.year, s.month));
+const renderOverview = () => {
+  const activeSlots = slots.filter((s) => !isSlotExpired(s.date));
+  const activeMonthlySlots = monthlySlots.filter(
+    (s) => !isMonthlySlotExpired(s.year, s.month)
+  );
   const expiredSlotsCount = slots.length - activeSlots.length;
   const expiredMonthlyCount = monthlySlots.length - activeMonthlySlots.length;
 
-const WORKSPACE_TYPE_META = {
-  "Hot Desk": {
-    icon: <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="hd1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#818cf8"/><stop offset="100%" stopColor="#4f46e5"/></linearGradient><linearGradient id="hd2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#c7d2fe"/><stop offset="100%" stopColor="#818cf8"/></linearGradient><filter id="hdS"><feDropShadow dx="2" dy="3" stdDeviation="2" floodColor="#4f46e5" floodOpacity="0.5"/></filter></defs><rect width="44" height="44" rx="12" fill="url(#hd1)" filter="url(#hdS)"/><rect x="1" y="1" width="42" height="20" rx="11" fill="rgba(255,255,255,0.15)"/><rect x="8" y="14" width="28" height="5" rx="2.5" fill="url(#hd2)"/><rect x="8" y="14" width="28" height="2" rx="1" fill="rgba(255,255,255,0.4)"/><rect x="13" y="19" width="4" height="10" rx="2" fill="#6366f1"/><rect x="27" y="19" width="4" height="10" rx="2" fill="#6366f1"/><rect x="10" y="27" width="10" height="3" rx="1.5" fill="#4338ca"/><rect x="24" y="27" width="10" height="3" rx="1.5" fill="#4338ca"/><rect x="10" y="24" width="24" height="4" rx="2" fill="#a5b4fc"/><rect x="10" y="24" width="24" height="2" rx="1" fill="rgba(255,255,255,0.3)"/></svg>,
-    color:"#6366f1", bg:"#ede9fe"
-  },
-
-  "Dedicated Desk": {
-    icon: <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="dd1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#60a5fa"/><stop offset="100%" stopColor="#2563eb"/></linearGradient><linearGradient id="dd2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#93c5fd"/><stop offset="100%" stopColor="#3b82f6"/></linearGradient><filter id="ddS"><feDropShadow dx="2" dy="3" stdDeviation="2" floodColor="#2563eb" floodOpacity="0.5"/></filter></defs><rect width="44" height="44" rx="12" fill="url(#dd1)" filter="url(#ddS)"/><rect x="1" y="1" width="42" height="20" rx="11" fill="rgba(255,255,255,0.15)"/><rect x="9" y="26" width="26" height="5" rx="2" fill="url(#dd2)"/><rect x="9" y="26" width="26" height="2" rx="1" fill="rgba(255,255,255,0.35)"/><rect x="14" y="31" width="4" height="7" rx="2" fill="#1d4ed8"/><rect x="26" y="31" width="4" height="7" rx="2" fill="#1d4ed8"/><rect x="13" y="15" width="18" height="12" rx="3" fill="#bfdbfe"/><rect x="13" y="15" width="18" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/><rect x="15" y="20" width="14" height="2" rx="1" fill="#93c5fd"/><rect x="15" y="23" width="10" height="2" rx="1" fill="#93c5fd"/><rect x="28" y="17" width="5" height="7" rx="1.5" fill="#93c5fd"/><rect x="29" y="18" width="3" height="5" rx="1" fill="#60a5fa"/></svg>,
-    color:"#3b82f6", bg:"#dbeafe"
-  },
-
-  "Private Office Space": {
-    icon: <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="po1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#0e7490"/></linearGradient><filter id="poS"><feDropShadow dx="2" dy="3" stdDeviation="2" floodColor="#0e7490" floodOpacity="0.5"/></filter></defs><rect width="44" height="44" rx="12" fill="url(#po1)" filter="url(#poS)"/><rect x="1" y="1" width="42" height="20" rx="11" fill="rgba(255,255,255,0.15)"/><rect x="8" y="30" width="28" height="4" rx="2" fill="#0e7490"/><polygon points="22,8 8,30 36,30" fill="#a5f3fc"/><polygon points="22,8 8,30 36,30" fill="url(#po1)" opacity="0.6"/><rect x="12" y="16" width="8" height="14" rx="1" fill="#cffafe"/><rect x="12" y="16" width="8" height="3" rx="1" fill="rgba(255,255,255,0.5)"/><rect x="24" y="16" width="8" height="14" rx="1" fill="#cffafe"/><rect x="24" y="16" width="8" height="3" rx="1" fill="rgba(255,255,255,0.5)"/><rect x="18" y="22" width="8" height="8" rx="1" fill="#67e8f9"/><circle cx="22" cy="26" r="1.5" fill="#0e7490"/><rect x="22" y="8" width="6" height="4" rx="1" fill="#67e8f9"/></svg>,
-    color:"#0891b2", bg:"#cffafe"
-  },
-
-  "Private Cabin": {
-    icon: <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pc1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#6d28d9"/></linearGradient><filter id="pcS"><feDropShadow dx="2" dy="3" stdDeviation="2" floodColor="#6d28d9" floodOpacity="0.5"/></filter></defs><rect width="44" height="44" rx="12" fill="url(#pc1)" filter="url(#pcS)"/><rect x="1" y="1" width="42" height="20" rx="11" fill="rgba(255,255,255,0.15)"/><rect x="10" y="10" width="24" height="28" rx="3" fill="#ddd6fe"/><rect x="10" y="10" width="24" height="5" rx="2" fill="rgba(255,255,255,0.4)"/><rect x="10" y="10" width="24" height="28" rx="3" stroke="#7c3aed" strokeWidth="1.5"/><rect x="18" y="10" width="8" height="28" fill="#c4b5fd" opacity="0.4"/><circle cx="27" cy="24" r="2" fill="#7c3aed"/><rect x="10" y="32" width="24" height="4" rx="2" fill="#7c3aed" opacity="0.4"/><rect x="12" y="15" width="8" height="10" rx="2" fill="#ede9fe"/><rect x="12" y="15" width="8" height="3" rx="1" fill="rgba(255,255,255,0.5)"/></svg>,
-    color:"#7c3aed", bg:"#f5f3ff"
-  },
-
-  "Meeting Room": {
-    icon: <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="mr1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#4ade80"/><stop offset="100%" stopColor="#15803d"/></linearGradient><filter id="mrS"><feDropShadow dx="2" dy="3" stdDeviation="2" floodColor="#15803d" floodOpacity="0.5"/></filter></defs><rect width="44" height="44" rx="12" fill="url(#mr1)" filter="url(#mrS)"/><rect x="1" y="1" width="42" height="20" rx="11" fill="rgba(255,255,255,0.15)"/><ellipse cx="22" cy="24" rx="13" ry="8" fill="#bbf7d0"/><ellipse cx="22" cy="24" rx="13" ry="8" stroke="#16a34a" strokeWidth="1.5"/><ellipse cx="22" cy="23" rx="13" ry="3" fill="rgba(255,255,255,0.2)"/><circle cx="12" cy="17" r="4" fill="#86efac"/><circle cx="12" cy="17" r="4" stroke="#16a34a" strokeWidth="1"/><circle cx="11" cy="16" r="1.5" fill="white" opacity="0.6"/><circle cx="22" cy="15" r="4" fill="#86efac"/><circle cx="22" cy="15" r="4" stroke="#16a34a" strokeWidth="1"/><circle cx="21" cy="14" r="1.5" fill="white" opacity="0.6"/><circle cx="32" cy="17" r="4" fill="#86efac"/><circle cx="32" cy="17" r="4" stroke="#16a34a" strokeWidth="1"/><circle cx="31" cy="16" r="1.5" fill="white" opacity="0.6"/></svg>,
-    color:"#16a34a", bg:"#dcfce7"
-  },
-
-  "Board Room": {
-    icon: <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="br1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fcd34d"/><stop offset="100%" stopColor="#b45309"/></linearGradient><filter id="brS"><feDropShadow dx="2" dy="3" stdDeviation="2" floodColor="#b45309" floodOpacity="0.5"/></filter></defs><rect width="44" height="44" rx="12" fill="url(#br1)" filter="url(#brS)"/><rect x="1" y="1" width="42" height="20" rx="11" fill="rgba(255,255,255,0.15)"/><rect x="9" y="12" width="26" height="18" rx="2" fill="#fef3c7"/><rect x="9" y="12" width="26" height="4" rx="2" fill="rgba(255,255,255,0.4)"/><rect x="11" y="17" width="6" height="8" rx="1" fill="#fde68a"/><rect x="11" y="17" width="6" height="3" rx="0.5" fill="#C9A84C" opacity="0.5"/><rect x="19" y="17" width="6" height="8" rx="1" fill="#fde68a"/><rect x="27" y="17" width="6" height="8" rx="1" fill="#fde68a"/><rect x="11" y="26" width="22" height="2" rx="1" fill="#C9A84C" opacity="0.5"/><rect x="19" y="30" width="6" height="5" rx="1" fill="#C9A84C"/><rect x="14" y="35" width="16" height="2" rx="1" fill="#92400e"/></svg>,
-    color:"#C9A84C", bg:"#fef3c7"
-  },
-
-  "Event Space": {
-    icon: <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="es1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#f472b6"/><stop offset="100%" stopColor="#be185d"/></linearGradient><filter id="esS"><feDropShadow dx="2" dy="3" stdDeviation="2" floodColor="#be185d" floodOpacity="0.5"/></filter></defs><rect width="44" height="44" rx="12" fill="url(#es1)" filter="url(#esS)"/><rect x="1" y="1" width="42" height="20" rx="11" fill="rgba(255,255,255,0.15)"/><polygon points="22,10 24,17 31,17 26,22 28,29 22,25 16,29 18,22 13,17 20,17" fill="#fce7f3"/><polygon points="22,10 24,17 31,17 26,22 28,29 22,25 16,29 18,22 13,17 20,17" stroke="#db2777" strokeWidth="1"/><polygon points="22,10 24,17 31,17 26,22 28,29 22,25 16,29 18,22 13,17 20,17" fill="rgba(255,255,255,0.2)"/><circle cx="22" cy="19" r="3" fill="#fbcfe8"/><circle cx="22" cy="18" r="1.5" fill="white" opacity="0.6"/><circle cx="14" cy="12" r="2" fill="#fce7f3" opacity="0.8"/><circle cx="30" cy="11" r="1.5" fill="#fce7f3" opacity="0.8"/><circle cx="32" cy="30" r="2" fill="#fce7f3" opacity="0.8"/><circle cx="12" cy="31" r="1.5" fill="#fce7f3" opacity="0.8"/></svg>,
-    color:"#db2777", bg:"#fce7f3"
-  },
-
-  "Podcast": {
-    icon: <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pd1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#f87171"/><stop offset="100%" stopColor="#b91c1c"/></linearGradient><filter id="pdS"><feDropShadow dx="2" dy="3" stdDeviation="2" floodColor="#b91c1c" floodOpacity="0.5"/></filter></defs><rect width="44" height="44" rx="12" fill="url(#pd1)" filter="url(#pdS)"/><rect x="1" y="1" width="42" height="20" rx="11" fill="rgba(255,255,255,0.15)"/><rect x="17" y="8" width="10" height="16" rx="5" fill="#fecaca"/><rect x="17" y="8" width="10" height="6" rx="5" fill="rgba(255,255,255,0.4)"/><rect x="17" y="8" width="10" height="16" rx="5" stroke="#dc2626" strokeWidth="1"/><path d="M12 20 Q12 30 22 30 Q32 30 32 20" stroke="#fca5a5" strokeWidth="2" fill="none" strokeLinecap="round"/><rect x="21" y="30" width="2" height="6" rx="1" fill="#fca5a5"/><rect x="16" y="36" width="12" height="2" rx="1" fill="#ef4444"/><rect x="20" y="13" width="4" height="2" rx="1" fill="#dc2626" opacity="0.5"/><rect x="20" y="17" width="4" height="2" rx="1" fill="#dc2626" opacity="0.5"/></svg>,
-    color:"#dc2626", bg:"#fee2e2"
-  },
-
-  "Virtual Office": {
-    icon: <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="vo1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#38bdf8"/><stop offset="100%" stopColor="#0369a1"/></linearGradient><filter id="voS"><feDropShadow dx="2" dy="3" stdDeviation="2" floodColor="#0369a1" floodOpacity="0.5"/></filter></defs><rect width="44" height="44" rx="12" fill="url(#vo1)" filter="url(#voS)"/><rect x="1" y="1" width="42" height="20" rx="11" fill="rgba(255,255,255,0.15)"/><rect x="8" y="12" width="28" height="18" rx="3" fill="#e0f2fe"/><rect x="8" y="12" width="28" height="4" rx="2" fill="rgba(255,255,255,0.5)"/><rect x="8" y="12" width="28" height="18" rx="3" stroke="#0284c7" strokeWidth="1.5"/><circle cx="11" cy="14" r="1" fill="#f87171"/><circle cx="14" cy="14" r="1" fill="#fbbf24"/><circle cx="17" cy="14" r="1" fill="#4ade80"/><rect x="11" y="19" width="10" height="7" rx="1.5" fill="#bae6fd"/><rect x="11" y="19" width="10" height="2" rx="0.5" fill="rgba(255,255,255,0.5)"/><rect x="23" y="19" width="10" height="3" rx="1" fill="#7dd3fc"/><rect x="23" y="24" width="7" height="2" rx="1" fill="#7dd3fc"/><rect x="18" y="30" width="8" height="3" rx="1" fill="#0284c7"/><rect x="14" y="33" width="16" height="2" rx="1" fill="#0369a1"/></svg>,
-    color:"#0284c7", bg:"#e0f2fe"
-  },
-};
-
-  const wsTypeCounts = WORKSPACE_TYPES.map(type => ({
-    type,
-    count:    workspaces.filter(w => w.name === type).length,
-    approved: workspaces.filter(w => w.name === type && w.is_approved).length,
-    meta:     WORKSPACE_TYPE_META[type],
-  }));
-  const maxCount     = Math.max(...wsTypeCounts.map(t => t.count), 1);
-  const totalWsCount = wsTypeCounts.reduce((s, t) => s + t.count, 0);
-
-  const Icon3D = ({ type }) => {
-    const icons = {
-      revenue: (
-        <svg width="25" height="28" viewBox="0 0 24 24" fill="none">
-          <rect x="2" y="7" width="20" height="14" rx="3" fill="#fde68a" stroke="#C9A84C" strokeWidth="1.5"/>
-          <rect x="5" y="4" width="14" height="6" rx="2" fill="#fef3c7" stroke="#C9A84C" strokeWidth="1.5"/>
-          <rect x="8" y="10" width="8" height="5" rx="1" fill="#C9A84C" opacity="0.4"/>
-          <circle cx="12" cy="16" r="2" fill="#C9A84C"/>
-        </svg>
-      ),
-      workspaces: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="18" height="18" rx="4" fill="#ede9fe" stroke="#6366f1" strokeWidth="1.5"/>
-          <rect x="6" y="6" width="5" height="5" rx="1.5" fill="#6366f1" opacity="0.5"/>
-          <rect x="13" y="6" width="5" height="5" rx="1.5" fill="#6366f1" opacity="0.9"/>
-          <rect x="6" y="13" width="5" height="5" rx="1.5" fill="#6366f1" opacity="0.9"/>
-          <rect x="13" y="13" width="5" height="5" rx="1.5" fill="#6366f1" opacity="0.5"/>
-        </svg>
-      ),
-      bookings: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="5" width="18" height="16" rx="3" fill="#cffafe" stroke="#0891b2" strokeWidth="1.5"/>
-          <path d="M7 2v4M17 2v4M3 10h18" stroke="#0891b2" strokeWidth="1.5" strokeLinecap="round"/>
-          <rect x="7" y="13" width="3" height="3" rx="1" fill="#0891b2" opacity="0.5"/>
-          <rect x="11" y="13" width="3" height="3" rx="1" fill="#0891b2" opacity="0.9"/>
-          <rect x="15" y="13" width="3" height="3" rx="1" fill="#0891b2" opacity="0.5"/>
-        </svg>
-      ),
-      confirmed: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9" fill="#bbf7d0" stroke="#16a34a" strokeWidth="1.5"/>
-          <path d="M8 12l3 3 5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-      slots: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9" fill="#ddd6fe" stroke="#7c3aed" strokeWidth="1.5"/>
-          <path d="M12 7v5l3 2" stroke="#7c3aed" strokeWidth="1.8" strokeLinecap="round"/>
-        </svg>
-      ),
-      monthlySlots: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="5" width="18" height="16" rx="3" fill="#a5f3fc" stroke="#0891b2" strokeWidth="1.5"/>
-          <path d="M7 2v4M17 2v4M3 10h18" stroke="#0891b2" strokeWidth="1.5" strokeLinecap="round"/>
-          <circle cx="12" cy="15" r="2" fill="#0891b2" opacity="0.6"/>
-        </svg>
-      ),
-      leads: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M20 12V22H4V12M22 7H2v5h20V7z" stroke="#dc2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" stroke="#dc2626" strokeWidth="1.5"/>
-        </svg>
-      ),
-      users: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="9" cy="7" r="3.5" fill="#bfdbfe" stroke="#2563eb" strokeWidth="1.5"/>
-          <path d="M3 20c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round"/>
-          <circle cx="17" cy="8" r="2.5" fill="#bfdbfe" stroke="#2563eb" strokeWidth="1.5"/>
-          <path d="M20 20c0-2.761-1.343-5-4-6" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round"/>
-        </svg>
-      ),
-      offers: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#fbcfe8" stroke="#db2777" strokeWidth="1.5" strokeLinejoin="round"/>
-        </svg>
-      ),
-      approved: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="18" height="18" rx="4" fill="#a7f3d0" stroke="#059669" strokeWidth="1.5"/>
-          <path d="M8 12l3 3 5-5" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-      coupons: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" fill="#fde68a" stroke="#C9A84C" strokeWidth="1.5"/>
-          <circle cx="7" cy="7" r="1.5" fill="#C9A84C"/>
-        </svg>
-      ),
-      amenities: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3" stroke="#9333ea" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-    };
-    return icons[type] || null;
+  const WORKSPACE_TYPE_META = {
+    "Hot Desk": {
+      img: "/images/workspaces/hot-desk-3d.png",
+      width: 38,
+      height: 38,
+      color: "#6366f1",
+      bg: "#ede9fe",
+    },
+    "Dedicated Desk": {
+      img: "/images/workspaces/dedicated-desk-3d.png",
+      width: 38,
+      height: 38,
+      color: "#3b82f6",
+      bg: "#dbeafe",
+    },
+    "Private Office Space": {
+      img: "/images/workspaces/private-office-space-3d.png",
+      width: 38,
+      height: 38,
+      color: "#0891b2",
+      bg: "#cffafe",
+    },
+    "Private Cabin": {
+      img: "/images/workspaces/private-cabin-3d.png",
+      width: 38,
+      height: 38,
+      color: "#7c3aed",
+      bg: "#f5f3ff",
+    },
+    "Meeting Room": {
+      img: "/images/workspaces/meeting-room-3d.png",
+      width: 38,
+      height: 38,
+      color: "#16a34a",
+      bg: "#dcfce7",
+    },
+    "Board Room": {
+      img: "/images/workspaces/board-room-3d.png",
+      width: 38,
+      height: 38,
+      color: "#C9A84C",
+      bg: "#fef3c7",
+    },
+    "Event Space": {
+      img: "/images/workspaces/event-space-3d.png",
+      width: 38,
+      height: 38,
+      color: "#db2777",
+      bg: "#fce7f3",
+    },
+    Podcast: {
+      img: "/images/workspaces/podcast-3d.png",
+      width: 38,
+      height: 38,
+      color: "#dc2626",
+      bg: "#fee2e2",
+    },
+    "Virtual Office": {
+      img: "/images/workspaces/virtual-office-3d.png",
+      width: 38,
+      height: 38,
+      color: "#0284c7",
+      bg: "#e0f2fe",
+    },
   };
 
-  const miniBarData = [40,55,45,70,60,80,65,100];
+  const CARD_IMAGE_META = {
+    revenue: {
+      img: "https://png.pngtree.com/png-clipart/20250216/original/pngtree-profit-management-3d-icon-financial-planning-symbol-for-business-growth-and-png-image_20452296.png",
+      width: 84,
+      height: 84,
+    },
+    workspaces: {
+      img: "https://static.vecteezy.com/system/resources/previews/055/135/913/non_2x/3d-office-workspace-with-organized-essentials-png.png",
+      width: 76,
+      height: 76,
+    },
+    bookings: {
+      img: "https://cdn3d.iconscout.com/3d/premium/thumb/booking-3d-icon-png-download-11245693.png",
+      width: 76,
+      height: 76,
+    },
+    slots: {
+      img: "https://img.freepik.com/free-vector/appointment-booking-with-calendar_23-2148553008.jpg",
+      width: 46,
+      height: 46,
+    },
+    monthlySlots: {
+      img: "https://static.vecteezy.com/system/resources/previews/027/205/830/non_2x/booking-meeting-calendar-appointment-3d-illustration-people-using-appointment-business-application-planning-events-setting-reminders-time-online-scheduling-appointments-png.png",
+      width: 46,
+      height: 46,
+    },
+    leads: {
+      img: "https://img.freepik.com/free-psd/3d-rendering-social-media-marketing-icon_23-2151185461.jpg?semt=ais_hybrid&w=740&q=80",
+      width: 46,
+      height: 46,
+    },
+    users: {
+      img: "https://thumbs.dreamstime.com/b/vibrant-d-user-icons-representing-together-clustering-collaborative-team-spirit-against-transparent-background-three-colorful-icon-368832341.jpg",
+      width: 46,
+      height: 46,
+    },
+    offers: {
+      img: "https://cdn3d.iconscout.com/3d/premium/thumb/shopping-cashback-offer-3d-icon-png-download-6380795.png",
+      width: 46,
+      height: 46,
+    },
+    approved: {
+      img: "https://w7.pngwing.com/pngs/155/261/png-transparent-approve-badge-approve-check-accept-verify-done-3d-icon-thumbnail.png",
+      width: 46,
+      height: 46,
+    },
+    coupons: {
+      img: "https://static.vecteezy.com/system/resources/thumbnails/021/221/145/small/discount-coupon-with-five-stars-icon-3d-rendering-illustration-free-vector.jpg",
+      width: 46,
+      height: 46,
+    },
+    amenities: {
+      img: "https://cdn3d.iconscout.com/3d/premium/thumb/home-facilities-3d-icon-png-download-7589707.png",
+      width: 46,
+      height: 46,
+    },
+  };
+
+  const wsTypeCounts = WORKSPACE_TYPES.map((type) => ({
+    type,
+    count: workspaces.filter((w) => w.name === type).length,
+    approved: workspaces.filter((w) => w.name === type && w.is_approved).length,
+    meta: WORKSPACE_TYPE_META[type],
+  }));
+
+  const maxCount = Math.max(...wsTypeCounts.map((t) => t.count), 1);
+  const totalWsCount = wsTypeCounts.reduce((s, t) => s + t.count, 0);
+
+  const ImageIcon = ({
+    src,
+    alt,
+    width = 24,
+    height = 24,
+    faded = false,
+    shadow = true,
+  }) => {
+    const [imgError, setImgError] = React.useState(false);
+
+    return !imgError ? (
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        onError={() => setImgError(true)}
+        style={{
+          width,
+          height,
+          objectFit: "contain",
+          display: "block",
+          userSelect: "none",
+          filter: faded
+            ? "grayscale(1) opacity(0.4)"
+            : shadow
+            ? "drop-shadow(0 8px 16px rgba(0,0,0,0.16))"
+            : "none",
+        }}
+      />
+    ) : (
+      <div
+        style={{
+          width,
+          height,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 10,
+          fontWeight: 800,
+          color: "#94a3b8",
+          lineHeight: 1,
+        }}
+      >
+        {alt?.slice(0, 2)?.toUpperCase() || "NA"}
+      </div>
+    );
+  };
+
+  const WorkspaceTypeImage = ({ meta, type, isEmpty }) => {
+    return (
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <ImageIcon
+          src={meta.img}
+          alt={type}
+          width={meta.width || 38}
+          height={meta.height || 38}
+          faded={isEmpty}
+        />
+      </div>
+    );
+  };
+
+  const DashboardImageIcon = ({ type, faded = false }) => {
+    const meta = CARD_IMAGE_META[type];
+    if (!meta) return null;
+
+    return (
+      <ImageIcon
+        src={meta.img}
+        alt={type}
+        width={meta.width || 24}
+        height={meta.height || 24}
+        faded={faded}
+      />
+    );
+  };
+
+  const miniBarData = [40, 55, 45, 70, 60, 80, 65, 100];
 
   const topCards = [
     {
@@ -1152,11 +1232,11 @@ const WORKSPACE_TYPE_META = {
       value: `₹${revenue.total_revenue?.toLocaleString() ?? 0}`,
       label: "Total Revenue",
       iconType: "revenue",
-      iconBg: "linear-gradient(135deg,#fef3c7,#fde68a)",
       barColor: "#C9A84C",
       barBg: "#fde68a",
       badgeText: "All time",
-      badgeBg: "#fef3c7", badgeColor: "#92400e",
+      badgeBg: "#fef3c7",
+      badgeColor: "#92400e",
       numColor: "#C9A84C",
       borderTop: "linear-gradient(90deg,#C9A84C,#f0c040)",
       section: null,
@@ -1167,11 +1247,11 @@ const WORKSPACE_TYPE_META = {
       value: workspaces.length,
       label: "My Workspaces",
       iconType: "workspaces",
-      iconBg: "linear-gradient(135deg,#ede9fe,#ddd6fe)",
       barColor: "#6366f1",
       barBg: "#ddd6fe",
       badgeText: `${approvedWorkspaces.length} approved`,
-      badgeBg: "#ede9fe", badgeColor: "#4338ca",
+      badgeBg: "#ede9fe",
+      badgeColor: "#4338ca",
       numColor: "#6366f1",
       borderTop: "linear-gradient(90deg,#6366f1,#a78bfa)",
       section: "workspaces",
@@ -1182,11 +1262,11 @@ const WORKSPACE_TYPE_META = {
       value: mergedBookings.length,
       label: "Total Bookings",
       iconType: "bookings",
-      iconBg: "linear-gradient(135deg,#cffafe,#a5f3fc)",
       barColor: "#0891b2",
       barBg: "#a5f3fc",
       badgeText: `${bookingStats.confirmed} confirmed`,
-      badgeBg: "#cffafe", badgeColor: "#164e63",
+      badgeBg: "#cffafe",
+      badgeColor: "#164e63",
       numColor: "#0891b2",
       borderTop: "linear-gradient(90deg,#0891b2,#22d3ee)",
       section: "bookings",
@@ -1195,62 +1275,231 @@ const WORKSPACE_TYPE_META = {
   ];
 
   const quickCards = [
-    // { iconType:"confirmed", iconBg:"#dcfce7", label:"Confirmed Revenue", sub:`₹${revenue.confirmed_revenue?.toLocaleString() ?? 0}`, section:"bookings" },
-    { iconType:"slots",     iconBg:"#ede9fe", label:"Total Slots",       sub:`${activeSlots.length} active${expiredSlotsCount > 0 ? ` · ${expiredSlotsCount} exp` : ""}`, section:"slots" },
-    { iconType:"monthlySlots", iconBg:"#cffafe", label:"Monthly Slots",  sub:`${activeMonthlySlots.length} active${expiredMonthlyCount > 0 ? ` · ${expiredMonthlyCount} exp` : ""}`, section:"monthlySlots" },
-    // { iconType:"leads",     iconBg:"#fee2e2", label:"Total Leads",       sub:`${totalLeads} inquiries`, section:"hyderabadLeads" },
-    // { iconType:"users",     iconBg:"#dbeafe", label:"Total Users",       sub:`${Array.isArray(users) ? users.length : 0} members`, section:"manageUsers" },
-    { iconType:"offers",    iconBg:"#fce7f3", label:"Offer Workspaces",  sub:`${offerWorkspaces.length} active`, section:"offerWorkspaces" },
-    { iconType:"approved",  iconBg:"#d1fae5", label:"Approved Spaces",   sub:`${approvedWorkspaces.length} live`, section:"workspaces" },
-    { iconType:"coupons",   iconBg:"#fef3c7", label:"Offer Coupons",     sub:`${offerCoupons.length} coupons`, section:"offerCoupons" },
-    { iconType:"amenities", iconBg:"#f3e8ff", label:"Extra Amenities",   sub:`${additionalAmenities.length} added`, section:"additionalAmenities" },
+    {
+      iconType: "slots",
+      label: "Total Slots",
+      sub: `${activeSlots.length} active${
+        expiredSlotsCount > 0 ? ` · ${expiredSlotsCount} exp` : ""
+      }`,
+      section: "slots",
+    },
+    {
+      iconType: "monthlySlots",
+      label: "Monthly Slots",
+      sub: `${activeMonthlySlots.length} active${
+        expiredMonthlyCount > 0 ? ` · ${expiredMonthlyCount} exp` : ""
+      }`,
+      section: "monthlySlots",
+    },
+    {
+      iconType: "leads",
+      label: "Total Leads",
+      sub: `${totalLeads} inquiries`,
+      section: "hyderabadLeads",
+    },
+    {
+      iconType: "users",
+      label: "Total Users",
+      sub: `${Array.isArray(users) ? users.length : 0} members`,
+      section: "manageUsers",
+    },
+    {
+      iconType: "offers",
+      label: "Offer Workspaces",
+      sub: `${offerWorkspaces.length} active`,
+      section: "offerWorkspaces",
+    },
+    {
+      iconType: "approved",
+      label: "Approved Spaces",
+      sub: `${approvedWorkspaces.length} live`,
+      section: "workspaces",
+    },
+    {
+      iconType: "coupons",
+      label: "Offer Coupons",
+      sub: `${offerCoupons.length} coupons`,
+      section: "offerCoupons",
+    },
+    {
+      iconType: "amenities",
+      label: "Extra Amenities",
+      sub: `${additionalAmenities.length} added`,
+      section: "additionalAmenities",
+    },
+  ];
+
+  const quickAccessItems = [
+    {
+      iconType: "workspaces",
+      label: "Workspaces",
+      sub: "Manage listings",
+      section: "workspaces",
+    },
+    {
+      iconType: "users",
+      label: "Users",
+      sub: "Manage accounts",
+      section: "manageUsers",
+    },
+    {
+      iconType: "bookings",
+      label: "Bookings",
+      sub: "View all requests",
+      section: "bookings",
+    },
+    {
+      iconType: "slots",
+      label: "Slots",
+      sub: "Manage timings",
+      section: "slots",
+    },
+    {
+      iconType: "leads",
+      label: "Leads",
+      sub: "View inquiries",
+      section: "hyderabadLeads",
+    },
+    {
+      iconType: "amenities",
+      label: "Amenities",
+      sub: "Extra add-ons",
+      section: "additionalAmenities",
+    },
   ];
 
   return (
     <div style={{ fontFamily: "system-ui,-apple-system,sans-serif" }}>
-
-      {/* ── Top 3 stat cards ── */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))", gap:16, marginBottom:16 }}>
-        {topCards.map(card => (
-          <div key={card.key}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+          gap: 16,
+          marginBottom: 16,
+        }}
+      >
+        {topCards.map((card) => (
+          <div
+            key={card.key}
             onClick={() => card.section && handleNav(card.section)}
             style={{
-              background:"#fff", borderRadius:16, padding:20,
-              border:"1px solid #e5e7eb", position:"relative", overflow:"hidden",
+              background: "#fff",
+              borderRadius: 16,
+              padding: 20,
+              border: "1px solid #e5e7eb",
+              position: "relative",
+              overflow: "hidden",
               cursor: card.section ? "pointer" : "default",
-              transition:"box-shadow 0.15s",
+              transition: "all 0.18s ease",
             }}
-            onMouseEnter={e => { if(card.section) e.currentTarget.style.boxShadow="0 4px 20px rgba(0,0,0,0.08)"; }}
-            onMouseLeave={e => e.currentTarget.style.boxShadow="none"}
+            onMouseEnter={(e) => {
+              if (card.section) {
+                e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
           >
-            {/* top color bar */}
-            <div style={{ position:"absolute", top:0, left:0, right:0, height:4, background:card.borderTop }} />
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 4,
+                background: card.borderTop,
+              }}
+            />
 
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14, marginTop:4 }}>
-              <div style={{ width:48, height:48, borderRadius:12, background:card.iconBg, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <Icon3D type={card.iconType} />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: 14,
+                marginTop: 4,
+              }}
+            >
+              <div
+                style={{
+                  minHeight: 88,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <DashboardImageIcon type={card.iconType} />
               </div>
-              <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 10px", borderRadius:20, fontSize:11, fontWeight:700, background:card.badgeBg, color:card.badgeColor }}>
+
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "4px 10px",
+                  borderRadius: 20,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  background: card.badgeBg,
+                  color: card.badgeColor,
+                }}
+              >
                 ↑ {card.badgeText}
               </span>
             </div>
 
-            <div style={{ fontSize:28, fontWeight:800, color:card.numColor, marginBottom:2 }}>{card.value}</div>
-            <div style={{ fontSize:13, color:"#6b7280", marginBottom:14 }}>{card.label}</div>
+            <div
+              style={{
+                fontSize: 28,
+                fontWeight: 800,
+                color: card.numColor,
+                marginBottom: 2,
+              }}
+            >
+              {card.value}
+            </div>
 
-            {/* spark bars */}
-            <div style={{ display:"flex", gap:3, alignItems:"flex-end", height:36 }}>
+            <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 14 }}>
+              {card.label}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 3,
+                alignItems: "flex-end",
+                height: 36,
+              }}
+            >
               {miniBarData.map((h, i) => (
-                <div key={i} style={{
-                  flex:1, borderRadius:3,
-                  height:`${h}%`,
-                  background: i === miniBarData.length-1 ? card.barColor : card.barBg,
-                }} />
+                <div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    borderRadius: 3,
+                    height: `${h}%`,
+                    background: i === miniBarData.length - 1 ? card.barColor : card.barBg,
+                  }}
+                />
               ))}
             </div>
 
             {card.linkText && (
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:12, paddingTop:12, borderTop:"1px solid #f3f4f6", fontSize:12, fontWeight:600, color:"#9ca3af" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginTop: 12,
+                  paddingTop: 12,
+                  borderTop: "1px solid #f3f4f6",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#9ca3af",
+                }}
+              >
                 <span>{card.linkText}</span>
                 <span>→</span>
               </div>
@@ -1259,97 +1508,319 @@ const WORKSPACE_TYPE_META = {
         ))}
       </div>
 
-      {/* ── Quick stat cards ── */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))", gap:10, marginBottom:16 }}>
-        {quickCards.map(card => (
-          <div key={card.label}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))",
+          gap: 10,
+          marginBottom: 16,
+        }}
+      >
+        {quickCards.map((card) => (
+          <div
+            key={card.label}
             onClick={() => handleNav(card.section)}
             style={{
-              background:"#fff", borderRadius:12, padding:"14px 12px",
-              border:"1px solid #e5e7eb", cursor:"pointer", transition:"box-shadow 0.15s",
+              background: "#fff",
+              borderRadius: 12,
+              padding: "14px 12px",
+              border: "1px solid #e5e7eb",
+              cursor: "pointer",
+              transition: "all 0.18s ease",
             }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,0.08)"}
-            onMouseLeave={e => e.currentTarget.style.boxShadow="none"}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
           >
-            <div style={{ width:35, height:35, borderRadius:10, background:card.iconBg, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:8 }}>
-              <Icon3D type={card.iconType} />
+            <div
+              style={{
+                height: 52,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                marginBottom: 8,
+              }}
+            >
+              <DashboardImageIcon type={card.iconType} />
             </div>
-            <div style={{ fontSize:11, fontWeight:700, color:"#374151", marginBottom:2, lineHeight:1.3 }}>{card.label}</div>
-            <div style={{ fontSize:10, color:"#0c0f14" }}>{card.sub}</div>
-            <div style={{ fontSize:11, color:"#d1d5db", marginTop:6, textAlign:"right" }}>↗</div>
+
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#374151",
+                marginBottom: 2,
+                lineHeight: 1.3,
+              }}
+            >
+              {card.label}
+            </div>
+
+            <div style={{ fontSize: 10, color: "#0c0f14" }}>{card.sub}</div>
+
+            <div
+              style={{
+                fontSize: 11,
+                color: "#d1d5db",
+                marginTop: 6,
+                textAlign: "right",
+              }}
+            >
+              ↗
+            </div>
           </div>
         ))}
       </div>
 
-      {/* ── Bottom: Quick Access + Workspace Types ── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
-
-        {/* Quick Access */}
-        <div style={{ background:"#fff", borderRadius:16, padding:20, border:"1px solid #e5e7eb" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
-            <div style={{ width:8, height:8, borderRadius:"50%", background:"#C9A84C" }} />
-            <span style={{ fontSize:14, fontWeight:700, color:"#111" }}>Quick Access</span>
-            <span style={{ marginLeft:"auto", fontSize:11, color:"#9ca3af", fontWeight:600 }}>6 shortcuts</span>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 16,
+            padding: 20,
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#C9A84C",
+              }}
+            />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>
+              Quick Access
+            </span>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontSize: 11,
+                color: "#9ca3af",
+                fontWeight: 600,
+              }}
+            >
+              6 shortcuts
+            </span>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-            {[
-              { iconType:"workspaces", iconBg:"#ede9fe", label:"Workspaces",   sub:"Manage listings",   section:"workspaces" },
-              { iconType:"users",      iconBg:"#dcfce7", label:"Users",         sub:"Manage accounts",   section:"manageUsers" },
-              { iconType:"bookings",   iconBg:"#cffafe", label:"Bookings",      sub:"View all requests", section:"bookings" },
-              { iconType:"slots",      iconBg:"#fef3c7", label:"Slots",         sub:"Manage timings",    section:"slots" },
-              { iconType:"leads",      iconBg:"#fee2e2", label:"Leads",         sub:"View inquiries",    section:"hyderabadLeads" },
-              { iconType:"amenities",  iconBg:"#f3e8ff", label:"Amenities",     sub:"Extra add-ons",     section:"additionalAmenities" },
-            ].map(item => (
-              <div key={item.label}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {quickAccessItems.map((item) => (
+              <div
+                key={item.label}
                 onClick={() => handleNav(item.section)}
-                style={{ display:"flex", alignItems:"center", gap:10, padding:12, borderRadius:10, background:"#fafafa", border:"1px solid #f3f4f6", cursor:"pointer", transition:"background 0.15s" }}
-                onMouseEnter={e => e.currentTarget.style.background="#f0f0f0"}
-                onMouseLeave={e => e.currentTarget.style.background="#fafafa"}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: 12,
+                  borderRadius: 10,
+                  background: "#fafafa",
+                  border: "1px solid #f3f4f6",
+                  cursor: "pointer",
+                  transition: "all 0.18s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#f6f7f8";
+                  e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.06)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#fafafa";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
               >
-                <div style={{ width:32, height:32, borderRadius:8, background:item.iconBg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Icon3D type={item.iconType} />
+                <div
+                  style={{
+                    width: 52,
+                    height: 52,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <DashboardImageIcon type={item.iconType} />
                 </div>
+
                 <div>
-                  <div style={{ fontSize:12, fontWeight:700, color:"#111" }}>{item.label}</div>
-                  <div style={{ fontSize:10, color:"#9ca3af" }}>{item.sub}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#111" }}>
+                    {item.label}
+                  </div>
+                  <div style={{ fontSize: 10, color: "#9ca3af" }}>{item.sub}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Workspace Types */}
-        <div style={{ background:"#fff", borderRadius:16, padding:20, border:"1px solid #e5e7eb" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
-            <div style={{ width:8, height:8, borderRadius:"50%", background:"#C9A84C" }} />
-            <span style={{ fontSize:14, fontWeight:700, color:"#111" }}>Workspace Types</span>
-            <span style={{ marginLeft:"auto", fontSize:11, color:"#9ca3af", fontWeight:600 }}>{totalWsCount} spaces</span>
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 16,
+            padding: 20,
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#C9A84C",
+              }}
+            />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>
+              Workspace Types
+            </span>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontSize: 11,
+                color: "#9ca3af",
+                fontWeight: 600,
+              }}
+            >
+              {totalWsCount} spaces
+            </span>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
             {wsTypeCounts.map(({ type, count, approved, meta }) => {
               const pct = Math.round((count / maxCount) * 100);
               const isEmpty = count === 0;
+
               return (
-                <div key={type}
+                <div
+                  key={type}
                   onClick={() => handleNav("workspaces")}
-                  style={{ borderRadius:10, overflow:"hidden", border:"1px solid #f3f4f6", cursor:"pointer", opacity: isEmpty ? 0.45 : 1 }}
+                  style={{
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    border: "1px solid #f3f4f6",
+                    cursor: "pointer",
+                    opacity: isEmpty ? 0.45 : 1,
+                    transition: "all .18s ease",
+                    background: "#fff",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.07)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
                 >
-                  <div style={{ height:4, background: isEmpty ? "#e5e7eb" : meta.color }} />
-                  <div style={{ padding:10 }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-                      <div style={{ width:28, height:28, borderRadius:7, background: isEmpty ? "#f1f5f9" : meta.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13 }}>
-                        {meta.icon}
-                      </div>
-                      <span style={{ fontSize:16, fontWeight:800, color: isEmpty ? "#cbd5e1" : meta.color }}>{count}</span>
+                  <div
+                    style={{
+                      height: 4,
+                      background: isEmpty ? "#e5e7eb" : meta.color,
+                    }}
+                  />
+
+                  <div style={{ padding: 10 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <WorkspaceTypeImage meta={meta} type={type} isEmpty={isEmpty} />
+
+                      <span
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 800,
+                          color: isEmpty ? "#cbd5e1" : meta.color,
+                        }}
+                      >
+                        {count}
+                      </span>
                     </div>
-                    <div style={{ fontSize:10, color:"#6b7280", marginBottom:6, fontWeight:600, lineHeight:1.2 }}>{type}</div>
-                    <div style={{ height:3, borderRadius:2, background:"#f3f4f6", overflow:"hidden" }}>
-                      <div style={{ height:"100%", width:`${pct}%`, background: isEmpty ? "#e5e7eb" : meta.color, borderRadius:2 }} />
+
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: "#6b7280",
+                        marginBottom: 6,
+                        fontWeight: 600,
+                        lineHeight: 1.2,
+                        minHeight: 24,
+                      }}
+                    >
+                      {type}
                     </div>
+
+                    <div
+                      style={{
+                        height: 4,
+                        borderRadius: 999,
+                        background: "#f3f4f6",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${pct}%`,
+                          background: isEmpty ? "#e5e7eb" : meta.color,
+                          borderRadius: 999,
+                        }}
+                      />
+                    </div>
+
                     {!isEmpty && (
-                      <div style={{ display:"flex", gap:4, marginTop:5 }}>
-                        <span style={{ fontSize:9, fontWeight:700, color:"#059669", background:"#d1fae5", padding:"2px 5px", borderRadius:4 }}>✔ {approved}</span>
-                        {count - approved > 0 && <span style={{ fontSize:9, fontWeight:700, color:"#d97706", background:"#fef3c7", padding:"2px 5px", borderRadius:4 }}>{count - approved}p</span>}
+                      <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
+                        <span
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 700,
+                            color: "#059669",
+                            background: "#d1fae5",
+                            padding: "2px 5px",
+                            borderRadius: 4,
+                          }}
+                        >
+                          ✔ {approved}
+                        </span>
+
+                        {count - approved > 0 && (
+                          <span
+                            style={{
+                              fontSize: 9,
+                              fontWeight: 700,
+                              color: "#d97706",
+                              background: "#fef3c7",
+                              padding: "2px 5px",
+                              borderRadius: 4,
+                            }}
+                          >
+                            {count - approved} pending
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1362,7 +1833,6 @@ const WORKSPACE_TYPE_META = {
     </div>
   );
 };
-
   const renderManageUsers = () => {
     const allUsers = Array.isArray(users) ? users : [];
     const totalUsers = allUsers.length;
