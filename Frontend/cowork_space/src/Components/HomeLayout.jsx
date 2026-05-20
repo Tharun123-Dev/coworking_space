@@ -40,7 +40,7 @@ function HomeLayout() {
       <ChatBot/>
       <Reviews />
           <AddReview />
-          <WhatsAppFloat/>
+          {/* <WhatsAppFloat/> */}
       <Testimonials/>
   
       

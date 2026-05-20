@@ -185,17 +185,14 @@ def add_workspace(request):
         # SAVE WORKSPACE
         # =========================
         workspace = serializer.save(
-
     owner=owner_profile.user
     if owner_profile
     else request.user,
 
     created_by=request.user,
 
-    is_approved=False
-
+    is_approved=True if request.user.is_superuser else False
 )
-
         # =========================
         # SAVE AMENITIES
         # =========================
@@ -1952,4 +1949,48 @@ def mark_owner_notification_read(request, pk):
             {"error": "Notification not found"},
             status=404
         )
-    
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_all_slots(request):
+    slots = WorkspaceSlot.objects.select_related("workspace", "workspace__owner").order_by("-id")
+    data = []
+    for s in slots:
+        data.append({
+            "id": s.id,
+            "workspace_id": s.workspace.id,
+            "workspace_name": s.workspace.name,
+            "city": s.workspace.city,
+            "location": s.workspace.location,
+            "owner_name": s.workspace.owner.username if s.workspace.owner else "Unassigned",
+            "owner_username": s.workspace.owner.username if s.workspace.owner else "Unassigned",
+            "date": s.date,
+            "slot_type": s.slot_type,
+            "start_time": s.start_time,
+            "end_time": s.end_time,
+            "capacity": s.capacity,
+            "booked_count": s.booked_count,
+            "price": s.price,
+        })
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def admin_all_monthly_slots(request):
+    slots = MonthlySlot.objects.select_related("workspace", "workspace__owner").order_by("-id")
+    data = []
+    for s in slots:
+        data.append({
+            "id": s.id,
+            "workspace_id": s.workspace.id,
+            "workspace_name": s.workspace.name,
+            "city": s.workspace.city,
+            "location": s.workspace.location,
+            "owner_name": s.workspace.owner.username if s.workspace.owner else "Unassigned",
+            "owner_username": s.workspace.owner.username if s.workspace.owner else "Unassigned",
+            "month": s.month,
+            "year": s.year,
+            "capacity": s.capacity,
+            "booked": s.booked,
+            "price": s.price,
+        })
+    return Response(data)

@@ -7,6 +7,7 @@
   min-height: 100vh;
   font-family: "DM Sans", sans-serif;
   position: relative;
+  margin-top: -30px;
 }
 
 /* ═══════════════════════════════════
@@ -1029,6 +1030,9 @@
   .pagination {
     gap: 4px;
   }
+  .shell{
+     margin-top: -30px;
+  }
 }
 
 @media (max-width: 400px) {
@@ -1038,10 +1042,16 @@
   .formGrid {
     grid-template-columns: 1fr;
   }
+  .shell{
+     margin-top: -30px;
+  }
 }
 
 /* mobile table stacking */
 @media (max-width: 700px) {
+  .shell{
+     margin-top: -30px;
+  }
   .table,
   .table thead,
   .table tbody,

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Services/Axios";
 import styles from "../Styles/OwnerDashboard.module.css";
-
+import React from "react";
 const AMENITY_ICONS = {
   wifi: "📶", coffee: "☕", "24hr": "⏰", security: "🛡️",
   parking: "🅿️", meeting: "🏢", games: "🎮", pantry: "🍽️",
@@ -17,46 +17,65 @@ const MONTH_OPTIONS = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
 ];
+const NAV_ICONS = {
+  overview:    "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10",
+  workspaces:  "M3 21h18 M9 21V9l6-3v15 M3 7l9-4 9 4",
+  manageUsers: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 11a4 4 0 100-8 4 4 0 000 8 M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75",
+  slots:       "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 6v6l4 2",
+  leads:       "M20 12V22H4V12 M22 7H2v5h20V7z M12 22V7 M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z",
+  bookings:    "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8",
+  offerWs:     "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+  coupons:     "M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z M7 7h.01",
+  amenities:   "M18 8h1a4 4 0 010 8h-1 M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z M6 1v3 M10 1v3 M14 1v3",
+  suggested:   "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+  monthlySlots:"M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z",
+  hyderabad:   "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z M12 10a2 2 0 100-4 2 2 0 000 4",
+  offerLeads:  "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+  custom:      "M12 20h9 M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z",
+  quotation:   "M9 11l3 3L22 4 M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11",
+  support:     "M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0z",
+};
 
 const NAV_GROUPS = [
-  { key: "overview", icon: "⊞", label: "Overview", single: true },
+  { key: "overview",     iconKey: "overview",     label: "Dashboard",        single: true },
+  { key: "manageUsers",  iconKey: "manageUsers",  label: "Manage Users",     single: true },
   {
-    key: "workspacesGroup", icon: "🏢", label: "Workspaces",
+    key: "workspacesGroup", iconKey: "workspaces", label: "Workspaces",
     children: [
-      { key: "workspaces", icon: "🏗️", label: "Workspaces" },
-      { key: "offerWorkspaces", icon: "🔥", label: "Offer Workspaces" },
-      { key: "offerCoupons", icon: "🎟️", label: "Offer Coupons" },
-      { key: "additionalAmenities", icon: "☕", label: "Additional Amenities" },
-      { key: "suggestedWorkspaces", icon: "🧭", label: "Suggested Workspaces" },
-    ],
-  },
-  { key: "manageUsers", icon: "👥", label: "Manage Users", single: true },
-  {
-    key: "slotsGroup", icon: "⏰", label: "Slot Management",
-    children: [
-      { key: "slots", icon: "⏰", label: "Slot Management" },
-      { key: "monthlySlots", icon: "📅", label: "Monthly Slots" },
+      { key: "workspaces",          iconKey: "workspaces",  label: "Workspaces" },
+      { key: "offerWorkspaces",     iconKey: "offerWs",     label: "Offer Workspaces" },
+      { key: "offerCoupons",        iconKey: "coupons",     label: "Offer Coupons" },
+      { key: "additionalAmenities", iconKey: "amenities",   label: "Additional Amenities" },
+      { key: "suggestedWorkspaces", iconKey: "suggested",   label: "Suggested Workspaces" },
     ],
   },
   {
-    key: "leadsGroup", icon: "🏷️", label: "Leads",
+    key: "leadsGroup", iconKey: "leads", label: "Leads",
     children: [
-      { key: "hyderabadLeads", icon: "📍", label: "Hyderabad Leads" },
-      { key: "offerLeads", icon: "🔥", label: "Offer Leads" },
-      { key: "customisationLeads", icon: "🎨", label: "Customisation Leads" },
-      { key: "quotationLeads", icon: "📄", label: "Quotation Leads" },
+      { key: "hyderabadLeads",     iconKey: "hyderabad",  label: "Hyderabad Leads" },
+      { key: "offerLeads",         iconKey: "offerLeads", label: "Offer Leads" },
+      { key: "customisationLeads", iconKey: "custom",     label: "Customisation Leads" },
+      { key: "quotationLeads",     iconKey: "quotation",  label: "Quotation Leads" },
     ],
   },
-  { key: "bookings", icon: "📋", label: "My Bookings", single: true },
+  { key: "bookings", iconKey: "bookings", label: "Bookings", single: true },
+  {
+    key: "slotsGroup", iconKey: "slots", label: "Slot Management",
+    children: [
+      { key: "slots",        iconKey: "slots",        label: "Slot Management" },
+      { key: "monthlySlots", iconKey: "monthlySlots", label: "Monthly Slots" },
+    ],
+  },
 ];
-
 const LS_KEY = "ownerBookingStates";
 const loadStates = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; } };
 const saveState = (id, patch) => { const all = loadStates(); all[id] = { ...(all[id] || {}), ...patch }; localStorage.setItem(LS_KEY, JSON.stringify(all)); };
 
-const SvgIcon = ({ d, size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline-block", verticalAlign: "middle" }}>
-    <path d={d} />
+const NavIcon = ({ iconKey, size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+    style={{ display: "inline-block", verticalAlign: "middle", flexShrink: 0 }}>
+    <path d={NAV_ICONS[iconKey] || NAV_ICONS.overview} />
   </svg>
 );
 
@@ -110,87 +129,175 @@ function LeadFilterBar({ search, onSearch, filterTab, onFilter, tabs, counts, pl
     </div>
   );
 }
-
+// function HoverNavGroup({ group, activeSection, handleNav, sidebarCollapsed }) {
+// }
 // ─── HOVER NAV GROUP COMPONENT ─────────────────────────────────────────────
-function HoverNavGroup({ group, activeSection, handleNav, sidebarCollapsed }) {
+function DarkHoverNavGroup({ group, activeSection, handleNav, sidebarCollapsed }) {
   const [open, setOpen] = useState(false);
+  const [flyout, setFlyout] = useState(false);
   const timeoutRef = useRef(null);
   const hasActiveChild = group.children.some(c => c.key === activeSection);
 
-  const handleMouseEnter = () => {
-    clearTimeout(timeoutRef.current);
-    setOpen(true);
-  };
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => setOpen(false), 120);
-  };
+  useEffect(() => {
+    if (hasActiveChild) setOpen(true);
+  }, [hasActiveChild]);
 
-  useEffect(() => () => clearTimeout(timeoutRef.current), []);
-
+  // ── COLLAPSED: hover flyout ──
   if (sidebarCollapsed) {
     return (
       <div
-        className={styles.hoverGroupWrap}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        style={{ position: "relative", marginBottom: 2 }}
+        onMouseEnter={() => { clearTimeout(timeoutRef.current); setFlyout(true); }}
+        onMouseLeave={() => { timeoutRef.current = setTimeout(() => setFlyout(false), 150); }}
       >
-        <div className={`${styles.hoverGroupLabel} ${styles.hoverGroupLabelCollapsed} ${hasActiveChild ? styles.hoverGroupLabelActive : ""}`}>
-          <span className={styles.hoverGroupIcon}>{group.icon}</span>
+        <div style={{
+          padding: "10px 12px",
+          borderRadius: 10,
+          cursor: "pointer",
+          color: hasActiveChild ? "#C9A84C" : "#94a3b8",
+          background: hasActiveChild ? "rgba(201,168,76,0.12)" : "transparent",
+          display: "flex",
+          justifyContent: "center",
+          borderLeft: hasActiveChild ? "3px solid #C9A84C" : "3px solid transparent",
+        }}>
+          <NavIcon iconKey={group.iconKey} size={16} />
         </div>
-        {open && (
-          <div className={styles.flyoutMenu}>
-            <div className={styles.flyoutTitle}>{group.label}</div>
-            {group.children.map(child => {
-              const isActive = activeSection === child.key;
-              return (
-                <button
-                  key={child.key}
-                  className={`${styles.flyoutItem} ${isActive ? styles.flyoutItemActive : ""}`}
-                  onClick={() => { handleNav(child.key, group.key); setOpen(false); }}
-                >
-                  <span>{child.icon}</span>
-                  <span>{child.label}</span>
-                </button>
-              );
-            })}
+
+        {flyout && (
+          <div
+            onMouseEnter={() => clearTimeout(timeoutRef.current)}
+            onMouseLeave={() => { timeoutRef.current = setTimeout(() => setFlyout(false), 150); }}
+            style={{
+              position: "absolute",
+              left: "calc(100% + 8px)",
+              top: 0,
+              zIndex: 9999,
+              background: "#1e293b",
+              borderRadius: 12,
+              padding: "8px",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
+              minWidth: 190,
+              border: "1px solid rgba(255,255,255,0.08)",
+              pointerEvents: "all",
+            }}
+          >
+            <div style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#C9A84C",
+              padding: "4px 8px 8px",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              marginBottom: 4,
+            }}>
+              {group.label}
+            </div>
+            {group.children.map(child => (
+              <button
+                key={child.key}
+                onClick={() => { handleNav(child.key); setFlyout(false); }}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "9px 10px",
+                  borderRadius: 8,
+                  border: "none",
+                  marginBottom: 2,
+                  background: activeSection === child.key ? "rgba(201,168,76,0.15)" : "transparent",
+                  color: activeSection === child.key ? "#C9A84C" : "#94a3b8",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: activeSection === child.key ? 700 : 500,
+                  textAlign: "left",
+                }}
+              >
+                <NavIcon iconKey={child.iconKey} size={14} />
+                <span>{child.label}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>
     );
   }
 
+  // ── EXPANDED: hover accordion ──
   return (
     <div
-      className={styles.hoverGroupWrap}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      style={{ marginBottom: 2 }}
+      onMouseEnter={() => { clearTimeout(timeoutRef.current); setOpen(true); }}
+      onMouseLeave={() => { timeoutRef.current = setTimeout(() => setOpen(false), 150); }}
     >
-      <div className={`${styles.hoverGroupLabel} ${hasActiveChild ? styles.hoverGroupLabelActive : ""} ${open ? styles.hoverGroupLabelOpen : ""}`}>
-        <div className={styles.hoverGroupLeft}>
-          <span className={styles.hoverGroupIcon}>{group.icon}</span>
-          <span className={styles.hoverGroupText}>{group.label}</span>
-        </div>
-        <span className={`${styles.hoverGroupChevron} ${open ? styles.hoverGroupChevronOpen : ""}`}>▶</span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "10px 12px",
+          borderRadius: 10,
+          cursor: "pointer",
+          background: hasActiveChild ? "rgba(201,168,76,0.08)" : open ? "rgba(255,255,255,0.04)" : "transparent",
+          color: hasActiveChild ? "#C9A84C" : "#94a3b8",
+          borderLeft: hasActiveChild ? "3px solid #C9A84C" : "3px solid transparent",
+          transition: "all 0.15s",
+        }}
+      >
+        <NavIcon iconKey={group.iconKey} size={16} />
+        <span style={{ flex: 1, fontSize: 13, fontWeight: hasActiveChild ? 700 : 500, textAlign: "left" }}>
+          {group.label}
+        </span>
+        <svg
+          width={12} height={12} viewBox="0 0 24 24"
+          fill="none" stroke="currentColor"
+          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          style={{
+            transition: "transform 0.2s",
+            transform: open ? "rotate(90deg)" : "rotate(0deg)",
+            flexShrink: 0,
+          }}
+        >
+          <path d="M9 18l6-6-6-6" />
+        </svg>
       </div>
-      <div className={`${styles.hoverDropdown} ${open ? styles.hoverDropdownOpen : ""}`}>
-        {group.children.map(child => {
-          const isActive = activeSection === child.key;
-          return (
+
+      {open && (
+        <div style={{ paddingLeft: 16, marginTop: 2 }}>
+          {group.children.map(child => (
             <button
               key={child.key}
-              className={`${styles.hoverChildItem} ${isActive ? styles.hoverChildItemActive : ""}`}
-              onClick={() => { handleNav(child.key, group.key); setOpen(false); }}
+              onClick={() => handleNav(child.key)}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "9px 12px",
+                borderRadius: 8,
+                border: "none",
+                marginBottom: 2,
+                background: activeSection === child.key ? "rgba(201,168,76,0.15)" : "transparent",
+                color: activeSection === child.key ? "#C9A84C" : "#64748b",
+                cursor: "pointer",
+                fontSize: 13,
+                fontWeight: activeSection === child.key ? 700 : 400,
+                textAlign: "left",
+                borderLeft: activeSection === child.key
+                  ? "2px solid #C9A84C"
+                  : "2px solid rgba(255,255,255,0.06)",
+              }}
             >
-              <span className={styles.hoverChildIcon}>{child.icon}</span>
+              <NavIcon iconKey={child.iconKey} size={13} />
               <span>{child.label}</span>
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
-
 // ─── PER-WORKSPACE REVENUE PANEL ───────────────────────────────────────────
 function WorkspaceRevenuePanel({ workspaceId, workspaceName, bookings }) {
   const [loading, setLoading] = useState(false);
@@ -412,7 +519,20 @@ function OwnerDashboard() {
   const [showOwnerDetails, setShowOwnerDetails] = useState(false);
   const [selectedOwner, setSelectedOwner] = useState(null);
   const [openRevenueId, setOpenRevenueId] = useState(null);
+  const TODAY_STR = (() => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+})();
 
+const isSlotExpired = (dateStr) => !!dateStr && dateStr < TODAY_STR;
+
+const isMonthlySlotExpired = (year, month) => {
+  const d = new Date();
+  return Number(year) < d.getFullYear() ||
+    (Number(year) === d.getFullYear() && Number(month) < d.getMonth() + 1);
+};
+
+const expiredRowStyle = { opacity: 0.42, background: "#f7f7f7", filter: "grayscale(35%)" };
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -462,7 +582,8 @@ function OwnerDashboard() {
 
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const notificationKey = `viewedNotifications_${currentUser?.id}`;
-
+  const [futureBookings, setFutureBookings] = useState([]);
+const [showConflict, setShowConflict] = useState(false);
   const [viewedNotifications, setViewedNotifications] = useState(() => {
     return JSON.parse(localStorage.getItem(notificationKey)) || [];
   });
@@ -503,7 +624,8 @@ function OwnerDashboard() {
   const [customLeadFilter, setCustomLeadFilter] = useState("all");
   const [quotationLeadSearch, setQuotationLeadSearch] = useState("");
   const [quotationLeadFilter, setQuotationLeadFilter] = useState("all");
-
+  const [showDeactivatePopup, setShowDeactivatePopup] = useState(false);
+const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const approvedWorkspaces = useMemo(() => workspaces.filter(w => w.is_approved === true), [workspaces]);
   const setBusy = (id, value) => setBusyMap(prev => ({ ...prev, [id]: value }));
   const isBusy = (id) => !!busyMap[id];
@@ -794,7 +916,67 @@ function OwnerDashboard() {
       return matchFilter && matchSearch;
     });
   }, [offerLeads, offerLeadSearch, offerLeadFilter]);
+const handleDeactivateWorkspace = async (workspace) => {
+  try {
+    const res = await axiosInstance.get(
+      `cart/workspace-future-bookings/${workspace.id}/`
+    );
 
+    const futureBookings = res.data || [];
+
+    if (futureBookings.length > 0) {
+      setFutureBookings(futureBookings);
+      setSelectedWorkspace(workspace);
+      setShowDeactivatePopup(true);
+      return;
+    }
+
+    await axiosInstance.put(
+      `workspaces/update/${workspace.id}/`,
+      {
+        ...workspace,
+        isavailable: false,
+        amenities: Array.isArray(workspace.amenities)
+          ? workspace.amenities.map((a) =>
+              typeof a === "object" ? a.id : a
+            )
+          : [],
+      }
+    );
+
+    fetchWorkspaces();
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const confirmDeactivateWorkspace = async () => {
+  try {
+
+    await axiosInstance.put(
+      `workspaces/update/${selectedWorkspace.id}/`,
+      {
+        ...selectedWorkspace,
+        isavailable: false,
+        amenities: Array.isArray(selectedWorkspace.amenities)
+          ? selectedWorkspace.amenities.map((a) =>
+              typeof a === "object" ? a.id : a
+            )
+          : [],
+      }
+    );
+
+    setShowDeactivatePopup(false);
+    setFutureBookings([]);
+    setSelectedWorkspace(null);
+
+    fetchWorkspaces();
+
+  } catch (err) {
+    console.log(err);
+  }
+};
   const filteredCustomLeads = useMemo(() => {
     const q = customLeadSearch.toLowerCase();
     return customisationLeads.filter(l => {
@@ -813,189 +995,844 @@ function OwnerDashboard() {
     });
   }, [quotationLeads, quotationLeadSearch, quotationLeadFilter]);
 
-  const renderOverview = () => {
-    const miniBarData = {
-      revenue:   [40,55,45,70,60,80,65,100],
-      workspaces:[50,60,75,55,80,65,90,70],
-      bookings:  [35,65,50,85,70,90,75,100],
-    };
+const renderOverview = () => {
+  const activeSlots = slots.filter((s) => !isSlotExpired(s.date));
+  const activeMonthlySlots = monthlySlots.filter(
+    (s) => !isMonthlySlotExpired(s.year, s.month)
+  );
+  const expiredSlotsCount = slots.length - activeSlots.length;
+  const expiredMonthlyCount = monthlySlots.length - activeMonthlySlots.length;
 
-    const topCards = [
-      {
-        key:"revenue",
-        value:`₹${revenue.total_revenue?.toLocaleString() ?? 0}`,
-        label:"Total Revenue",
-        accent:"linear-gradient(135deg,#b8922a,#f0c040)",
-        accentSolid:"#b8922a",
-        iconBg:"linear-gradient(135deg,#fef3c7,#fde68a)",
-        icon:"💰",
-        badge:"All time",
-        badgeBg:"rgba(184,146,42,0.12)",
-        badgeColor:"#92400e",
-        section:null,
-        glowColor:"rgba(184,146,42,0.18)",
-      },
-      {
-        key:"workspaces",
-        value:workspaces.length,
-        label:"My Workspaces",
-        accent:"linear-gradient(135deg,#6366f1,#a78bfa)",
-        accentSolid:"#6366f1",
-        iconBg:"linear-gradient(135deg,#ede9fe,#ddd6fe)",
-        icon:"🏗️",
-        badge:`${approvedWorkspaces.length} approved`,
-        badgeBg:"rgba(99,102,241,0.10)",
-        badgeColor:"#4338ca",
-        section:"workspaces",
-        glowColor:"rgba(99,102,241,0.18)",
-      },
-      {
-        key:"bookings",
-        value:mergedBookings.length,
-        label:"Total Bookings",
-        accent:"linear-gradient(135deg,#3b82f6,#60a5fa)",
-        accentSolid:"#3b82f6",
-        iconBg:"linear-gradient(135deg,#dbeafe,#bfdbfe)",
-        icon:"📋",
-        badge:`${bookingStats.confirmed} confirmed`,
-        badgeBg:"rgba(59,130,246,0.10)",
-        badgeColor:"#1d4ed8",
-        section:"bookings",
-        glowColor:"rgba(59,130,246,0.18)",
-      },
-    ];
+  const WORKSPACE_TYPE_META = {
+    "Hot Desk": {
+      img: "/images/workspaces/hot-desk-3d.png",
+      width: 38,
+      height: 38,
+      color: "#6366f1",
+      bg: "#ede9fe",
+    },
+    "Dedicated Desk": {
+      img: "/images/workspaces/dedicated-desk-3d.png",
+      width: 38,
+      height: 38,
+      color: "#3b82f6",
+      bg: "#dbeafe",
+    },
+    "Private Office Space": {
+      img: "/images/workspaces/private-office-space-3d.png",
+      width: 38,
+      height: 38,
+      color: "#0891b2",
+      bg: "#cffafe",
+    },
+    "Private Cabin": {
+      img: "/images/workspaces/private-cabin-3d.png",
+      width: 38,
+      height: 38,
+      color: "#7c3aed",
+      bg: "#f5f3ff",
+    },
+    "Meeting Room": {
+      img: "/images/workspaces/meeting-room-3d.png",
+      width: 38,
+      height: 38,
+      color: "#16a34a",
+      bg: "#dcfce7",
+    },
+    "Board Room": {
+      img: "/images/workspaces/board-room-3d.png",
+      width: 38,
+      height: 38,
+      color: "#C9A84C",
+      bg: "#fef3c7",
+    },
+    "Event Space": {
+      img: "/images/workspaces/event-space-3d.png",
+      width: 38,
+      height: 38,
+      color: "#db2777",
+      bg: "#fce7f3",
+    },
+    Podcast: {
+      img: "/images/workspaces/podcast-3d.png",
+      width: 38,
+      height: 38,
+      color: "#dc2626",
+      bg: "#fee2e2",
+    },
+    "Virtual Office": {
+      img: "/images/workspaces/virtual-office-3d.png",
+      width: 38,
+      height: 38,
+      color: "#0284c7",
+      bg: "#e0f2fe",
+    },
+  };
 
-    const quickCards = [
-      { icon:"✅", iconBg:"linear-gradient(135deg,#dcfce7,#bbf7d0)", iconColor:"#16a34a", label:"Confirmed Revenue", sub:`₹${revenue.confirmed_revenue?.toLocaleString() ?? 0}`, section:"bookings",  accent:"#16a34a" },
-      { icon:"⏰", iconBg:"linear-gradient(135deg,#ede9fe,#ddd6fe)", iconColor:"#7c3aed", label:"Total Slots",        sub:`${slots.length} bookable`,                              section:"slots",     accent:"#7c3aed" },
-      { icon:"📅", iconBg:"linear-gradient(135deg,#cffafe,#a5f3fc)", iconColor:"#0891b2", label:"Monthly Slots",      sub:`${monthlySlots.length} months`,                         section:"monthlySlots", accent:"#0891b2" },
-      { icon:"🏷️", iconBg:"linear-gradient(135deg,#fee2e2,#fecaca)", iconColor:"#dc2626", label:"Total Leads",       sub:`${totalLeads} inquiries`,                               section:"hyderabadLeads", accent:"#dc2626" },
-      { icon:"👥", iconBg:"linear-gradient(135deg,#dbeafe,#bfdbfe)", iconColor:"#2563eb", label:"Total Users",        sub:`${Array.isArray(users)?users.length:0} members`,        section:"manageUsers",   accent:"#2563eb" },
-      { icon:"🔥", iconBg:"linear-gradient(135deg,#fce7f3,#fbcfe8)", iconColor:"#db2777", label:"Offer Workspaces",  sub:`${offerWorkspaces.length} active`,                      section:"offerWorkspaces", accent:"#db2777" },
-      { icon:"✔️", iconBg:"linear-gradient(135deg,#d1fae5,#a7f3d0)", iconColor:"#059669", label:"Approved Spaces",   sub:`${approvedWorkspaces.length} live`,                     section:"workspaces",  accent:"#059669" },
-      { icon:"🎟️", iconBg:"linear-gradient(135deg,#fef3c7,#fde68a)", iconColor:"#b8922a", label:"Offer Coupons",    sub:`${offerCoupons.length} coupons`,                        section:"offerCoupons", accent:"#b8922a" },
-      { icon:"☕", iconBg:"linear-gradient(135deg,#f3e8ff,#e9d5ff)",  iconColor:"#9333ea", label:"Extra Amenities",  sub:`${additionalAmenities.length} added`,                   section:"additionalAmenities", accent:"#9333ea" },
-    ];
+  const CARD_IMAGE_META = {
+    revenue: {
+      img: "https://png.pngtree.com/png-clipart/20250216/original/pngtree-profit-management-3d-icon-financial-planning-symbol-for-business-growth-and-png-image_20452296.png",
+      width: 84,
+      height: 84,
+    },
+    workspaces: {
+      img: "https://static.vecteezy.com/system/resources/previews/055/135/913/non_2x/3d-office-workspace-with-organized-essentials-png.png",
+      width: 76,
+      height: 76,
+    },
+    bookings: {
+      img: "https://cdn3d.iconscout.com/3d/premium/thumb/booking-3d-icon-png-download-11245693.png",
+      width: 76,
+      height: 76,
+    },
+    slots: {
+      img: "https://img.freepik.com/free-vector/appointment-booking-with-calendar_23-2148553008.jpg",
+      width: 46,
+      height: 46,
+    },
+    monthlySlots: {
+      img: "https://static.vecteezy.com/system/resources/previews/027/205/830/non_2x/booking-meeting-calendar-appointment-3d-illustration-people-using-appointment-business-application-planning-events-setting-reminders-time-online-scheduling-appointments-png.png",
+      width: 46,
+      height: 46,
+    },
+    leads: {
+      img: "https://img.freepik.com/free-psd/3d-rendering-social-media-marketing-icon_23-2151185461.jpg?semt=ais_hybrid&w=740&q=80",
+      width: 46,
+      height: 46,
+    },
+    users: {
+      img: "https://thumbs.dreamstime.com/b/vibrant-d-user-icons-representing-together-clustering-collaborative-team-spirit-against-transparent-background-three-colorful-icon-368832341.jpg",
+      width: 46,
+      height: 46,
+    },
+    offers: {
+      img: "https://cdn3d.iconscout.com/3d/premium/thumb/shopping-cashback-offer-3d-icon-png-download-6380795.png",
+      width: 46,
+      height: 46,
+    },
+    approved: {
+      img: "https://w7.pngwing.com/pngs/155/261/png-transparent-approve-badge-approve-check-accept-verify-done-3d-icon-thumbnail.png",
+      width: 46,
+      height: 46,
+    },
+    coupons: {
+      img: "https://static.vecteezy.com/system/resources/thumbnails/021/221/145/small/discount-coupon-with-five-stars-icon-3d-rendering-illustration-free-vector.jpg",
+      width: 46,
+      height: 46,
+    },
+    amenities: {
+      img: "https://cdn3d.iconscout.com/3d/premium/thumb/home-facilities-3d-icon-png-download-7589707.png",
+      width: 46,
+      height: 46,
+    },
+  };
 
-    const WORKSPACE_TYPE_META = {
-      "Hot Desk":             { icon:"🪑", color:"#6366f1", g1:"#ede9fe", g2:"#ddd6fe" },
-      "Dedicated Desk":       { icon:"💼", color:"#3b82f6", g1:"#dbeafe", g2:"#bfdbfe" },
-      "Private Office Space": { icon:"🏢", color:"#0891b2", g1:"#cffafe", g2:"#a5f3fc" },
-      "Private Cabin":        { icon:"🚪", color:"#7c3aed", g1:"#f5f3ff", g2:"#ede9fe" },
-      "Meeting Room":         { icon:"🤝", color:"#16a34a", g1:"#dcfce7", g2:"#bbf7d0" },
-      "Board Room":           { icon:"📊", color:"#b8922a", g1:"#fef3c7", g2:"#fde68a" },
-      "Event Space":          { icon:"🎉", color:"#db2777", g1:"#fce7f3", g2:"#fbcfe8" },
-      "Podcast":              { icon:"🎙️", color:"#dc2626", g1:"#fee2e2", g2:"#fecaca" },
-      "Virtual Office":       { icon:"💻", color:"#0284c7", g1:"#e0f2fe", g2:"#bae6fd" },
-    };
+  const wsTypeCounts = WORKSPACE_TYPES.map((type) => ({
+    type,
+    count: workspaces.filter((w) => w.name === type).length,
+    approved: workspaces.filter((w) => w.name === type && w.is_approved).length,
+    meta: WORKSPACE_TYPE_META[type],
+  }));
 
-    const wsTypeCounts = WORKSPACE_TYPES.map(type => ({
-      type,
-      count:    workspaces.filter(w => w.name === type).length,
-      approved: workspaces.filter(w => w.name === type && w.is_approved).length,
-      meta:     WORKSPACE_TYPE_META[type] || { icon:"🏗️", color:"#64748b", g1:"#f1f5f9", g2:"#e2e8f0" },
-    }));
+  const maxCount = Math.max(...wsTypeCounts.map((t) => t.count), 1);
+  const totalWsCount = wsTypeCounts.reduce((s, t) => s + t.count, 0);
 
-    const maxCount     = Math.max(...wsTypeCounts.map(t => t.count), 1);
-    const totalWsCount = wsTypeCounts.reduce((s,t) => s + t.count, 0);
-    const activeTypes  = wsTypeCounts.filter(t => t.count > 0).length;
+  const ImageIcon = ({
+    src,
+    alt,
+    width = 24,
+    height = 24,
+    faded = false,
+    shadow = true,
+  }) => {
+    const [imgError, setImgError] = React.useState(false);
 
-    return (
-      <div className={styles.ov}>
-        <div className={styles.ovHeroGrid}>
-          {topCards.map((card) => (
-            <div
-              key={card.key}
-              className={`${styles.ovHeroCard} ${card.section ? styles.ovHeroCardLink : ""}`}
-              style={{ "--glow": card.glowColor, "--accent": card.accentSolid }}
-              onClick={() => card.section && handleNav(card.section)}
-            >
-              <div className={styles.ovHeroGlow} style={{ background: card.glowColor }} />
-              <div className={styles.ovHeroStrip} style={{ background: card.accent }} />
-              <div className={styles.ovHeroBody}>
-                <div className={styles.ovHeroTop}>
-                  <div className={styles.ovHeroIcon} style={{ background: card.iconBg }}>{card.icon}</div>
-                  <span className={styles.ovHeroBadge} style={{ background: card.badgeBg, color: card.badgeColor }}>{card.badge}</span>
-                </div>
-                <p className={styles.ovHeroNum}>{card.value}</p>
-                <p className={styles.ovHeroLabel}>{card.label}</p>
-                <div className={styles.ovSparkWrap}>
-                  {miniBarData[card.key].map((h, i) => (
-                    <div key={i} className={styles.ovSparkBar} style={{ height:`${h}%`, background: card.accent }} />
-                  ))}
-                </div>
-                {card.section && (
-                  <div className={styles.ovHeroFooter}>
-                    <span className={styles.ovHeroLink}>View all</span>
-                    <span className={styles.ovHeroArrow} style={{ color: card.accentSolid }}>→</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.ovBottomRow}>
-          <div className={styles.ovPanel}>
-            <div className={styles.ovPanelHead}>
-              <div className={styles.ovPanelDot} />
-              <span className={styles.ovPanelTitle}>Quick Stats</span>
-              <span className={styles.ovPanelCount}>{quickCards.length} metrics</span>
-            </div>
-            <div className={styles.ovQGrid}>
-              {quickCards.map((card) => (
-                <div key={card.label} className={styles.ovQCard} style={{ "--qaccent": card.accent }} onClick={() => handleNav(card.section)}>
-                  <div className={styles.ovQBar} style={{ background: card.accent }} />
-                  <div className={styles.ovQIcon} style={{ background: card.iconBg }}>{card.icon}</div>
-                  <p className={styles.ovQLabel}>{card.label}</p>
-                  <p className={styles.ovQSub}>{card.sub}</p>
-                  <span className={styles.ovQArrow}>↗</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className={styles.ovPanel}>
-            <div className={styles.ovPanelHead}>
-              <div className={styles.ovPanelDot} />
-              <span className={styles.ovPanelTitle}>Workspace Types</span>
-              <span className={styles.ovPanelCount}>{totalWsCount} spaces · {activeTypes} active</span>
-            </div>
-            <div className={styles.ovWsGrid}>
-              {wsTypeCounts.map(({ type, count, approved, meta }) => {
-                const pct     = Math.round((count / maxCount) * 100);
-                const isEmpty = count === 0;
-                return (
-                  <div key={type} className={`${styles.ovWsCard} ${isEmpty ? styles.ovWsCardDim : ""}`} style={{ "--wscolor": meta.color }} onClick={() => handleNav("workspaces")}>
-                    <div className={styles.ovWsCardTop} style={{ background: isEmpty ? "#e5e7eb" : meta.color }} />
-                    <div className={styles.ovWsCardBody}>
-                      <div className={styles.ovWsCardRow}>
-                        <div className={styles.ovWsCardIcon} style={{ background: isEmpty ? "#f1f5f9" : `linear-gradient(135deg,${meta.g1},${meta.g2})` }}>{meta.icon}</div>
-                        <span className={styles.ovWsCardNum} style={{ color: isEmpty ? "#cbd5e1" : meta.color }}>{count}</span>
-                      </div>
-                      <p className={styles.ovWsCardName}>{type}</p>
-                      <div className={styles.ovWsCardTrack}>
-                        <div className={styles.ovWsCardFill} style={{ width:`${pct}%`, background: isEmpty ? "#e5e7eb" : `linear-gradient(90deg,${meta.color},${meta.g2})` }} />
-                      </div>
-                      {!isEmpty ? (
-                        <div className={styles.ovWsBadges}>
-                          <span className={styles.ovWsBadgeGreen}>✔ {approved}</span>
-                          {count - approved > 0 && <span className={styles.ovWsBadgeAmber}>{count - approved}p</span>}
-                        </div>
-                      ) : (
-                        <p className={styles.ovWsEmpty}>No spaces</p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+    return !imgError ? (
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        onError={() => setImgError(true)}
+        style={{
+          width,
+          height,
+          objectFit: "contain",
+          display: "block",
+          userSelect: "none",
+          filter: faded
+            ? "grayscale(1) opacity(0.4)"
+            : shadow
+            ? "drop-shadow(0 8px 16px rgba(0,0,0,0.16))"
+            : "none",
+        }}
+      />
+    ) : (
+      <div
+        style={{
+          width,
+          height,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 10,
+          fontWeight: 800,
+          color: "#94a3b8",
+          lineHeight: 1,
+        }}
+      >
+        {alt?.slice(0, 2)?.toUpperCase() || "NA"}
       </div>
     );
   };
 
+  const WorkspaceTypeImage = ({ meta, type, isEmpty }) => {
+    return (
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <ImageIcon
+          src={meta.img}
+          alt={type}
+          width={meta.width || 38}
+          height={meta.height || 38}
+          faded={isEmpty}
+        />
+      </div>
+    );
+  };
+
+  const DashboardImageIcon = ({ type, faded = false }) => {
+    const meta = CARD_IMAGE_META[type];
+    if (!meta) return null;
+
+    return (
+      <ImageIcon
+        src={meta.img}
+        alt={type}
+        width={meta.width || 24}
+        height={meta.height || 24}
+        faded={faded}
+      />
+    );
+  };
+
+  const miniBarData = [40, 55, 45, 70, 60, 80, 65, 100];
+
+  const topCards = [
+    {
+      key: "revenue",
+      value: `₹${revenue.total_revenue?.toLocaleString() ?? 0}`,
+      label: "Total Revenue",
+      iconType: "revenue",
+      barColor: "#C9A84C",
+      barBg: "#fde68a",
+      badgeText: "All time",
+      badgeBg: "#fef3c7",
+      badgeColor: "#92400e",
+      numColor: "#C9A84C",
+      borderTop: "linear-gradient(90deg,#C9A84C,#f0c040)",
+      section: null,
+      linkText: null,
+    },
+    {
+      key: "workspaces",
+      value: workspaces.length,
+      label: "My Workspaces",
+      iconType: "workspaces",
+      barColor: "#6366f1",
+      barBg: "#ddd6fe",
+      badgeText: `${approvedWorkspaces.length} approved`,
+      badgeBg: "#ede9fe",
+      badgeColor: "#4338ca",
+      numColor: "#6366f1",
+      borderTop: "linear-gradient(90deg,#6366f1,#a78bfa)",
+      section: "workspaces",
+      linkText: "View all workspaces",
+    },
+    {
+      key: "bookings",
+      value: mergedBookings.length,
+      label: "Total Bookings",
+      iconType: "bookings",
+      barColor: "#0891b2",
+      barBg: "#a5f3fc",
+      badgeText: `${bookingStats.confirmed} confirmed`,
+      badgeBg: "#cffafe",
+      badgeColor: "#164e63",
+      numColor: "#0891b2",
+      borderTop: "linear-gradient(90deg,#0891b2,#22d3ee)",
+      section: "bookings",
+      linkText: "View all bookings",
+    },
+  ];
+
+  const quickCards = [
+    {
+      iconType: "slots",
+      label: "Total Slots",
+      sub: `${activeSlots.length} active${
+        expiredSlotsCount > 0 ? ` · ${expiredSlotsCount} exp` : ""
+      }`,
+      section: "slots",
+    },
+    {
+      iconType: "monthlySlots",
+      label: "Monthly Slots",
+      sub: `${activeMonthlySlots.length} active${
+        expiredMonthlyCount > 0 ? ` · ${expiredMonthlyCount} exp` : ""
+      }`,
+      section: "monthlySlots",
+    },
+    {
+      iconType: "leads",
+      label: "Total Leads",
+      sub: `${totalLeads} inquiries`,
+      section: "hyderabadLeads",
+    },
+    {
+      iconType: "users",
+      label: "Total Users",
+      sub: `${Array.isArray(users) ? users.length : 0} members`,
+      section: "manageUsers",
+    },
+    {
+      iconType: "offers",
+      label: "Offer Workspaces",
+      sub: `${offerWorkspaces.length} active`,
+      section: "offerWorkspaces",
+    },
+    {
+      iconType: "approved",
+      label: "Approved Spaces",
+      sub: `${approvedWorkspaces.length} live`,
+      section: "workspaces",
+    },
+    {
+      iconType: "coupons",
+      label: "Offer Coupons",
+      sub: `${offerCoupons.length} coupons`,
+      section: "offerCoupons",
+    },
+    {
+      iconType: "amenities",
+      label: "Extra Amenities",
+      sub: `${additionalAmenities.length} added`,
+      section: "additionalAmenities",
+    },
+  ];
+
+  const quickAccessItems = [
+    {
+      iconType: "workspaces",
+      label: "Workspaces",
+      sub: "Manage listings",
+      section: "workspaces",
+    },
+    {
+      iconType: "users",
+      label: "Users",
+      sub: "Manage accounts",
+      section: "manageUsers",
+    },
+    {
+      iconType: "bookings",
+      label: "Bookings",
+      sub: "View all requests",
+      section: "bookings",
+    },
+    {
+      iconType: "slots",
+      label: "Slots",
+      sub: "Manage timings",
+      section: "slots",
+    },
+    {
+      iconType: "leads",
+      label: "Leads",
+      sub: "View inquiries",
+      section: "hyderabadLeads",
+    },
+    {
+      iconType: "amenities",
+      label: "Amenities",
+      sub: "Extra add-ons",
+      section: "additionalAmenities",
+    },
+  ];
+
+  return (
+    <div style={{ fontFamily: "system-ui,-apple-system,sans-serif" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+          gap: 16,
+          marginBottom: 16,
+        }}
+      >
+        {topCards.map((card) => (
+          <div
+            key={card.key}
+            onClick={() => card.section && handleNav(card.section)}
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              padding: 20,
+              border: "1px solid #e5e7eb",
+              position: "relative",
+              overflow: "hidden",
+              cursor: card.section ? "pointer" : "default",
+              transition: "all 0.18s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (card.section) {
+                e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 4,
+                background: card.borderTop,
+              }}
+            />
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: 14,
+                marginTop: 4,
+              }}
+            >
+              <div
+                style={{
+                  minHeight: 88,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <DashboardImageIcon type={card.iconType} />
+              </div>
+
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "4px 10px",
+                  borderRadius: 20,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  background: card.badgeBg,
+                  color: card.badgeColor,
+                }}
+              >
+                ↑ {card.badgeText}
+              </span>
+            </div>
+
+            <div
+              style={{
+                fontSize: 28,
+                fontWeight: 800,
+                color: card.numColor,
+                marginBottom: 2,
+              }}
+            >
+              {card.value}
+            </div>
+
+            <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 14 }}>
+              {card.label}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 3,
+                alignItems: "flex-end",
+                height: 36,
+              }}
+            >
+              {miniBarData.map((h, i) => (
+                <div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    borderRadius: 3,
+                    height: `${h}%`,
+                    background: i === miniBarData.length - 1 ? card.barColor : card.barBg,
+                  }}
+                />
+              ))}
+            </div>
+
+            {card.linkText && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginTop: 12,
+                  paddingTop: 12,
+                  borderTop: "1px solid #f3f4f6",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#9ca3af",
+                }}
+              >
+                <span>{card.linkText}</span>
+                <span>→</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))",
+          gap: 10,
+          marginBottom: 16,
+        }}
+      >
+        {quickCards.map((card) => (
+          <div
+            key={card.label}
+            onClick={() => handleNav(card.section)}
+            style={{
+              background: "#fff",
+              borderRadius: 12,
+              padding: "14px 12px",
+              border: "1px solid #e5e7eb",
+              cursor: "pointer",
+              transition: "all 0.18s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            <div
+              style={{
+                height: 52,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                marginBottom: 8,
+              }}
+            >
+              <DashboardImageIcon type={card.iconType} />
+            </div>
+
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#374151",
+                marginBottom: 2,
+                lineHeight: 1.3,
+              }}
+            >
+              {card.label}
+            </div>
+
+            <div style={{ fontSize: 10, color: "#0c0f14" }}>{card.sub}</div>
+
+            <div
+              style={{
+                fontSize: 11,
+                color: "#d1d5db",
+                marginTop: 6,
+                textAlign: "right",
+              }}
+            >
+              ↗
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 16,
+            padding: 20,
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#C9A84C",
+              }}
+            />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>
+              Quick Access
+            </span>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontSize: 11,
+                color: "#9ca3af",
+                fontWeight: 600,
+              }}
+            >
+              6 shortcuts
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {quickAccessItems.map((item) => (
+              <div
+                key={item.label}
+                onClick={() => handleNav(item.section)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: 12,
+                  borderRadius: 10,
+                  background: "#fafafa",
+                  border: "1px solid #f3f4f6",
+                  cursor: "pointer",
+                  transition: "all 0.18s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#f6f7f8";
+                  e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.06)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#fafafa";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <div
+                  style={{
+                    width: 52,
+                    height: 52,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <DashboardImageIcon type={item.iconType} />
+                </div>
+
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#111" }}>
+                    {item.label}
+                  </div>
+                  <div style={{ fontSize: 10, color: "#9ca3af" }}>{item.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 16,
+            padding: 20,
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#C9A84C",
+              }}
+            />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>
+              Workspace Types
+            </span>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontSize: 11,
+                color: "#9ca3af",
+                fontWeight: 600,
+              }}
+            >
+              {totalWsCount} spaces
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+            {wsTypeCounts.map(({ type, count, approved, meta }) => {
+              const pct = Math.round((count / maxCount) * 100);
+              const isEmpty = count === 0;
+
+              return (
+                <div
+                  key={type}
+                  onClick={() => handleNav("workspaces")}
+                  style={{
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    border: "1px solid #f3f4f6",
+                    cursor: "pointer",
+                    opacity: isEmpty ? 0.45 : 1,
+                    transition: "all .18s ease",
+                    background: "#fff",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.07)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div
+                    style={{
+                      height: 4,
+                      background: isEmpty ? "#e5e7eb" : meta.color,
+                    }}
+                  />
+
+                  <div style={{ padding: 10 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <WorkspaceTypeImage meta={meta} type={type} isEmpty={isEmpty} />
+
+                      <span
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 800,
+                          color: isEmpty ? "#cbd5e1" : meta.color,
+                        }}
+                      >
+                        {count}
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: "#6b7280",
+                        marginBottom: 6,
+                        fontWeight: 600,
+                        lineHeight: 1.2,
+                        minHeight: 24,
+                      }}
+                    >
+                      {type}
+                    </div>
+
+                    <div
+                      style={{
+                        height: 4,
+                        borderRadius: 999,
+                        background: "#f3f4f6",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${pct}%`,
+                          background: isEmpty ? "#e5e7eb" : meta.color,
+                          borderRadius: 999,
+                        }}
+                      />
+                    </div>
+
+                    {!isEmpty && (
+                      <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
+                        <span
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 700,
+                            color: "#059669",
+                            background: "#d1fae5",
+                            padding: "2px 5px",
+                            borderRadius: 4,
+                          }}
+                        >
+                          ✔ {approved}
+                        </span>
+
+                        {count - approved > 0 && (
+                          <span
+                            style={{
+                              fontSize: 9,
+                              fontWeight: 700,
+                              color: "#d97706",
+                              background: "#fef3c7",
+                              padding: "2px 5px",
+                              borderRadius: 4,
+                            }}
+                          >
+                            {count - approved} pending
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
   const renderManageUsers = () => {
     const allUsers = Array.isArray(users) ? users : [];
     const totalUsers = allUsers.length;
@@ -1175,12 +2012,63 @@ function OwnerDashboard() {
                     </td>
                     <td>
                       <div style={{ display: "flex", gap: "6px" }}>
-                        <button title="Edit" onClick={() => handleEdit(w)} style={{ ...iconBtnBase, background: "#dbeafe", color: "#2563eb" }}>
-                          <SvgIcon d={SVG.edit} size={14} />
-                        </button>
-                        <button title={isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleActive(w)} style={{ ...iconBtnBase, background: isActive ? "#dcfce7" : "#f1f5f9", color: isActive ? "#16a34a" : "#475569" }}>
-                          <SvgIcon d={isActive ? SVG.eyeOn : SVG.eyeOff} size={14} />
-                        </button>
+ <button title="Edit" onClick={() => handleEdit(w)} style={{ ...iconBtnBase, background: "#dbeafe", color: "#2563eb" }}>
+  <svg width={14} height={14} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d={SVG.edit} />
+  </svg>
+</button>
+<button
+  title={isActive ? "Deactivate" : "Activate"}
+  onClick={() => { if (isActive) { handleDeactivateWorkspace(w); } else { handleToggleActive(w); } }}
+  style={{ ...iconBtnBase, background: isActive ? "#dcfce7" : "#f1f5f9", color: isActive ? "#16a34a" : "#475569" }}
+>
+  <svg width={14} height={14} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d={isActive ? SVG.eyeOn : SVG.eyeOff} />
+  </svg>
+</button>
+                        {showConflict && futureBookings.length > 0 && (
+  <div className={styles.bookingConflictBox}>
+    <div className={styles.bookingConflictTitle}>
+      Future Bookings Found
+    </div>
+
+    {futureBookings.map((b, i) => (
+      <div key={i} className={styles.bookingConflictCard}>
+
+        <div className={styles.bookingConflictRow}>
+          <span className={styles.bookingConflictLabel}>User:</span>
+          <span className={styles.bookingConflictValue}>
+            {b.user_name}
+          </span>
+        </div>
+
+        <div className={styles.bookingConflictRow}>
+          <span className={styles.bookingConflictLabel}>Date:</span>
+          <span className={styles.bookingConflictValue}>
+            {b.booking_date}
+          </span>
+        </div>
+
+        <div className={styles.bookingConflictRow}>
+          <span className={styles.bookingConflictLabel}>Time:</span>
+          <span className={styles.bookingConflictValue}>
+            {b.start_time} - {b.end_time}
+          </span>
+        </div>
+
+        <div className={styles.bookingConflictRow}>
+          <span className={styles.bookingConflictLabel}>Type:</span>
+          <span className={styles.bookingConflictValue}>
+            {b.booking_type}
+          </span>
+        </div>
+
+      </div>
+    ))}
+  </div>
+)}
                       </div>
                     </td>
                   </tr>
@@ -1339,27 +2227,75 @@ function OwnerDashboard() {
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead><tr><th>Workspace</th><th>Date</th><th>Type</th><th>Time</th><th>Capacity</th><th>Booked</th><th>Remaining</th><th>Price</th><th>Actions</th></tr></thead>
-            <tbody>{slots.map(s => {
-              const booked = Number(s.booked_seats??s.booked_slots??s.booked??s.booked_count??0);
-              const capacity = Number(s.capacity||0);
-              const remaining = Math.max(capacity-booked,0);
-              const pct = capacity>0?Math.round((booked/capacity)*100):0;
-              return (
-                <tr key={s.id}>
-                  <td>
-                    <div style={{ display:"flex",flexDirection:"column",gap:"4px" }}>
-                      <strong style={{ color:"#111827",fontSize:"13px" }}>{s.workspace_name}</strong>
-                      <span style={{ fontSize:"11px",color:"#6b7280" }}>📍 {s.location || "No Location"}{s.city ? `, ${s.city}` : ""}</span>
-                    </div>
-                  </td>
-                  <td>{s.date}</td><td>{s.slot_type==="hour"?"Hourly":"Full Day"}</td><td>{s.slot_type==="hour"?`${s.start_time} – ${s.end_time}`:"All Day"}</td><td>{capacity}</td>
-                  <td><span style={{ display:"inline-block",padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:600,background:booked>0?"#eff6ff":"#f3f4f6",color:booked>0?"#2563eb":"#6b7280",border:`1px solid ${booked>0?"#bfdbfe":"#e5e7eb"}` }}>{booked}</span></td>
-                  <td><div style={{ display:"flex",flexDirection:"column",gap:"4px" }}><span style={{ display:"inline-block",padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:600,background:remaining===0?"#fef2f2":remaining<capacity*0.2?"#fff7ed":"#f0fdf4",color:remaining===0?"#dc2626":remaining<capacity*0.2?"#ea580c":"#16a34a",border:`1px solid ${remaining===0?"#fecaca":remaining<capacity*0.2?"#fed7aa":"#bbf7d0"}` }}>{remaining===0?"Full":`${remaining} left`}</span><div style={{ height:"4px",borderRadius:"2px",background:"#e5e7eb",overflow:"hidden",width:"60px" }}><div style={{ height:"100%",width:`${pct}%`,borderRadius:"2px",background:pct>=80?"#dc2626":pct>=50?"#ea580c":"#16a34a",transition:"width 0.3s" }}/></div></div></td>
-                  <td className={styles.priceCell}>₹{s.price}</td>
-                  <td><button onClick={() => { handleEditSlot(s); setShowSlotForm(true); }} className={styles.editBtn}>Edit</button><button onClick={() => deleteSlot(s.id)} className={styles.deleteBtn}>Delete</button></td>
-                </tr>
-              );
-            })}</tbody>
+            <tbody>
+            {slots.map(s => {
+  const booked = Number(s.booked_seats ?? s.booked_slots ?? s.booked ?? s.booked_count ?? 0);
+  const capacity = Number(s.capacity || 0);
+  const remaining = Math.max(capacity - booked, 0);
+  const pct = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
+  const expired = isSlotExpired(s.date);
+
+  return (
+    <tr key={s.id} style={expired ? expiredRowStyle : {}}>
+      <td>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <strong style={{ color: expired ? "#9ca3af" : "#111827", fontSize: "13px" }}>
+            {s.workspace_name}
+          </strong>
+          <span style={{ fontSize: "11px", color: expired ? "#9ca3af" : "#6b7280" }}>
+            📍 {s.location || "No Location"}{s.city ? `, ${s.city}` : ""}
+          </span>
+        </div>
+      </td>
+      <td>
+        <span style={{ color: expired ? "#9ca3af" : "#374151", fontWeight: 600 }}>{s.date}</span>
+        {expired && <div style={{ fontSize: "10px", color: "#9ca3af", fontWeight: 600, marginTop: 1 }}>Past date</div>}
+      </td>
+      <td style={{ color: expired ? "#9ca3af" : undefined }}>
+        {s.slot_type === "hour" ? "Hourly" : "Full Day"}
+      </td>
+      <td style={{ color: expired ? "#9ca3af" : undefined }}>
+        {s.slot_type === "hour" ? `${s.start_time} – ${s.end_time}` : "All Day"}
+      </td>
+      <td style={{ color: expired ? "#9ca3af" : undefined }}>{capacity}</td>
+      <td>
+        <span style={{
+          display: "inline-block", padding: "2px 10px", borderRadius: "20px",
+          fontSize: "11px", fontWeight: 600,
+          background: expired ? "#f3f4f6" : booked > 0 ? "#eff6ff" : "#f3f4f6",
+          color: expired ? "#9ca3af" : booked > 0 ? "#2563eb" : "#6b7280",
+          border: `1px solid ${expired ? "#e5e7eb" : booked > 0 ? "#bfdbfe" : "#e5e7eb"}`
+        }}>{booked}</span>
+      </td>
+      <td>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <span style={{
+            display: "inline-block", padding: "2px 10px", borderRadius: "20px",
+            fontSize: "11px", fontWeight: 600,
+            background: expired ? "#f3f4f6" : remaining === 0 ? "#fef2f2" : remaining < capacity * 0.2 ? "#fff7ed" : "#f0fdf4",
+            color: expired ? "#9ca3af" : remaining === 0 ? "#dc2626" : remaining < capacity * 0.2 ? "#ea580c" : "#16a34a",
+            border: `1px solid ${expired ? "#e5e7eb" : remaining === 0 ? "#fecaca" : remaining < capacity * 0.2 ? "#fed7aa" : "#bbf7d0"}`
+          }}>
+            {expired ? "—" : remaining === 0 ? "Full" : `${remaining} left`}
+          </span>
+          <div style={{ height: "4px", borderRadius: "2px", background: "#e5e7eb", overflow: "hidden", width: "60px" }}>
+            <div style={{
+              height: "100%", width: `${pct}%`, borderRadius: "2px",
+              background: expired ? "#d1d5db" : pct >= 80 ? "#dc2626" : pct >= 50 ? "#ea580c" : "#16a34a",
+              transition: "width 0.3s"
+            }} />
+          </div>
+        </div>
+      </td>
+      <td className={styles.priceCell} style={{ color: expired ? "#9ca3af" : "#7c3aed" }}>₹{s.price}</td>
+      <td>
+        <button onClick={() => { handleEditSlot(s); setShowSlotForm(true); }} className={styles.editBtn}>Edit</button>
+        <button onClick={() => deleteSlot(s.id)} className={styles.deleteBtn}>Delete</button>
+      </td>
+    </tr>
+  );
+})}
+            </tbody>
           </table>
           {slots.length===0&&<div className={styles.empty}>No slots yet. Create one above!</div>}
         </div>
@@ -1398,14 +2334,73 @@ function OwnerDashboard() {
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead><tr><th>Workspace</th><th>City</th><th>Month</th><th>Year</th><th>Capacity</th><th>Booked</th><th>Remaining</th><th>Fill %</th><th>Price</th><th>Actions</th></tr></thead>
-            <tbody>{monthlySlots.map(s => {
-              const booked=Number(s.booked||0);const capacity=Number(s.capacity||0);const remaining=capacity-booked;const pct=capacity>0?Math.round((booked/capacity)*100):0;const isFull=remaining<=0;
-              return (<tr key={s.id}><td><strong>{workspaces.find(w=>w.name?.trim()===s.workspace_name?.trim())?.city||"No City"} | {workspaces.find(w=>w.name?.trim()===s.workspace_name?.trim())?.location||"No Location"} | {s.workspace_name}</strong></td><td>{s.city}</td><td>{MONTH_OPTIONS[Number(s.month)-1]||s.month}</td><td>{s.year}</td><td>{capacity}</td>
-              <td><span style={{ display:"inline-block",padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:600,background:booked>0?"#eff6ff":"#f3f4f6",color:booked>0?"#2563eb":"#6b7280",border:`1px solid ${booked>0?"#bfdbfe":"#e5e7eb"}` }}>{booked}</span></td>
-              <td><span style={{ display:"inline-block",padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:600,background:isFull?"#fef2f2":remaining<capacity*0.2?"#fff7ed":"#f0fdf4",color:isFull?"#dc2626":remaining<capacity*0.2?"#ea580c":"#16a34a",border:`1px solid ${isFull?"#fecaca":remaining<capacity*0.2?"#fed7aa":"#bbf7d0"}` }}>{isFull?"Full":`${remaining} left`}</span></td>
-              <td><div style={{ display:"flex",alignItems:"center",gap:"6px" }}><div style={{ height:"6px",borderRadius:"3px",background:"#e5e7eb",overflow:"hidden",width:"56px" }}><div style={{ height:"100%",width:`${pct}%`,borderRadius:"3px",background:pct>=100?"#dc2626":pct>=75?"#ea580c":pct>=50?"#f59e0b":"#16a34a" }}/></div><span style={{ fontSize:"11px",color:"#6b7280",minWidth:"30px" }}>{pct}%</span></div></td>
-              <td>₹{s.price}</td><td><button className={styles.editBtn} onClick={() => { handleEditMonth(s); setShowMonthlyForm(true); }}>Edit</button><button className={styles.deleteBtn} onClick={() => deleteMonthlySlot(s.id)}>Delete</button></td></tr>);
-            })}</tbody>
+            <tbody>
+             {monthlySlots.map(s => {
+  const booked = Number(s.booked || 0);
+  const capacity = Number(s.capacity || 0);
+  const remaining = capacity - booked;
+  const pct = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
+  const isFull = remaining <= 0;
+  const expired = isMonthlySlotExpired(s.year, s.month);
+
+  return (
+    <tr key={s.id} style={expired ? expiredRowStyle : {}}>
+      <td>
+        <strong style={{ color: expired ? "#9ca3af" : "#111827" }}>
+          {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.city || "No City"} |{" "}
+          {workspaces.find(w => w.name?.trim() === s.workspace_name?.trim())?.location || "No Location"} |{" "}
+          {s.workspace_name}
+        </strong>
+      </td>
+      <td style={{ color: expired ? "#9ca3af" : undefined }}>{s.city}</td>
+      <td>
+        <span style={{ color: expired ? "#9ca3af" : undefined }}>
+          {MONTH_OPTIONS[Number(s.month) - 1] || s.month}
+        </span>
+        {expired && <div style={{ fontSize: "10px", color: "#9ca3af", fontWeight: 600, marginTop: 2 }}>Past month</div>}
+      </td>
+      <td style={{ color: expired ? "#9ca3af" : undefined }}>{s.year}</td>
+      <td style={{ color: expired ? "#9ca3af" : undefined }}>{capacity}</td>
+      <td>
+        <span style={{
+          display: "inline-block", padding: "2px 10px", borderRadius: "20px",
+          fontSize: "11px", fontWeight: 600,
+          background: expired ? "#f3f4f6" : booked > 0 ? "#eff6ff" : "#f3f4f6",
+          color: expired ? "#9ca3af" : booked > 0 ? "#2563eb" : "#6b7280",
+          border: `1px solid ${expired ? "#e5e7eb" : booked > 0 ? "#bfdbfe" : "#e5e7eb"}`
+        }}>{booked}</span>
+      </td>
+      <td>
+        <span style={{
+          display: "inline-block", padding: "2px 10px", borderRadius: "20px",
+          fontSize: "11px", fontWeight: 600,
+          background: expired ? "#f3f4f6" : isFull ? "#fef2f2" : remaining < capacity * 0.2 ? "#fff7ed" : "#f0fdf4",
+          color: expired ? "#9ca3af" : isFull ? "#dc2626" : remaining < capacity * 0.2 ? "#ea580c" : "#16a34a",
+          border: `1px solid ${expired ? "#e5e7eb" : isFull ? "#fecaca" : remaining < capacity * 0.2 ? "#fed7aa" : "#bbf7d0"}`
+        }}>
+          {expired ? "—" : isFull ? "Full" : `${remaining} left`}
+        </span>
+      </td>
+      <td>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div style={{ height: "6px", borderRadius: "3px", background: "#e5e7eb", overflow: "hidden", width: "56px" }}>
+            <div style={{
+              height: "100%", width: `${pct}%`, borderRadius: "3px",
+              background: expired ? "#d1d5db" : pct >= 100 ? "#dc2626" : pct >= 75 ? "#ea580c" : pct >= 50 ? "#f59e0b" : "#16a34a"
+            }} />
+          </div>
+          <span style={{ fontSize: "11px", color: expired ? "#9ca3af" : "#6b7280", minWidth: "30px" }}>{pct}%</span>
+        </div>
+      </td>
+      <td style={{ color: expired ? "#9ca3af" : "#7c3aed", fontWeight: 700 }}>₹{s.price}</td>
+      <td>
+        <button className={styles.editBtn} onClick={() => { handleEditMonth(s); setShowMonthlyForm(true); }}>Edit</button>
+        <button className={styles.deleteBtn} onClick={() => deleteMonthlySlot(s.id)}>Delete</button>
+      </td>
+    </tr>
+  );
+})}
+            </tbody>
           </table>
           {monthlySlots.length===0&&<div className={styles.empty}>No monthly slots yet. Create one above!</div>}
         </div>
@@ -1540,7 +2535,11 @@ function OwnerDashboard() {
     workspaces:{ icon:"🏗️",title:"Workspace Management",sub:"Add, edit, and manage your listings" },
     offerWorkspaces:{ icon:"🔥",title:"Offer Workspaces",sub:"Manage offer workspace listings" },
     suggestedWorkspaces:{ icon:"🧭",title:"Suggested Workspaces",sub:"View workspaces added by other managers" },
-    slots:{ icon:"⏰",title:"Slot Management",sub:"Create and manage booking slots" },
+   slots:{ 
+  icon: <div style={{width:48,height:48,background:"linear-gradient(145deg,#ff6b35,#f7931e)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"4px 4px 10px rgba(255,107,53,0.4),-2px -2px 6px rgba(255,255,255,0.2),inset 0 1px 0 rgba(255,255,255,0.3)",transform:"perspective(200px) rotateX(10deg) rotateY(-5deg)",fontSize:26,animation:"float 3s ease-in-out infinite"}}><style>{`@keyframes float{0%,100%{transform:perspective(200px) rotateX(10deg) rotateY(-5deg) translateY(0px)}50%{transform:perspective(200px) rotateX(10deg) rotateY(-5deg) translateY(-6px)}}`}</style>⏰</div>,
+  title:"Slot Management",
+  sub:"Create and manage booking slots" 
+},
     monthlySlots:{ icon:"📅",title:"Monthly Slots",sub:"Create, update, and manage monthly slot pricing" },
     bookings:{ icon:"📋",title:"My Bookings",sub:"View all booking requests and cancellation requests here" },
     companyLeads:{ icon:"🏷️",title:"Company Leads",sub:"Manage company inquiries and update their status" },
@@ -1576,69 +2575,120 @@ function OwnerDashboard() {
       )}
 
       {/* ── SIDEBAR ── */}
-      <aside className={sidebarClass}>
-        <div className={styles.sidebarHeader}>
-          <div className={styles.logo}>{sidebarCollapsed && !mobileSidebarOpen ? "M" : "Manager Panel"}</div>
+      <aside className={sidebarClass} style={{
+  background: "linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%)",
+  borderRight: "1px solid rgba(255,255,255,0.06)",
+}}>
+  {/* Header */}
+  <div style={{
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    padding: "20px 16px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)"
+  }}>
+    {(!sidebarCollapsed || mobileSidebarOpen) && (
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: "linear-gradient(135deg,#b8922a, #b8922a)",
+          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18
+        }}>🏢</div>
+        <span style={{ fontWeight: 800, fontSize: 16, color: "#fff", letterSpacing: "-0.3px" }}>
+          Co<span style={{ color: "#b8922a" }}>Work</span>
+        </span>
+      </div>
+    )}
+    <button onClick={() => setSidebarCollapsed(prev => !prev)}
+      style={{
+        width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)",
+        background: "rgba(255,255,255,0.06)", color: "#94a3b8",
+        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 12, flexShrink: 0
+      }}>
+      {sidebarCollapsed && !mobileSidebarOpen ? "›" : "‹"}
+    </button>
+    <button className={styles.mobileSidebarClose}
+      onClick={() => setMobileSidebarOpen(false)}
+      style={{ color: "#94a3b8", background: "none", border: "none", cursor: "pointer", fontSize: 18 }}>
+      ✕
+    </button>
+  </div>
 
-          {/* Desktop collapse/expand button — hidden on mobile via CSS */}
-          <button
-            className={styles.collapseBtn}
-            onClick={() => setSidebarCollapsed(prev => !prev)}
-            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {sidebarCollapsed ? "→" : "←"}
+  {/* Nav */}
+  <nav style={{ padding: "12px 10px", flex: 1, overflowY: "auto" }}>
+    {NAV_GROUPS.map(group => {
+      if (group.single) {
+        const isActive = activeSection === group.key;
+        return (
+          <button key={group.key} onClick={() => handleNav(group.key)}
+            style={{
+              width: "100%", display: "flex", alignItems: "center",
+              gap: 12, padding: "10px 12px", borderRadius: 10, border: "none",
+              background: isActive ? "rgba(245,158,11,0.15)" : "transparent",
+              color: isActive ? "#cfa228" : "#94a3b8",
+              cursor: "pointer", marginBottom: 2, transition: "all 0.15s",
+              borderLeft: isActive ? "3px solid #d2a21c" : "3px solid transparent",
+            }}>
+            <NavIcon iconKey={group.iconKey} size={16} />
+            {(!sidebarCollapsed || mobileSidebarOpen) && (
+              <span style={{ fontSize: 13, fontWeight: isActive ? 700 : 500 }}>{group.label}</span>
+            )}
           </button>
+        );
+      }
 
-          {/* Mobile close button — shown only on mobile via CSS */}
-          <button
-            className={styles.mobileSidebarClose}
-            onClick={() => setMobileSidebarOpen(false)}
-            title="Close menu"
-          >
-            ✕
-          </button>
+      // Group with children
+      return (
+        <DarkHoverNavGroup
+          key={group.key}
+          group={group}
+          activeSection={activeSection}
+          handleNav={handleNav}
+          sidebarCollapsed={sidebarCollapsed && !mobileSidebarOpen}
+        />
+      );
+    })}
+  </nav>
+
+  {/* Bottom user card */}
+  {(!sidebarCollapsed || mobileSidebarOpen) && (
+    <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "10px 12px", borderRadius: 12,
+        background: "rgba(255,255,255,0.05)", marginBottom: 10
+      }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+          background: "linear-gradient(135deg, #cca12d, #cca12a)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontWeight: 800, fontSize: 15, color: "#fff"
+        }}>
+          {(localStorage.getItem("username") || "A").charAt(0).toUpperCase()}
         </div>
-
-        <nav className={styles.nav} style={{ padding: "8px 0" }}>
-          {NAV_GROUPS.map(group => {
-            if (group.single) {
-              const isActive = activeSection === group.key;
-              return (
-                <button
-                  key={group.key}
-                  className={`${styles.singleNavItem} ${isActive ? styles.singleNavItemActive : ""}`}
-                  onClick={() => handleNav(group.key)}
-                  title={group.label}
-                >
-                  <span className={styles.navItemIcon}>{group.icon}</span>
-                  {(!sidebarCollapsed || mobileSidebarOpen) && <span>{group.label}</span>}
-                </button>
-              );
-            }
-            return (
-              <HoverNavGroup
-                key={group.key}
-                group={group}
-                activeSection={activeSection}
-                handleNav={handleNav}
-                sidebarCollapsed={sidebarCollapsed && !mobileSidebarOpen}
-              />
-            );
-          })}
-        </nav>
-
-        {(!sidebarCollapsed || mobileSidebarOpen) && (
-          <div className={styles.sidebarFooter}>
-            <div className={styles.sidebarStats}>
-              <div><strong>{workspaces.length}</strong><span>My Spaces</span></div>
-              <div><strong>{mergedBookings.length}</strong><span>Bookings</span></div>
-              <div><strong>{Array.isArray(users) ? users.length : 0}</strong><span>Users</span></div>
-              <div><strong>{slots.length}</strong><span>Slots</span></div>
-            </div>
-            <button className={styles.logoutBtn} onClick={handleLogout}><span>Logout</span></button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", truncate: "ellipsis" }}>
+            {localStorage.getItem("username") || "Admin"}
           </div>
-        )}
-      </aside>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", flexShrink: 0 }} />
+            <span style={{ fontSize: 11, color: "#64748b" }}>
+              Hi {localStorage.getItem("username") || "Fis"}
+            </span>
+          </div>
+        </div>
+      </div>
+      <button onClick={handleLogout} style={{
+        width: "100%", padding: "11px", borderRadius: 12, border: "none",
+        background: "#ef4444", color: "#fff", fontWeight: 700, fontSize: 13,
+        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8
+      }}>
+        <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4 M16 17l5-5-5-5 M21 12H9"/>
+        </svg>
+        Logout
+      </button>
+    </div>
+  )}
+</aside>
 
       {/* ── MAIN CONTENT ── */}
       <main className={mainClass}>
@@ -1748,6 +2798,67 @@ function OwnerDashboard() {
             </div>
           )}
         </div>
+        {showDeactivatePopup && (
+  <div className={styles.deactivateModalOverlay}>
+
+    <div className={styles.deactivateModal}>
+
+      <h2 className={styles.deactivateTitle}>
+        Future Bookings Found
+      </h2>
+
+      <p className={styles.deactivateSubtitle}>
+        Users already booked this workspace.
+        Do you still want to deactivate?
+      </p>
+
+      <div className={styles.bookingList}>
+        {futureBookings.map((b, i) => (
+          <div key={i} className={styles.bookingCard}>
+
+            <p><strong>User:</strong> {b.user_name}</p>
+
+            <p><strong>Date:</strong> {b.booking_date}</p>
+
+            <p>
+              <strong>Time:</strong>
+              {b.start_time} - {b.end_time}
+            </p>
+
+            <p>
+              <strong>Type:</strong>
+              {b.booking_type}
+            </p>
+
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.deactivateActions}>
+
+        <button
+          className={styles.cancelDeactivateBtn}
+          onClick={() => {
+            setShowDeactivatePopup(false);
+            setFutureBookings([]);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className={styles.confirmDeactivateBtn}
+          onClick={confirmDeactivateWorkspace}
+        >
+          OK Deactivate
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
       </main>
     </div>
   );

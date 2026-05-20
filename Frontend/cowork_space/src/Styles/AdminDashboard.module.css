@@ -3730,6 +3730,75 @@
   border-bottom: 1px solid var(--card-border);
   position: relative;
 }
+.deactivateModalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.deactivateModal{
+  width: 95%;
+  max-width: 520px;
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.deactivateTitle{
+  font-size: 24px;
+  font-weight: 700;
+  color: #dc2626;
+  margin-bottom: 10px;
+}
+
+.deactivateSubtitle{
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.bookingList{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bookingCard{
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-left: 5px solid #dc2626;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.deactivateActions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelDeactivateBtn{
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #e5e7eb;
+  cursor: pointer;
+}
+
+.confirmDeactivateBtn{
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #dc2626;
+  color: white;
+  cursor: pointer;
+}
 .ownerFormHeaderIco {
   width: 44px; height: 44px; flex-shrink: 0;
   border-radius: 12px;
@@ -4107,6 +4176,91 @@
     max-height: calc(100vh - 80px) !important;
     border-radius: 14px !important;
   }
+.deactivateModalOverlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  background: rgba(0,0,0,0.55);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 999999;
+
+  overflow-y: auto;
+  padding: 20px;
+}
+.deactivateModal{
+  width: 100%;
+  max-width: 520px;
+
+  background: white;
+  border-radius: 20px;
+
+  padding: 24px;
+
+  position: relative;
+
+  margin: auto;
+
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.deactivateTitle{
+  font-size: 24px;
+  font-weight: 700;
+  color: #dc2626;
+  margin-bottom: 10px;
+}
+
+.deactivateSubtitle{
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.bookingList{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bookingCard{
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-left: 5px solid #dc2626;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.deactivateActions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelDeactivateBtn{
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #e5e7eb;
+  cursor: pointer;
+}
+
+.confirmDeactivateBtn{
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #dc2626;
+  color: white;
+  cursor: pointer;
+}
  
   /* ── Hide action button text ── */
   .actBtnTxt { display: none; }

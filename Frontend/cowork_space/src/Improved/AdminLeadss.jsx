@@ -498,8 +498,71 @@ function AdminOfferWorkspace() {
                       </td>
                       <td data-label="Actions">
                         <div className={styles.actionBtns}>
-                          <button className={styles.editBtn} onClick={() => handleEdit(item)}>✏ Edit</button>
-                          <button className={styles.deleteBtn} onClick={() => handleDelete(item.id)}>🗑 Delete</button>
+                         <button className={styles.editBtn} onClick={() => handleEdit(item)}>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M4 20H8L18.5 9.5C19.3284 8.67157 19.3284 7.32843 18.5 6.5V6.5C17.6716 5.67157 16.3284 5.67157 15.5 6.5L5 17V20Z"
+      fill="url(#editGrad)"
+      stroke="#2563eb"
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+    />
+    <defs>
+      <linearGradient id="editGrad" x1="4" y1="6" x2="20" y2="20">
+        <stop stopColor="#60a5fa" />
+        <stop offset="1" stopColor="#2563eb" />
+      </linearGradient>
+    </defs>
+  </svg>
+</button>
+
+<button className={styles.deleteBtn} onClick={() => handleDelete(item.id)}>
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M3 6H21"
+      stroke="#ef4444"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6"
+      stroke="#ef4444"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M19 6L18.133 18.142C18.0581 19.1891 17.1869 20 16.1371 20H7.8629C6.81306 20 5.94192 19.1891 5.867 18.142L5 6"
+      fill="url(#trashGradient)"
+      stroke="#dc2626"
+      strokeWidth="2"
+    />
+    <path
+      d="M10 11V16"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M14 11V16"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+
+    <defs>
+      <linearGradient
+        id="trashGradient"
+        x1="12"
+        y1="6"
+        x2="12"
+        y2="20"
+      >
+        <stop stopColor="#f87171" />
+        <stop offset="1" stopColor="#dc2626" />
+      </linearGradient>
+    </defs>
+  </svg>
+</button>
                           {!item.is_approved && (
                             <button className={styles.approveBtn} onClick={() => handleApprove(item.id)}>✔ Approve</button>
                           )}

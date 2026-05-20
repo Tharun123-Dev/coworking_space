@@ -2285,3 +2285,32 @@ def admin_workspace_revenue(
             str(e)
 
         }, status=500)
+    
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.utils.timezone import now
+from .models import Booking
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def workspace_future_bookings(request, workspace_id):
+
+    bookings = Booking.objects.filter(
+        workspace_id=workspace_id,
+        date__gte=now().date(),
+        status__in=["confirmed", "pending"]
+    )
+
+    data = []
+
+    for b in bookings:
+        data.append({
+            "user_name": b.user.username,
+            "booking_date": b.date,
+            "start_time": b.slot.start_time if b.slot else "",
+            "end_time": b.slot.end_time if b.slot else "",
+            "booking_type": b.booking_type,
+        })
+
+    return Response(data)

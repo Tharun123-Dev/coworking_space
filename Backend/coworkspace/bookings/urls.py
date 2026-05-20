@@ -5,7 +5,7 @@ from .views import (
     cancel_request, owner_cancel_requests, approve_cancel,
 
     create_slots,
-    get_slots,
+    get_slots,workspace_future_bookings,
 )
 
 urlpatterns = [
@@ -44,5 +44,9 @@ urlpatterns = [
     path(
     "admin/workspace-revenue/<int:workspace_id>/",
     admin_workspace_revenue
+),
+path(
+    "workspace-future-bookings/<int:workspace_id>/",
+    workspace_future_bookings
 ),
 ]

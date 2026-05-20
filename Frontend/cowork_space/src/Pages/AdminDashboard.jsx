@@ -12,7 +12,7 @@ import styles from "../Styles/AdminDashboard.module.css";
 import AdminAmenities from "./AdminAmenities";
 import RecentActivity from "./RecentActivity";
 import AdminQuotationLeads from "./AdminQuotationLeads";
-
+import AdminSlotManagement from "./AdminSlotManagement";
 // ─── Icon ────────────────────────────────────────────────────────────────────
 const Icon = ({ d, size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
@@ -74,17 +74,25 @@ const SIDEBAR_GROUPS = [
   { id: "dashboard",    label: "Dashboard",      icon: IC.dashboard,  section: "overview",    children: null },
   { id: "manage-users", label: "Manage Users",   icon: IC.users,      section: "management"  },
   { id: "workspaces",   label: "Workspaces",     icon: IC.workspace,  section: "workspaces",  children: null },
+  { id: "offerleads",      label:"Offers Management",     icon: IC.offers,     section: "offerleads" },
   {
     id: "leads-group", label: "Leads", icon: IC.leads,
     children: [
       { id: "view-leads",      label: "Normal Leads",    icon: IC.leads,      section: "leads" },
-      { id: "offerleads",      label: "Offer Leads",     icon: IC.offers,     section: "offerleads" },
+      // { id: "offerleads",      label: "Offer Leads",     icon: IC.offers,     section: "offerleads" },
       { id: "enterprise",      label: "Customise Leads", icon: IC.enterprise, section: "enterprise" },
       { id: "quotation-leads", label: "Quotation Leads", icon: IC.leads,      section: "quotation-leads" },
       { id: "entbiz",          label: "Hyderabad Leads", icon: IC.enterprise, section: "hyderabad-leads" },
     ],
   },
   { id: "bookings",  label: "Bookings",       icon: IC.bookings,  section: "bookings",  children: null },
+  { 
+  id: "slot-management", 
+  label: "Slot Management", 
+  icon: IC.clock,  // IC.clock already exists in your IC object
+  section: "slot-management", 
+  children: null 
+},
   { id: "support",   label: "Support",        icon: IC.support,   section: "tickets",   children: null },
   { id: "activity",  label: "Recent Activity",icon: IC.activity,  section: "activity",  children: null },
   { id: "amenities", label: "Amenities",      icon: IC.amenities, section: "amenities", children: null },
@@ -914,6 +922,9 @@ export default function AdminDashboard() {
   const notifRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   const [adminNotifications, setAdminNotifications]   = useState([]);
+  const [futureBookings, setFutureBookings] = useState([]);
+const [showDeactivatePopup, setShowDeactivatePopup] = useState(false);
+const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const fetchAdminNotifications = async () => {
 
   try {
@@ -1105,7 +1116,7 @@ export default function AdminDashboard() {
       ? axiosInstance.put(`workspaces/update/${editId}/`, payload)
       : axiosInstance.post("workspaces/add/", payload);
     req.then(() => {
-      showToast(editId ? "Updated successfully" : "Workspace added successfully and make approval for show in website..");
+      showToast(editId ? "Updated successfully" : "Workspace added successfully and  Workspace added and live on website!");
       setEditId(null); setShowAddForm(false); setPendingOwnerData(null); setForm(WS_FORM_INIT);
       fetchWS();
     }).catch(()=>showToast("Operation failed","error"));
@@ -1124,6 +1135,44 @@ export default function AdminDashboard() {
       .then(()=>{showToast(ns?"Activated":"Inactivated");fetchWS();})
       .catch(()=>showToast("Failed","error"));
   };
+  const handleDeactivateWorkspace = async (workspace) => {
+  try {
+
+    const res = await axiosInstance.get(
+      `cart/workspace-future-bookings/${workspace.id}/`
+    );
+
+    const bookings = res.data || [];
+
+    if (bookings.length > 0) {
+
+      setFutureBookings(bookings);
+      setSelectedWorkspace(workspace);
+      setShowDeactivatePopup(true);
+
+      return;
+    }
+
+    await handleToggleActive(workspace);
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+const confirmDeactivateWorkspace = async () => {
+
+  try {
+
+    await handleToggleActive(selectedWorkspace);
+
+    setShowDeactivatePopup(false);
+    setFutureBookings([]);
+    setSelectedWorkspace(null);
+
+  } catch (err) {
+    console.log(err);
+  }
+};
   const handleApprove = (id) => axiosInstance.put(`workspaces/approve/${id}/`).then(()=>{showToast("Approved");fetchWS();}).catch(()=>showToast("Failed","error"));
   const handleReject  = (id) => axiosInstance.put(`workspaces/reject/${id}/`).then(()=>{showToast("Rejected");fetchWS();}).catch(()=>showToast("Failed","error"));
 
@@ -1760,10 +1809,32 @@ export default function AdminDashboard() {
                                     <Icon d={IC.rejectCircle} size={13}/>
                                   </button>
                                 )}
-                                <button onClick={() => handleToggleActive(item)}
-                                  style={{padding:"5px 7px",display:"inline-flex",alignItems:"center",justifyContent:"center",borderRadius:"6px",border:"none",cursor:"pointer",background:isActive?"#10b98118":"#6b728018",color:isActive?"#10b981":"#6b7280",transition:"all 0.18s"}}>
-                                  <Icon d={isActive ? IC.eyeOn : IC.eyeOff} size={13}/>
-                                </button>
+                               <button
+  onClick={() => {
+    if (isActive) {
+      handleDeactivateWorkspace(item);
+    } else {
+      handleToggleActive(item);
+    }
+  }}
+  style={{
+    padding:"5px 7px",
+    display:"inline-flex",
+    alignItems:"center",
+    justifyContent:"center",
+    borderRadius:"6px",
+    border:"none",
+    cursor:"pointer",
+    background:isActive?"#10b98118":"#6b728018",
+    color:isActive?"#10b981":"#6b7280",
+    transition:"all 0.18s"
+  }}
+>
+  <Icon
+    d={isActive ? IC.eyeOn : IC.eyeOff}
+    size={13}
+  />
+</button>
                               </div>
                             </td>
                           </tr>
@@ -1858,7 +1929,11 @@ export default function AdminDashboard() {
           {section==="bookings"        && <section className={styles.section}><AdminBookings/></section>}
           {section==="tickets"         && <section className={styles.section}><AdminTickets/></section>}
           {section==="amenities"       && <section className={styles.section}><AdminAmenities/></section>}
-
+           {section==="slot-management" && (
+  <section className={styles.section}>
+    <AdminSlotManagement />
+  </section>
+)}
           {section==="activity" && (
             <section className={styles.section}>
               <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:16}}>
@@ -1925,6 +2000,67 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+      {showDeactivatePopup && (
+  <div className={styles.deactivateModalOverlay}>
+
+    <div className={styles.deactivateModal}>
+
+      <h2 className={styles.deactivateTitle}>
+        Future Bookings Found
+      </h2>
+
+      <p className={styles.deactivateSubtitle}>
+        Users already booked this workspace.
+        Do you still want to deactivate?
+      </p>
+
+      <div className={styles.bookingList}>
+        {futureBookings.map((b, i) => (
+          <div key={i} className={styles.bookingCard}>
+
+            <p><strong>User:</strong> {b.user_name}</p>
+
+            <p><strong>Date:</strong> {b.booking_date}</p>
+
+            <p>
+              <strong>Time:</strong>
+              {b.start_time} - {b.end_time}
+            </p>
+
+            <p>
+              <strong>Type:</strong>
+              {b.booking_type}
+            </p>
+
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.deactivateActions}>
+
+        <button
+          className={styles.cancelDeactivateBtn}
+          onClick={() => {
+            setShowDeactivatePopup(false);
+            setFutureBookings([]);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className={styles.confirmDeactivateBtn}
+          onClick={confirmDeactivateWorkspace}
+        >
+          OK Deactivate
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
     </div>
   );
 }
